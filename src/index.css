@@ -1,0 +1,24 @@
+@import 'tailwindcss';
+@config '../tailwind.config.ts';
+
+/* Geist is loaded via Google Fonts in index.html; the `geist` package is also
+   installed per the brief. fontFamily.sans in tailwind.config.ts maps to it. */
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Geist', system-ui, sans-serif;
+  background-color: #0c0800; /* bg.0 — the plain dark backdrop behind the phone shell */
+  color: #fafafa; /* text.title */
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
