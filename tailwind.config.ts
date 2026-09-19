@@ -27,8 +27,13 @@ export default {
       borderWidth: { 1:'1px', 1.5:'1.5px', 2:'2px', 4:'4px' },
       fontFamily: { sans: ['Geist','system-ui','sans-serif'] },
       height: { btn:'48px', 'btn-sm':'38px', 'btn-inline':'24px', input:'48px',
-                bar:'56px', 'bar-progress':'93px', nav:'85px', cta:'96px', tag:'30px' },
+                bar:'56px', 'bar-progress':'93px', nav:'85px', cta:'96px', tag:'30px',
+                // The phone shell, inset by spacing.4 top and bottom above 420px.
+                shell:'calc(100vh - 32px)' },
+      inset: { nav:'85px' },
       maxWidth: { frame:'375px', content:'343px' },
+      // Global interaction rule 9: the phone shell kicks in above 420px.
+      screens: { frame:'420px' },
       maxHeight: { sheet:'70vh', 'sheet-tall':'85vh' },
       zIndex: { toast:'60' },
       fontSize: {

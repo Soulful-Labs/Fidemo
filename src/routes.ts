@@ -2,6 +2,7 @@ import { createElement } from 'react'
 import type { RouteObject } from 'react-router-dom'
 import { Navigate } from 'react-router-dom'
 import Placeholder from './components/Placeholder'
+import RootRedirect from './app/RootRedirect'
 import KitchenSink from './screens/kitchen-sink/KitchenSink'
 
 /**
@@ -29,7 +30,7 @@ const redirect = (path: string, to: string, replace = true): ScreenRoute => ({
 
 export const routes: ScreenRoute[] = [
   // ----- Auth -----
-  redirect('/', '/signup'), // signed-in check is added with the store (turn 4)
+  { path: '/', label: 'Redirect \u2192 /dashboard or /signup', element: createElement(RootRedirect) },
   screen('/signup', 'Create your account'),
   screen('/signin', 'Welcome back'),
   screen('/verify-otp', 'Enter OTP'),
