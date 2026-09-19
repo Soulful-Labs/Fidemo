@@ -2,6 +2,7 @@ import { createElement } from 'react'
 import type { RouteObject } from 'react-router-dom'
 import { Navigate } from 'react-router-dom'
 import Placeholder from './components/Placeholder'
+import KitchenSink from './screens/kitchen-sink/KitchenSink'
 
 /**
  * The complete route map from the build brief. Every screen route points at the
@@ -107,6 +108,9 @@ export const routes: ScreenRoute[] = [
   screen('/support/tickets', 'Support Tickets'),
   screen('/support/tickets/:id', 'Support Chat'),
   screen('/support/contact', 'Contact us'),
+
+  // ----- Dev -----
+  { path: '/kitchen-sink', label: 'Kitchen Sink', element: createElement(KitchenSink) },
 
   // ----- Fallback -----
   screen('*', 'Not Found'),
