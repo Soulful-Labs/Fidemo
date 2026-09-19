@@ -1,4 +1,5 @@
 import { pointsToUsd, WITHDRAWAL_FEE } from '../../lib/rules'
+import { DEFAULT_FILTERS } from '../storeTypes'
 import type { Action, AppState } from '../storeTypes'
 
 /** Wallet, points, profile, notifications, support and toasts. */
@@ -11,6 +12,16 @@ export function accountReducer(state: AppState, action: Action): AppState | null
 
     case 'SET_ONBOARDING':
       return { ...state, onboarding: { ...state.onboarding, ...action.patch } }
+
+    case 'SET_FILTERS':
+      return { ...state, filters: { ...state.filters, ...action.patch } }
+    // Reset clears the sheet's filters but keeps the search and sort, which
+    // live outside it on the Explore toolbar.
+    case 'RESET_FILTERS':
+      return {
+        ...state,
+        filters: { ...DEFAULT_FILTERS, query: state.filters.query, sort: state.filters.sort },
+      }
 
     case 'WITHDRAW': {
       const now = new Date().toISOString()

@@ -8,6 +8,7 @@ import {
 } from './data'
 import { reducer } from './reducer'
 import { TIMINGS } from './timings'
+import { DEFAULT_FILTERS } from './storeTypes'
 import type { Action, AppState } from './storeTypes'
 import type { AppNotification } from './types'
 
@@ -30,6 +31,7 @@ const initialState: AppState = {
     fullName: '', dob: '', gender: '', address: '',
     occupation: '', licenseId: '', industry: '', education: '', idType: '',
   },
+  filters: DEFAULT_FILTERS,
   toasts: [],
 }
 

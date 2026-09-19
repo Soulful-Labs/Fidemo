@@ -1,5 +1,5 @@
 import { STUDIES } from './studies'
-import type { Action, Answers, AppState, OnboardingDraft } from './storeTypes'
+import type { Action, Answers, AppState, OnboardingDraft, StudyFilters } from './storeTypes'
 import type {
   AppNotification, PayoutMethod, Study, StudyStatus, Ticket, TicketMessage, User,
 } from './types'
@@ -72,6 +72,8 @@ export function createActions({ state, dispatch, toast, notify, later }: ActionD
     // --- profile and onboarding ---
     setOnboarding: (patch: Partial<OnboardingDraft>) =>
       dispatch({ type: 'SET_ONBOARDING', patch }),
+    setFilters: (patch: Partial<StudyFilters>) => dispatch({ type: 'SET_FILTERS', patch }),
+    resetFilters: () => dispatch({ type: 'RESET_FILTERS' }),
     updateUser: (patch: Partial<User>) => dispatch({ type: 'UPDATE_USER', patch }),
     setConsent: (key: keyof User['consent'], value: boolean) =>
       dispatch({ type: 'SET_CONSENT', key, value }),

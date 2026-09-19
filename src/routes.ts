@@ -13,6 +13,8 @@ import CheckEmail from './screens/auth/CheckEmail'
 import ResetPassword from './screens/auth/ResetPassword'
 import PasswordUpdated from './screens/auth/PasswordUpdated'
 import Dashboard from './screens/dashboard/Dashboard'
+import Explore from './screens/studies/Explore'
+import Saved from './screens/studies/Saved'
 import Notifications from './screens/dashboard/Notifications'
 import AboutYou from './screens/onboarding/AboutYou'
 import Professional from './screens/onboarding/Professional'
@@ -71,8 +73,8 @@ export const routes: ScreenRoute[] = [
   built('/notifications', 'Notifications', Notifications),
 
   // ----- Studies tab -----
-  screen('/studies', 'Explore'),
-  screen('/studies/saved', 'Saved'),
+  built('/studies', 'Explore', Explore),
+  built('/studies/saved', 'Saved', Saved),
   redirect('/studies/mine', '/studies/mine/invites'),
   screen('/studies/mine/invites', 'My Studies, Invites'),
   screen('/studies/mine/scheduled', 'My Studies, Scheduled'),

@@ -1,6 +1,6 @@
 import type {
   AppNotification, Payout, PayoutMethod, PointsEntry, RedeemEntry, Referral,
-  Study, StudyStatus, Ticket, TicketMessage, Transaction, User,
+  Study, StudyStatus, StudyType, Ticket, TicketMessage, Transaction, User,
 } from './types'
 
 export type { Study, AppNotification } from './types'
@@ -8,6 +8,28 @@ export type { Study, AppNotification } from './types'
 export interface Toast {
   id: string
   message: string
+}
+
+/** Sort options from PRD 6.2. */
+export type SortKey = 'default' | 'price_high' | 'price_low' | 'new_first' | 'old_first'
+
+/** Explore search, sort and the Filters sheet (PRD 6.2, 6.3). */
+export interface StudyFilters {
+  query: string
+  sort: SortKey
+  types: StudyType[]
+  price: [number, number]
+  time: [number, number]
+  industries: string[]
+  occupations: string[]
+}
+
+export const PRICE_RANGE: [number, number] = [0, 1000]
+export const TIME_RANGE: [number, number] = [0, 180]
+
+export const DEFAULT_FILTERS: StudyFilters = {
+  query: '', sort: 'default', types: [],
+  price: PRICE_RANGE, time: TIME_RANGE, industries: [], occupations: [],
 }
 
 /** What the three onboarding steps collect before an account exists. */
@@ -44,12 +66,15 @@ export interface AppState {
   /** In-progress screener answers, keyed by study id. Drafts read from here. */
   answers: Record<string, Answers>
   onboarding: OnboardingDraft
+  filters: StudyFilters
   toasts: Toast[]
 }
 
 export type Action =
   | { type: 'SIGN_IN' }
   | { type: 'SET_ONBOARDING'; patch: Partial<OnboardingDraft> }
+  | { type: 'SET_FILTERS'; patch: Partial<StudyFilters> }
+  | { type: 'RESET_FILTERS' }
   | { type: 'SIGN_OUT' }
   | { type: 'SET_STATUS'; id: string; status: StudyStatus; timelineLabel?: string }
   | { type: 'TOGGLE_SAVED'; id: string }

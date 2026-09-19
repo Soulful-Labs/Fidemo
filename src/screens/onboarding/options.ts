@@ -42,3 +42,12 @@ export const ADDRESS_SUGGESTIONS = [
   'Dublin, Ireland',
   'Berlin, Germany',
 ]
+
+/** Shared with the Filters sheet: "Search and select your profession". */
+export const PROFESSIONS = [
+  'Physicians', 'Nurse Practitioners', 'Physician Assistants', 'Cardiologists',
+  'Cardiac Nurses', 'Nurse Managers', 'Ward Leads', 'Pharmacists',
+  'Pharmacy Technicians', 'Nutritionist', 'Teachers', 'Teaching Assistants',
+  'SENCOs', 'Product Designer', 'Software Engineer', 'Small business owners',
+  'Online shoppers', 'General public',
+]
