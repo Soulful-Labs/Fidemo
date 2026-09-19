@@ -1,8 +1,10 @@
 import { useCallback, useState } from 'react'
+import AppBitsSection from './AppBitsSection'
 import ButtonsSection from './ButtonsSection'
 import FormsSection from './FormsSection'
 import NavSection from './NavSection'
 import OverlaysSection from './OverlaysSection'
+import StudyCardSection from './StudyCardSection'
 import TagsSection from './TagsSection'
 
 /**
@@ -27,7 +29,7 @@ export default function KitchenSink() {
           <header className="flex flex-col gap-1">
             <h1 className="text-title-l text-text-title">Kitchen Sink</h1>
             <p className="text-text-regular text-text-body">
-              The 10 UI primitives and every variant. Tap anything.
+              The 10 UI primitives and the 7 app components. Tap anything.
             </p>
           </header>
 
@@ -36,9 +38,13 @@ export default function KitchenSink() {
           <TagsSection toast={toast} />
           <NavSection toast={toast} />
           <OverlaysSection toast={toast} />
+          <StudyCardSection toast={toast} />
+          <AppBitsSection toast={toast} />
 
           <p className="pb-6 text-label text-text-disabled">
             Button · Input · Tag · Toggle · Modal · BottomSheet · TopBar · TabBar · Picker · Stepper
+            <br />
+            StudyCard · ScoreDial · StatTile · NotificationRow · EmptyState · ProgressBar · Timeline
           </p>
         </div>
       </div>
