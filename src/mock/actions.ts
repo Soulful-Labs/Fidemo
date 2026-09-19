@@ -1,6 +1,8 @@
 import { STUDIES } from './studies'
-import type { Action, Answers, AppState } from './storeTypes'
-import type { AppNotification, Study, StudyStatus, Ticket, TicketMessage } from './types'
+import type { Action, Answers, AppState, OnboardingDraft } from './storeTypes'
+import type {
+  AppNotification, PayoutMethod, Study, StudyStatus, Ticket, TicketMessage, User,
+} from './types'
 import { TIMINGS } from './timings'
 
 /** Session study types schedule; survey and diary go straight to completing. */
@@ -67,6 +69,20 @@ export function createActions({ state, dispatch, toast, notify, later }: ActionD
   }
 
   return {
+    // --- profile and onboarding ---
+    setOnboarding: (patch: Partial<OnboardingDraft>) =>
+      dispatch({ type: 'SET_ONBOARDING', patch }),
+    updateUser: (patch: Partial<User>) => dispatch({ type: 'UPDATE_USER', patch }),
+    setConsent: (key: keyof User['consent'], value: boolean) =>
+      dispatch({ type: 'SET_CONSENT', key, value }),
+    setEmailPref: (key: keyof User['emailPrefs'], value: boolean) =>
+      dispatch({ type: 'SET_EMAIL_PREF', key, value }),
+    markAllRead: () => dispatch({ type: 'MARK_ALL_READ' }),
+    markRead: (id: string) => dispatch({ type: 'MARK_READ', id }),
+    addPayoutMethod: (method: PayoutMethod) => dispatch({ type: 'ADD_PAYOUT_METHOD', method }),
+    removePayoutMethod: (id: string) => dispatch({ type: 'REMOVE_PAYOUT_METHOD', id }),
+    setDefaultPayoutMethod: (id: string) => dispatch({ type: 'SET_DEFAULT_METHOD', id }),
+
     studyById: (id?: string) => state.studies.find((s) => s.id === id),
     toggleSaved: (id: string) => dispatch({ type: 'TOGGLE_SAVED', id }),
     applyToStudy: (id: string) => setStatus(id, 'applying', 'Application started'),

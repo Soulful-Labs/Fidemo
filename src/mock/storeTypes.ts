@@ -10,6 +10,22 @@ export interface Toast {
   message: string
 }
 
+/** What the three onboarding steps collect before an account exists. */
+export interface OnboardingDraft {
+  fullName: string
+  dob: string
+  gender: string
+  address: string
+  introVideo?: string
+  occupation: string
+  licenseId: string
+  industry: string
+  education: string
+  idType: string
+  idFront?: string
+  idBack?: string
+}
+
 /** One answer per screener/survey/diary question. */
 export type Answers = Record<string, string | string[]>
 
@@ -27,11 +43,13 @@ export interface AppState {
   tickets: Ticket[]
   /** In-progress screener answers, keyed by study id. Drafts read from here. */
   answers: Record<string, Answers>
+  onboarding: OnboardingDraft
   toasts: Toast[]
 }
 
 export type Action =
   | { type: 'SIGN_IN' }
+  | { type: 'SET_ONBOARDING'; patch: Partial<OnboardingDraft> }
   | { type: 'SIGN_OUT' }
   | { type: 'SET_STATUS'; id: string; status: StudyStatus; timelineLabel?: string }
   | { type: 'TOGGLE_SAVED'; id: string }

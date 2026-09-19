@@ -26,6 +26,10 @@ const initialState: AppState = {
   referrals: REFERRALS,
   tickets: TICKETS,
   answers: {},
+  onboarding: {
+    fullName: '', dob: '', gender: '', address: '',
+    occupation: '', licenseId: '', industry: '', education: '', idType: '',
+  },
   toasts: [],
 }
 

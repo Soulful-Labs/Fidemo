@@ -9,6 +9,9 @@ export function accountReducer(state: AppState, action: Action): AppState | null
     case 'SIGN_OUT':
       return { ...state, signedIn: false }
 
+    case 'SET_ONBOARDING':
+      return { ...state, onboarding: { ...state.onboarding, ...action.patch } }
+
     case 'WITHDRAW': {
       const now = new Date().toISOString()
       return {

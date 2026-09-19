@@ -1,9 +1,21 @@
 import { createElement } from 'react'
+import type { ComponentType } from 'react'
 import type { RouteObject } from 'react-router-dom'
 import { Navigate } from 'react-router-dom'
 import Placeholder from './components/Placeholder'
 import RootRedirect from './app/RootRedirect'
 import KitchenSink from './screens/kitchen-sink/KitchenSink'
+import SignUp from './screens/auth/SignUp'
+import SignIn from './screens/auth/SignIn'
+import VerifyOtp from './screens/auth/VerifyOtp'
+import ForgotPassword from './screens/auth/ForgotPassword'
+import CheckEmail from './screens/auth/CheckEmail'
+import ResetPassword from './screens/auth/ResetPassword'
+import PasswordUpdated from './screens/auth/PasswordUpdated'
+import AboutYou from './screens/onboarding/AboutYou'
+import Professional from './screens/onboarding/Professional'
+import Identity from './screens/onboarding/Identity'
+import Welcome from './screens/onboarding/Welcome'
 
 /**
  * The complete route map from the build brief. Every screen route points at the
@@ -22,6 +34,13 @@ const screen = (path: string, label: string): ScreenRoute => ({
   element: createElement(Placeholder, { name: label }),
 })
 
+/** A built screen, replacing its placeholder. */
+const built = (path: string, label: string, Component: ComponentType): ScreenRoute => ({
+  path,
+  label,
+  element: createElement(Component),
+})
+
 const redirect = (path: string, to: string, replace = true): ScreenRoute => ({
   path,
   label: `Redirect → ${to}`,
@@ -31,19 +50,19 @@ const redirect = (path: string, to: string, replace = true): ScreenRoute => ({
 export const routes: ScreenRoute[] = [
   // ----- Auth -----
   { path: '/', label: 'Redirect \u2192 /dashboard or /signup', element: createElement(RootRedirect) },
-  screen('/signup', 'Create your account'),
-  screen('/signin', 'Welcome back'),
-  screen('/verify-otp', 'Enter OTP'),
-  screen('/forgot-password', 'Reset Password'),
-  screen('/check-email', 'Check Email'),
-  screen('/reset-password', 'Set New Password'),
-  screen('/password-updated', 'Password Updated'),
+  built('/signup', 'Create your account', SignUp),
+  built('/signin', 'Welcome back', SignIn),
+  built('/verify-otp', 'Enter OTP', VerifyOtp),
+  built('/forgot-password', 'Reset Password', ForgotPassword),
+  built('/check-email', 'Check Email', CheckEmail),
+  built('/reset-password', 'Set New Password', ResetPassword),
+  built('/password-updated', 'Password Updated', PasswordUpdated),
 
   // ----- Onboarding -----
-  screen('/onboarding/about', 'About You, 1 of 3'),
-  screen('/onboarding/professional', 'Get Personalized Studies, 2 of 3'),
-  screen('/onboarding/identity', 'Identity Verification, 3 of 3'),
-  screen('/onboarding/welcome', 'Welcome to HumanLayer'),
+  built('/onboarding/about', 'About You, 1 of 3', AboutYou),
+  built('/onboarding/professional', 'Get Personalized Studies, 2 of 3', Professional),
+  built('/onboarding/identity', 'Identity Verification, 3 of 3', Identity),
+  built('/onboarding/welcome', 'Welcome to HumanLayer', Welcome),
 
   // ----- Dashboard tab -----
   screen('/dashboard', 'Dashboard'),
