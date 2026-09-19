@@ -99,3 +99,107 @@ export interface User {
   }
   verified: { govId: boolean; livePhoto: boolean; license: boolean }
 }
+
+// ---------------------------------------------------------------------------
+// Supporting shapes. The brief's Data shapes section defines Study, Question
+// and User; these are the types the other seeded collections need.
+// ---------------------------------------------------------------------------
+
+export type NotificationKind =
+  | 'study' | 'session' | 'money' | 'points' | 'tier' | 'trust'
+  | 'support' | 'referral' | 'profile'
+
+export interface AppNotification {
+  id: string
+  kind: NotificationKind
+  title: string
+  body: string
+  at: string
+  read: boolean
+  /** Optional action button, e.g. "Schedule Now" (PRD 11). */
+  actionLabel?: string
+  /** Where the action, or the row itself, routes to. */
+  to?: string
+}
+
+export type EarningCategory =
+  | 'Interview' | 'Focus Group' | 'Survey' | 'In-Person' | 'Redeem Points'
+
+export interface Transaction {
+  id: string
+  studyId?: string
+  title: string
+  at: string
+  amount: number
+  txNumber: string
+  category: EarningCategory
+}
+
+export type PayoutStatus = 'processing' | 'completed'
+
+export interface Payout {
+  id: string
+  at: string
+  amount: number
+  fee: number
+  net: number
+  /** "****7790" */
+  destination: string
+  txId: string
+  status: PayoutStatus
+  expectedBy?: string
+}
+
+export interface PayoutMethod {
+  id: string
+  bankName: string
+  accountNumber: string
+  routingCode: string
+  type: 'Savings' | 'Checking'
+  isDefault: boolean
+}
+
+export type PointsKind = 'referral' | 'study' | 'streak' | 'bonus'
+
+export interface PointsEntry {
+  id: string
+  kind: PointsKind
+  label: string
+  detail: string
+  at: string
+  amount: number
+}
+
+export interface RedeemEntry {
+  id: string
+  at: string
+  points: number
+  amount: number
+  reference: string
+}
+
+export interface Referral {
+  id: string
+  name: string
+  email: string
+  status: 'joined' | 'completed'
+  at: string
+}
+
+export interface TicketMessage {
+  id: string
+  from: 'you' | 'support'
+  text: string
+  at: string
+}
+
+export interface Ticket {
+  id: string
+  subject: string
+  message: string
+  studyTitle?: string
+  status: 'open' | 'closed'
+  createdAt: string
+  lastActivityAt: string
+  messages: TicketMessage[]
+}
