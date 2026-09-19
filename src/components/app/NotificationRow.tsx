@@ -12,6 +12,9 @@ export interface NotificationRowProps {
   /** Optional action, e.g. "Schedule Now" (PRD 11). */
   actionLabel?: string
   onAction?: () => void
+  /** PRD 11 type 1 is the only one drawn with a second action. */
+  secondaryActionLabel?: string
+  onSecondaryAction?: () => void
   /** Rows without an action still route to the related screen. */
   onOpen?: () => void
 }
@@ -25,6 +28,8 @@ export default function NotificationRow({
   icon,
   actionLabel,
   onAction,
+  secondaryActionLabel,
+  onSecondaryAction,
   onOpen,
 }: NotificationRowProps) {
   return (
@@ -53,11 +58,16 @@ export default function NotificationRow({
           <span className="text-text-regular text-text-body">{body}</span>
         </button>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <span className="text-label text-text-disabled">{timeAgo(at)}</span>
           {actionLabel && onAction && (
             <Button size="sm" variant="secondary" onClick={onAction}>
               {actionLabel}
+            </Button>
+          )}
+          {secondaryActionLabel && onSecondaryAction && (
+            <Button size="sm" variant="ghost" onClick={onSecondaryAction}>
+              {secondaryActionLabel}
             </Button>
           )}
         </div>

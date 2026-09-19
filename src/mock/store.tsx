@@ -82,6 +82,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     signOut: () => dispatch({ type: 'SIGN_OUT' }),
   }), [state, toast, notify, later])
 
+  // Dev only: a handle for driving state in the browser, used by the
+  // verification scripts and to reach states the seed does not start in
+  // (for example the Get Started dashboard, which needs 0 completed studies).
+  if (import.meta.env.DEV) {
+    ;(window as unknown as { __hl?: unknown }).__hl = value
+  }
+
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
 }
 

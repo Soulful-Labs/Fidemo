@@ -73,3 +73,11 @@ export function timeAgo(iso: string, now: Date = new Date()): string {
   const days = Math.floor(hours / 24)
   return days < 7 ? `${days}d ago` : dateLong(iso)
 }
+
+/** "Good morning" / "Good afternoon" / "Good evening" (PRD 5.1). */
+export function greeting(now: Date = new Date()): string {
+  const hour = now.getHours()
+  if (hour < 12) return 'Good morning'
+  if (hour < 18) return 'Good afternoon'
+  return 'Good evening'
+}

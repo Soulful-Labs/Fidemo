@@ -91,18 +91,35 @@ export const REFERRALS: Referral[] = [
 ]
 
 export const NOTIFICATIONS: AppNotification[] = [
-  { id: 'nt-1', kind: 'study', title: "You've been selected to complete!", body: 'You are qualified for Cardiology device onboarding. Book your session to earn your reward.', at: at(-1, 16, 4), read: false, actionLabel: 'Schedule Now', to: '/studies/st-08/schedule' },
-  { id: 'nt-2', kind: 'study', title: "Congrats! You're invited to complete study!", body: 'Wellness app first impressions is ready for you to complete.', at: at(-1, 9, 30), read: false, actionLabel: 'Start Study', to: '/studies/st-09' },
-  { id: 'nt-3', kind: 'session', title: 'Session starting in 15 minutes!', body: 'Flagship store shopper study starts shortly at Times Square.', at: at(0, 13, 45), read: false, actionLabel: 'Join Session', to: '/studies/st-11' },
-  { id: 'nt-4', kind: 'study', title: 'Screener submitted', body: "Your screener for the E-commerce Checkout Flow study has been submitted. You'll hear back within 48 hours.", at: at(-2, 14, 25), read: true, to: '/studies/mine/applied' },
-  { id: 'nt-5', kind: 'money', title: "You've received $150!", body: 'Your payment for Patient intake forms, paper to digital has been added to your wallet.', at: at(-17, 10, 0), read: true, to: '/wallet' },
-  { id: 'nt-6', kind: 'money', title: 'Withdrawal request submitted', body: 'Your withdrawal request of $500 to American Bank ****7790 has been submitted. Processing takes 3-5 business days.', at: at(-5, 23, 0), read: true, to: '/wallet/payouts' },
-  { id: 'nt-7', kind: 'points', title: "You've earned 100 reward points!", body: 'Points were added for being referred to HumanLayer.', at: at(-59), read: true, to: '/points' },
-  { id: 'nt-8', kind: 'trust', title: 'Your trust score increased!', body: 'Great work! Your trust score has increased to 72/100. A higher score means more study invitations.', at: at(-17, 10, 5), read: true, to: '/trust-score' },
-  { id: 'nt-9', kind: 'points', title: 'Earned 50 reward points for Monthly Streak!', body: "You've completed the monthly streak of 4 studies and earned 50 reward points!", at: at(-30), read: true, to: '/points' },
-  { id: 'nt-10', kind: 'study', title: 'Daily diary entry reminder!', body: 'Sleep routine diary is waiting for today’s entry.', at: at(-1, 8, 0), read: true, actionLabel: 'Resume Study - Day 5/5', to: '/studies/st-12/diary' },
-  { id: 'nt-11', kind: 'profile', title: 'Complete your profile for more studies', body: 'Your profile is 40% complete. Finish it to unlock more relevant invitations.', at: at(-7), read: true, actionLabel: 'Complete Profile', to: '/profile/edit' },
-  { id: 'nt-12', kind: 'support', title: 'New reply on your support ticket', body: 'Support has replied to #FI-S562357 about your missing incentive payment.', at: at(-2, 10, 15), read: true, actionLabel: 'View Message', to: '/support/tickets/FI-S562357' },
+  // All 24 types from PRD 11. Titles and action labels are quoted exactly.
+  // Bodies are quoted for 5, 16, 19 and 20, which are the only ones the PRD
+  // gives; the rest are written to match their title.
+  { id: 'nt-1', kind: 'study', title: "Congrats! You're invited to complete study!", body: 'Wellness app first impressions is ready for you to complete and earn your reward.', at: at(-1, 9, 30), read: false, actionLabel: 'Start Study', to: '/studies/st-09', secondaryActionLabel: 'View Details', secondaryTo: '/studies/st-09' },
+  { id: 'nt-6', kind: 'study', title: "You've been selected to complete!", body: 'You are qualified for Cardiology device onboarding. Book your session to earn your reward.', at: at(-1, 16, 4), read: false, actionLabel: 'Schedule Now', to: '/studies/st-08/schedule' },
+  { id: 'nt-8', kind: 'session', title: 'Session starting in 15 minutes!', body: 'Flagship store shopper study starts shortly at Times Square, NYC.', at: at(0, 13, 45), read: false, actionLabel: 'Join Session', to: '/studies/st-11' },
+  { id: 'nt-12', kind: 'study', title: "You've been invited to a study!", body: 'Retail pharmacy layout walkthrough matches your profile. Accept to apply.', at: at(-2, 8, 15), read: false, actionLabel: 'View Invitation', to: '/studies/mine/invites' },
+  { id: 'nt-11', kind: 'study', title: 'Study deadline approaching!', body: 'Wellness app first impressions closes in 3 days.', at: at(-2, 11, 0), read: true, actionLabel: 'Complete Study - Earn Faster!', to: '/studies/st-09' },
+  { id: 'nt-15', kind: 'study', title: 'Daily diary entry reminder!', body: 'Sleep routine diary is waiting for today\u2019s entry.', at: at(-1, 8, 0), read: true, actionLabel: 'Resume Study - Day 4/7', to: '/studies/st-12/diary' },
+  { id: 'nt-13', kind: 'study', title: 'How was your study experience?', body: 'Tell RJP Pharma Ltd. how Patient intake forms, paper to digital went.', at: at(-16, 10, 0), read: true, actionLabel: 'Rate Now', to: '/studies/st-13/rate' },
+  { id: 'nt-14', kind: 'study', title: 'Update on a saved study', body: 'Inclusive education practices is now open to applications.', at: at(-6, 12, 30), read: true, actionLabel: 'Apply Now', to: '/studies/st-02' },
+  // Conflict 11: this says 48 hours while the In Process banner says 3-5 days.
+  { id: 'nt-5', kind: 'study', title: 'Screener submitted', body: "Your screener for the E-commerce Checkout Flow study has been submitted. You'll hear back within 48 hours.", at: at(-2, 14, 25), read: true, to: '/studies/mine/applied' },
+  { id: 'nt-4', kind: 'study', title: 'New study match!', body: 'GLP-1 Care Plans, Oncologist View is a 96% match for your profile.', at: at(-3, 9, 0), read: true, to: '/studies/st-01' },
+  { id: 'nt-7', kind: 'study', title: 'Application update!', body: 'Your application for Oncology EMR workflows is still under review.', at: at(-3, 16, 40), read: true, to: '/studies/mine/applied' },
+  { id: 'nt-9', kind: 'study', title: 'Study cancelled by client', body: 'Fintech onboarding walkthrough was cancelled by the client. No action is needed.', at: at(-8, 10, 20), read: true, to: '/studies/mine/history' },
+  { id: 'nt-10', kind: 'session', title: 'Your session has been rescheduled', body: 'Nurse staffing software review moved to a new time. Check the details.', at: at(-4, 15, 10), read: true, to: '/studies/st-10' },
+  { id: 'nt-3', kind: 'money', title: "You've received $150!", body: 'Your payment for Patient intake forms, paper to digital has been added to your wallet.', at: at(-17, 10, 0), read: true, to: '/wallet' },
+  { id: 'nt-2', kind: 'money', title: 'Your withdrawal has been processed!', body: 'Your payout of $298 has landed in American Bank ****7790.', at: at(-33, 14, 20), read: true, to: '/wallet/payouts' },
+  // Conflict 12: 3-5 business days here, 2-3 working days on the success screen.
+  { id: 'nt-16', kind: 'money', title: 'Withdrawal request submitted', body: 'Your withdrawal request of $500 to Chase Bank ****4521 has been submitted. Processing takes 3-5 business days.', at: at(-5, 23, 0), read: true, to: '/wallet/payouts' },
+  { id: 'nt-17', kind: 'points', title: "You've earned 100 reward points!", body: 'Points were added for being referred to HumanLayer.', at: at(-59), read: true, to: '/points' },
+  { id: 'nt-20', kind: 'points', title: 'Earned 50 reward points for Monthly Streak!', body: "You've completed the monthly streak of 4 studies and earned 50 reward points!", at: at(-30), read: true, to: '/points' },
+  { id: 'nt-18', kind: 'tier', title: "You've been upgraded to Gold tier!", body: 'You are now in the most trusted participants. Gold unlocks more invitations.', at: at(-25), read: true, to: '/trust-score/tiers' },
+  { id: 'nt-19', kind: 'trust', title: 'Your trust score increased!', body: 'Great work! Your trust score has increased to 92/100. A higher score means more study invitations.', at: at(-17, 10, 5), read: true, to: '/trust-score' },
+  { id: 'nt-21', kind: 'profile', title: 'Complete your profile for more studies', body: 'Your profile is 40% complete. Finish it to unlock more relevant invitations.', at: at(-7), read: true, actionLabel: 'Complete Profile', to: '/profile/edit' },
+  { id: 'nt-22', kind: 'support', title: 'New reply on your support ticket', body: 'Support has replied to #FI-S562357 about your missing incentive payment.', at: at(-2, 10, 15), read: true, actionLabel: 'View Message', to: '/support/tickets/FI-S562357' },
+  { id: 'nt-23', kind: 'referral', title: 'Your friend just signed up!', body: 'Chloe Barnes joined using your referral link. You earn 200 points when they finish their first study.', at: at(-3), read: true, to: '/profile/referrals' },
+  { id: 'nt-24', kind: 'profile', title: 'Welcome back!', body: 'Your account has been reactivated. Everything is where you left it.', at: at(-70), read: true, to: '/dashboard' },
 ]
 
 export const TICKETS: Ticket[] = [

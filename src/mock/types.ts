@@ -120,6 +120,9 @@ export interface AppNotification {
   actionLabel?: string
   /** Where the action, or the row itself, routes to. */
   to?: string
+  /** Type 1 is the only one drawn with two actions. */
+  secondaryActionLabel?: string
+  secondaryTo?: string
 }
 
 export type EarningCategory =

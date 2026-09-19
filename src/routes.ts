@@ -12,6 +12,8 @@ import ForgotPassword from './screens/auth/ForgotPassword'
 import CheckEmail from './screens/auth/CheckEmail'
 import ResetPassword from './screens/auth/ResetPassword'
 import PasswordUpdated from './screens/auth/PasswordUpdated'
+import Dashboard from './screens/dashboard/Dashboard'
+import Notifications from './screens/dashboard/Notifications'
 import AboutYou from './screens/onboarding/AboutYou'
 import Professional from './screens/onboarding/Professional'
 import Identity from './screens/onboarding/Identity'
@@ -65,8 +67,8 @@ export const routes: ScreenRoute[] = [
   built('/onboarding/welcome', 'Welcome to HumanLayer', Welcome),
 
   // ----- Dashboard tab -----
-  screen('/dashboard', 'Dashboard'),
-  screen('/notifications', 'Notifications'),
+  built('/dashboard', 'Dashboard', Dashboard),
+  built('/notifications', 'Notifications', Notifications),
 
   // ----- Studies tab -----
   screen('/studies', 'Explore'),

@@ -6,7 +6,11 @@ export interface StatTileProps {
   label: string
   /** "$624.48", "128" */
   value: string
-  /** "+$260" — green when positive, never red unless something is wrong. */
+  /**
+   * "+$260". Green when positive. A fall is shown in the neutral body colour,
+   * not red: red is reserved for things that are wrong, and earning less this
+   * month is not an error.
+   */
   delta?: string
   icon?: ReactNode
   onClick?: () => void
@@ -31,7 +35,11 @@ export default function StatTile({ label, value, delta, icon, onClick, alt = fal
       </div>
       <div className="flex items-baseline gap-2">
         <span className="text-title-m text-text-title">{value}</span>
-        {delta && <span className="text-label text-state-success">{delta}</span>}
+        {delta && (
+          <span className={cn('text-label', delta.startsWith('-') ? 'text-text-body' : 'text-state-success')}>
+            {delta}
+          </span>
+        )}
       </div>
     </Wrapper>
   )
