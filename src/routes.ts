@@ -15,6 +15,7 @@ import PasswordUpdated from './screens/auth/PasswordUpdated'
 import Dashboard from './screens/dashboard/Dashboard'
 import Explore from './screens/studies/Explore'
 import Saved from './screens/studies/Saved'
+import StudyDetail from './screens/studies/detail/StudyDetail'
 import Notifications from './screens/dashboard/Notifications'
 import AboutYou from './screens/onboarding/AboutYou'
 import Professional from './screens/onboarding/Professional'
@@ -81,7 +82,7 @@ export const routes: ScreenRoute[] = [
   screen('/studies/mine/drafts', 'My Studies, Drafts'),
   screen('/studies/mine/applied', 'My Studies, Applied'),
   screen('/studies/mine/history', 'My Studies, History'),
-  screen('/studies/:id', 'Study Detail'),
+  built('/studies/:id', 'Study Detail', StudyDetail),
   screen('/studies/:id/screener', 'Screener questions'),
   screen('/studies/:id/applied', 'Applied successfully'),
   screen('/studies/:id/schedule', 'Pick date, time, and location'),

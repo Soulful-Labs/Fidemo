@@ -81,3 +81,11 @@ export function greeting(now: Date = new Date()): string {
   if (hour < 18) return 'Good afternoon'
   return 'Good evening'
 }
+
+/** "18 Feb, Saturday At 10:30 AM" — the Scheduled banner format (PRD 6.7). */
+export function bookingLong(iso: string, slot: string): string {
+  const d = new Date(iso)
+  const day = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })
+  const weekday = d.toLocaleDateString('en-US', { weekday: 'long' })
+  return `${day}, ${weekday} At ${slot}`
+}
