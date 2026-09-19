@@ -23,9 +23,9 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 /** Heights come from the brief's layout constants: 48 primary, 38 secondary, 24 inline. */
 const SIZES: Record<ButtonSize, string> = {
-  lg: 'h-12 px-6 text-body-medium',
-  md: 'h-[38px] px-5 text-text-medium',
-  sm: 'h-6 px-3 text-label',
+  lg: 'h-btn px-6 text-body-medium',
+  md: 'h-btn-sm px-5 text-text-medium',
+  sm: 'h-btn-inline px-3 text-label',
 }
 
 const ENABLED: Record<ButtonVariant, string> = {

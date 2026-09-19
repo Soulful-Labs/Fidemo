@@ -22,7 +22,7 @@ export default function KitchenSink() {
   return (
     <div className="min-h-screen bg-bg-0">
       {/* Phone shell: a 375px frame centred on wider screens. */}
-      <div className="mx-auto min-h-screen w-full max-w-[375px] bg-bg-0">
+      <div className="mx-auto min-h-screen w-full max-w-frame bg-bg-0">
         <div className="flex flex-col gap-6 px-4 py-6">
           <header className="flex flex-col gap-1">
             <h1 className="text-title-l text-text-title">Kitchen Sink</h1>
@@ -44,12 +44,12 @@ export default function KitchenSink() {
       </div>
 
       {/* Toasts: three seconds, bottom, above where the nav will sit. */}
-      <div className="pointer-events-none fixed inset-x-0 bottom-6 z-[60] flex flex-col items-center gap-2 px-4">
+      <div className="pointer-events-none fixed inset-x-0 bottom-6 z-toast flex flex-col items-center gap-2 px-4">
         {toasts.map((t) => (
           <div
             key={t.id}
             role="status"
-            className="w-full max-w-[343px] rounded-md border-1 border-stroke-3 bg-bg-2 px-4 py-3 text-text-medium text-text-title shadow-lg"
+            className="w-full max-w-content rounded-md border-1 border-stroke-3 bg-bg-2 px-4 py-3 text-text-medium text-text-title shadow-lg"
           >
             {t.msg}
           </div>

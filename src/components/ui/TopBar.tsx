@@ -31,7 +31,7 @@ export default function TopBar({
       className={cn(
         'sticky top-0 z-30 flex w-full flex-col justify-center gap-2 px-4',
         // 56px bare, 93px when it carries a progress bar (layout constants).
-        progress ? 'h-[93px]' : 'h-14',
+        progress ? 'h-bar-progress' : 'h-bar',
         alt ? 'bg-bgAlt-0' : 'bg-bg-0',
         className,
       )}

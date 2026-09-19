@@ -56,7 +56,7 @@ export default function Modal({
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          'flex w-full max-w-[343px] flex-col gap-4 rounded-lg border-1 border-stroke-3 p-5',
+          'flex w-full max-w-content flex-col gap-4 rounded-lg border-1 border-stroke-3 p-5',
           alt ? 'bg-bgAlt-2' : 'bg-bg-1',
         )}
       >

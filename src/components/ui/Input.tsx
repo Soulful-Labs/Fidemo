@@ -41,7 +41,7 @@ export default function Input({
 
   const shell = cn(
     'flex items-center gap-2 rounded-md border-1 bg-bg-1 px-4 transition-colors',
-    multiline ? 'h-auto py-3 items-start' : 'h-12',
+    multiline ? 'h-auto py-3 items-start' : 'h-input',
     error ? 'border-state-danger' : 'border-stroke-3 focus-within:border-cta-primary',
   )
 

@@ -41,7 +41,7 @@ const TONES: Record<TagTone, string> = {
 
 const SIZES = {
   sm: 'h-6 px-2 gap-1 text-label',
-  md: 'h-[30px] px-3 gap-1.5 text-text-medium',
+  md: 'h-tag px-3 gap-1.5 text-text-medium',
 } as const
 
 export default function Tag({

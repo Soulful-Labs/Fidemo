@@ -40,8 +40,8 @@ export default function BottomSheet({
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          'flex w-full max-w-[375px] flex-col gap-4 rounded-t-xl border-1 border-stroke-3 p-5 pb-6',
-          tall ? 'max-h-[85vh]' : 'max-h-[70vh]',
+          'flex w-full max-w-frame flex-col gap-4 rounded-t-xl border-1 border-stroke-3 p-5 pb-6',
+          tall ? 'max-h-sheet-tall' : 'max-h-sheet',
           alt ? 'bg-bgAlt-2' : 'bg-bg-1',
         )}
       >

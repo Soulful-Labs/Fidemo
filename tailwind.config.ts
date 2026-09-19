@@ -26,6 +26,11 @@ export default {
       borderRadius: { none:'2px', sm:'8px', md:'12px', lg:'16px', xl:'24px', full:'100px' },
       borderWidth: { 1:'1px', 1.5:'1.5px', 2:'2px', 4:'4px' },
       fontFamily: { sans: ['Geist','system-ui','sans-serif'] },
+      height: { btn:'48px', 'btn-sm':'38px', 'btn-inline':'24px', input:'48px',
+                bar:'56px', 'bar-progress':'93px', nav:'85px', cta:'96px', tag:'30px' },
+      maxWidth: { frame:'375px', content:'343px' },
+      maxHeight: { sheet:'70vh', 'sheet-tall':'85vh' },
+      zIndex: { toast:'60' },
       fontSize: {
         label:          ['12px',{ lineHeight:'1.4', letterSpacing:'-0.01em' }],
         'text-regular': ['14px',{ lineHeight:'1.4', letterSpacing:'-0.02em', fontWeight:'400' }],

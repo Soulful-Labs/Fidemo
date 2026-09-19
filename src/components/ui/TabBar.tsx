@@ -46,7 +46,7 @@ export default function TabBar({
     cn(
       'flex items-center justify-center gap-1 whitespace-nowrap transition-colors',
       segmented
-        ? cn('h-[38px] flex-1 rounded-full px-4 text-text-medium', active ? SEGMENT_ON : SEGMENT_OFF)
+        ? cn('h-btn-sm flex-1 rounded-full px-4 text-text-medium', active ? SEGMENT_ON : SEGMENT_OFF)
         : cn('h-12 px-4 text-text-medium border-b-2', active ? UNDER_ON : UNDER_OFF),
     )
 
