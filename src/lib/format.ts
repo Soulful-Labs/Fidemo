@@ -62,6 +62,12 @@ export function bookingWhen(iso: string, slot: string): string {
   return `${d} ${slot} ET`
 }
 
+/** "Tue, May 20 • 10:30 AM ET" — the card row for a booked session. */
+export function bookingShort(iso: string, slot: string): string {
+  const d = new Date(iso).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+  return `${d} • ${slot} ET`
+}
+
 /** "2h ago", "3d ago" â€” notification timestamps. */
 export function timeAgo(iso: string, now: Date = new Date()): string {
   const secs = Math.max(0, Math.floor((now.getTime() - new Date(iso).getTime()) / 1000))

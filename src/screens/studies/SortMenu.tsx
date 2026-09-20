@@ -10,7 +10,7 @@ export default function SortMenu({
 }: { open: boolean; onClose: () => void; value: SortKey; onSelect: (key: SortKey) => void }) {
   return (
     <BottomSheet open={open} onClose={onClose} title="Sort by">
-      <ul className="flex flex-col">
+      <ul className="flex flex-col gap-2">
         {SORT_OPTIONS.map((option) => {
           const active = option.key === value
           return (
@@ -19,8 +19,8 @@ export default function SortMenu({
                 type="button"
                 onClick={() => { onSelect(option.key); onClose() }}
                 className={cn(
-                  'flex h-12 w-full items-center justify-between border-b-1 border-stroke-2 px-1 text-left text-body-regular',
-                  active ? 'text-brand-primary' : 'text-text-subtitle hover:text-text-title',
+                  'flex h-input w-full items-center justify-between rounded-md border-1 px-4 text-left text-body-regular',
+                  active ? 'border-cta-primary bg-yellow-1000/50 text-brand-primary' : 'border-transparent bg-bg-1 text-text-title',
                 )}
               >
                 {option.label}

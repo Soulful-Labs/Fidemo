@@ -9,17 +9,30 @@ import TopBar from '../../../components/ui/TopBar'
 import { Bookmark, ChevronRight } from '../../../components/ui/icons'
 import { useAppNav } from '../../../app/useAppNav'
 import { useStore } from '../../../mock/store'
-import ClientRow from './ClientRow'
+import BannerActions, { PinNote } from './BannerActions'
 import { CancelStudyModal, RejectModal } from './ConfirmModals'
 import DescriptionBlock from './DescriptionBlock'
 import DetailActions from './DetailActions'
 import DetailTiles from './DetailTiles'
 import HowItWorks from './HowItWorks'
+import ReviewBlock from './ReviewBlock'
 import StateBanner, { bannerFor, diaryBannerFor } from './StateBanner'
 import StudyLocations from './StudyLocations'
 import { useDetailActions } from './useDetailActions'
 
-/** PRD 6.6. One screen, switching on study type and status. */
+/** Statuses drawn with the thumbnail-left layout and the Get Support row. */
+const AFTER_APPLY = ['applied', 'in_process', 'paid', 'rejected', 'no_show', 'draft']
+
+function SupportIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" width="24" height="24" className="shrink-0">
+      <circle cx="9" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M3 20c0-3.5 2.7-5.5 6-5.5s6 2 6 5.5M16 4.5h5v4h-3l-2 2v-2h0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+/** PRD 6.6, Figma 919:73900 and siblings. One screen, switching on study type and status. */
 export default function StudyDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -47,6 +60,7 @@ export default function StudyDetail() {
 
   const banner = bannerFor(study)
   const diaryBanner = diaryBannerFor(study)
+  const afterApply = AFTER_APPLY.includes(study.status)
 
   return (
     <div className="flex min-h-full flex-col">
@@ -58,61 +72,60 @@ export default function StudyDetail() {
             type="button"
             onClick={() => toggleSaved(study.id)}
             aria-label={study.saved ? 'Remove from saved' : 'Save study'}
-            className={study.saved ? 'text-brand-primary' : 'text-text-body'}
+            className={study.saved ? 'text-brand-primary' : 'text-text-title'}
           >
-            <Bookmark filled={study.saved} />
+            <Bookmark filled={study.saved} className="h-6 w-6" />
           </button>
         }
       />
 
-      <div className="flex flex-1 flex-col gap-4 px-4 pb-6">
-        {banner && <StateBanner content={banner} />}
+      <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
+        {banner && (
+          <StateBanner content={banner}>
+            <BannerActions
+              study={study}
+              onSchedule={actions.primary}
+              onReject={() => setReject(true)}
+              onReschedule={() => navigate(`/studies/${study.id}/reschedule`)}
+              onCancel={() => setCancel(true)}
+              onBlockedReschedule={(reason) => toast(reason)}
+            />
+            {study.status === 'scheduled' && <PinNote />}
+            {study.status === 'paid' && <ReviewBlock study={study} />}
+          </StateBanner>
+        )}
         {diaryBanner && <StateBanner content={diaryBanner} />}
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2">
           <StudyTypeTag type={study.type} />
-          <Tag tone="neutral">{study.industry}</Tag>
-          <button type="button" onClick={actions.matchScore} aria-label={`Match score ${study.matchScore}`} className="ml-auto">
+          <Tag tone="outline" size="md" className="ml-auto">{study.industry}</Tag>
+          <button type="button" onClick={actions.matchScore} aria-label={`Match score ${study.matchScore}`}>
             <ScoreDial score={study.matchScore} compact />
           </button>
         </div>
 
-        <img src={study.image} alt="" className="h-40 w-full rounded-lg border-1 border-stroke-2 object-cover" />
-
-        <DescriptionBlock study={study} />
-        <ClientRow study={study} />
-        <DetailTiles study={study} />
+        <DescriptionBlock study={study} thumbnail={afterApply} />
         <StudyLocations study={study} />
-        <HowItWorks />
+        <DetailTiles study={study} />
 
-        <button
-          type="button"
-          onClick={actions.getSupport}
-          className="flex items-center gap-3 rounded-lg border-1 border-stroke-2 bg-bg-1 p-4 text-left"
-        >
-          <span className="text-body-medium text-text-title">Get Support</span>
-          <ChevronRight className="ml-auto text-text-body" />
-        </button>
-
-        {study.timeline.length > 0 && (
-          <section className="flex flex-col gap-3">
-            <h2 className="text-title-s text-text-title">Updates</h2>
-            <div className="rounded-lg border-1 border-stroke-2 bg-bg-1 p-4">
-              <Timeline entries={study.timeline} />
-            </div>
-          </section>
+        {afterApply && (
+          <button
+            type="button"
+            onClick={actions.getSupport}
+            className="flex h-btn items-center gap-3 rounded-lg bg-bg-1 px-4 text-left text-text-title"
+          >
+            <SupportIcon />
+            <span className="text-body-medium">Get Support</span>
+            <ChevronRight className="ml-auto" />
+          </button>
         )}
+
+        <HowItWorks defaultOpen={!afterApply || study.status === 'applied'} />
+
+        {study.timeline.length > 0 && <Timeline entries={study.timeline} />}
       </div>
 
-      <DetailActions
-        study={study}
-        onPrimary={actions.primary}
-        onSecondary={actions.secondary}
-        onReject={() => setReject(true)}
-        onReschedule={() => navigate(`/studies/${study.id}/reschedule`)}
-        onCancel={() => setCancel(true)}
-        onBlockedReschedule={(reason) => toast(reason)}
-      />
+      <DetailActions study={study} onPrimary={actions.primary} onSecondary={actions.secondary} />
 
       <RejectModal
         open={reject}

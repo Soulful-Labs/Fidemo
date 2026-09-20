@@ -1,9 +1,9 @@
 import TabBar from '../../components/ui/TabBar'
 
-/** Top tabs shared by Explore, My Studies and Saved (PRD 6.2). */
+/** Top tabs shared by Explore, My Studies and Saved (PRD 6.2, Figma 919:72943). */
 export default function StudiesTabs() {
   return (
-    <div className="px-4 pb-3">
+    <div className="px-4 pb-4 pt-3">
       <TabBar
         items={[
           { key: 'explore', label: 'Explore', to: '/studies' },

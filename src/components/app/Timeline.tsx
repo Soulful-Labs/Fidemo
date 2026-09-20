@@ -1,4 +1,3 @@
-import { cn } from '../../lib/cn'
 import { dateTime } from '../../lib/format'
 
 export interface TimelineEntry {
@@ -6,32 +5,32 @@ export interface TimelineEntry {
   at: string
 }
 
-/** Study Updates: "Applied, May 13, 10:36 AM" then "Paid, May 16, 10:00 AM" (PRD 6.14). */
+function TickCircle() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" width="20" height="20" className="shrink-0">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
+      <path d="m8.5 12.5 2.5 2.5 4.5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+/**
+ * Study Updates as drawn on the history details (919:73336): one ticked row
+ * per step, "Applied • May 13, 10:36 AM".
+ */
 export default function Timeline({ entries }: { entries: TimelineEntry[] }) {
   if (entries.length === 0) return null
 
   return (
-    <ol className="flex flex-col">
-      {entries.map((entry, i) => {
-        const last = i === entries.length - 1
-        return (
-          <li key={`${entry.label}-${entry.at}`} className="flex gap-3">
-            <div className="flex flex-col items-center">
-              <span
-                className={cn(
-                  'mt-1 h-2 w-2 shrink-0 rounded-full',
-                  last ? 'bg-brand-primary' : 'bg-stroke-3',
-                )}
-              />
-              {!last && <span className="w-0.5 flex-1 bg-stroke-2" />}
-            </div>
-            <div className={cn('flex flex-col gap-0.5', last ? 'pb-0' : 'pb-4')}>
-              <span className="text-text-medium text-text-title">{entry.label}</span>
-              <span className="text-label text-text-body">{dateTime(entry.at)}</span>
-            </div>
-          </li>
-        )
-      })}
+    <ol className="flex flex-col gap-3">
+      {entries.map((entry) => (
+        <li key={`${entry.label}-${entry.at}`} className="flex items-center gap-2 text-text-regular text-text-subtitle">
+          <TickCircle />
+          <span>{entry.label}</span>
+          <span className="text-text-body">•</span>
+          <span>{dateTime(entry.at)}</span>
+        </li>
+      ))}
     </ol>
   )
 }

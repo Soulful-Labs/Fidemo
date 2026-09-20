@@ -2,11 +2,11 @@ import Button from '../ui/Button'
 import Tag from '../ui/Tag'
 import { Bookmark, Calendar, Clock, InviteIcon } from '../ui/icons'
 import { cn } from '../../lib/cn'
-import { bookingWhen, daysLeft, duration, money } from '../../lib/format'
+import { bookingShort, dateLong, daysLeft, duration, money } from '../../lib/format'
 import { STATUS } from '../../lib/studyState'
 import type { Study } from '../../mock/types'
 import ScoreDial from './ScoreDial'
-import StudyTypeTag from './StudyTypeTag'
+import StudyTypeTag, { STUDY_TYPE_LABEL } from './StudyTypeTag'
 
 export interface StudyCardProps {
   study: Study
@@ -26,10 +26,12 @@ export interface StudyCardProps {
   footnote?: string
 }
 
+const HISTORY = ['in_process', 'paid', 'rejected', 'no_show']
+
 /**
- * The single study card, as drawn in Figma (1279:89999). Every list uses this
- * with different props — never fork it per screen (hard rule 3). Actions
- * derive from status via STATUS.
+ * The single study card, as drawn in Figma (1279:89999 and the Saved list,
+ * 1215:15020). Every list uses this with different props — never fork it per
+ * screen (hard rule 3). Layout and actions derive from status via STATUS.
  */
 export default function StudyCard({
   study,
@@ -47,7 +49,11 @@ export default function StudyCard({
   const meta = STATUS[study.status]
   const compact = variant === 'compact'
   const booked = Boolean(study.booking) && (study.status === 'scheduled' || study.status === 'pin_confirmed')
-  const flagGreen = study.status !== 'invited_to_apply'
+  const history = HISTORY.includes(study.status)
+  const applied = study.status === 'applied'
+  // Booked and closed studies swap the description for "$150 • 45 min" / type.
+  const brief = booked || history
+  const lastAt = study.timeline.at(-1)?.at
 
   const bookmark = (
     <button
@@ -64,30 +70,33 @@ export default function StudyCard({
     </button>
   )
 
+  const statusTag = <Tag tone={meta.tone} size="md">{meta.label}</Tag>
+
   return (
     <article className={cn('flex flex-col gap-4 rounded-lg bg-bg-1 p-4', compact && 'w-card shrink-0')}>
-      {meta.flag && !showStatus && (
-        <p className={cn('flex items-center gap-2 text-body-medium', flagGreen ? 'text-brand-secondary' : 'text-brand-primary')}>
+      {meta.flag && (
+        <p className={cn('flex items-center gap-2 text-body-medium', study.status === 'invited_to_apply' ? 'text-brand-primary' : 'text-brand-secondary')}>
           <InviteIcon />
           {meta.flag}
         </p>
       )}
 
-      <div className="flex items-center gap-3">
-        <StudyTypeTag type={study.type} />
-        {!booked && (
-          <>
-            <span className="ml-auto flex items-center gap-1.5 text-body-regular text-text-subtitle">
-              <Clock className="h-5 w-5" />
-              {duration(study.durationMins)}
-            </span>
-            <button type="button" onClick={onMatchScore} aria-label={`Match score ${study.matchScore}`}>
-              <ScoreDial score={study.matchScore} compact />
-            </button>
-          </>
-        )}
-        {showStatus && <Tag tone={meta.tone} size="md" className="ml-auto">{meta.label}</Tag>}
-      </div>
+      {!history && (
+        <div className="flex items-center gap-3">
+          <StudyTypeTag type={study.type} />
+          {!booked && (
+            <>
+              <span className="ml-auto flex items-center gap-1.5 text-body-regular text-text-subtitle">
+                <Clock className="h-5 w-5" />
+                {duration(study.durationMins)}
+              </span>
+              <button type="button" onClick={onMatchScore} aria-label={`Match score ${study.matchScore}`}>
+                <ScoreDial score={study.matchScore} compact />
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       <button type="button" onClick={onOpen} className="flex gap-3 text-left">
         {study.image && (
@@ -95,11 +104,13 @@ export default function StudyCard({
         )}
         <span className="flex min-w-0 flex-col gap-2">
           <span className="line-clamp-2 text-title-s leading-snug text-text-title">{study.title}</span>
-          {booked ? (
+          {brief ? (
             <span className="flex items-center gap-2 text-title-s text-text-title">
               {money(study.reward)}
               <span className="text-text-body">•</span>
-              <span className="text-body-regular text-text-body">{duration(study.durationMins)}</span>
+              <span className="text-body-regular text-text-body">
+                {booked ? duration(study.durationMins) : STUDY_TYPE_LABEL[study.type]}
+              </span>
             </span>
           ) : (
             <span className="line-clamp-2 text-body-regular text-text-body">{study.description}</span>
@@ -110,10 +121,25 @@ export default function StudyCard({
       {booked && study.booking ? (
         <div className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-brand-primary" />
-          <span className="text-body-medium text-brand-primary">
-            {bookingWhen(study.booking.date, study.booking.slot).replace(' ', ' • ')}
-          </span>
+          <span className="text-body-medium text-brand-primary">{bookingShort(study.booking.date, study.booking.slot)}</span>
           <span className="ml-auto">{bookmark}</span>
+        </div>
+      ) : history ? (
+        <div className="flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-text-subtitle" />
+          <span className="text-text-regular text-text-subtitle">{lastAt ? dateLong(lastAt) : dateLong(study.endsAt)}</span>
+          <span className="ml-auto flex items-center gap-2">
+            {statusTag}
+            {bookmark}
+          </span>
+        </div>
+      ) : applied && showStatus ? (
+        <div className="flex items-center gap-2">
+          <span className="text-text-regular text-text-subtitle">{footnote}</span>
+          <span className="ml-auto flex items-center gap-2">
+            {statusTag}
+            {bookmark}
+          </span>
         </div>
       ) : (
         <div className="flex items-center gap-2">
@@ -128,22 +154,20 @@ export default function StudyCard({
         </div>
       )}
 
-      {footnote && <p className="text-text-regular text-text-body">{footnote}</p>}
+      {footnote && !(applied && showStatus) && <p className="text-text-regular text-text-body">{footnote}</p>}
 
-      {showActions && !booked && meta.primary && (
+      {showActions && meta.primary && (
         <div className="flex items-center gap-3">
-          <Button size="lg" onClick={onPrimary} className="flex-1">{meta.primary}</Button>
-          {onReject ? (
-            <Button size="lg" variant="secondary" onClick={onReject} className="flex-1">Reject</Button>
-          ) : meta.secondary && onSecondary ? (
-            <Button size="lg" variant="secondary" onClick={onSecondary} className="flex-1">{meta.secondary}</Button>
-          ) : null}
-        </div>
-      )}
-      {showActions && booked && (meta.primary || meta.secondary) && (
-        <div className="flex items-center gap-3">
-          {meta.secondary && <Button size="lg" variant="secondary" onClick={onSecondary} className="flex-1">{meta.secondary}</Button>}
-          {meta.primary && <Button size="lg" onClick={onPrimary} className="flex-1">{meta.primary}</Button>}
+          {booked && meta.secondary && (
+            <Button variant="secondary" onClick={onSecondary} className="flex-1">{meta.secondary}</Button>
+          )}
+          <Button onClick={onPrimary} className="flex-1">{meta.primary}</Button>
+          {!booked && onReject && (
+            <Button variant="secondary" onClick={onReject} className="flex-1">Reject</Button>
+          )}
+          {!booked && !onReject && meta.secondary && onSecondary && (
+            <Button variant="secondary" onClick={onSecondary} className="flex-1">{meta.secondary}</Button>
+          )}
         </div>
       )}
     </article>

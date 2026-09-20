@@ -11,6 +11,7 @@ import SectionTitle from './SectionTitle'
 import SortMenu from './SortMenu'
 import StudiesTabs from './StudiesTabs'
 import StudyList from './StudyList'
+import { ViewAll } from '../dashboard/SectionHeader'
 
 /** PRD 6.2. Two lists: invitations to apply, then recommended studies. */
 export default function Explore() {
@@ -28,7 +29,7 @@ export default function Explore() {
   const active = activeFilterCount(filters)
 
   return (
-    <div className="flex min-h-full flex-col gap-3 pb-6">
+    <div className="flex min-h-full flex-col gap-4 pb-6">
       <StudiesTabs />
 
       <SearchRow
@@ -51,15 +52,16 @@ export default function Explore() {
       ) : (
         <div className="flex flex-col gap-6 px-4">
           {invitations.length > 0 && (
-            <section className="flex flex-col gap-3">
+            <section className="flex flex-col gap-4">
               <SectionTitle title={`Invitations To Apply (${invitations.length})`} />
-              <StudyList studies={invitations} />
+              <StudyList studies={invitations.slice(0, 2)} />
+              <ViewAll to="/studies/mine/invites" />
             </section>
           )}
 
           {recommended.length > 0 && (
-            <section className="flex flex-col gap-3">
-              <SectionTitle title="Recommended Studies" viewAllTo="/studies/mine" />
+            <section className="flex flex-col gap-4">
+              <SectionTitle title="Recommended Studies" />
               <StudyList studies={recommended} showActions={false} />
             </section>
           )}

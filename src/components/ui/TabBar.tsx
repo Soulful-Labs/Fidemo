@@ -21,8 +21,8 @@ export interface TabBarProps {
   className?: string
 }
 
-const SEGMENT_ON = 'bg-cta-primary text-cta-primaryText'
-const SEGMENT_OFF = 'text-text-body hover:text-text-title'
+const SEGMENT_ON = 'bg-green-segment text-text-title'
+const SEGMENT_OFF = 'text-text-subtitle hover:text-text-title'
 const BOX_ON = 'border-cta-primary bg-yellow-1000/40 text-brand-primary'
 const BOX_OFF = 'border-stroke-3 text-text-title hover:border-cta-tertiaryStroke'
 const UNDER_ON = 'text-text-title border-cta-primary'
@@ -41,7 +41,7 @@ export default function TabBar({
 
   const shell = cn(
     'flex items-center',
-    segmented && 'gap-1 rounded-full border-1 border-stroke-3 bg-bg-1 p-1',
+    segmented && 'gap-1 rounded-md bg-bg-1 p-1',
     boxes && 'gap-2',
     variant === 'underline' && 'gap-1 border-b-1 border-stroke-3',
     scrollable && 'overflow-x-auto',
@@ -51,7 +51,7 @@ export default function TabBar({
   const itemClass = (active: boolean) =>
     cn(
       'flex items-center justify-center gap-1 whitespace-nowrap transition-colors',
-      segmented && cn('h-btn-sm flex-1 rounded-full px-4 text-text-medium', active ? SEGMENT_ON : SEGMENT_OFF),
+      segmented && cn('h-10 flex-1 rounded-md px-4 text-body-medium', active ? SEGMENT_ON : SEGMENT_OFF),
       boxes && cn('h-input flex-1 rounded-md border-1 px-3 text-body-regular', active ? BOX_ON : BOX_OFF),
       variant === 'underline' && cn('h-12 px-4 text-text-medium border-b-2', active ? UNDER_ON : UNDER_OFF),
     )

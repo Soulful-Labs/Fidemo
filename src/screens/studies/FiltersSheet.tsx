@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import Button from '../../components/ui/Button'
+import CtaBar from '../../components/ui/CtaBar'
 import Picker from '../../components/ui/Picker'
 import RangeSlider from '../../components/ui/RangeSlider'
+import SelectField from '../../components/ui/SelectField'
 import Tag from '../../components/ui/Tag'
 import TopBar from '../../components/ui/TopBar'
-import { STUDY_TYPE_LABEL } from '../../components/app/StudyTypeTag'
+import { STUDY_TYPE_LABEL, StudyTypeIcon } from '../../components/app/StudyTypeTag'
 import { cn } from '../../lib/cn'
 import { money } from '../../lib/format'
 import { DEFAULT_FILTERS, PRICE_RANGE, TIME_RANGE } from '../../mock/storeTypes'
@@ -14,11 +16,14 @@ import { INDUSTRIES, PROFESSIONS } from '../onboarding/options'
 
 const TYPES = Object.keys(STUDY_TYPE_LABEL) as StudyType[]
 
+const BOX = 'flex h-btn items-center justify-center gap-2 rounded-md border-1 text-body-regular transition-colors'
+const BOX_ON = 'border-transparent bg-cta-secondary text-cta-secondaryText'
+const BOX_OFF = 'border-stroke-3 text-text-title hover:border-cta-tertiaryStroke'
+
 /**
- * PRD 6.3. Full screen, title "Filters", Reset and Apply.
- *
- * Edits a local draft so nothing changes behind the sheet until Apply, which
- * is what "Applies to the list and closes" means in the button table.
+ * PRD 6.3, Figma 919:72968. Full screen, title "Filters", Reset and Apply in
+ * the CTA bar. Edits a local draft so nothing changes behind the sheet until
+ * Apply, which is what "Applies to the list and closes" means.
  */
 export default function FiltersSheet({
   open, filters, onClose, onApply, onReset,
@@ -39,66 +44,49 @@ export default function FiltersSheet({
   const toggleType = (type: StudyType) =>
     patch({ types: draft.types.includes(type) ? draft.types.filter((t) => t !== type) : [...draft.types, type] })
 
-  const chips = (key: 'industries' | 'occupations', label: string, onOpen: () => void) => (
-    <section className="flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <span className="text-text-medium text-text-subtitle">{label}</span>
-        <button type="button" onClick={onOpen} className="text-label text-brand-primary">+ Add</button>
-      </div>
+  const chips = (key: 'industries' | 'occupations') =>
+    draft[key].length > 0 && (
       <div className="flex flex-wrap gap-2">
-        {draft[key].length === 0 && <span className="text-label text-text-disabled">Any</span>}
         {draft[key].map((v) => (
-          <Tag key={v} tone="yellow" onRemove={() => patch({ [key]: draft[key].filter((x) => x !== v) } as Partial<StudyFilters>)}>
+          <Tag key={v} tone="neutral" size="md" onRemove={() => patch({ [key]: draft[key].filter((x) => x !== v) } as Partial<StudyFilters>)}>
             {v}
           </Tag>
         ))}
       </div>
-    </section>
-  )
+    )
 
   return (
     <div className="fixed inset-0 z-50 mx-auto flex max-w-frame flex-col bg-bg-0">
-      <TopBar
-        title="Filters"
-        onBack={onClose}
-        right={
-          <button
-            type="button"
-            onClick={() => { setDraft({ ...DEFAULT_FILTERS, query: draft.query, sort: draft.sort }); onReset() }}
-            className="text-text-medium text-brand-primary"
-          >
-            Reset
-          </button>
-        }
-      />
+      <TopBar title="Filters" onBack={onClose} />
 
-      <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-4 py-4">
-        <section className="flex flex-col gap-2">
-          <span className="text-text-medium text-text-subtitle">Study Category</span>
-          <div className="flex flex-wrap gap-2">
-            {TYPES.map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => toggleType(type)}
-                aria-pressed={draft.types.includes(type)}
-                className={cn(
-                  'h-btn-sm rounded-full border-1 px-4 text-text-medium transition-colors',
-                  draft.types.includes(type)
-                    ? 'border-cta-primary bg-cta-primary text-cta-primaryText'
-                    : 'border-cta-tertiaryStroke bg-bg-1 text-text-body',
-                )}
-              >
-                {STUDY_TYPE_LABEL[type]}
-              </button>
-            ))}
+      <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-4 pb-6 pt-6">
+        <section className="flex flex-col gap-3">
+          <span className="text-body-regular text-text-subtitle">Study Category</span>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => patch({ types: [] })}
+              aria-pressed={draft.types.length === 0}
+              className={cn(BOX, draft.types.length === 0 ? BOX_ON : BOX_OFF)}
+            >
+              All
+            </button>
+            {TYPES.map((type) => {
+              const on = draft.types.includes(type)
+              return (
+                <button key={type} type="button" onClick={() => toggleType(type)} aria-pressed={on} className={cn(BOX, on ? BOX_ON : BOX_OFF)}>
+                  <StudyTypeIcon type={type} className="text-brand-primary" />
+                  {STUDY_TYPE_LABEL[type]}
+                </button>
+              )
+            })}
           </div>
         </section>
 
         <RangeSlider
           label="Price" min={PRICE_RANGE[0]} max={PRICE_RANGE[1]} step={10}
           value={draft.price} onChange={(price) => patch({ price })}
-          format={([a, b]) => `${money(a)}-${money(b)}`}
+          format={([a, b]) => `${money(a)}-${b >= PRICE_RANGE[1] ? `${b}+` : b}`}
         />
 
         <RangeSlider
@@ -107,24 +95,39 @@ export default function FiltersSheet({
           format={([a, b]) => `${a}-${b} minutes`}
         />
 
-        {chips('industries', 'Industries', () => setPicker('industries'))}
-        {chips('occupations', 'Occupations', () => setPicker('occupations'))}
+        <section className="flex flex-col gap-3">
+          <SelectField label="Industry Domains" placeholder="Select Industries" onOpen={() => setPicker('industries')} />
+          {chips('industries')}
+        </section>
+
+        <section className="flex flex-col gap-3">
+          <SelectField label="Occupations" placeholder="Select occupation" onOpen={() => setPicker('occupations')} />
+          {chips('occupations')}
+        </section>
       </div>
 
-      <div className="px-4 pb-6 pt-2">
-        <Button fullWidth onClick={() => onApply(draft)}>Apply</Button>
-      </div>
+      <CtaBar>
+        <Button
+          variant="secondary" className="flex-1"
+          onClick={() => { setDraft({ ...DEFAULT_FILTERS, query: draft.query, sort: draft.sort }); onReset() }}
+        >
+          Reset
+        </Button>
+        <Button className="flex-1" onClick={() => onApply(draft)}>Apply</Button>
+      </CtaBar>
 
       <Picker
         open={picker === 'industries'} onClose={() => setPicker(null)}
-        title="Select Industry" options={INDUSTRIES} value={draft.industries}
-        multiple searchable searchPlaceholder="Select industry field of your profession"
+        title="Select Industry" subtitle="Select industry field of your profession"
+        options={INDUSTRIES} value={draft.industries}
+        multiple searchable searchPlaceholder="Search industry..."
         onSelect={() => undefined} onApply={(industries) => patch({ industries })}
       />
       <Picker
         open={picker === 'occupations'} onClose={() => setPicker(null)}
-        title="Select Profession" options={PROFESSIONS} value={draft.occupations}
-        multiple searchable searchPlaceholder="Search and select your profession"
+        title="Select Profession" subtitle="Search and select your profession"
+        options={PROFESSIONS} value={draft.occupations}
+        multiple searchable searchPlaceholder="Search profession..."
         onSelect={() => undefined} onApply={(occupations) => patch({ occupations })}
       />
     </div>

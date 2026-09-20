@@ -67,7 +67,7 @@ export default function RangeSlider({
       onPointerDown={drag(which)}
       onKeyDown={key(which)}
       style={{ left: `${pct(at)}%` }}
-      className="absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-bg-0 bg-cta-primary"
+      className="absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cta-primary"
     />
   )
 
@@ -75,13 +75,13 @@ export default function RangeSlider({
     <div className="flex flex-col gap-3">
       {(label || format) && (
         <div className="flex items-center justify-between gap-2">
-          {label && <span className="text-text-medium text-text-subtitle">{label}</span>}
-          {format && <span className="text-label text-text-body">{format(value)}</span>}
+          {label && <span className="text-body-regular text-text-subtitle">{label}</span>}
+          {format && <span className="text-title-s font-semibold text-text-title">{format(value)}</span>}
         </div>
       )}
 
       <div className="relative h-5">
-        <div ref={track} className={cn('absolute top-1/2 h-1 w-full -translate-y-1/2 rounded-full bg-bg-2')}>
+        <div ref={track} className={cn('absolute top-1/2 h-1.5 w-full -translate-y-1/2 rounded-full bg-bg-2')}>
           <div
             className="absolute h-full rounded-full bg-cta-primary"
             style={{ left: `${pct(low)}%`, width: `${pct(high) - pct(low)}%` }}
