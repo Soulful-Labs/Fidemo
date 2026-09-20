@@ -24,15 +24,15 @@ export default function Checkbox({ checked, onChange, label, disabled, error }: 
         onClick={() => onChange(!checked)}
         className={cn(
           'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-none border-1 transition-colors',
-          checked ? 'border-cta-primary bg-cta-primary text-cta-primaryText' : 'bg-bg-1',
-          !checked && (error ? 'border-state-danger' : 'border-cta-tertiaryStroke'),
+          checked ? 'border-cta-primary bg-cta-primary text-cta-primaryText' : 'bg-transparent',
+          !checked && (error ? 'border-state-danger' : 'border-text-body'),
           disabled && 'cursor-not-allowed opacity-60',
         )}
       >
         {checked && <Check className="h-4 w-4" />}
       </button>
       {label && (
-        <label htmlFor={id} className="text-text-regular text-text-body">
+        <label htmlFor={id} className="text-body-regular text-text-body">
           {label}
         </label>
       )}

@@ -7,7 +7,7 @@ import AuthLayout from './AuthLayout'
 
 const COUNTDOWN = 59
 
-/** PRD 4.4. Any 6 digits pass, per the button table. */
+/** PRD 4.4, Figma 915:50175. Any 6 digits pass, per the button table. */
 export default function VerifyOtp() {
   const navigate = useNavigate()
   const { toast } = useStore()
@@ -27,9 +27,16 @@ export default function VerifyOtp() {
 
   return (
     <AuthLayout
+      barTitle="Verify Your Email"
+      onBack={() => navigate('/signup')}
       title="Enter OTP"
-      subtitle="Please enter a 6-digit OTP code sent to emailaddress@domain.com"
-      footer={
+      subtitle={
+        <>
+          Please enter a 6-digit OTP code sent to{' '}
+          <span className="font-semibold text-text-title">emailaddress@domain.com</span>
+        </>
+      }
+      actions={
         <>
           <Button fullWidth disabled={code.length !== 6} onClick={() => navigate('/onboarding/about')}
             onBlocked={() => toast('Enter all 6 digits')}>
@@ -41,15 +48,17 @@ export default function VerifyOtp() {
     >
       <OtpInput value={code} onChange={setCode} />
 
-      {seconds > 0 ? (
-        <p className="text-center text-text-regular text-text-body">
-          Resend in 0:{String(seconds).padStart(2, '0')}
-        </p>
-      ) : (
-        <button type="button" onClick={resend} className="text-center text-text-medium text-brand-primary">
-          Resend
-        </button>
-      )}
+      <p className="pt-2 text-center text-body-regular text-text-title">
+        {seconds > 0 ? (
+          <>
+            <span className="text-text-disabled">Resend</span> in 0:{String(seconds).padStart(2, '0')}
+          </>
+        ) : (
+          <button type="button" onClick={resend} className="text-body-medium text-brand-primary">
+            Resend
+          </button>
+        )}
+      </p>
     </AuthLayout>
   )
 }

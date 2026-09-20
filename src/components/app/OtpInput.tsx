@@ -8,7 +8,10 @@ export interface OtpInputProps {
   error?: boolean
 }
 
-/** Six single character boxes (PRD 4.4). Typing advances, backspace retreats. */
+/**
+ * Six digits in one bordered field with "X" placeholders, as drawn in Figma
+ * (915:50175). Typing advances, backspace retreats.
+ */
 export default function OtpInput({ value, onChange, length = 6, error }: OtpInputProps) {
   const refs = useRef<(HTMLInputElement | null)[]>([])
 
@@ -21,7 +24,12 @@ export default function OtpInput({ value, onChange, length = 6, error }: OtpInpu
   }
 
   return (
-    <div className="flex items-center justify-between gap-2">
+    <div
+      className={cn(
+        'flex h-input items-center justify-between rounded-md border-1 px-4',
+        error ? 'border-state-danger' : 'border-stroke-3 focus-within:border-cta-primary',
+      )}
+    >
       {Array.from({ length }, (_, i) => (
         <input
           key={i}
@@ -33,11 +41,9 @@ export default function OtpInput({ value, onChange, length = 6, error }: OtpInpu
           }}
           inputMode="numeric"
           maxLength={1}
+          placeholder="X"
           aria-label={`Digit ${i + 1}`}
-          className={cn(
-            'h-12 w-12 rounded-md border-1 bg-bg-1 text-center text-title-s text-text-title outline-none',
-            error ? 'border-state-danger' : 'border-stroke-3 focus:border-cta-primary',
-          )}
+          className="h-full w-6 bg-transparent text-center text-body-medium text-text-title outline-none placeholder:text-text-body"
         />
       ))}
     </div>

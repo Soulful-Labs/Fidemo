@@ -23,13 +23,17 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 /** Heights come from the brief's layout constants: 48 primary, 38 secondary, 24 inline. */
 const SIZES: Record<ButtonSize, string> = {
-  lg: 'h-btn px-6 text-body-medium',
-  md: 'h-btn-sm px-5 text-text-medium',
-  sm: 'h-btn-inline px-3 text-label',
+  lg: 'h-btn rounded-lg px-6 text-body-medium',
+  md: 'h-btn-sm rounded-md px-5 text-text-medium',
+  sm: 'h-btn-inline rounded-sm px-3 text-label',
 }
 
+/**
+ * Figma draws the primary CTA as a light-to-brand gradient sitting on a 4px
+ * darker base, and the tertiary as a hairline outline in tertiaryStroke.
+ */
 const ENABLED: Record<ButtonVariant, string> = {
-  primary: 'bg-cta-primary text-cta-primaryText hover:bg-yellow-600',
+  primary: 'bg-cta-gradient border-b-4 border-yellow-700 text-cta-primaryText hover:brightness-95',
   secondary: 'bg-cta-secondary text-cta-secondaryText hover:bg-yellow-900',
   tertiary: 'border-1 border-cta-tertiaryStroke text-text-title hover:bg-bg-2',
   danger: 'bg-state-danger text-text-title hover:opacity-90',
@@ -71,7 +75,7 @@ export default function Button({
       aria-busy={loading || undefined}
       onClick={explains ? () => onBlocked?.() : onClick}
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-full font-sans whitespace-nowrap transition-colors',
+        'inline-flex items-center justify-center gap-2 font-sans whitespace-nowrap transition-colors',
         SIZES[size],
         isDisabled ? DISABLED[variant] : ENABLED[variant],
         fullWidth && 'w-full',

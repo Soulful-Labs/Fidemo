@@ -11,7 +11,7 @@ const base = 'shrink-0'
 export function ArrowLeft({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" width="24" height="24" className={`${base} ${className ?? ''}`}>
-      <path d="M19 12H5m0 0 7 7m-7-7 7-7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="m15 5-7 7 7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -121,6 +121,43 @@ export function Flame({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" width="20" height="20" className={`${base} ${className ?? ''}`}>
       <path d="M12 3s5 4.5 5 9a5 5 0 0 1-10 0c0-1.6.7-3 1.5-4 .2 1.2 1 2 1.8 2C12 8 11 5.5 12 3Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export function Upload({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" width="20" height="20" className={`${base} ${className ?? ''}`}>
+      <path d="M12 15V4m0 0 4 4m-4-4-4 4M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export function Calendar({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" width="20" height="20" className={`${base} ${className ?? ''}`}>
+      <rect x="3.5" y="5" width="17" height="15" rx="3" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M3.5 10h17M8 3v4m8-4v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M8 14h.5m3.25 0h.5m3.25 0h.5M8 17h.5m3.25 0h.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function Camera({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" width="20" height="20" className={`${base} ${className ?? ''}`}>
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="12" cy="10.5" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M7 18c1-2.2 2.8-3.3 5-3.3s4 1.1 5 3.3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function ShieldCheck({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24" className={`${base} ${className ?? ''}`}>
+      <path d="M12 1.5l2.1 1.6 2.6-.4 1 2.5 2.5 1-.4 2.6L21.5 11l-1.7 2.1.4 2.6-2.5 1-1 2.5-2.6-.4L12 20.5l-2.1-1.7-2.6.4-1-2.5-2.5-1 .4-2.6L2.5 11l1.7-2.1-.4-2.6 2.5-1 1-2.5 2.6.4L12 1.5Z" />
+      <path d="m8.5 11.2 2.3 2.3 4.7-4.8" stroke="#fafafa" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
     </svg>
   )
 }

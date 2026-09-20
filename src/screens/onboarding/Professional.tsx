@@ -2,15 +2,15 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Input from '../../components/ui/Input'
 import Picker from '../../components/ui/Picker'
-import { ChevronDown } from '../../components/ui/icons'
+import SelectField from '../../components/ui/SelectField'
 import { useAppNav } from '../../app/useAppNav'
 import { useStore } from '../../mock/store'
 import { EDUCATION_LEVELS, INDUSTRIES } from './options'
 import OnboardingLayout from './OnboardingLayout'
 
 /**
- * PRD 4.6, step 2 of 3. Nothing here may suggest a credential moves the Trust
- * Score, because it does not (PRD 7.3).
+ * PRD 4.6, step 2 of 3. Figma 915:50260. Nothing here may suggest a
+ * credential moves the Trust Score, because it does not (PRD 7.3).
  */
 export default function Professional() {
   const navigate = useNavigate()
@@ -20,22 +20,6 @@ export default function Professional() {
 
   const { occupation, licenseId, industry, education } = onboarding
   const valid = occupation.trim().length > 0 && industry.length > 0 && education.length > 0
-
-  const field = (label: string, value: string, placeholder: string, onOpen: () => void) => (
-    <div className="flex flex-col gap-1">
-      <span className="text-text-medium text-text-subtitle">{label}</span>
-      <button
-        type="button"
-        onClick={onOpen}
-        className="flex h-input items-center justify-between gap-2 rounded-md border-1 border-stroke-3 bg-bg-1 px-4 text-left"
-      >
-        <span className={value ? 'text-body-regular text-text-title' : 'text-body-regular text-text-disabled'}>
-          {value || placeholder}
-        </span>
-        <ChevronDown className="text-text-body" />
-      </button>
-    </div>
-  )
 
   return (
     <>
@@ -55,19 +39,20 @@ export default function Professional() {
           label="License ID" placeholder="Enter ID number" value={licenseId}
           onChange={(e) => setOnboarding({ licenseId: e.target.value })}
         />
-        {field('Industry', industry, 'Select industry field of your profession', () => setPicker('industry'))}
-        {field('Education Level', education, 'Select your education level', () => setPicker('education'))}
+        <SelectField label="Industry" value={industry} placeholder="Industry name" onOpen={() => setPicker('industry')} />
+        <SelectField label="Education Level" value={education} placeholder="Select education" onOpen={() => setPicker('education')} />
       </OnboardingLayout>
 
       <Picker
         open={picker === 'industry'} onClose={() => setPicker(null)}
-        title="Select Industry" options={INDUSTRIES} value={industry} searchable
-        searchPlaceholder="Select industry field of your profession"
+        title="Select Industry" subtitle="Select industry field of your profession"
+        options={INDUSTRIES} value={industry} searchable searchPlaceholder="Search industry..."
         onSelect={(value) => setOnboarding({ industry: value })}
       />
       <Picker
         open={picker === 'education'} onClose={() => setPicker(null)}
-        title="Select Education Level" options={EDUCATION_LEVELS} value={education}
+        title="Select Education Level" subtitle="Select your education level"
+        options={EDUCATION_LEVELS} value={education}
         onSelect={(value) => setOnboarding({ education: value })}
       />
     </>

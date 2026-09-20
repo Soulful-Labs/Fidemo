@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import FileField from '../../components/app/FileField'
 import Input from '../../components/ui/Input'
 import TabBar from '../../components/ui/TabBar'
+import { Calendar } from '../../components/ui/icons'
 import { useAppNav } from '../../app/useAppNav'
 import { useStore } from '../../mock/store'
 import { isAdult, isValidDob } from '../../lib/validation'
@@ -10,7 +11,7 @@ import AddressField from './AddressField'
 import DetailsInfoModal from './DetailsInfoModal'
 import OnboardingLayout from './OnboardingLayout'
 
-/** PRD 4.5, step 1 of 3. */
+/** PRD 4.5, step 1 of 3. Figma 915:50231. */
 export default function AboutYou() {
   const navigate = useNavigate()
   const { back } = useAppNav()
@@ -43,14 +44,16 @@ export default function AboutYou() {
         />
 
         <Input
-          label="Date of Birth" placeholder="DD / MM / YYYY" value={dob}
+          label="Date of Birth" placeholder="DD  /  MM  /  YYYY" value={dob}
           onChange={(e) => setOnboarding({ dob: e.target.value })}
           onBlur={() => setTouched(true)} error={dobError} inputMode="numeric"
+          rightSlot={<Calendar className="text-text-title" />}
         />
 
         <div className="flex flex-col gap-1">
-          <span className="text-text-medium text-text-subtitle">Gender</span>
+          <span className="text-text-regular text-text-subtitle">Gender</span>
           <TabBar
+            variant="boxes"
             items={[
               { key: 'Male', label: 'Male' },
               { key: 'Female', label: 'Female' },
@@ -63,17 +66,15 @@ export default function AboutYou() {
 
         <AddressField value={address} onChange={(next) => setOnboarding({ address: next })} />
 
-        <div className="flex flex-col gap-1">
-          <span className="text-text-medium text-text-subtitle">Intro Video (optional)</span>
-          <FileField
-            label="Upload Short Video"
-            description="Share about you, what you do, your interests, etc."
-            hint=".mp4 file | 50 MB max."
-            accept="video/mp4"
-            fileName={introVideo}
-            onPick={(name) => { setOnboarding({ introVideo: name }); toast('Video selected') }}
-          />
-        </div>
+        <FileField
+          fieldLabel="Intro Video (optional)"
+          label="Upload Short Video"
+          description="Share about you, what you do, your interests, etc."
+          hint=".mp4 file | 50 MB max."
+          accept="video/mp4"
+          fileName={introVideo}
+          onPick={(name) => { setOnboarding({ introVideo: name }); toast('Video selected') }}
+        />
       </OnboardingLayout>
 
       <DetailsInfoModal open={info} onClose={() => setInfo(false)} />

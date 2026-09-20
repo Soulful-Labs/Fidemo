@@ -25,7 +25,7 @@ export default function TrustScoreCard() {
       className="flex flex-col gap-4 rounded-lg border-1 border-stroke-2 bg-bg-1 p-4"
     >
       <div className="flex items-center gap-4">
-        <ScoreDial score={user.trustScore} tier={tier} size="sm" />
+        <ScoreDial score={user.trustScore} size="sm" />
         <div className="flex flex-col gap-1">
           <span className="text-text-medium text-text-body">Your Trust Score</span>
           <Tag tone={tier} size="md">{TIER_LABEL[tier]}</Tag>

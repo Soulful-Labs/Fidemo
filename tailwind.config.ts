@@ -21,6 +21,8 @@ export default {
       backgroundImage: {
         'yellow-fade': 'linear-gradient(180deg, #fca31126 0%, #fca31100 100%)',
         'green-fade':  'linear-gradient(180deg, #3fb98426 0%, #3fb98400 100%)',
+        // Primary CTA fill as drawn in Figma: lighter at the top, brand at the bottom.
+        'cta-gradient': 'linear-gradient(180deg, #fcc56a 0%, #fca415 100%)',
       },
       spacing: { 0:'0px', 0.5:'2px', 1:'4px', 1.5:'6px', 2:'8px', 3:'12px', 4:'16px', 5:'20px', 6:'24px' },
       borderRadius: { none:'2px', sm:'8px', md:'12px', lg:'16px', xl:'24px', full:'100px' },
@@ -28,9 +30,11 @@ export default {
       fontFamily: { sans: ['Geist','system-ui','sans-serif'] },
       height: { btn:'48px', 'btn-sm':'38px', 'btn-inline':'24px', input:'48px',
                 bar:'56px', 'bar-progress':'93px', nav:'85px', cta:'96px', tag:'30px',
+                status:'44px', logo:'24px', promo:'38px', halo:'136px',
                 // The phone shell, inset by spacing.4 top and bottom above 420px.
                 shell:'calc(100vh - 32px)' },
       inset: { nav:'85px' },
+      width: { logo:'20px', halo:'136px', 'dial-sm':'140px', 'dial-md':'200px', 'dial-lg':'272px' },
       maxWidth: { frame:'375px', content:'343px' },
       // Global interaction rule 9: the phone shell kicks in above 420px.
       screens: { frame:'420px' },
@@ -47,6 +51,9 @@ export default {
         'title-s':      ['18px',{ lineHeight:'1.4', letterSpacing:'-0.02em', fontWeight:'500' }],
         'title-m':      ['20px',{ lineHeight:'1',   letterSpacing:'-0.02em', fontWeight:'500' }],
         'title-l':      ['24px',{ lineHeight:'1',   letterSpacing:'-0.02em', fontWeight:'600' }],
+        // Big numbers: the Trust Score inside the gauge and the wallet balance.
+        'display-s':    ['40px',{ lineHeight:'1',   letterSpacing:'-0.02em', fontWeight:'600' }],
+        'display':      ['56px',{ lineHeight:'1',   letterSpacing:'-0.02em', fontWeight:'600' }],
       },
     },
   },

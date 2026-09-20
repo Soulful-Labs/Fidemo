@@ -35,7 +35,7 @@ export default function Stepper({
             key={step}
             className={cn(
               'h-1 flex-1 rounded-full transition-colors',
-              step <= current ? fill : 'bg-bg-2',
+              step <= current ? fill : tone === 'green' ? 'bg-green-900/60' : 'bg-yellow-1000',
             )}
           />
         ))}

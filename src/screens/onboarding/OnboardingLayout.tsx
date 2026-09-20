@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react'
 import Button from '../../components/ui/Button'
+import CtaBar from '../../components/ui/CtaBar'
 import TopBar from '../../components/ui/TopBar'
 import { Info } from '../../components/ui/icons'
 
 export interface OnboardingLayoutProps {
   title: string
   step: number
-  heading?: string
   children: ReactNode
   onBack: () => void
   onInfo?: () => void
@@ -16,9 +16,13 @@ export interface OnboardingLayoutProps {
   continueLabel?: string
 }
 
-/** Shared frame for the three profile steps: progress bar, helper, bottom CTA. */
+/**
+ * Shared frame for the three profile steps (Figma 915:50231): 93px title bar
+ * with the progress segments and helper line, the form 16px below, and the
+ * 96px CTA bar pinned to the bottom.
+ */
 export default function OnboardingLayout({
-  title, step, heading, children, onBack, onInfo, onContinue,
+  title, step, children, onBack, onInfo, onContinue,
   continueDisabled, onBlocked, continueLabel = 'Continue',
 }: OnboardingLayoutProps) {
   return (
@@ -30,23 +34,25 @@ export default function OnboardingLayout({
         helper="Just 2 minutes, then you are browsing studies."
         right={
           onInfo && (
-            <button type="button" onClick={onInfo} aria-label="What these details are for?" className="text-text-body hover:text-text-title">
-              <Info />
+            <button
+              type="button"
+              onClick={onInfo}
+              aria-label="What these details are for?"
+              className="flex h-8 w-8 items-center justify-center text-text-title hover:text-text-body"
+            >
+              <Info className="h-6 w-6" />
             </button>
           )
         }
       />
 
-      <div className="flex flex-1 flex-col gap-4 px-4 py-6">
-        {heading && <h2 className="text-title-s text-text-title">{heading}</h2>}
-        {children}
-      </div>
+      <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">{children}</div>
 
-      <div className="sticky bottom-0 bg-bg-0 px-4 pb-6 pt-2">
+      <CtaBar>
         <Button fullWidth disabled={continueDisabled} onClick={onContinue} onBlocked={onBlocked}>
           {continueLabel}
         </Button>
-      </div>
+      </CtaBar>
     </div>
   )
 }

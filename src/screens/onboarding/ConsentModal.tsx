@@ -1,10 +1,11 @@
+import BottomSheet from '../../components/ui/BottomSheet'
 import Button from '../../components/ui/Button'
-import Modal from '../../components/ui/Modal'
 import Toggle from '../../components/ui/Toggle'
 import { useStore } from '../../mock/store'
 
 /**
- * PRD 4.9. Four toggles, essential cookies locked on.
+ * PRD 4.9, Figma 915:50322. Four toggles, essential cookies locked on, with
+ * hairlines between the sharing pair and each cookie row.
  *
  * Conflict 2 notes that workflow step 21 describes a single consent at
  * registration, which is a different model; the four toggles are built as
@@ -17,13 +18,13 @@ export default function ConsentModal({
   const { consent } = user
 
   return (
-    <Modal
+    <BottomSheet
       open={open}
       onClose={onClose}
       title="Consent"
       footer={<Button fullWidth onClick={onSave}>Save &amp; Continue</Button>}
     >
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-4">
         <Toggle
           checked={consent.shareProfession}
           onChange={(v) => setConsent('shareProfession', v)}
@@ -36,6 +37,7 @@ export default function ConsentModal({
           label="Share profile details with platform"
           description="This helps us personalize your study exploration to find you most relevant studies"
         />
+        <span className="h-px w-full bg-stroke-3" />
         <Toggle
           checked
           locked
@@ -44,6 +46,7 @@ export default function ConsentModal({
           label="Essential cookies"
           description="These are essential for site to function fully."
         />
+        <span className="h-px w-full bg-stroke-3" />
         <Toggle
           checked={consent.performanceCookie}
           onChange={(v) => setConsent('performanceCookie', v)}
@@ -51,6 +54,6 @@ export default function ConsentModal({
           description="Helps us measures website visits and interactions to improve the site better for you"
         />
       </div>
-    </Modal>
+    </BottomSheet>
   )
 }

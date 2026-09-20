@@ -6,7 +6,7 @@ import { useAppNav } from '../../app/useAppNav'
 import { isValidEmail } from '../../lib/validation'
 import AuthLayout from './AuthLayout'
 
-/** PRD 4.11, Reset Password. */
+/** PRD 4.11, Reset Password. Figma 915:50191. */
 export default function ForgotPassword() {
   const navigate = useNavigate()
   const { back } = useAppNav()
@@ -21,7 +21,7 @@ export default function ForgotPassword() {
       onBack={back}
       title="Enter Email"
       subtitle="Please enter your email address"
-      footer={
+      actions={
         <Button fullWidth disabled={!isValidEmail(email)} onClick={() => navigate('/check-email')}
           onBlocked={() => setTouched(true)}>
           Submit
@@ -29,7 +29,7 @@ export default function ForgotPassword() {
       }
     >
       <Input
-        label="Email" type="email" placeholder="Enter your email" value={email}
+        label="Email" type="email" placeholder="Enter email address" value={email}
         onChange={(e) => setEmail(e.target.value)} onBlur={() => setTouched(true)} error={error}
       />
     </AuthLayout>

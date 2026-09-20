@@ -14,7 +14,8 @@ export interface TabBarProps {
   /** Controlled selection, used when items have no `to`. */
   value?: string
   onChange?: (key: string) => void
-  variant?: 'segmented' | 'underline'
+  /** `boxes` = equal outlined boxes (Gender). */
+  variant?: 'segmented' | 'underline' | 'boxes'
   /** Sub-tab rows (My Studies has five) scroll sideways. */
   scrollable?: boolean
   className?: string
@@ -22,6 +23,8 @@ export interface TabBarProps {
 
 const SEGMENT_ON = 'bg-cta-primary text-cta-primaryText'
 const SEGMENT_OFF = 'text-text-body hover:text-text-title'
+const BOX_ON = 'border-cta-primary bg-yellow-1000/40 text-brand-primary'
+const BOX_OFF = 'border-stroke-3 text-text-title hover:border-cta-tertiaryStroke'
 const UNDER_ON = 'text-text-title border-cta-primary'
 const UNDER_OFF = 'text-text-body border-transparent hover:text-text-title'
 
@@ -34,10 +37,13 @@ export default function TabBar({
   className,
 }: TabBarProps) {
   const segmented = variant === 'segmented'
+  const boxes = variant === 'boxes'
 
   const shell = cn(
-    'flex items-center gap-1',
-    segmented ? 'rounded-full border-1 border-stroke-3 bg-bg-1 p-1' : 'border-b-1 border-stroke-3',
+    'flex items-center',
+    segmented && 'gap-1 rounded-full border-1 border-stroke-3 bg-bg-1 p-1',
+    boxes && 'gap-2',
+    variant === 'underline' && 'gap-1 border-b-1 border-stroke-3',
     scrollable && 'overflow-x-auto',
     className,
   )
@@ -45,9 +51,9 @@ export default function TabBar({
   const itemClass = (active: boolean) =>
     cn(
       'flex items-center justify-center gap-1 whitespace-nowrap transition-colors',
-      segmented
-        ? cn('h-btn-sm flex-1 rounded-full px-4 text-text-medium', active ? SEGMENT_ON : SEGMENT_OFF)
-        : cn('h-12 px-4 text-text-medium border-b-2', active ? UNDER_ON : UNDER_OFF),
+      segmented && cn('h-btn-sm flex-1 rounded-full px-4 text-text-medium', active ? SEGMENT_ON : SEGMENT_OFF),
+      boxes && cn('h-input flex-1 rounded-md border-1 px-3 text-body-regular', active ? BOX_ON : BOX_OFF),
+      variant === 'underline' && cn('h-12 px-4 text-text-medium border-b-2', active ? UNDER_ON : UNDER_OFF),
     )
 
   const label = (item: TabItem) => (

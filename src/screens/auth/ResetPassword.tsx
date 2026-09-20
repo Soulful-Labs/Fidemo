@@ -7,7 +7,7 @@ import { useAppNav } from '../../app/useAppNav'
 import { isValidPassword } from '../../lib/validation'
 import AuthLayout from './AuthLayout'
 
-/** PRD 4.11, Set New Password. */
+/** PRD 4.11, Set New Password. Figma 915:50217. */
 export default function ResetPassword() {
   const navigate = useNavigate()
   const { back } = useAppNav()
@@ -20,9 +20,9 @@ export default function ResetPassword() {
 
   return (
     <AuthLayout
-      barTitle="Set New Password" onBack={back}
+      barTitle="Set Password" onBack={back}
       title="Set New Password" subtitle="Enter new password"
-      footer={
+      actions={
         <Button fullWidth disabled={!valid} onClick={() => navigate('/password-updated')}
           onBlocked={() => setTouched(true)}>
           Submit
@@ -30,12 +30,12 @@ export default function ResetPassword() {
       }
     >
       <div className="flex flex-col gap-2">
-        <Input label="Password" type="password" placeholder="Enter new password" value={password}
+        <Input label="Password" type="password" placeholder="Enter your password" value={password}
           onChange={(e) => setPassword(e.target.value)} />
         <PasswordRules password={password} />
       </div>
 
-      <Input label="Confirm Password" type="password" placeholder="Re-enter new password" value={confirm}
+      <Input label="Confirm Password" type="password" placeholder="Enter your password" value={confirm}
         onChange={(e) => setConfirm(e.target.value)} onBlur={() => setTouched(true)}
         error={mismatch ? 'Passwords do not match' : undefined} />
     </AuthLayout>

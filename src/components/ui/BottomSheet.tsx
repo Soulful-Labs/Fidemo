@@ -7,6 +7,8 @@ export interface BottomSheetProps {
   open: boolean
   onClose: () => void
   title?: string
+  /** Line under the title, e.g. "Select your education level". */
+  subtitle?: string
   children?: ReactNode
   footer?: ReactNode
   showClose?: boolean
@@ -15,10 +17,16 @@ export interface BottomSheetProps {
   tall?: boolean
 }
 
+/**
+ * Sheet rising from the bottom, as drawn for Consent and the pickers: page
+ * background, 24px top radius, title row with a close icon, and a hairline
+ * above the footer buttons.
+ */
 export default function BottomSheet({
   open,
   onClose,
   title,
+  subtitle,
   children,
   footer,
   showClose = true,
@@ -40,35 +48,38 @@ export default function BottomSheet({
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          'flex w-full max-w-frame flex-col gap-4 rounded-t-xl border-1 border-stroke-3 p-5 pb-6',
+          'flex w-full max-w-frame flex-col rounded-t-xl border-t-1 border-stroke-3 pt-5',
           tall ? 'max-h-sheet-tall' : 'max-h-sheet',
-          alt ? 'bg-bgAlt-2' : 'bg-bg-1',
+          alt ? 'bg-bgAlt-0' : 'bg-bg-0',
         )}
       >
-        <div className="mx-auto h-1 w-10 rounded-full bg-stroke-3" aria-hidden />
-
         {(title || showClose) && (
-          <div className="flex items-center justify-between gap-4">
-            {title && <h2 className="text-title-s text-text-title">{title}</h2>}
-            {showClose && (
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label="Close"
-                className="ml-auto text-text-body hover:text-text-title"
-              >
-                <Close />
-              </button>
-            )}
+          <div className="flex flex-col gap-1 px-4 pb-4">
+            <div className="flex h-8 items-center justify-between gap-4">
+              {title && <h2 className="text-title-m text-text-title">{title}</h2>}
+              {showClose && (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label="Close"
+                  className="ml-auto flex h-8 w-8 items-center justify-center text-text-title hover:text-text-body"
+                >
+                  <Close className="h-6 w-6" />
+                </button>
+              )}
+            </div>
+            {subtitle && <p className="pt-2 text-text-regular text-text-body">{subtitle}</p>}
           </div>
         )}
 
         {children && (
-          <div className="min-h-0 flex-1 overflow-y-auto text-text-regular text-text-body">
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 text-text-regular text-text-body">
             {children}
           </div>
         )}
-        {footer && <div className="flex flex-col gap-2">{footer}</div>}
+        {footer && (
+          <div className="flex flex-col gap-2 border-t-1 border-stroke-2 px-4 pb-6 pt-4">{footer}</div>
+        )}
       </div>
     </div>
   )

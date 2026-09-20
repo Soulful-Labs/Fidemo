@@ -16,9 +16,9 @@ export default function AppBitsSection({ toast }: { toast: (msg: string) => void
   return (
     <Section title="ScoreDial, StatTile, NotificationRow, EmptyState, ProgressBar, Timeline">
       <Row label="ScoreDial — Trust Score and tiers">
-        <ScoreDial score={50} tier="silver" size="sm" />
-        <ScoreDial score={72} tier="gold" />
-        <ScoreDial score={92} tier="platinum" size="lg" />
+        <ScoreDial score={50} size="sm" />
+        <ScoreDial score={72} />
+        <ScoreDial score={92} size="lg" />
         <div className="flex flex-col gap-1">
           <Tag tone="silver">Silver, In Top 50%</Tag>
           <Tag tone="gold">Gold, In Top 20%</Tag>

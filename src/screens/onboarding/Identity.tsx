@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import FileField from '../../components/app/FileField'
 import Picker from '../../components/ui/Picker'
-import { ChevronDown } from '../../components/ui/icons'
+import SelectField from '../../components/ui/SelectField'
+import { Camera } from '../../components/ui/icons'
 import { useAppNav } from '../../app/useAppNav'
 import { useStore } from '../../mock/store'
 import ConsentModal from './ConsentModal'
@@ -10,12 +11,12 @@ import OnboardingLayout from './OnboardingLayout'
 import { ID_TYPES } from './options'
 
 /**
- * PRD 4.8, step 3 of 3.
+ * PRD 4.8, step 3 of 3. Figma 915:50280.
  *
- * Document upload only. The selfie capture PRD 4.8 lists is deliberately not
+ * Document upload only. The selfie capture is drawn but deliberately not
  * built: biometric capture is blocked pending legal review (workflow step 16,
- * conflict 23, hard rule 9). The note below keeps that visible to reviewers
- * rather than looking like a missed field.
+ * conflict 23, hard rule 9). The field stays visible as a disabled control
+ * that explains itself on tap (global interaction rule 7).
  */
 export default function Identity() {
   const navigate = useNavigate()
@@ -51,19 +52,7 @@ export default function Identity() {
           A one-time check. Stored privately and never shown to clients.
         </p>
 
-        <div className="flex flex-col gap-1">
-          <span className="text-text-medium text-text-subtitle">Select ID</span>
-          <button
-            type="button"
-            onClick={() => setPicker(true)}
-            className="flex h-input items-center justify-between gap-2 rounded-md border-1 border-stroke-3 bg-bg-1 px-4 text-left"
-          >
-            <span className={idType ? 'text-body-regular text-text-title' : 'text-body-regular text-text-disabled'}>
-              {idType || 'Select your ID type'}
-            </span>
-            <ChevronDown className="text-text-body" />
-          </button>
-        </div>
+        <SelectField label="Select ID" value={idType} placeholder="Passport" onOpen={() => setPicker(true)} />
 
         <FileField
           label="Upload Front Side" hint=".jpg or .png" accept="image/jpeg,image/png"
@@ -74,14 +63,26 @@ export default function Identity() {
           fileName={idBack} onPick={(name) => setOnboarding({ idBack: name })}
         />
 
-        <p className="rounded-md border-1 border-stroke-2 bg-bg-1 p-3 text-label text-text-disabled">
-          Selfie verification is on hold pending legal review, so this step is document
-          verification only.
-        </p>
+        <div className="flex flex-col gap-1">
+          <span className="text-text-regular text-text-subtitle">Selfie Verification</span>
+          <button
+            type="button"
+            aria-disabled="true"
+            onClick={() => toast('Selfie verification is on hold pending legal review')}
+            className="flex w-full flex-col items-center gap-1 rounded-md border-1 border-cta-tertiaryStrokeDisabled px-4 py-4 text-center text-text-disabled"
+          >
+            <span className="flex items-center gap-2 text-text-medium">
+              <Camera className="h-5 w-5" />
+              Capture Selfie
+            </span>
+            <span className="text-text-regular">Tap here to click selfie</span>
+          </button>
+        </div>
       </OnboardingLayout>
 
       <Picker
         open={picker} onClose={() => setPicker(false)} title="Select ID"
+        subtitle="Select the document you will upload"
         options={ID_TYPES} value={idType}
         onSelect={(value) => setOnboarding({ idType: value })}
       />

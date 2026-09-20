@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { cn } from '../../lib/cn'
-import { Check } from '../ui/icons'
+import { Check, Upload } from '../ui/icons'
 
 export interface FileFieldProps {
   label: string
@@ -10,36 +10,38 @@ export interface FileFieldProps {
   accept?: string
   fileName?: string
   onPick: (fileName: string) => void
+  /** Label above the field, e.g. "Intro Video (optional)". */
+  fieldLabel?: string
 }
 
 /**
- * Opens the real file picker and shows the chosen file name. Nothing uploads;
- * there is no backend.
+ * The centred upload box from Figma (915:50254): upload icon and label on one
+ * line, then the description and hint. Opens the real file picker and shows
+ * the chosen file name; nothing uploads because there is no backend.
  */
 export default function FileField({
-  label, hint, description, accept, fileName, onPick,
+  label, hint, description, accept, fileName, onPick, fieldLabel,
 }: FileFieldProps) {
   const input = useRef<HTMLInputElement>(null)
   const chosen = Boolean(fileName)
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1">
+      {fieldLabel && <span className="text-text-regular text-text-subtitle">{fieldLabel}</span>}
       <button
         type="button"
         onClick={() => input.current?.click()}
         className={cn(
-          'flex w-full items-center gap-3 rounded-md border-1 border-dashed px-4 py-3 text-left transition-colors',
-          chosen ? 'border-brand-secondary bg-bg-1' : 'border-cta-tertiaryStroke bg-bg-1 hover:border-cta-primary',
+          'flex w-full flex-col items-center gap-1 rounded-md border-1 bg-transparent px-4 py-4 text-center transition-colors',
+          chosen ? 'border-brand-secondary' : 'border-stroke-3 hover:border-cta-tertiaryStroke',
         )}
       >
-        <span className={cn('flex h-6 w-6 items-center justify-center rounded-full', chosen ? 'bg-green-900 text-brand-secondary' : 'bg-bg-2 text-text-body')}>
-          {chosen ? <Check className="h-4 w-4" /> : '+'}
+        <span className={cn('flex max-w-full items-center gap-2 text-text-medium', chosen ? 'text-brand-secondary' : 'text-text-title')}>
+          {chosen ? <Check className="h-5 w-5" /> : <Upload className="h-5 w-5" />}
+          <span className="truncate">{fileName ?? label}</span>
         </span>
-        <span className="flex min-w-0 flex-col">
-          <span className="truncate text-body-medium text-text-title">{fileName ?? label}</span>
-          {description && !chosen && <span className="text-label text-text-body">{description}</span>}
-          {hint && <span className="text-label text-text-disabled">{hint}</span>}
-        </span>
+        {description && !chosen && <span className="text-text-regular text-text-body">{description}</span>}
+        {hint && <span className="text-text-regular text-text-body">{hint}</span>}
       </button>
       <input
         ref={input}

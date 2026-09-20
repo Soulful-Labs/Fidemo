@@ -56,21 +56,21 @@ export default function Modal({
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          'flex w-full max-w-content flex-col gap-4 rounded-lg border-1 border-stroke-3 p-5',
-          alt ? 'bg-bgAlt-2' : 'bg-bg-1',
+          'flex w-full max-w-content flex-col gap-4 rounded-lg p-4',
+          alt ? 'bg-bgAlt-2' : 'bg-bg-2',
         )}
       >
         {(title || showClose) && (
           <div className="flex items-start justify-between gap-4">
-            {title && <h2 className="text-title-s text-text-title">{title}</h2>}
+            {title && <h2 className="text-title-m leading-tight text-text-title">{title}</h2>}
             {showClose && (
               <button
                 type="button"
                 onClick={onClose}
                 aria-label="Close"
-                className="ml-auto text-text-body hover:text-text-title"
+                className="ml-auto text-text-title hover:text-text-body"
               >
-                <Close />
+                <Close className="h-6 w-6" />
               </button>
             )}
           </div>

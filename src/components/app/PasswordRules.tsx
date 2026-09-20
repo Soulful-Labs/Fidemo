@@ -1,20 +1,22 @@
 import { cn } from '../../lib/cn'
-import { Check } from '../ui/icons'
 import { passwordRules } from '../../lib/validation'
 
-/** The four live rules from PRD 4.11, ticking as they are met. */
+/**
+ * The four live rules from PRD 4.11, drawn as a bulleted list (Figma
+ * 915:50217). A rule turns green once the password meets it.
+ */
 export default function PasswordRules({ password }: { password: string }) {
   return (
-    <ul className="flex flex-wrap gap-x-4 gap-y-1">
+    <ul className="flex flex-col gap-0.5 pl-2">
       {passwordRules(password).map((rule) => (
         <li
           key={rule.label}
           className={cn(
-            'flex items-center gap-1 text-label',
-            rule.ok ? 'text-state-success' : 'text-text-disabled',
+            'flex items-center gap-2 text-label',
+            rule.ok ? 'text-state-success' : 'text-text-subtitle',
           )}
         >
-          <Check className={cn('h-3 w-3', !rule.ok && 'opacity-40')} />
+          <span className="h-1 w-1 rounded-full bg-current" aria-hidden="true" />
           {rule.label}
         </li>
       ))}

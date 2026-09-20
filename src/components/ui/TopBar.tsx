@@ -11,12 +11,17 @@ export interface TopBarProps {
   right?: ReactNode
   /** Adds the onboarding progress bar; the bar grows to 93px. */
   progress?: { current: number; total: number }
-  /** Helper line under the title, e.g. "Just 2 minutes...". */
+  /** Helper line under the progress bar, e.g. "Just 2 minutes...". */
   helper?: string
   alt?: boolean
   className?: string
 }
 
+/**
+ * 56px title bar as drawn in Figma: a 32px row with the back arrow, the title
+ * and trailing icons, and a hairline underneath. With `progress` it becomes
+ * the 93px onboarding bar (row, 4px green segments, helper line).
+ */
 export default function TopBar({
   title,
   onBack,
@@ -29,20 +34,19 @@ export default function TopBar({
   return (
     <header
       className={cn(
-        'sticky top-0 z-30 flex w-full flex-col justify-center gap-2 px-4',
-        // 56px bare, 93px when it carries a progress bar (layout constants).
+        'sticky top-0 z-30 flex w-full shrink-0 flex-col border-b-1 border-stroke-1 px-4 pt-3',
         progress ? 'h-bar-progress' : 'h-bar',
         alt ? 'bg-bgAlt-0' : 'bg-bg-0',
         className,
       )}
     >
-      <div className="flex h-6 items-center gap-3">
+      <div className="flex h-8 items-center gap-2">
         {onBack && (
           <button
             type="button"
             onClick={onBack}
             aria-label="Back"
-            className="text-text-title hover:text-text-body"
+            className="-ml-1 flex h-8 w-8 items-center justify-center text-text-title hover:text-text-body"
           >
             <ArrowLeft />
           </button>
@@ -51,8 +55,12 @@ export default function TopBar({
         {right && <div className="ml-auto flex items-center gap-3">{right}</div>}
       </div>
 
-      {progress && <Stepper current={progress.current} total={progress.total} />}
-      {helper && <p className="text-label text-text-body">{helper}</p>}
+      {progress && (
+        <div className="flex flex-col gap-2 pt-2">
+          <Stepper current={progress.current} total={progress.total} tone="green" />
+          {helper && <p className="text-label text-text-body">{helper}</p>}
+        </div>
+      )}
     </header>
   )
 }
