@@ -29,6 +29,8 @@ import PinEntry from './screens/studies/complete/PinEntry'
 import Survey from './screens/studies/complete/Survey'
 import DiaryOverview from './screens/studies/complete/DiaryOverview'
 import DiaryDay from './screens/studies/complete/DiaryDay'
+import RateClient from './screens/studies/complete/RateClient'
+import ClientRatings from './screens/studies/complete/ClientRatings'
 
 /**
  * The complete route map from the build brief. Every screen route points at the
@@ -97,8 +99,8 @@ export const routes: ScreenRoute[] = [
   built('/studies/:id/survey/:step?', 'Survey questions, Completed successfully', Survey),
   built('/studies/:id/diary', 'Diary overview', DiaryOverview),
   built('/studies/:id/diary/:day', 'One diary day', DiaryDay),
-  screen('/studies/:id/rate', 'Rate the client'),
-  screen('/clients/:clientId/ratings', 'Client Ratings'),
+  built('/studies/:id/rate', 'Rate the client', RateClient),
+  built('/clients/:clientId/ratings', 'Client Ratings', ClientRatings),
 
   // ----- Wallet tab -----
   screen('/wallet', 'Wallet'),

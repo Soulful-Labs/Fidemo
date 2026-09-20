@@ -51,7 +51,7 @@ export const STATUS: Record<StudyStatus, StatusMeta> = {
   pin_confirmed: {
     label: 'PIN Confirmed', tone: 'green', primary: 'Complete Study', tab: 'scheduled',
   },
-  in_process: { label: 'In Process', tone: 'blue', tab: 'history' },
+  in_process: { label: 'In Process', tone: 'yellow', tab: 'history' },
   // danger tone is reserved for things that are wrong, per the colour rule.
   paid: { label: 'Paid', tone: 'green', primary: 'Rate Client', tab: 'history' },
   rejected: { label: 'Rejected', tone: 'danger', tab: 'history' },

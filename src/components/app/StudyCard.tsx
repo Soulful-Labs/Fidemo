@@ -7,6 +7,7 @@ import { STATUS } from '../../lib/studyState'
 import type { Study } from '../../mock/types'
 import ScoreDial from './ScoreDial'
 import StudyTypeTag, { STUDY_TYPE_LABEL } from './StudyTypeTag'
+import StatusIcon from './StatusIcon'
 
 export interface StudyCardProps {
   study: Study
@@ -70,7 +71,7 @@ export default function StudyCard({
     </button>
   )
 
-  const statusTag = <Tag tone={meta.tone} size="md">{meta.label}</Tag>
+  const statusTag = <Tag tone={meta.tone} size="md" icon={<StatusIcon status={study.status} />}>{meta.label}</Tag>
 
   return (
     <article className={cn('flex flex-col gap-4 rounded-lg bg-bg-1 p-4', compact && 'w-card shrink-0')}>

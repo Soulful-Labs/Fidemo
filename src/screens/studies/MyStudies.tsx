@@ -92,8 +92,9 @@ export default function MyStudies() {
         <div className={cn('flex flex-col gap-4 px-4')}>
           {current === 'scheduled' && <SectionTitle title={`Scheduled (${visible.length})`} />}
           <StudyList
-            studies={visible.map((s) => s)}
+            studies={visible}
             showStatus={current === 'applied' || current === 'history'}
+            showActions={current !== 'history'}
             rejectable={current === 'invites'}
             footnoteFor={current === 'applied' ? appliedOn : undefined}
             onReject={current === 'invites' ? (s) => setRejecting(s) : undefined}

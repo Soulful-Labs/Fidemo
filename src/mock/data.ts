@@ -163,3 +163,31 @@ export const REFERRAL_LINK = 'https://humanlayer.app/r/JONATHAN200'
 
 /** Still for the "Learn about HumanLayer" video card (PRD 5.2). */
 export const LEARN_VIDEO_IMAGE = '/img/learn-video.jpg'
+
+/** Written reviews from other respondents, shown on Client Ratings (PRD 6.16). */
+export interface ClientReview {
+  id: string
+  study: string
+  stars: number
+  at: string
+  comment: string
+  participant: { name: string; stars: number; comment?: string }
+}
+
+const REVIEWS: ClientReview[] = [
+  { id: 'r1', study: 'Digital patient consulting experience analysis', stars: 4, at: '2026-04-10',
+    comment: 'It was great working with Luke. He was clear about the requirements, responsive throughout the project, and very easy to communicate with.',
+    participant: { name: 'Eliza D', stars: 5, comment: 'The collaboration went smoothly, and I’d be happy to work with him again on future projects.' } },
+  { id: 'r2', study: 'Mobile app design review', stars: 5, at: '2026-04-10',
+    comment: 'Working with Sarah was a pleasure.',
+    participant: { name: 'John M', stars: 4.5 } },
+  { id: 'r3', study: 'E-commerce website optimization', stars: 5, at: '2026-04-10',
+    comment: 'John was fantastic to work with. He understood the project goals from the start and delivered exceptional results that exceeded our expectations. I’d definitely recommend him to others!',
+    participant: { name: 'Mark J', stars: 5 } },
+  { id: 'r4', study: 'Telehealth onboarding interviews', stars: 4, at: '2026-03-22',
+    comment: 'Sessions ran on time and the brief was clear. Payment arrived within two days.',
+    participant: { name: 'Priya S', stars: 5 } },
+]
+
+/** Every client shares the same sample reviews in the prototype. */
+export const clientReviews = (): ClientReview[] => REVIEWS
