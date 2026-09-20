@@ -15,7 +15,7 @@ const PATHS: Record<NotificationKind, string> = {
 /** One icon per notification kind (PRD 5.3: icon, title, body, timestamp). */
 export default function NotificationIcon({ kind }: { kind: NotificationKind }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" width="14" height="14" className="shrink-0">
+    <svg viewBox="0 0 24 24" fill="none" width="24" height="24" className="shrink-0">
       <path d={PATHS[kind]} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )

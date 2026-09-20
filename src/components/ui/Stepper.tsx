@@ -51,13 +51,11 @@ export default function Stepper({
           <span
             key={step}
             className={cn(
-              'flex h-6 flex-1 items-center justify-center gap-1 rounded-full border-1 text-label',
-              done
-                ? cn(fill, tone === 'green' ? 'border-green-600' : 'border-yellow-600', 'text-cta-primaryText')
-                : 'border-stroke-3 bg-bg-2 text-text-disabled',
+              'flex h-8 flex-1 items-center justify-center rounded-full text-body-medium',
+              done ? cn(fill, 'text-cta-primaryText') : 'bg-bg-0 text-text-title',
             )}
           >
-            {done ? <Check className="h-3 w-3" /> : step}
+            {done ? <Check className="h-4 w-4" /> : step}
           </span>
         )
       })}

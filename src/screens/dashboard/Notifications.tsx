@@ -30,7 +30,7 @@ export default function Notifications() {
               markAllRead()
               toast(unread > 0 ? 'All notifications marked as read' : 'Nothing unread')
             }}
-            className="text-text-medium text-brand-primary"
+            className="text-body-regular text-text-title"
           >
             Mark all as read
           </button>
@@ -54,6 +54,7 @@ export default function Notifications() {
                 at={n.at}
                 read={n.read}
                 icon={<NotificationIcon kind={n.kind} />}
+                tone={n.kind === 'money' || n.kind === 'points' || n.kind === 'referral' ? 'green' : 'yellow'}
                 actionLabel={n.actionLabel}
                 onAction={n.actionLabel ? () => open(n.id, n.to) : undefined}
                 secondaryActionLabel={n.secondaryActionLabel}

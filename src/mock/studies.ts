@@ -9,9 +9,9 @@ export function at(offsetDays: number, hour = 10, minute = 0): string {
   return d.toISOString()
 }
 
-/** Offline placeholder thumbnail; no network needed. */
-const img = (bg: string, fg: string) =>
-  `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Crect width='96' height='96' fill='%23${bg}'/%3E%3Ccircle cx='68' cy='28' r='12' fill='%23${fg}'/%3E%3Cpath d='M12 82l26-30 18 20 12-12 20 22z' fill='%23${fg}'/%3E%3C/svg%3E`
+/** Study thumbnails, exported from the Figma study cards into public/img. */
+const IMAGES = ['goals', 'runner', 'canva', 'airport', 'payment', 'sleep', 'card']
+const img = (index: number) => `/img/${IMAGES[index % IMAGES.length]}.jpg`
 
 const single = (id: string, prompt: string, options: string[]): Question =>
   ({ id, kind: 'single', prompt, options })
@@ -45,7 +45,7 @@ type Seed = Pick<Study, 'id' | 'title' | 'description' | 'type' | 'status' | 're
 function mk(seed: Seed): Study {
   const daysLeft = seed.daysLeft ?? 18
   return {
-    image: img('202623', '513303'),
+    image: img(Number(seed.id.replace(/\D/g, ''))),
     industry: 'Healthcare',
     matchScore: 88,
     endsAt: at(daysLeft),

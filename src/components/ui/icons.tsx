@@ -161,3 +161,72 @@ export function ShieldCheck({ className }: IconProps) {
     </svg>
   )
 }
+
+/** The little tray icon in front of "You're Invited To Apply!" on study cards. */
+export function InviteIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" width="20" height="20" className={`${base} ${className ?? ''}`}>
+      <path d="M4 13V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7M4 13h4l1.5 2h5L16 13h4M4 13v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5M9 8h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export function Share({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" width="20" height="20" className={`${base} ${className ?? ''}`}>
+      <path d="M14 5l6 5-6 5v-3c-4 0-7 1.5-9 5 0-5 3-9 9-9V5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export function Copy({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" width="20" height="20" className={`${base} ${className ?? ''}`}>
+      <rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  )
+}
+
+/** The "H" coin that marks reward points. */
+export function PointsCoin({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 20 20" width="20" height="20" className={`${base} ${className ?? ''}`}>
+      <circle cx="10" cy="10" r="10" fill="currentColor" />
+      <path d="M6.5 5.5v9M13.5 5.5v9M6.5 10h7" stroke="#0c0800" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function Bell({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" width="24" height="24" className={`${base} ${className ?? ''}`}>
+      <path d="M6 9.5a6 6 0 1 1 12 0c0 4 1.5 5.5 1.5 5.5h-15S6 13.5 6 9.5ZM10 18.5a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export function Dollar({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" width="20" height="20" className={`${base} ${className ?? ''}`}>
+      <path d="M12 3v18M16 7.5c0-1.7-1.8-3-4-3s-4 1.3-4 3 1.8 3 4 3 4 1.3 4 3-1.8 3-4 3-4-1.3-4-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function ListIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" width="20" height="20" className={`${base} ${className ?? ''}`}>
+      <rect x="5" y="4" width="14" height="16" rx="2" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M9 9h6M9 13h6M9 17h3M9 3v2m6-2v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function Play({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24" className={`${base} ${className ?? ''}`}>
+      <path d="M8 5.5v13l11-6.5-11-6.5Z" />
+    </svg>
+  )
+}

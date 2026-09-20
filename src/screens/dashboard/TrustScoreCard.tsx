@@ -1,51 +1,49 @@
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import ProgressBar from '../../components/app/ProgressBar'
 import ScoreDial from '../../components/app/ScoreDial'
-import Tag from '../../components/ui/Tag'
+import TierChip from '../../components/app/TierChip'
+import { cn } from '../../lib/cn'
 import { TIERS, nextTier, tierFor } from '../../lib/rules'
 import { useStore } from '../../mock/store'
 
-const TIER_LABEL: Record<string, string> = {
-  silver: 'Silver, In Top 50%',
-  // Conflict 9: Trust Score Details says Top 20%, How Tiers Works says 25%.
-  gold: 'Gold, In Top 20%',
-  platinum: 'Platinum, In Top 5%',
-}
-
-/** PRD 5.1 Trust Score card. Tapping opens Trust Score Details. */
+/**
+ * PRD 5.1 Trust Score card, Figma 918:69716: the gauge on the left, the tier
+ * box and "20 more to Platinum..." progress on the right. Tapping anything
+ * opens Trust Score Details.
+ */
 export default function TrustScoreCard() {
+  const navigate = useNavigate()
   const { user } = useStore()
   const tier = tierFor(user.trustScore)
   const next = nextTier(user.trustScore)
-  const floor = tier === 'silver' ? TIERS.silver : TIERS[tier]
+  const floor = TIERS[tier]
 
   return (
-    <Link
-      to="/trust-score"
-      className="flex flex-col gap-4 rounded-lg border-1 border-stroke-2 bg-bg-1 p-4"
+    <div
+      role="link"
+      tabIndex={0}
+      onClick={() => navigate('/trust-score')}
+      onKeyDown={(e) => e.key === 'Enter' && navigate('/trust-score')}
+      className="flex cursor-pointer items-center gap-3 rounded-lg bg-bg-1 bg-yellow-fade p-3"
     >
-      <div className="flex items-center gap-4">
-        <ScoreDial score={user.trustScore} size="sm" />
-        <div className="flex flex-col gap-1">
-          <span className="text-text-medium text-text-body">Your Trust Score</span>
-          <Tag tone={tier} size="md">{TIER_LABEL[tier]}</Tag>
-        </div>
-      </div>
+      <ScoreDial score={user.trustScore} size="sm" />
 
-      {next && (
-        <div className="flex flex-col gap-1">
-          <ProgressBar
-            value={user.trustScore - floor}
-            max={next.at - floor}
-            size="sm"
-            caption={`${next.gain} more to ${next.tier === 'gold' ? 'Gold' : 'Platinum'}...`}
-          />
-          <div className="flex justify-between text-label text-text-disabled">
-            <span>{floor}</span>
-            <span>{next.at}</span>
+      <div className="flex min-w-0 flex-1 flex-col gap-3">
+        <TierChip tier={tier} card />
+        {next && (
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="truncate text-text-regular text-text-subtitle">
+                {next.gain} more to {next.tier === 'gold' ? 'Gold' : 'Platinum'}...
+              </span>
+              <span className={cn('text-body-medium', next.tier === 'gold' ? 'text-tier-gold' : 'text-tier-platinum')}>
+                {next.at}
+              </span>
+            </div>
+            <ProgressBar value={user.trustScore - floor} max={next.at - floor} track={next.tier === 'gold' ? 'gold' : 'platinum'} />
           </div>
-        </div>
-      )}
-    </Link>
+        )}
+      </div>
+    </div>
   )
 }

@@ -4,6 +4,7 @@ import { Close } from './icons'
 
 export type TagTone =
   | 'neutral'
+  | 'outline'
   | 'yellow'
   | 'green'
   | 'danger'
@@ -26,11 +27,14 @@ export interface TagProps {
 /**
  * `danger` is reserved for things that are wrong (No Show, Rejected) per the
  * brief's colour rule. Never use it for a neutral or informational state.
+ * `neutral` is the filled grey study-type pill; `outline` the hairline pill
+ * used for "18 days left".
  */
 const TONES: Record<TagTone, string> = {
-  neutral: 'bg-bg-2 text-text-body border-stroke-3',
+  neutral: 'bg-stroke-2 text-text-subtitle border-transparent',
+  outline: 'bg-bg-1 text-text-subtitle border-stroke-3',
   yellow: 'bg-yellow-1000 text-brand-primary border-yellow-700',
-  green: 'bg-green-900 text-brand-secondary border-green-700',
+  green: 'bg-green-900/60 text-brand-secondary border-green-900',
   danger: 'bg-state-dangerBg text-state-danger border-state-danger',
   blue: 'bg-bg-2 text-accent-blue border-stroke-3',
   purple: 'bg-bg-2 text-accent-purple border-stroke-3',
@@ -41,7 +45,7 @@ const TONES: Record<TagTone, string> = {
 
 const SIZES = {
   sm: 'h-6 px-2 gap-1 text-label',
-  md: 'h-tag px-3 gap-1.5 text-text-medium',
+  md: 'h-tag px-3 gap-2 text-text-regular',
 } as const
 
 export default function Tag({

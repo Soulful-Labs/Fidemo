@@ -3,7 +3,8 @@ import { cn } from '../lib/cn'
 import { TABS, activeTab } from './navigation'
 
 /**
- * The four fixed tabs, 85px tall. Hidden on detail screens and flows.
+ * The four fixed tabs, 85px tall, as drawn in Figma: rounded top corners, a
+ * hairline, and the active tab sitting on a soft yellow tint.
  *
  * Uses Link rather than NavLink deliberately: a tab owns routes that do not
  * share its path (Wallet owns /points, Profile owns /trust-score and /support),
@@ -14,7 +15,7 @@ export default function BottomNav({ pathname }: { pathname: string }) {
   const active = activeTab(pathname)
 
   return (
-    <nav className="flex h-nav shrink-0 items-start gap-1 border-t-1 border-stroke-2 bg-bg-1 px-2 pt-3">
+    <nav className="flex h-nav shrink-0 items-start gap-2 rounded-t-xl border-t-1 border-stroke-3 bg-bg-0 px-2 pt-2">
       {TABS.map((tab) => {
         const isActive = active === tab.key
         return (
@@ -23,12 +24,12 @@ export default function BottomNav({ pathname }: { pathname: string }) {
             to={tab.to}
             aria-current={isActive ? 'page' : undefined}
             className={cn(
-              'flex flex-1 flex-col items-center gap-1 rounded-md py-2 transition-colors',
-              isActive ? 'text-brand-primary' : 'text-text-disabled hover:text-text-body',
+              'flex flex-1 flex-col items-center gap-1 rounded-lg py-2 transition-colors',
+              isActive ? 'bg-yellow-1000/40 text-brand-primary' : 'text-text-subtitle hover:text-text-title',
             )}
           >
             <tab.Icon />
-            <span className="text-label">{tab.label}</span>
+            <span className="text-text-regular">{tab.label}</span>
           </Link>
         )
       })}

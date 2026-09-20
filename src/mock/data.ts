@@ -160,3 +160,6 @@ export const FAQS = [
 ]
 
 export const REFERRAL_LINK = 'https://humanlayer.app/r/JONATHAN200'
+
+/** Still for the "Learn about HumanLayer" video card (PRD 5.2). */
+export const LEARN_VIDEO_IMAGE = '/img/learn-video.jpg'

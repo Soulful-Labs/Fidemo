@@ -1,15 +1,20 @@
 import { Link } from 'react-router-dom'
+import { ChevronRight } from '../../components/ui/icons'
 
-/** Section title with the "View All" link the dashboard blocks carry. */
-export default function SectionHeader({
-  title, viewAllTo,
-}: { title: string; viewAllTo?: string }) {
+/** Section title, 20px medium, as on the dashboard blocks. */
+export default function SectionHeader({ title }: { title: string }) {
+  return <h2 className="text-title-m text-text-title">{title}</h2>
+}
+
+/** The full-width outlined "View All >" button that closes a dashboard list. */
+export function ViewAll({ to }: { to: string }) {
   return (
-    <div className="flex items-center justify-between gap-3">
-      <h2 className="text-title-s text-text-title">{title}</h2>
-      {viewAllTo && (
-        <Link to={viewAllTo} className="text-text-medium text-brand-primary">View All</Link>
-      )}
-    </div>
+    <Link
+      to={to}
+      className="flex h-btn w-full items-center justify-center gap-2 rounded-lg border-1 border-cta-tertiaryStroke text-body-medium text-text-title hover:bg-bg-2"
+    >
+      View All
+      <ChevronRight className="h-5 w-5" />
+    </Link>
   )
 }

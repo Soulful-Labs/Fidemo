@@ -24,9 +24,9 @@ export default function Dashboard() {
     <div className="flex min-h-full flex-col">
       <DashboardHeader />
 
-      <div className="flex flex-col gap-6 px-4 pb-6">
+      <div className="flex flex-col gap-6 px-4 pb-6 pt-2">
         <h1 className="text-title-m text-text-title">
-          {greeting()}, {firstName}!
+          {greeting()}, <span className="text-brand-secondary">{firstName}!</span>
         </h1>
 
         <TrustScoreCard />

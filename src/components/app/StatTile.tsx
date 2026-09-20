@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
+import { ChevronRight } from '../ui/icons'
+
+export type TileTint = 'yellow' | 'green' | 'purple' | 'blue' | 'none'
 
 export interface StatTileProps {
   /** "Wallet Balance", "Studies In Review" */
@@ -13,33 +16,45 @@ export interface StatTileProps {
    */
   delta?: string
   icon?: ReactNode
+  /** The coloured fade at the top of the tile, as drawn on the dashboard. */
+  tint?: TileTint
   onClick?: () => void
   alt?: boolean
 }
 
-/** The dashboard overview tiles (PRD 5.1). Tappable ones route; see the brief. */
-export default function StatTile({ label, value, delta, icon, onClick, alt = false }: StatTileProps) {
+const TINT: Record<TileTint, string> = {
+  yellow: 'bg-yellow-fade text-brand-primary',
+  green: 'bg-green-fade text-brand-secondary',
+  purple: 'bg-purple-fade text-accent-purple',
+  blue: 'bg-blue-fade text-accent-blue',
+  none: '',
+}
+
+/** The dashboard overview tiles (PRD 5.1, Figma 918:69716). Tappable ones route. */
+export default function StatTile({ label, value, delta, icon, tint = 'none', onClick, alt = false }: StatTileProps) {
   const Wrapper = onClick ? 'button' : 'div'
   return (
     <Wrapper
       {...(onClick ? { type: 'button' as const, onClick } : {})}
       className={cn(
-        'flex w-full flex-col gap-2 rounded-lg border-1 border-stroke-2 p-4 text-left',
+        'flex w-full flex-col gap-3 rounded-lg p-3 text-left',
         alt ? 'bg-bgAlt-2' : 'bg-bg-1',
-        onClick && 'transition-colors hover:border-stroke-3',
+        TINT[tint],
+        onClick && 'transition-opacity hover:opacity-90',
       )}
     >
-      <div className="flex items-center gap-2 text-text-body">
+      <div className="flex items-center gap-2">
         {icon}
-        <span className="text-label">{label}</span>
+        <span className="text-text-regular text-text-subtitle">{label}</span>
       </div>
-      <div className="flex items-baseline gap-2">
-        <span className="text-title-m text-text-title">{value}</span>
+      <div className="flex items-center gap-2">
+        <span className="text-title-l text-text-title">{value}</span>
         {delta && (
-          <span className={cn('text-label', delta.startsWith('-') ? 'text-text-body' : 'text-state-success')}>
+          <span className={cn('text-body-medium', delta.startsWith('-') ? 'text-text-body' : 'text-state-success')}>
             {delta}
           </span>
         )}
+        {onClick && !delta && <ChevronRight className="text-text-title" />}
       </div>
     </Wrapper>
   )

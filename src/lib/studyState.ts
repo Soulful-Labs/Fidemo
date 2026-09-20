@@ -31,17 +31,17 @@ export const STATUS: Record<StudyStatus, StatusMeta> = {
   available: { label: 'Open', tone: 'neutral', primary: 'Apply' },
   invited_to_apply: {
     label: 'Invited', tone: 'yellow', flag: "You're Invited To Apply!",
-    primary: 'Accept & Apply', rejectable: true, tab: 'invites',
+    primary: 'Accept & Apply', secondary: 'View Details', rejectable: true, tab: 'invites',
   },
   applying: { label: 'Applying', tone: 'yellow' },
   draft: { label: 'In Draft', tone: 'yellow', primary: 'Resume Application', tab: 'drafts' },
   applied: { label: 'In Review', tone: 'yellow', tab: 'applied' },
   invited_to_schedule: {
-    label: 'Invited To Schedule', tone: 'yellow', flag: 'Invited To Schedule!',
+    label: 'Invited To Schedule', tone: 'green', flag: "You're Invited To Schedule!",
     primary: 'Schedule Session', rejectable: true, tab: 'invites',
   },
   invited_to_complete: {
-    label: 'Invited To Complete', tone: 'yellow', flag: 'Invited To Complete',
+    label: 'Invited To Complete', tone: 'green', flag: 'Invited To Complete',
     primary: 'Start Study', rejectable: true, tab: 'invites',
   },
   scheduled: {

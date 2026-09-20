@@ -12,25 +12,26 @@ export const STUDY_TYPE_LABEL: Record<StudyType, string> = {
 }
 
 const PATHS: Record<StudyType, string> = {
-  survey: 'M7 4h10v16H7zM9.5 9h5M9.5 13h5',
-  video_call: 'M3 7h11v10H3zM14 11l7-4v10l-7-4',
-  group_video_call: 'M3 8h9v8H3zM12 11l5-3v8l-5-3M17 4.5a2 2 0 1 1 0 4',
-  in_person: 'M12 21s6-5.2 6-10a6 6 0 1 0-12 0c0 4.8 6 10 6 10Z M12 9.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z',
-  in_person_group: 'M9 20s5-4.5 5-9a5 5 0 0 0-10 0c0 4.5 5 9 5 9ZM17 4a4 4 0 0 1 0 8',
-  diary: 'M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2V4ZM9 8h6M9 12h6',
+  survey: 'M5 14v6M12 4v16M19 9v11M5 14h0M12 4h0',
+  video_call: 'M4 5h16v10H4zM9 20h6M12 15v5M12 8.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3ZM9.5 13.5c.5-1 1.4-1.5 2.5-1.5s2 .5 2.5 1.5',
+  group_video_call: 'M3 6h18v11H3zM8 20h8M8 9.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm8 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3ZM5.5 15c.5-1 1.4-1.5 2.5-1.5s2 .5 2.5 1.5m3 0c.5-1 1.4-1.5 2.5-1.5s2 .5 2.5 1.5',
+  in_person: 'M12 21s6-5.2 6-10a6 6 0 1 0-12 0c0 4.8 6 10 6 10ZM12 8.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-3 6.5c.6-1 1.7-1.5 3-1.5s2.4.5 3 1.5',
+  in_person_group: 'M12 21s6-5.2 6-10a6 6 0 1 0-12 0c0 4.8 6 10 6 10ZM9.5 9a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm5 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3ZM7 15c.5-1 1.4-1.5 2.5-1.5s2 .5 2.5 1.5m0 0c.5-1 1.4-1.5 2.5-1.5s2 .5 2.5 1.5',
+  diary: 'M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2V4ZM9 8h6M9 12h6M9 16h3',
 }
 
-export function StudyTypeIcon({ type }: { type: StudyType }) {
+export function StudyTypeIcon({ type, className }: { type: StudyType; className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" width="14" height="14" className="shrink-0">
-      <path d={PATHS[type]} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <svg viewBox="0 0 24 24" fill="none" width="20" height="20" className={`shrink-0 ${className ?? ''}`}>
+      <path d={PATHS[type]} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
 
-export default function StudyTypeTag({ type, size = 'sm' }: { type: StudyType; size?: 'sm' | 'md' }) {
+/** Grey pill with a green type icon, as on every study card in Figma. */
+export default function StudyTypeTag({ type, size = 'md' }: { type: StudyType; size?: 'sm' | 'md' }) {
   return (
-    <Tag tone="neutral" size={size} icon={<StudyTypeIcon type={type} />}>
+    <Tag tone="neutral" size={size} icon={<StudyTypeIcon type={type} className="text-brand-secondary" />}>
       {STUDY_TYPE_LABEL[type]}
     </Tag>
   )
