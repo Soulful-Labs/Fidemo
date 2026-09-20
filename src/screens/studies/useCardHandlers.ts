@@ -8,13 +8,12 @@ import type { Study } from '../../mock/types'
  */
 export function useCardHandlers() {
   const navigate = useNavigate()
-  const { toggleSaved, applyToStudy, toast, studyById } = useStore()
+  const { toggleSaved, toast, studyById } = useStore()
 
   const primary = (study: Study) => () => {
     switch (study.status) {
       case 'available':
       case 'invited_to_apply':
-        applyToStudy(study.id)
         navigate(`/studies/${study.id}/screener`)
         break
       case 'draft':
@@ -24,7 +23,7 @@ export function useCardHandlers() {
         navigate(`/studies/${study.id}/schedule`)
         break
       case 'invited_to_complete':
-        navigate(`/studies/${study.id}`)
+        navigate(`/studies/${study.id}/${study.type === 'diary' ? 'diary' : 'survey'}`)
         break
       case 'scheduled':
         navigate(`/studies/${study.id}/pin`)

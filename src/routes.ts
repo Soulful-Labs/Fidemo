@@ -21,6 +21,9 @@ import AboutYou from './screens/onboarding/AboutYou'
 import Professional from './screens/onboarding/Professional'
 import Identity from './screens/onboarding/Identity'
 import Welcome from './screens/onboarding/Welcome'
+import MyStudies from './screens/studies/MyStudies'
+import Screener from './screens/studies/questions/Screener'
+import AppliedSuccess from './screens/studies/questions/AppliedSuccess'
 
 /**
  * The complete route map from the build brief. Every screen route points at the
@@ -77,14 +80,10 @@ export const routes: ScreenRoute[] = [
   built('/studies', 'Explore', Explore),
   built('/studies/saved', 'Saved', Saved),
   redirect('/studies/mine', '/studies/mine/invites'),
-  screen('/studies/mine/invites', 'My Studies, Invites'),
-  screen('/studies/mine/scheduled', 'My Studies, Scheduled'),
-  screen('/studies/mine/drafts', 'My Studies, Drafts'),
-  screen('/studies/mine/applied', 'My Studies, Applied'),
-  screen('/studies/mine/history', 'My Studies, History'),
+  built('/studies/mine/:tab', 'My Studies', MyStudies),
   built('/studies/:id', 'Study Detail', StudyDetail),
-  screen('/studies/:id/screener', 'Screener questions'),
-  screen('/studies/:id/applied', 'Applied successfully'),
+  built('/studies/:id/screener', 'Screener questions', Screener),
+  built('/studies/:id/applied', 'Applied successfully', AppliedSuccess),
   screen('/studies/:id/schedule', 'Pick date, time, and location'),
   screen('/studies/:id/schedule/agreement', 'Call recording agreement'),
   screen('/studies/:id/schedule/review', 'Review Schedule'),

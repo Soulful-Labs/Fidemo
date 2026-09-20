@@ -6,9 +6,10 @@ import type { Study } from '../../../mock/types'
 const MOCK_ZOOM_URL = 'https://zoom.us/j/9876543210'
 
 /** Detail screen actions, derived from status like everything else. */
-export function useDetailActions(study?: Study) {
+export function useDetailActions(study?: Study, onLocations?: () => void) {
   const navigate = useNavigate()
-  const { applyToStudy, completeStudy, toast } = useStore()
+  const { completeStudy, toast } = useStore()
+  const inPerson = study?.type === 'in_person' || study?.type === 'in_person_group'
 
   const go = (suffix = '') => navigate(`/studies/${study?.id}${suffix}`)
 
@@ -17,8 +18,9 @@ export function useDetailActions(study?: Study) {
     switch (study.status) {
       case 'available':
       case 'invited_to_apply':
-        applyToStudy(study.id)
-        go('/screener')
+        // In-person studies show their locations first (PRD 6.8).
+        if (inPerson && study.locations?.length && onLocations) onLocations()
+        else go('/screener')
         break
       case 'draft': go('/screener'); break
       case 'invited_to_schedule': go('/schedule'); break
@@ -36,7 +38,6 @@ export function useDetailActions(study?: Study) {
 
   const secondary = () => {
     if (!study) return
-    const inPerson = study.type === 'in_person' || study.type === 'in_person_group'
     if (study.status === 'scheduled' || study.status === 'pin_confirmed') {
       if (inPerson) {
         const address = study.locations?.find((l) => l.id === study.booking?.locationId)?.address

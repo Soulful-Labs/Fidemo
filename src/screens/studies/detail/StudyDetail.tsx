@@ -19,6 +19,7 @@ import ReviewBlock from './ReviewBlock'
 import StateBanner, { bannerFor, diaryBannerFor } from './StateBanner'
 import StudyLocations from './StudyLocations'
 import { useDetailActions } from './useDetailActions'
+import { LocationsModal } from '../questions/ScreenerModals'
 
 /** Statuses drawn with the thumbnail-left layout and the Get Support row. */
 const AFTER_APPLY = ['applied', 'in_process', 'paid', 'rejected', 'no_show', 'draft']
@@ -40,9 +41,10 @@ export default function StudyDetail() {
   const { studyById, toggleSaved, cancelStudy, rejectInvitation, toast } = useStore()
   const [reject, setReject] = useState(false)
   const [cancel, setCancel] = useState(false)
+  const [locations, setLocations] = useState(false)
 
   const study = studyById(id)
-  const actions = useDetailActions(study)
+  const actions = useDetailActions(study, () => setLocations(true))
 
   if (!study) {
     return (
@@ -132,6 +134,12 @@ export default function StudyDetail() {
         onClose={() => setReject(false)}
         isInvitation={study.status === 'invited_to_apply' || study.status === 'invited_to_schedule'}
         onConfirm={() => { rejectInvitation(study.id); setReject(false); toast('Invitation rejected'); navigate('/studies') }}
+      />
+
+      <LocationsModal
+        open={locations}
+        locations={study.locations ?? []}
+        onClose={() => { setLocations(false); navigate(`/studies/${study.id}/screener`) }}
       />
 
       <CancelStudyModal

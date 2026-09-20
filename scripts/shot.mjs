@@ -10,7 +10,7 @@
 //   --wait <ms>       extra settle time after load and --js (default 400)
 //   --click "<sel>"   click a selector after --js, then wait again
 //
-// A batch file is a JSON array of { route, out, full?, js?, wait?, click? }.
+// A batch file is a JSON array of { route, out, full?, js?, wait?, click?, width?, height? }.
 // Routes are given without the leading slash ("studies/st-01") because Git
 // Bash rewrites a leading slash into a Windows path.
 
@@ -86,9 +86,9 @@ const send = (method, params = {}, sessionId) =>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
 async function capture(s, job) {
-  const { route, out, full = false, js = '', click = '', wait = 400 } = job
+  const { route, out, full = false, js = '', click = '', wait = 400, width = WIDTH, height = HEIGHT } = job
   events = []
-  await s('Emulation.setDeviceMetricsOverride', { width: WIDTH, height: HEIGHT, deviceScaleFactor: 2, mobile: true })
+  await s('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: width > 420 ? 1 : 2, mobile: width <= 420 })
   await s('Page.navigate', { url: base + '/' + route.replace(/^\/+/, '') })
   for (let i = 0; i < 100; i++) {
     if (events.some((e) => e.method === 'Page.loadEventFired')) break
@@ -118,10 +118,10 @@ async function capture(s, job) {
       expression: `(() => { const m = document.querySelector('main'); return m ? m.scrollHeight + (window.innerHeight - m.clientHeight) : document.documentElement.scrollHeight })()`,
       returnByValue: true,
     })
-    const h = Math.max(HEIGHT, Math.min(result.value, 6000))
-    await s('Emulation.setDeviceMetricsOverride', { width: WIDTH, height: h, deviceScaleFactor: 2, mobile: true })
+    const h = Math.max(height, Math.min(result.value, 6000))
+    await s('Emulation.setDeviceMetricsOverride', { width, height: h, deviceScaleFactor: 2, mobile: true })
     await sleep(200)
-    clip = { x: 0, y: 0, width: WIDTH, height: h, scale: 1 }
+    clip = { x: 0, y: 0, width, height: h, scale: 1 }
   }
   const shot = await s('Page.captureScreenshot', { format: 'png', clip, captureBeyondViewport: full })
   writeFileSync(out, Buffer.from(shot.data, 'base64'))
