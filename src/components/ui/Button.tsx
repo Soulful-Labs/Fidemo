@@ -36,7 +36,7 @@ const ENABLED: Record<ButtonVariant, string> = {
   primary: 'bg-cta-gradient border-b-4 border-yellow-700 text-cta-primaryText hover:brightness-95',
   secondary: 'bg-cta-secondary text-cta-secondaryText hover:bg-yellow-900',
   tertiary: 'border-1 border-cta-tertiaryStroke text-text-title hover:bg-bg-2',
-  danger: 'bg-state-danger text-text-title hover:opacity-90',
+  danger: 'bg-state-dangerBg text-state-danger hover:opacity-90',
   ghost: 'text-cta-secondaryText hover:bg-bg-2',
 }
 

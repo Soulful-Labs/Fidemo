@@ -24,6 +24,7 @@ import Welcome from './screens/onboarding/Welcome'
 import MyStudies from './screens/studies/MyStudies'
 import Screener from './screens/studies/questions/Screener'
 import AppliedSuccess from './screens/studies/questions/AppliedSuccess'
+import ScheduleFlow from './screens/studies/schedule/ScheduleFlow'
 
 /**
  * The complete route map from the build brief. Every screen route points at the
@@ -84,11 +85,10 @@ export const routes: ScreenRoute[] = [
   built('/studies/:id', 'Study Detail', StudyDetail),
   built('/studies/:id/screener', 'Screener questions', Screener),
   built('/studies/:id/applied', 'Applied successfully', AppliedSuccess),
-  screen('/studies/:id/schedule', 'Pick date, time, and location'),
-  screen('/studies/:id/schedule/agreement', 'Call recording agreement'),
-  screen('/studies/:id/schedule/review', 'Review Schedule'),
-  screen('/studies/:id/schedule/done', 'Scheduled confirmation'),
-  screen('/studies/:id/reschedule', 'Reschedule'),
+  // One component carries the pick step and the agreement / review / done
+  // steps, so the selection survives moving between them.
+  built('/studies/:id/schedule/:step?', 'Schedule: pick, agreement, review, done', ScheduleFlow),
+  built('/studies/:id/reschedule/:step?', 'Reschedule', ScheduleFlow),
   screen('/studies/:id/pin', 'Enter attendance PIN'),
   screen('/studies/:id/pin/done', 'PIN confirmed'),
   screen('/studies/:id/survey', 'Survey questions'),

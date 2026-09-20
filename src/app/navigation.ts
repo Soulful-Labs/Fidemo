@@ -74,6 +74,7 @@ const PARENTS: [pattern: string, parent: string][] = [
   ['/support', '/profile'],
   // Study flows return to the study, not to the previous step.
   ['/studies/:id/schedule/:step', '/studies/:id'],
+  ['/studies/:id/reschedule/:step', '/studies/:id'],
   ['/studies/:id/pin/done', '/studies/:id'],
   ['/studies/:id/survey/done', '/studies/:id'],
   ['/studies/:id/diary/:day', '/studies/:id/diary'],
