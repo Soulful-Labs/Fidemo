@@ -25,6 +25,10 @@ import MyStudies from './screens/studies/MyStudies'
 import Screener from './screens/studies/questions/Screener'
 import AppliedSuccess from './screens/studies/questions/AppliedSuccess'
 import ScheduleFlow from './screens/studies/schedule/ScheduleFlow'
+import PinEntry from './screens/studies/complete/PinEntry'
+import Survey from './screens/studies/complete/Survey'
+import DiaryOverview from './screens/studies/complete/DiaryOverview'
+import DiaryDay from './screens/studies/complete/DiaryDay'
 
 /**
  * The complete route map from the build brief. Every screen route points at the
@@ -89,12 +93,10 @@ export const routes: ScreenRoute[] = [
   // steps, so the selection survives moving between them.
   built('/studies/:id/schedule/:step?', 'Schedule: pick, agreement, review, done', ScheduleFlow),
   built('/studies/:id/reschedule/:step?', 'Reschedule', ScheduleFlow),
-  screen('/studies/:id/pin', 'Enter attendance PIN'),
-  screen('/studies/:id/pin/done', 'PIN confirmed'),
-  screen('/studies/:id/survey', 'Survey questions'),
-  screen('/studies/:id/survey/done', 'Completed successfully'),
-  screen('/studies/:id/diary', 'Diary overview'),
-  screen('/studies/:id/diary/:day', 'One diary day'),
+  built('/studies/:id/pin/:step?', 'Enter attendance PIN, PIN confirmed', PinEntry),
+  built('/studies/:id/survey/:step?', 'Survey questions, Completed successfully', Survey),
+  built('/studies/:id/diary', 'Diary overview', DiaryOverview),
+  built('/studies/:id/diary/:day', 'One diary day', DiaryDay),
   screen('/studies/:id/rate', 'Rate the client'),
   screen('/clients/:clientId/ratings', 'Client Ratings'),
 

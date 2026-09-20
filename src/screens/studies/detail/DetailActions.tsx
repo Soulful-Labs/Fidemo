@@ -2,6 +2,8 @@ import Button from '../../../components/ui/Button'
 import CtaBar from '../../../components/ui/CtaBar'
 import { STATUS } from '../../../lib/studyState'
 import type { Study } from '../../../mock/types'
+import { resumeLabel } from '../complete/DiaryOverview'
+import { ChevronRight } from '../../../components/ui/icons'
 
 export interface DetailActionsProps {
   study: Study
@@ -23,10 +25,13 @@ export default function DetailActions({ study, onPrimary, onSecondary }: DetailA
   const inPerson = study.type === 'in_person' || study.type === 'in_person_group'
   const secondaryLabel = scheduled ? (inPerson ? 'Get Directions' : 'Join Call') : undefined
 
+  const diary = study.type === 'diary' && study.diary
+  const diaryOpen = diary && study.status === 'invited_to_complete'
   const primaryLabel =
     study.status === 'available' ? 'Apply'
       : study.status === 'invited_to_schedule' ? 'Schedule'
-        : meta.primary
+        : diaryOpen ? resumeLabel(study.diary!.completedDays, study.diary!.totalDays)
+          : meta.primary
 
   if (!primaryLabel) return null
 
@@ -35,7 +40,7 @@ export default function DetailActions({ study, onPrimary, onSecondary }: DetailA
       {secondaryLabel && (
         <Button variant="secondary" className="flex-1" onClick={onSecondary}>{secondaryLabel}</Button>
       )}
-      <Button className="flex-1" onClick={onPrimary}>{primaryLabel}</Button>
+      <Button className="flex-1" onClick={onPrimary} rightIcon={diaryOpen ? <ChevronRight className="h-5 w-5" /> : undefined}>{primaryLabel}</Button>
     </CtaBar>
   )
 }

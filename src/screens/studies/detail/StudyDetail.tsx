@@ -20,6 +20,8 @@ import StateBanner, { bannerFor, diaryBannerFor } from './StateBanner'
 import StudyLocations from './StudyLocations'
 import { useDetailActions } from './useDetailActions'
 import { LocationsModal } from '../questions/ScreenerModals'
+import Button from '../../../components/ui/Button'
+import { resumeLabel } from '../complete/DiaryOverview'
 
 /** Statuses drawn with the thumbnail-left layout and the Get Support row. */
 const AFTER_APPLY = ['applied', 'in_process', 'paid', 'rejected', 'no_show', 'draft']
@@ -63,6 +65,8 @@ export default function StudyDetail() {
   const banner = bannerFor(study)
   const diaryBanner = diaryBannerFor(study)
   const afterApply = AFTER_APPLY.includes(study.status)
+  // A diary that is open to fill in shows its days banner alone (919:74201).
+  const showBanner = banner && !(diaryBanner && study.status === 'invited_to_complete')
 
   return (
     <div className="flex min-h-full flex-col">
@@ -82,7 +86,7 @@ export default function StudyDetail() {
       />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
-        {banner && (
+        {showBanner && (
           <StateBanner content={banner}>
             <BannerActions
               study={study}
@@ -96,7 +100,15 @@ export default function StudyDetail() {
             {study.status === 'paid' && <ReviewBlock study={study} />}
           </StateBanner>
         )}
-        {diaryBanner && <StateBanner content={diaryBanner} />}
+        {diaryBanner && (
+          <StateBanner content={diaryBanner}>
+            {study.diary && study.status === 'invited_to_complete' && (
+              <Button variant="tertiary" fullWidth rightIcon={<ChevronRight className="h-5 w-5" />} onClick={() => navigate(`/studies/${study.id}/diary`)}>
+                {resumeLabel(study.diary.completedDays, study.diary.totalDays)}
+              </Button>
+            )}
+          </StateBanner>
+        )}
 
         <div className="flex items-center gap-2">
           <StudyTypeTag type={study.type} />

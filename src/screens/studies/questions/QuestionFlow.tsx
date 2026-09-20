@@ -6,6 +6,7 @@ import { ArrowLeft, ChevronRight, Close, Info } from '../../../components/ui/ico
 import type { Question } from '../../../mock/types'
 import type { Answers } from '../../../mock/storeTypes'
 import QuestionInput, { isAnswered } from './QuestionInput'
+import { cn } from '../../../lib/cn'
 
 export interface QuestionFlowProps {
   title: string
@@ -20,6 +21,8 @@ export interface QuestionFlowProps {
   submitLabel?: string
   /** Extra content above the question, e.g. the diary day heading. */
   header?: ReactNode
+  /** Surveys draw one segment per question instead of the bar and counter. */
+  progress?: 'bar' | 'segments'
 }
 
 /**
@@ -28,7 +31,7 @@ export interface QuestionFlowProps {
  * the CTA bar (Figma 919:74274). Shared by the screener, survey and diary.
  */
 export default function QuestionFlow({
-  title, questions, answers, onAnswer, onSubmit, onExit, onInfo, submitLabel = 'Submit', header,
+  title, questions, answers, onAnswer, onSubmit, onExit, onInfo, submitLabel = 'Submit', header, progress = 'bar',
 }: QuestionFlowProps) {
   const [index, setIndex] = useState(0)
   const question = questions[index]
@@ -53,12 +56,20 @@ export default function QuestionFlow({
             </button>
           )}
         </div>
-        <div className="flex items-center gap-3">
-          <div className="h-1 flex-1 overflow-hidden rounded-full bg-green-900/60" role="progressbar" aria-valuenow={index + 1} aria-valuemax={questions.length}>
-            <div className="h-full rounded-full bg-brand-secondary transition-all" style={{ width: `${pct}%` }} />
+        {progress === 'segments' ? (
+          <div className="flex items-center gap-2" role="progressbar" aria-valuenow={index + 1} aria-valuemax={questions.length}>
+            {questions.map((q, i) => (
+              <span key={q.id} className={cn('h-1 flex-1 rounded-full', i <= index ? 'bg-brand-secondary' : 'bg-green-900/60')} />
+            ))}
           </div>
-          <span className="text-text-regular text-text-subtitle">{index + 1}/{questions.length}</span>
-        </div>
+        ) : (
+          <div className="flex items-center gap-3">
+            <div className="h-1 flex-1 overflow-hidden rounded-full bg-green-900/60" role="progressbar" aria-valuenow={index + 1} aria-valuemax={questions.length}>
+              <div className="h-full rounded-full bg-brand-secondary transition-all" style={{ width: `${pct}%` }} />
+            </div>
+            <span className="text-text-regular text-text-subtitle">{index + 1}/{questions.length}</span>
+          </div>
+        )}
       </header>
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-6">
