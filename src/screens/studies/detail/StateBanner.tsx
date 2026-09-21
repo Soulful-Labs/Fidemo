@@ -97,6 +97,12 @@ function bannerContent(study: Study): BannerContent | null {
         tone: 'danger', title: 'Rejected', pill: true, aside: dateTime(when(study, 'Rejected') ?? study.endsAt),
         body: 'Your application did not qualified due to unmatched answers in the screener. Thanks for taking time to apply. Better luck next time.',
       }
+    case 'late_show':
+      return {
+        tone: 'yellow', title: 'Late Show Up', pill: true, aside: dateTime(when(study, 'Late show up') ?? study.endsAt),
+        headline: `Paid ${money(study.reward)}, ${TRUST.LATE_SHOW_UP} Trust score`,
+        body: 'You took part but arrived late, so the session was marked as a late show up. You are paid in full; the policy deducts 2 from your Trust Score. Reward points are never deducted.',
+      }
     case 'no_show':
       return {
         tone: 'danger', title: 'No Show', pill: true, aside: dateTime(when(study, 'No Show') ?? study.endsAt),
@@ -144,7 +150,7 @@ export default function StateBanner({ content, children }: { content: BannerCont
       {content.outcome && (content.outcome.colour === 'yellow' || content.outcome.colour === 'red') && (
         <p className="flex items-center gap-2 text-text-regular text-text-subtitle">
           <span className={cn('h-2.5 w-2.5 shrink-0 rounded-full', content.outcome.colour === 'yellow' ? 'bg-brand-primary' : 'bg-state-danger')} aria-hidden="true" />
-          {content.outcome.label}{content.outcome.colour === 'yellow' ? ', check back for the outcome' : ''}
+          {content.outcome.label}{content.outcome.label === 'Under consideration' ? ', check back for the outcome' : ''}
         </p>
       )}
       {content.headline && (

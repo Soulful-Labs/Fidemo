@@ -35,7 +35,7 @@ export function useCardHandlers() {
       case 'scheduled':
         navigate(`/studies/${study.id}/pin`)
         break
-      case 'paid':
+      case 'paid': case 'late_show':
         navigate(`/studies/${study.id}/rate`)
         break
       default:

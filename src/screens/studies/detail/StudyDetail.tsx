@@ -25,7 +25,7 @@ import { resumeLabel } from '../complete/DiaryOverview'
 import { PremiumBanner, RepeatRuleRow, ShareStudyLink } from './EligibilityRows'
 
 /** Statuses drawn with the thumbnail-left layout and the Get Support row. */
-const AFTER_APPLY = ['applied', 'in_process', 'paid', 'rejected', 'no_show', 'draft']
+const AFTER_APPLY = ['applied', 'in_process', 'paid', 'rejected', 'no_show', 'late_show', 'not_needed', 'draft']
 
 function SupportIcon() {
   return (
@@ -98,7 +98,7 @@ export default function StudyDetail() {
               onBlockedReschedule={(reason) => toast(reason)}
             />
             {study.status === 'scheduled' && <PinNote />}
-            {study.status === 'paid' && <ReviewBlock study={study} />}
+            {(study.status === 'paid' || study.status === 'late_show') && <ReviewBlock study={study} />}
           </StateBanner>
         )}
         {diaryBanner && (

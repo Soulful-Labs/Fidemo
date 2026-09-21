@@ -1,5 +1,5 @@
 import { POINTS, WITHDRAWAL_FEE, pointsToUsd } from '../../lib/rules'
-import { paidAt } from '../../lib/derive'
+import { COMPLETED, paidAt } from '../../lib/derive'
 import type {
   EarningCategory, Payout, PayoutMethod, PointsEntry, RedeemEntry, Referral, Study, Ticket, User,
 } from '../types'
@@ -51,7 +51,7 @@ const txNumber = (n: number) => `#${260 - Math.floor(n / 10)}-${String(552 - n).
 
 /** One transaction per completed study, dated when it was paid, plus the redemption below. */
 const studyTransactions = STUDIES
-  .filter((s) => s.status === 'paid' || s.status === 'not_needed')
+  .filter((s) => COMPLETED.includes(s.status))
   .sort((a, b) => paidAt(b).localeCompare(paidAt(a)))
   .map((s, i) => ({
     id: `tx-${s.id}`, studyId: s.id, approved: true, title: s.title, at: paidAt(s),
@@ -92,7 +92,7 @@ export const POINTS_HISTORY: PointsEntry[] = [
   { id: 'pt-referred', kind: 'bonus' as const, label: 'Bonus', detail: 'Joined by referral', at: at(-420, 9, 5), amount: POINTS.BEING_REFERRED },
   { id: 'pt-profile', kind: 'bonus' as const, label: 'Bonus', detail: 'Full profile completion', at: at(-418, 12, 0), amount: POINTS.FULL_PROFILE },
   ...STUDIES
-    .filter((s) => s.status === 'paid' || s.status === 'not_needed')
+    .filter((s) => COMPLETED.includes(s.status))
     .map((s) => ({ id: `pt-${s.id}`, kind: 'study' as const, label: 'Study', detail: s.title, at: paidAt(s), amount: POINTS.STUDY_COMPLETION })),
   ...REFERRALS
     .filter((r) => r.status === 'completed')

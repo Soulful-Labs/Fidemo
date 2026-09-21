@@ -1,6 +1,7 @@
 import { STUDIES, ALL_TYPES, ALL_STATUSES } from '../src/mock/seed/studies'
 import { PAYOUTS, PAYOUT_METHODS, POINTS_HISTORY, REDEEM_HISTORY, REFERRALS, TICKETS, TRANSACTIONS, returningUserState } from '../src/mock/data'
-import { derive } from '../src/lib/derive'
+import { derive, trustHistory } from '../src/lib/derive'
+import * as profile from '../src/lib/profile'
 import { reducer } from '../src/mock/reducer'
 import type { AppState } from '../src/mock/storeTypes'
 import * as R from '../src/lib/rules'
@@ -37,9 +38,13 @@ ok('4 star = +3', R.trustForRating(4) === 3)
 ok('3 star = +1', R.trustForRating(3) === 1)
 ok('2 star = -2', R.trustForRating(2) === -2)
 ok('1 star = -3', R.trustForRating(1) === -3)
-ok('no show = -4', R.TRUST.NO_SHOW === -4)
-ok('late cancellation = -2 (Figma says -4)', R.TRUST.LATE_CANCELLATION === -2)
-ok('upheld fraud = -20 (Figma says -2)', R.TRUST.UPHELD_FRAUD === -20)
+ok('policy deduction: no show = -4', R.TRUST.NO_SHOW === -4)
+ok('policy deduction: cancelled session = -2 (Figma says -4)', R.TRUST.CANCELLED_SESSION === -2)
+ok('policy deduction: late show up = -2', R.TRUST.LATE_SHOW_UP === -2)
+ok('policy deduction: fraud = -20 (Figma says -2)', R.TRUST.FRAUD === -20)
+ok('policy: onboarding 50 is the floor, 100 the ceiling', R.TRUST.ONBOARDING === 50 && R.TRUST.MIN === 50 && R.TRUST.MAX === 100)
+ok('policy: completion +1 up to 10 a year, ratings last 10 up to +40', R.TRUST.STUDY_COMPLETION === 1 && R.TRUST.STUDY_COMPLETION_CAP_PER_YEAR === 10 && R.TRUST.RATINGS_WINDOW === 10 && R.TRUST.RATINGS_MAX === 40)
+ok('policy: certificate FI- prefix, twelve months', R.CERTIFICATE.ID_PREFIX === 'FI' && R.CERTIFICATE.VALID_MONTHS === 12)
 ok('tiers 50/70/90', R.TIERS.silver === 50 && R.TIERS.gold === 70 && R.TIERS.platinum === 90)
 ok('tierFor(72) = gold', R.tierFor(72) === 'gold')
 ok('tierFor(90) = platinum', R.tierFor(90) === 'platinum')
@@ -101,7 +106,7 @@ ok('redeem credits $10', Math.round((user().walletBalance - (wBefore - 100)) * 1
 console.log('\n--- DERIVED, NEVER HARDCODED ---')
 const fresh = derive(returningUserState())
 ok('all time earned = sum of study transactions', fresh.allTimeEarned === TRANSACTIONS.filter((t) => t.category !== 'Redeem Points').reduce((x, t) => x + t.amount, 0))
-ok('completed studies = paid + not needed', fresh.completedStudies === STUDIES.filter((s) => s.status === 'paid' || s.status === 'not_needed').length)
+ok('completed studies = paid + not needed + late show', fresh.completedStudies === STUDIES.filter((s) => s.status === 'paid' || s.status === 'not_needed' || s.status === 'late_show').length)
 ok('points = history - redemptions', fresh.points === POINTS_HISTORY.reduce((x, p) => x + p.amount, 0) - REDEEM_HISTORY.reduce((x, r) => x + r.points, 0))
 ok('trust score within 50..100 and Gold for the demo account', fresh.trustScore >= 50 && fresh.trustScore <= 100 && fresh.tier === 'gold', String(fresh.trustScore))
 ok('streak month is the current month', fresh.streak.month === new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }))
@@ -125,8 +130,24 @@ ok('sign-up records the link code (workflow 12/14)', fresh2.user.sourceCode === 
 fresh2 = reducer(fresh2, { type: 'SIGN_OUT' })
 fresh2 = reducer(fresh2, { type: 'SIGN_IN', email: 'Jonathan.Reeve@example.com' })
 ok('signing in with the seed email restores the seed account', fresh2.user.email === 'jonathan.reeve@example.com' && fresh2.transactions.length > 0)
-ok('not_needed is paid in full with no trust effect (workflow 44)', derive(returningUserState()).completedStudies === STUDIES.filter((x) => x.status === 'paid' || x.status === 'not_needed').length && TRANSACTIONS.some((t) => t.studyId === 'st-16'))
+ok('not_needed is paid in full with no trust effect (workflow 44)', derive(returningUserState()).completedStudies === STUDIES.filter((x) => x.status === 'paid' || x.status === 'not_needed' || x.status === 'late_show').length && TRANSACTIONS.some((t) => t.studyId === 'st-16'))
 ok('premium studies are the highest paid (workflow 17)', Math.min(...STUDIES.filter((x) => x.premium).map((x) => x.reward)) > Math.max(...STUDIES.filter((x) => !x.premium).map((x) => x.reward)))
+const lateSeed = STUDIES.find((x) => x.status === 'late_show')
+ok('a late show up study is seeded, paid, with the deduction on its timeline', Boolean(lateSeed) && TRANSACTIONS.some((t) => t.studyId === lateSeed!.id) && lateSeed!.timeline.some((t) => t.label === 'Late show up'))
+{
+  const base = returningUserState()
+  const without = { ...base, studies: base.studies.map((x) => (x.status === 'late_show' ? { ...x, status: 'paid' as const } : x)) }
+  ok('late show up costs exactly 2 trust versus the same study paid on time', derive(without).trustScore - derive(base).trustScore === 2, `${derive(without).trustScore} -> ${derive(base).trustScore}`)
+  ok('late show up keeps its points (never deducted)', derive(without).points === derive(base).points)
+  const line = trustHistory(base).find((e) => e.label === 'Late show up')
+  ok('trust history traces the late show up to its study', Boolean(line) && line!.studyId === lateSeed!.id && line!.delta === -2)
+}
+{
+  const { certificateId } = profile
+  ok('certificate ID reads FI-XXXX-XXXX', /^FI-[A-Z2-9]{4}-[A-Z2-9]{4}$/.test(certificateId('jonathan.reeve@example.com')), certificateId('jonathan.reeve@example.com'))
+  const { from, to } = profile.certificateValidity('2025-07-29T09:00:00.000Z', new Date('2026-09-22T00:00:00Z'))
+  ok('certificate validity is a twelve month range that renews on its own', to.getTime() - from.getTime() > 360 * 864e5 && from <= new Date('2026-09-22') && to > new Date('2026-09-22'))
+}
 ok('no screener asks age, location or job (workflow 30)', STUDIES.every((x) => x.screener.every((q) => !/(age|old are you|where do you live|city|country|occupation|job title)/i.test(q.prompt))))
 
 console.log('\n--- TAB DERIVATION ---')

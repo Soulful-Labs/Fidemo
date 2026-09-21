@@ -41,5 +41,5 @@ export function withStatus(status: StudyStatus, over: Partial<Study> = {}): Stud
 export const ALL_STATUSES: StudyStatus[] = [
   'available', 'invited_to_apply', 'draft', 'applied', 'invited_to_schedule',
   'invited_to_complete', 'scheduled', 'pin_confirmed', 'in_process', 'paid',
-  'rejected', 'no_show',
+  'rejected', 'no_show', 'late_show',
 ]

@@ -28,7 +28,7 @@ export interface StudyCardProps {
   footnote?: string
 }
 
-const HISTORY = ['in_process', 'paid', 'rejected', 'no_show']
+const HISTORY = ['in_process', 'paid', 'rejected', 'no_show', 'late_show', 'not_needed']
 
 /**
  * The single study card, as drawn in Figma (1279:89999 and the Saved list,

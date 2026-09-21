@@ -32,7 +32,7 @@ export default function DetailActions({ study, onPrimary, onSecondary }: DetailA
       : study.status === 'invited_to_schedule' ? 'Schedule'
         : diaryOpen ? resumeLabel(study.diary!.completedDays, study.diary!.totalDays)
           // Rate Client lives in the Paid banner; the bar only repeats it until it is done.
-          : study.status === 'paid' && study.userReview ? undefined
+          : (study.status === 'paid' || study.status === 'late_show') && study.userReview ? undefined
             : meta.primary
 
   if (!primaryLabel) return null

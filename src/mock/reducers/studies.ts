@@ -78,7 +78,7 @@ export function studyReducer(state: AppState, action: Action): AppState | null {
       }
     }
 
-    /** Cancelling a booked session is a late cancellation: -2 Trust Score, remembered as an event. */
+    /** Policy deduction: a cancelled session is -2 Trust Score, remembered as an event tied to the study. */
     case 'CANCEL_STUDY': {
       const study = state.studies.find((s) => s.id === action.id)
       return {
@@ -86,7 +86,7 @@ export function studyReducer(state: AppState, action: Action): AppState | null {
           status: 'available', booking: undefined, pinConfirmed: false,
           timeline: [...(study?.timeline ?? []), { label: 'Cancelled', at: new Date().toISOString() }],
         }),
-        trustEvents: [...state.trustEvents, { label: `Late cancellation, ${study?.title ?? 'study'}`, delta: TRUST.LATE_CANCELLATION, at: new Date().toISOString() }],
+        trustEvents: [...state.trustEvents, { label: 'Cancelled session', detail: study?.title ?? 'study', studyId: action.id, delta: TRUST.CANCELLED_SESSION, at: new Date().toISOString() }],
       }
     }
 

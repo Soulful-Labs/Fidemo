@@ -1,14 +1,19 @@
 import { cn } from '../../lib/cn'
+import { TIERS } from '../../lib/rules'
 import { ChevronRight } from '../ui/icons'
 import type { User } from '../../mock/types'
 
 type Tier = User['tier']
 
-/** "In Top" labels per PRD 7.4 (Gold uses 20%, the value on the dashboard). */
+/**
+ * Tier names and the policy line under each (section 3: "Trust Score 50%+"
+ * and so on). Figma's "In Top 20%" percentile labels are a ranking the policy
+ * does not define and its guardrails rule out, so they are not shown.
+ */
 export const TIER_LABEL: Record<Tier, { name: string; top: string }> = {
-  silver: { name: 'Silver', top: 'In Top 50%' },
-  gold: { name: 'Gold', top: 'In Top 20%' },
-  platinum: { name: 'Platinum', top: 'In Top 5%' },
+  silver: { name: 'Silver', top: `Trust Score ${TIERS.silver}+` },
+  gold: { name: 'Gold', top: `Trust Score ${TIERS.gold}+` },
+  platinum: { name: 'Platinum', top: `Trust Score ${TIERS.platinum}+` },
 }
 
 const TIER_TEXT: Record<Tier, string> = {

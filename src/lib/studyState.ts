@@ -56,6 +56,8 @@ export const STATUS: Record<StudyStatus, StatusMeta> = {
   paid: { label: 'Paid', tone: 'green', primary: 'Rate Client', tab: 'history' },
   rejected: { label: 'Rejected', tone: 'danger', tab: 'history' },
   no_show: { label: 'No Show', tone: 'danger', tab: 'history' },
+  // Policy deduction: took part but arrived late. Paid, -2 Trust Score.
+  late_show: { label: 'Late Show Up', tone: 'yellow', primary: 'Rate Client', tab: 'history' },
   // Workflow 44: turned up but not needed. Paid in full, no penalty.
   not_needed: { label: 'Turned up, not needed', tone: 'green', tab: 'history' },
 }
@@ -72,6 +74,7 @@ export function outcomeFor(status: StudyStatus): { colour: 'green' | 'yellow' | 
       return { colour: 'green', label: 'Selected' }
     case 'rejected': return { colour: 'red', label: 'Not selected' }
     case 'no_show': return { colour: 'red', label: 'No show' }
+    case 'late_show': return { colour: 'yellow', label: 'Late show up' }
     default: return null
   }
 }

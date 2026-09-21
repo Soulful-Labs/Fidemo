@@ -83,6 +83,13 @@ export function buildNotifications(src: Sources): AppNotification[] {
           body: `Unfortunately, you were not selected for the ${s.title} study. Keep applying to other studies!`,
           at: last(s, 'Rejected') ?? s.endsAt, to: `/studies/${s.id}` })
         break
+      case 'late_show':
+        add({ id: `nt-${s.id}-late`, kind: 'trust', title: 'Late show up recorded',
+          body: `You arrived late for ${s.title}. You are paid in full; the policy deducts 2 from your Trust Score. Points are never deducted.`,
+          at: last(s, 'Late show up') ?? paidAt(s), to: `/studies/${s.id}` })
+        add({ id: `nt-${s.id}-paid`, kind: 'money', title: `You've received $${s.reward}!`,
+          body: `$${s.reward} reward has been received for the ${s.title} study completion!`, at: paidAt(s), to: '/wallet' })
+        break
       case 'not_needed':
         add({ id: `nt-${s.id}-notneeded`, kind: 'money', title: `You've received $${s.reward}!`,
           body: `You turned up for ${s.title} but weren't needed. You are paid in full and your Trust Score is unaffected.`, at: paidAt(s), to: `/studies/${s.id}` })
@@ -124,9 +131,9 @@ export function buildNotifications(src: Sources): AppNotification[] {
   }
 
   if (src.tier === 'gold' || src.tier === 'platinum') add({ id: 'nt-tier', kind: 'tier', title: `You've been upgraded to ${src.tier === 'gold' ? 'Gold' : 'Platinum'} tier!`,
-    body: src.tier === 'gold' ? 'You are now in the most trusted participants. Gold unlocks more invitations.' : 'You are now in the top expert participants.', at: new Date(Date.now() - 25 * DAY).toISOString(), to: '/trust-score/tiers' })
+    body: `Your Trust Score is ${src.trustScore}, past the ${src.tier === 'gold' ? 70 : 90} needed for ${src.tier === 'gold' ? 'Gold' : 'Platinum'}. Tier is determined by your current Trust Score.`, at: new Date(Date.now() - 25 * DAY).toISOString(), to: '/trust-score/tiers' })
   add({ id: 'nt-trust', kind: 'trust', title: 'Your trust score increased!',
-    body: `Great work! Your trust score has increased to ${src.trustScore}/100. A higher score means more study invitations.`, at: new Date(Date.now() - 17 * DAY).toISOString(), to: '/trust-score' })
+    body: `Great work! Your trust score has increased to ${src.trustScore}/100 through study completion and client ratings.`, at: new Date(Date.now() - 17 * DAY).toISOString(), to: '/trust-score' })
   if (src.profileCompletion < 100) add({ id: 'nt-profile', kind: 'profile', title: 'Complete your profile for more studies',
     body: `Your profile is ${src.profileCompletion}% complete. Finish it to unlock more relevant invitations.`, at: new Date(Date.now() - 7 * DAY).toISOString(), actionLabel: 'Complete Profile', to: '/profile/edit' })
 

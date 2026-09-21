@@ -20,9 +20,9 @@ export default function AppBitsSection({ toast }: { toast: (msg: string) => void
         <ScoreDial score={72} />
         <ScoreDial score={92} size="lg" />
         <div className="flex flex-col gap-1">
-          <Tag tone="silver">Silver, In Top 50%</Tag>
-          <Tag tone="gold">Gold, In Top 20%</Tag>
-          <Tag tone="platinum">Platinum, In Top 5%</Tag>
+          <Tag tone="silver">Silver, Trust Score 50+</Tag>
+          <Tag tone="gold">Gold, Trust Score 70+</Tag>
+          <Tag tone="platinum">Platinum, Trust Score 90+</Tag>
         </div>
       </Row>
 

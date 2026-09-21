@@ -28,7 +28,7 @@ export default function TagsSection({ toast }: { toast: (msg: string) => void })
         <Tag tone="danger">No Show</Tag>
         <Tag tone="danger">Rejected</Tag>
         <Tag tone="blue">In Process</Tag>
-        <Tag tone="gold" size="md">Gold, In Top 20%</Tag>
+        <Tag tone="gold" size="md">Gold, Trust Score 70+</Tag>
       </Row>
 
       <Row label="Removable filter chips">

@@ -221,6 +221,13 @@ export const STUDIES: Study[] = [
     description: 'A panel of clinicians on remote patient monitoring alerts, thresholds and follow-up.',
     targetProfession: 'Clinicians who review remote monitoring alerts', image: IMG('remote'), screenerSet: 'telehealth', client: CLIENTS.lumen, matchScore: 90, daysLeft: 0,
     timeline: closed(-290, -283, 'Turned up, not needed', -281) }),
+  mk({ id: 'st-34', title: 'Clinic scheduling software interview', type: 'video_call', status: 'late_show', reward: 160, durationMins: 45, industry: 'Healthcare',
+    description: 'A one-to-one interview on how appointment scheduling software fits into a busy clinic day.',
+    targetProfession: 'Practice managers and clinic administrators', image: IMG('clinic'), screenerSet: 'telehealth', client: CLIENTS.harbor, matchScore: 84, daysLeft: 0,
+    booking: { date: at(-322, 11, 0), slot: '11:00 AM', rescheduleCount: 0 },
+    clientReview: review(4, 'Good input once we got going, though the session started fifteen minutes late.', 4, 3, 4),
+    timeline: [{ label: 'Applied', at: at(-334, 10, 36) }, { label: 'Invited to schedule', at: at(-331, 12, 0) }, { label: 'Scheduled', at: at(-330, 14, 0) },
+      { label: 'Late show up', at: at(-322, 11, 15) }, { label: 'Earnings credited', at: at(-322, 12, 0) }, { label: 'Client approved payout', at: at(-320, 9, 30) }, { label: 'Paid', at: at(-320, 10, 0) }] }),
   mk({ id: 'st-14', title: 'Fintech onboarding walkthrough', type: 'video_call', status: 'rejected', reward: 140, durationMins: 40, industry: 'Finance',
     description: 'A session on opening a business account, verifying identity and linking a card.',
     targetProfession: 'Small business owners who opened an account this year', image: IMG('fintech'), screenerSet: 'fintech', client: CLIENTS.brightline, matchScore: 52, daysLeft: 0,
@@ -235,5 +242,5 @@ export const STUDIES: Study[] = [
 export const ALL_TYPES: Study['type'][] = ['survey', 'video_call', 'group_video_call', 'in_person', 'in_person_group', 'diary']
 export const ALL_STATUSES: StudyStatus[] = [
   'available', 'invited_to_apply', 'applying', 'draft', 'applied', 'invited_to_schedule',
-  'invited_to_complete', 'scheduled', 'pin_confirmed', 'in_process', 'paid', 'rejected', 'no_show', 'not_needed',
+  'invited_to_complete', 'scheduled', 'pin_confirmed', 'in_process', 'paid', 'rejected', 'no_show', 'late_show', 'not_needed',
 ]

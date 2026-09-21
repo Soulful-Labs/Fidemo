@@ -21,12 +21,12 @@ function Dollar() {
 }
 
 /**
- * PRD 8.2 Earn Reward Points, Figma 1114:96262. Subtitles for Study and Full
- * Profile Completion are corrected (conflict 13), and the wallet rate reads
- * 100 = $1 rather than the drawn 1000 (conflict 4).
+ * PRD 8.2 Earn Reward Points, Figma 1114:96262, at the policy's values
+ * (section 4). The drawn "Points have no expiry" line is not in the policy
+ * and is not shown; the Good to know lines are the policy's own.
  */
 const WAYS = [
-  { title: 'Being Referred', sub: 'When someone refers you to join', value: POINTS.BEING_REFERRED },
+  { title: 'Being Referred', sub: 'When someone refers you to join, once', value: POINTS.BEING_REFERRED },
   { title: 'Referral', sub: 'Refer someone who joins', value: POINTS.REFERRAL },
   { title: 'Study Completion', sub: 'Complete a study and get paid', value: POINTS.STUDY_COMPLETION },
   { title: 'Full Profile Completion', sub: 'Fill in every section of your profile', value: POINTS.FULL_PROFILE },
@@ -77,7 +77,11 @@ export default function HowPointsWork() {
 
         <section className="flex flex-col gap-2 rounded-lg bg-bgAlt-2 p-4">
           <p className="text-body-medium text-text-title">Good to know</p>
-          {['Points are kept separate from your Trust Score.', 'Points have no expiry and can be redeemed anytime.'].map((line) => (
+          {[
+            'Points are a separate reward balance and never affect Trust Score.',
+            'Points are not deducted for missed, late or cancelled sessions.',
+            `Points can be redeemed to the wallet at ${REDEEM.PER_USD} points = $1 USD, with a minimum of ${REDEEM.MINIMUM.toLocaleString('en-US')} points.`,
+          ].map((line) => (
             <p key={line} className="flex items-start gap-2 text-text-regular text-text-subtitle">
               <svg viewBox="0 0 24 24" fill="none" width="18" height="18" className="mt-0.5 shrink-0 text-brand-primary"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" /><path d="m8.5 12.5 2.5 2.5 4.5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
               {line}

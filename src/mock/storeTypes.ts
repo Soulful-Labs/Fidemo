@@ -62,8 +62,11 @@ export interface PendingTransition {
 }
 
 /** A deduction the derived Trust Score has to remember (cancellations, fraud). */
+/** A Trust Score deduction that is not a study status of its own (cancelled session, fraud), tied to the study it came from. */
 export interface TrustEvent {
   label: string
+  detail?: string
+  studyId?: string
   delta: number
   at: string
 }

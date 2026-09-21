@@ -19,6 +19,14 @@ export default function StatusIcon({ status }: { status: StudyStatus }) {
       </svg>
     )
   }
+  if (status === 'late_show') {
+    return (
+      <svg viewBox="0 0 24 24" width="16" height="16" className="shrink-0">
+        <circle cx="12" cy="12" r="9" {...common} />
+        <path d="M12 7.5V12l3 2M12 15.5v.5" {...common} />
+      </svg>
+    )
+  }
   if (status === 'no_show') {
     return (
       <svg viewBox="0 0 24 24" width="16" height="16" className="shrink-0">

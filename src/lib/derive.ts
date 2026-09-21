@@ -3,8 +3,8 @@ import type { Study, User } from '../mock/types'
 import { RATING_DELTA, TRUST, clampTrust, tierFor } from './rules'
 import { profileCompletion } from './profile'
 
-/** Statuses that count as a completed, paid study (workflow 44 pays not-needed in full). */
-export const COMPLETED: Study['status'][] = ['paid', 'not_needed']
+/** Statuses that count as a completed, paid study (workflow 44 pays not-needed in full; a late show still took part). */
+export const COMPLETED: Study['status'][] = ['paid', 'not_needed', 'late_show']
 
 const sameYear = (iso: string, now: Date) => new Date(iso).getFullYear() === now.getFullYear()
 const sameMonth = (iso: string, now: Date) => {
@@ -60,19 +60,22 @@ export function derive(state: AppState, now: Date = new Date()): DerivedFigures 
   const completed = studies.filter((s) => COMPLETED.includes(s.status))
   const completedThisYear = completed.filter((s) => sameYear(paidAt(s), now)).length
   const noShows = studies.filter((s) => s.status === 'no_show').length
+  const lateShows = studies.filter((s) => s.status === 'late_show').length
 
-  // Ratings: the last 10 client reviews, newest first (PRD 7.3).
+  // Policy: "Ratings from the last 10 studies count", up to +40.
   const ratingDelta = completed
     .filter((s) => s.clientReview)
     .sort((a, b) => paidAt(b).localeCompare(paidAt(a)))
     .slice(0, TRUST.RATINGS_WINDOW)
     .reduce((sum, s) => sum + (RATING_DELTA[s.clientReview!.stars] ?? 0), 0)
 
+  // Policy section 1: onboarding 50 + completion (max 10) + ratings (max 40) - deductions, kept within 50..100.
   const trustScore = clampTrust(
     TRUST.ONBOARDING +
       Math.min(TRUST.STUDY_COMPLETION_CAP_PER_YEAR, completedThisYear * TRUST.STUDY_COMPLETION) +
       Math.min(TRUST.RATINGS_MAX, Math.max(-TRUST.RATINGS_MAX, ratingDelta)) +
       noShows * TRUST.NO_SHOW +
+      lateShows * TRUST.LATE_SHOW_UP +
       trustEvents.reduce((sum, e) => sum + e.delta, 0),
   )
 
@@ -97,6 +100,45 @@ export function derive(state: AppState, now: Date = new Date()): DerivedFigures 
     profileCompletion: profileCompletion(user), ratings,
     taxFormRequired: yearEarned >= TAX_FORM_THRESHOLD && !user.taxFormDone,
   }
+}
+
+export interface TrustHistoryEntry {
+  label: string
+  detail?: string
+  delta: number
+  at: string
+  studyId?: string
+}
+
+/**
+ * Every line the Trust Score is made of, newest first, so any deduction or
+ * gain can be traced to the study that caused it. Completions past the
+ * yearly cap and ratings outside the last-ten window show as 0.
+ */
+export function trustHistory(state: AppState, now: Date = new Date()): TrustHistoryEntry[] {
+  const { studies, trustEvents, user } = state
+  const completed = studies.filter((s) => COMPLETED.includes(s.status)).sort((a, b) => paidAt(b).localeCompare(paidAt(a)))
+  const thisYear = completed.filter((s) => sameYear(paidAt(s), now))
+  const counted = new Set(thisYear.slice(-TRUST.STUDY_COMPLETION_CAP_PER_YEAR).map((s) => s.id))
+  const rated = completed.filter((s) => s.clientReview)
+  const inWindow = new Set(rated.slice(0, TRUST.RATINGS_WINDOW).map((s) => s.id))
+  const when = (s: Study, label: string) => s.timeline.find((t) => t.label === label)?.at ?? paidAt(s)
+
+  const entries: TrustHistoryEntry[] = [
+    { label: 'Onboarding', detail: 'Fixed starting score', delta: TRUST.ONBOARDING, at: user.joinedAt },
+    ...completed.map((s) => ({
+      label: 'Study completed', detail: s.title, studyId: s.id, at: paidAt(s),
+      delta: counted.has(s.id) ? TRUST.STUDY_COMPLETION : 0,
+    })),
+    ...rated.map((s) => ({
+      label: `${s.clientReview!.stars}-star client rating`, detail: s.title, studyId: s.id, at: paidAt(s),
+      delta: inWindow.has(s.id) ? (RATING_DELTA[s.clientReview!.stars] ?? 0) : 0,
+    })),
+    ...studies.filter((s) => s.status === 'no_show').map((s) => ({ label: 'No show', detail: s.title, studyId: s.id, at: when(s, 'No Show'), delta: TRUST.NO_SHOW })),
+    ...studies.filter((s) => s.status === 'late_show').map((s) => ({ label: 'Late show up', detail: s.title, studyId: s.id, at: when(s, 'Late show up'), delta: TRUST.LATE_SHOW_UP })),
+    ...trustEvents.map((e) => ({ label: e.label, detail: e.detail, studyId: e.studyId, at: e.at, delta: e.delta })),
+  ]
+  return entries.sort((a, b) => b.at.localeCompare(a.at))
 }
 
 /** The stored user with every derived figure filled in. */

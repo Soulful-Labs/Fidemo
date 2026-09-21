@@ -4,8 +4,8 @@ import type { ReactNode } from 'react'
 import { createActions } from './actions'
 import type { Actions } from './actions'
 import { returningUserState } from './data'
-import { deriveUser } from '../lib/derive'
-import type { DerivedFigures } from '../lib/derive'
+import { deriveUser, trustHistory } from '../lib/derive'
+import type { DerivedFigures, TrustHistoryEntry } from '../lib/derive'
 import { reducer } from './reducer'
 import { usePendingTransitions } from './transitions'
 import { TIMINGS } from './timings'
@@ -20,6 +20,8 @@ const initialState: AppState = returningUserState()
 type StoreValue = Omit<AppState, 'user'> & Actions & {
   /** The stored user with every derived figure filled in (lib/derive.ts). */
   user: User & DerivedFigures
+  /** Every line the Trust Score is made of, newest first, traceable to its study. */
+  trustHistory: TrustHistoryEntry[]
   dispatch: React.Dispatch<Action>
   toast: (message: string) => void
   dismissToast: (id: string) => void
@@ -53,6 +55,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const value = useMemo<StoreValue>(() => ({
     ...state,
     user: deriveUser(state),
+    trustHistory: trustHistory(state),
     ...createActions({ state, dispatch, toast }),
     dispatch,
     toast,

@@ -49,7 +49,7 @@ export function useDetailActions(study?: Study, onLocations?: () => void) {
         break
       case 'scheduled': go('/pin'); break
       case 'pin_confirmed': completeStudy(study.id); toast('Study completed, payment on its way'); break
-      case 'paid': go('/rate'); break
+      case 'paid': case 'late_show': go('/rate'); break
       default: break
     }
   }

@@ -23,6 +23,8 @@ export type StudyStatus =
   | 'paid'
   | 'rejected'
   | 'no_show'
+  /** Policy deduction: took part but arrived late. Paid, -2 Trust Score. */
+  | 'late_show'
   // Workflow 44: turned up but was not needed. Paid in full, no penalty.
   | 'not_needed'
 
