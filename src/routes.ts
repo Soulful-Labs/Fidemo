@@ -48,6 +48,11 @@ import AccountSettings from './screens/profile/AccountSettings'
 import ChangePassword from './screens/profile/ChangePassword'
 import DeactivateAccount from './screens/profile/DeactivateAccount'
 import { ConsentSettings, EmailNotifications } from './screens/profile/SettingsToggles'
+import Certificate from './screens/profile/Certificate'
+import Referrals from './screens/profile/Referrals'
+import TrustScoreDetails from './screens/trust/TrustScoreDetails'
+import TrustScoreRules from './screens/trust/TrustScoreRules'
+import HowTiersWork from './screens/trust/HowTiersWork'
 
 /**
  * The complete route map from the build brief. Every screen route points at the
@@ -135,16 +140,16 @@ export const routes: ScreenRoute[] = [
   // ----- Profile tab -----
   built('/profile', 'Profile', Profile),
   built('/profile/edit', 'My Profile, two tabs', MyProfile),
-  screen('/profile/certificate', 'Human Certificate'),
-  screen('/profile/referrals', 'Refer and Earn'),
+  built('/profile/certificate', 'Human Certificate', Certificate),
+  built('/profile/referrals', 'Refer and Earn', Referrals),
   built('/profile/settings', 'Account Settings', AccountSettings),
   built('/profile/settings/password', 'Change Password', ChangePassword),
   built('/profile/settings/notifications', 'Email Notifications', EmailNotifications),
   built('/profile/settings/consent', 'Consent and Cookies', ConsentSettings),
   built('/profile/settings/deactivate', 'Deactivate Account', DeactivateAccount),
-  screen('/trust-score', 'Trust Score Details'),
-  screen('/trust-score/rules', 'Trust Score Rules'),
-  screen('/trust-score/tiers', 'How Tiers Works'),
+  built('/trust-score', 'Trust Score Details', TrustScoreDetails),
+  built('/trust-score/rules', 'Trust Score Rules', TrustScoreRules),
+  built('/trust-score/tiers', 'How Tiers Works', HowTiersWork),
   screen('/support', 'Help and Support'),
   screen('/support/tickets', 'Support Tickets'),
   screen('/support/tickets/:id', 'Support Chat'),
