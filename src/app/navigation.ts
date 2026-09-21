@@ -33,8 +33,7 @@ const NAV_ROUTES = [
   '/studies', '/studies/saved', '/studies/mine', '/studies/mine/:tab',
   '/wallet', '/wallet/earnings', '/wallet/payouts', '/wallet/payout-methods',
   '/points',
-  '/profile', '/profile/settings',
-  '/support', '/support/tickets',
+  '/profile',
 ]
 
 export function showsNav(pathname: string): boolean {

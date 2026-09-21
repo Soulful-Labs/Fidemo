@@ -23,6 +23,10 @@ export default {
         'green-fade':  'linear-gradient(180deg, #3fb98426 0%, #3fb98400 100%)',
         // Primary CTA fill as drawn in Figma: lighter at the top, brand at the bottom.
         'cta-gradient': 'linear-gradient(180deg, #fcc56a 0%, #fca415 100%)',
+        // Radial glows behind the tier upgrade screens (1433:50005, 1433:49079) and points earned (1433:50642).
+        'gold-glow':     'radial-gradient(circle at 50% 32%, #e4b30052 0%, #e4b30014 35%, #0c0800 70%)',
+        'platinum-glow': 'radial-gradient(circle at 50% 32%, #9139f652 0%, #9139f614 35%, #0c0800 70%)',
+        'green-glow':    'radial-gradient(circle at 50% 18%, #3fb98440 0%, #3fb98410 30%, #202623 60%)',
         'purple-fade': 'linear-gradient(180deg, #ac99fb26 0%, #ac99fb00 100%)',
         'blue-fade':   'linear-gradient(180deg, #68b6f126 0%, #68b6f100 100%)',
         // The selected segment in the Explore / My Studies / Saved control.

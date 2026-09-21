@@ -61,7 +61,7 @@ export default function ContactUs() {
         </div>
         <Input label="Subject" placeholder="Write subject here" value={subject} onChange={(e) => setSubject(e.target.value)}
           onBlur={() => setTouched(true)} error={touched && subject.trim().length < 3 ? 'Enter a subject' : undefined} />
-        <Input label="Message" multiline rows={6} placeholder="Describe your issues in detail here.." value={message} onChange={(e) => setMessage(e.target.value)}
+        <Input label="Message" multiline rows={6} placeholder="Describe your issues in detail here…" value={message} onChange={(e) => setMessage(e.target.value)}
           onBlur={() => setTouched(true)} error={touched && message.trim().length < 10 ? 'Tell us a little more (at least 10 characters)' : undefined} />
       </div>
 

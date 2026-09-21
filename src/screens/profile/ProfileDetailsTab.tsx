@@ -8,8 +8,9 @@ import { Field, MultiPickField, PickField, SectionHead } from './formBits'
 import { filled } from './MyProfile'
 import type { Draft } from './MyProfile'
 
-const MY_PROFILE: (keyof Draft)[] = ['name', 'introVideo', 'gender', 'address', 'areaType']
-const ABOUT_ME: (keyof Draft)[] = ['aboutMe', 'languages', 'nationality', 'income', 'ethnicity', 'pets', 'homeOwner']
+// Counted as drawn (x/4 and x/6): the optional intro video and About Me text are not counted.
+const MY_PROFILE: (keyof Draft)[] = ['name', 'gender', 'address', 'areaType']
+const ABOUT_ME: (keyof Draft)[] = ['languages', 'nationality', 'income', 'ethnicity', 'pets', 'homeOwner']
 
 /** Profile Details tab (PRD 12, Figma 979:74128). */
 export default function ProfileDetailsTab({ draft, patch }: { draft: Draft; patch: (p: Partial<Draft>) => void }) {

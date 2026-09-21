@@ -61,7 +61,7 @@ export default function Withdraw() {
     <div className="flex min-h-full flex-col bg-bgAlt-0">
       <TopBar alt title="Withdraw" onBack={() => navigate('/wallet')} />
 
-      <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-6">
+      <div className="flex flex-1 flex-col gap-4 bg-yellow-fade px-4 pb-6 pt-6">
         <p className="text-center text-body-regular text-text-subtitle">Enter Amount To Withdraw</p>
         <label className={cn('flex h-16 items-center justify-center gap-1 rounded-lg border-1.5 text-display-s text-brand-primary', raw && !check.ok ? 'border-state-danger' : 'border-brand-primary')}>
           <span>$</span>
@@ -71,7 +71,8 @@ export default function Withdraw() {
             placeholder="0"
             onChange={(e) => setRaw(e.target.value.replace(/[^\d.]/g, ''))}
             aria-label="Amount to withdraw"
-            className="w-40 bg-transparent text-center outline-none placeholder:text-text-disabled"
+            size={Math.max(1, raw.length)}
+            className="min-w-0 bg-transparent text-left outline-none placeholder:text-text-disabled"
           />
         </label>
         {(raw || user.taxFormRequired) && !check.ok && <p className="text-center text-label text-state-danger">{check.reason}</p>}

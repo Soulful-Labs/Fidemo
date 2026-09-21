@@ -32,8 +32,8 @@ export default function SupportTickets() {
     <div className="flex flex-col gap-4">
       <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by name or ticket number" aria-label="Search tickets" leftIcon={<Search className="text-text-title" />} />
       <div className="flex gap-2">
-        <div className="flex-1"><TypeFilter value={status} options={STATUS} onChange={setStatus} /></div>
-        <div className="flex-1"><TypeFilter value={sort} options={SORT} onChange={setSort} /></div>
+        <div className="flex-1"><TypeFilter full value={status} options={STATUS} onChange={setStatus} /></div>
+        <div className="flex-1"><TypeFilter full value={sort} options={SORT} onChange={setSort} /></div>
       </div>
 
       {list.length === 0 ? (
@@ -46,7 +46,7 @@ export default function SupportTickets() {
             <Link key={t.id} to={`/support/tickets/${t.id}`} className="flex flex-col gap-2 rounded-lg bg-bg-1 p-4">
               <span className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
-                  <Tag tone={t.status === 'open' ? 'yellow' : 'green'} size="md">{t.status === 'open' ? 'Open' : 'Solved'}</Tag>
+                  <Tag tone={t.status === 'open' ? 'yellow' : 'green'}>{t.status === 'open' ? 'Open' : 'Solved'}</Tag>
                   {t.status === 'open' && <span className="text-label text-text-body">reply {REPLY_TIME[t.topic]}</span>}
                 </span>
                 <span className="text-text-regular text-text-body">#{t.id}</span>
@@ -67,7 +67,7 @@ export default function SupportTickets() {
           <svg viewBox="0 0 24 24" fill="none" width="24" height="24"><rect x="3" y="5" width="18" height="14" rx="3" stroke="currentColor" strokeWidth="1.5" /><path d="m3.5 7 8.5 6 8.5-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </span>
         <p className="text-title-s text-text-title">Need Direct Help?</p>
-        <p className="text-text-regular text-text-subtitle">Kindly contact us to get your any issues resolved</p>
+        <p className="text-text-regular text-text-subtitle">Kindly contact us to get your any issues resolved!</p>
         <Button size="md" className="self-start" onClick={() => navigate('/support/contact')}>Contact Us</Button>
       </div>
     </div>

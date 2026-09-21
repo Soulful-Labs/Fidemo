@@ -194,8 +194,8 @@ await step(7, 'Complete it, watch it move to History and become Paid', async () 
   await sleep(5200)
   expect(await store(`st.studies.find((x) => x.id === 'st-01').status`) === 'paid', 'should be paid after the delay')
   expect(await store(`st.studies.find((x) => x.id === 'st-01').timeline.some((t) => t.label === 'Client approved payout')`), 'client approval missing from the timeline')
-  expect(await evaluate(`document.body.textContent.includes('Reward points earned')`), 'points earned modal did not open')
-  await click('Got It!')
+  expect(await evaluate(`document.body.textContent.includes('Reward Points!')`), 'points earned modal did not open')
+  await click('Done!')
 })
 
 await step(8, 'See the wallet balance, points and Trust Score all go up', async () => {

@@ -12,7 +12,8 @@ import { useStore } from '../../mock/store'
 import type { Ticket } from '../../mock/types'
 
 const time = (iso: string) => new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-const day = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'long' })
+/** "Aug 16, Sunday", as drawn. */
+const day = (iso: string) => { const d = new Date(iso); return `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${d.toLocaleDateString('en-US', { weekday: 'long' })}` }
 
 function TicketInfo({ ticket }: { ticket: Ticket }) {
   return (
@@ -53,7 +54,7 @@ export default function SupportChat() {
       <TopBar title={ticket.subject} onBack={() => navigate('/support/tickets')} />
 
       <div className="flex items-center gap-2 border-b-1 border-stroke-2 px-4 py-2">
-        <Tag tone={ticket.status === 'open' ? 'yellow' : 'green'} size="md">{ticket.status === 'open' ? 'Open' : 'Solved'}</Tag>
+        <Tag tone={ticket.status === 'open' ? 'yellow' : 'green'}>{ticket.status === 'open' ? 'Open' : 'Solved'}</Tag>
         <span className="text-body-regular text-text-title">#{ticket.id}</span>
         <button type="button" aria-label="Ticket info" onClick={() => setInfo(true)} className="ml-auto text-text-title"><Info className="h-6 w-6" /></button>
       </div>
@@ -91,8 +92,8 @@ export default function SupportChat() {
         <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()}
           placeholder="Write a message..." aria-label="Write a message"
           className="h-10 min-w-0 flex-1 rounded-md border-1 border-stroke-3 bg-transparent px-3 text-text-regular text-text-title outline-none placeholder:text-text-disabled" />
-        <Button size="md" className="w-10 px-0" aria-label="Send" onClick={send} disabled={!text.trim()} onBlocked={() => toast('Write a message first')}>
-          <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M4 12 20 4l-4 16-4-7-8-1Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg>
+        <Button size="md" className="w-10 shrink-0 px-0" aria-label="Send" onClick={send} disabled={!text.trim()} onBlocked={() => toast('Write a message first')}>
+          <svg viewBox="0 0 24 24" fill="none" width="20" height="20" className="shrink-0"><path d="M4 12 20 4l-4 16-4-7-8-1Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg>
         </Button>
       </div>
 

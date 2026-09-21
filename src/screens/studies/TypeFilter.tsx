@@ -6,13 +6,15 @@ export interface TypeFilterProps {
   value: string
   options: { key: string; label: string }[]
   onChange: (key: string) => void
+  /** Stretch to the parent, e.g. the two equal dropdowns on Support Chats. */
+  full?: boolean
 }
 
 /**
  * The small "All ⌄" dropdown next to the My Studies search (Figma
  * 1279:90892): a select-shaped button opening a menu of options.
  */
-export default function TypeFilter({ value, options, onChange }: TypeFilterProps) {
+export default function TypeFilter({ value, options, onChange, full = false }: TypeFilterProps) {
   const [open, setOpen] = useState(false)
   const root = useRef<HTMLDivElement>(null)
   const current = options.find((o) => o.key === value) ?? options[0]
@@ -27,13 +29,13 @@ export default function TypeFilter({ value, options, onChange }: TypeFilterProps
   }, [open])
 
   return (
-    <div ref={root} className="relative shrink-0">
+    <div ref={root} className={cn('relative shrink-0', full && 'w-full')}>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="flex h-input w-32 items-center justify-between gap-2 rounded-md border-1 border-stroke-3 px-4 text-body-regular text-text-title"
+        className={cn('flex h-input items-center justify-between gap-2 rounded-md border-1 border-stroke-3 px-4 text-body-regular text-text-title', full ? 'w-full' : 'w-32')}
       >
         <span className="truncate">{current.label}</span>
         <ChevronDown className="shrink-0" />
