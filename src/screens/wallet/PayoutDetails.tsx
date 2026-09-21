@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import EmptyState from '../../components/app/EmptyState'
 import Button from '../../components/ui/Button'
 import TopBar from '../../components/ui/TopBar'
@@ -18,6 +19,7 @@ function Download() {
 export default function PayoutDetails() {
   const { payoutId } = useParams()
   const navigate = useNavigate()
+  const { back } = useAppNav()
   const { payouts, toast } = useStore()
   const payout = payouts.find((p) => p.id === payoutId)
 
@@ -29,7 +31,7 @@ export default function PayoutDetails() {
 
   return (
     <div className="flex min-h-full flex-col bg-bgAlt-0">
-      <TopBar alt title="Payout Details" onBack={() => navigate('/wallet/payouts')} />
+      <TopBar alt title="Payout Details" onBack={back} />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         <h1 className="text-title-s text-text-title">Bank Transfer {payout.destination.slice(-4)}</h1>

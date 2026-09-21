@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import SuccessScreen from '../../components/app/SuccessScreen'
 import BottomSheet from '../../components/ui/BottomSheet'
 import Button from '../../components/ui/Button'
@@ -23,6 +24,7 @@ const last4 = (account: string) => `****${account.replace(/\s/g, '').slice(-4)}`
 export default function Withdraw() {
   const { step } = useParams()
   const navigate = useNavigate()
+  const { back } = useAppNav()
   const { user, payoutMethods, withdraw, toast } = useStore()
   const [raw, setRaw] = useState('')
   const [methodId, setMethodId] = useState(payoutMethods.find((m) => m.isDefault)?.id ?? payoutMethods[0]?.id)
@@ -59,7 +61,7 @@ export default function Withdraw() {
 
   return (
     <div className="flex min-h-full flex-col bg-bgAlt-0">
-      <TopBar alt title="Withdraw" onBack={() => navigate('/wallet')} />
+      <TopBar alt title="Withdraw" onBack={back} />
 
       <div className="flex flex-1 flex-col gap-4 bg-yellow-fade px-4 pb-6 pt-6">
         <p className="text-center text-body-regular text-text-subtitle">Enter Amount To Withdraw</p>

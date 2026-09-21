@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import Button from '../../components/ui/Button'
 import CtaBar from '../../components/ui/CtaBar'
 import Input from '../../components/ui/Input'
@@ -11,6 +12,7 @@ import { TIMINGS } from '../../mock/timings'
 /** PRD 10.1 Add Bank Account, Figma 969:29107. Add validates, saves, and returns to the list. */
 export default function AddBankAccount() {
   const navigate = useNavigate()
+  const { back } = useAppNav()
   const { payoutMethods, addPayoutMethod, toast } = useStore()
   const [bankName, setBankName] = useState('')
   const [account, setAccount] = useState('')
@@ -43,7 +45,7 @@ export default function AddBankAccount() {
 
   return (
     <div className="flex min-h-full flex-col bg-bgAlt-0">
-      <TopBar alt title="Bank Account" onBack={() => navigate('/wallet/payout-methods')} />
+      <TopBar alt title="Bank Account" onBack={back} />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         <Input label="Bank Name" placeholder="Bank's Full Name" value={bankName} onChange={(e) => setBankName(e.target.value)}

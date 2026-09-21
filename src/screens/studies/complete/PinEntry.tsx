@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useAppNav } from '../../../app/useAppNav'
 import EmptyState from '../../../components/app/EmptyState'
 import OtpInput from '../../../components/app/OtpInput'
 import SuccessScreen from '../../../components/app/SuccessScreen'
@@ -18,6 +19,7 @@ import { ATTENDANCE_PIN } from '../detail/StateBanner'
 export default function PinEntry() {
   const { id = '', step } = useParams()
   const navigate = useNavigate()
+  const { back } = useAppNav()
   const { studyById, confirmPin } = useStore()
   const [code, setCode] = useState('')
   const [error, setError] = useState<string>()
@@ -52,7 +54,7 @@ export default function PinEntry() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <TopBar title="Submit Confirmation PIN" onBack={() => navigate(`/studies/${id}`)} />
+      <TopBar title="Submit Confirmation PIN" onBack={back} />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         <h1 className="text-title-m leading-tight text-text-title">Enter the session code shown at the end</h1>

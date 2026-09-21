@@ -1,11 +1,11 @@
-import { useNavigate } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import Toggle from '../../components/ui/Toggle'
 import TopBar from '../../components/ui/TopBar'
 import { useStore } from '../../mock/store'
 
 /** PRD 12 Email Notifications, Figma 979:74836. Toggles write to the store immediately. */
 export function EmailNotifications() {
-  const navigate = useNavigate()
+  const { back } = useAppNav()
   const { user, setEmailPref, toast } = useStore()
   const { emailPrefs } = user
   const set = (key: keyof typeof emailPrefs, label: string) => (value: boolean) => {
@@ -15,7 +15,7 @@ export function EmailNotifications() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <TopBar title="Email Notifications" onBack={() => navigate('/profile/settings')} />
+      <TopBar title="Email Notifications" onBack={back} />
       <div className="flex flex-col gap-4 px-4 pb-6 pt-4">
         <Toggle checked={emailPrefs.dailyDigest} onChange={set('dailyDigest', 'Daily Digest')} label="Daily Digest"
           description="Receive daily updates with a summary of updates and opportunities" />
@@ -32,13 +32,13 @@ export function EmailNotifications() {
 
 /** PRD 12 Consent & Cookies, Figma 979:74848: the same four toggles as onboarding. */
 export function ConsentSettings() {
-  const navigate = useNavigate()
+  const { back } = useAppNav()
   const { user, setConsent, toast } = useStore()
   const { consent } = user
 
   return (
     <div className="flex min-h-full flex-col">
-      <TopBar title="Consent & Cookies" onBack={() => navigate('/profile/settings')} />
+      <TopBar title="Consent & Cookies" onBack={back} />
       <div className="flex flex-col gap-4 px-4 pb-6 pt-4">
         <Toggle checked={consent.shareProfession} onChange={(v) => { setConsent('shareProfession', v); toast('Saved') }}
           label="Share profession with study clients" description="To match with relevant studies, share your professional details" />

@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import Button from '../../components/ui/Button'
 import CtaBar from '../../components/ui/CtaBar'
 import TabBar from '../../components/ui/TabBar'
@@ -21,7 +22,7 @@ export const filled = (d: Draft, key: keyof Draft) => {
 
 /** PRD 12 My Profile, Figma 979:74128 / 979:74874: two tabs, one Save. */
 export default function MyProfile() {
-  const navigate = useNavigate()
+  const { back } = useAppNav()
   const { user, updateUser, toast } = useStore()
   const [params] = useSearchParams()
   const [tab, setTab] = useState<'details' | 'professional'>(params.get('tab') === 'professional' ? 'professional' : 'details')
@@ -44,7 +45,7 @@ export default function MyProfile() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <TopBar title="My Profile" onBack={() => navigate('/profile')}
+      <TopBar title="My Profile" onBack={back}
         right={<button type="button" aria-label="What these details are for?" onClick={() => setInfo(true)} className="text-text-title"><Info className="h-6 w-6" /></button>} />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">

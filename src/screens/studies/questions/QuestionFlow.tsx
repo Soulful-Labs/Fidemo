@@ -7,6 +7,7 @@ import type { Question } from '../../../mock/types'
 import type { Answers } from '../../../mock/storeTypes'
 import QuestionInput, { isAnswered } from './QuestionInput'
 import { cn } from '../../../lib/cn'
+import { useStore } from '../../../mock/store'
 
 export interface QuestionFlowProps {
   title: string
@@ -33,6 +34,7 @@ export interface QuestionFlowProps {
 export default function QuestionFlow({
   title, questions, answers, onAnswer, onSubmit, onExit, onInfo, submitLabel = 'Submit', header, progress = 'bar',
 }: QuestionFlowProps) {
+  const { toast } = useStore()
   const [index, setIndex] = useState(0)
   const question = questions[index]
   const last = index === questions.length - 1
@@ -96,6 +98,7 @@ export default function QuestionFlow({
         <Button
           className="flex-1"
           disabled={!answered && Boolean(question)}
+          onBlocked={() => toast('Answer this question to continue')}
           onClick={next}
           rightIcon={last ? undefined : <ChevronRight className="h-5 w-5" />}
         >

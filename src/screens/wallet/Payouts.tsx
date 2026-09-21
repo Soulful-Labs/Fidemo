@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import EmptyState from '../../components/app/EmptyState'
 import Button from '../../components/ui/Button'
 import Tag from '../../components/ui/Tag'
@@ -19,6 +20,7 @@ const SORTS = [{ key: 'new', label: 'Sort: Newest First' }, { key: 'old', label:
  */
 export default function Payouts() {
   const navigate = useNavigate()
+  const { back } = useAppNav()
   const { payoutMethods, payouts } = useStore()
   const [all, setAll] = useState(false)
   const [range, setRange] = useState('All Time')
@@ -41,7 +43,7 @@ export default function Payouts() {
 
   return (
     <div className="flex min-h-full flex-col bg-bgAlt-0">
-      <TopBar alt title={all ? 'Payout History' : 'Payout'} onBack={() => (all ? setAll(false) : navigate('/wallet'))} />
+      <TopBar alt title={all ? 'Payout History' : 'Payout'} onBack={() => (all ? setAll(false) : back())} />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         {!all && (

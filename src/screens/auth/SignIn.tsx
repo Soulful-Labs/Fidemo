@@ -53,7 +53,8 @@ export default function SignIn() {
       <div className="flex flex-col gap-1">
         <Input
           label="Password" type="password" placeholder="Enter your password" value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => setPassword(e.target.value)} onBlur={() => setTouched(true)}
+          error={touched && password.length === 0 ? 'Enter your password' : undefined}
         />
         <Link to="/forgot-password" className="self-end text-text-medium text-brand-primary">
           Forgot Password?

@@ -52,7 +52,7 @@ export default function StudyDetail() {
   if (!study) {
     return (
       <div className="flex min-h-full flex-col">
-        <TopBar title="Study Details" onBack={() => navigate('/studies')} />
+        <TopBar title="Study Details" onBack={back} />
         <EmptyState
           title="Study not found"
           body="This study is no longer available."

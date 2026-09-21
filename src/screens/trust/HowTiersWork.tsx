@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import { TIER_LABEL } from '../../components/app/TierChip'
 import Tag from '../../components/ui/Tag'
 import TopBar from '../../components/ui/TopBar'
@@ -26,13 +26,13 @@ const NOTES = [
 
 /** PRD 7.4, Figma 1114:95843, with the policy's tier bands and notes. */
 export default function HowTiersWork() {
-  const navigate = useNavigate()
+  const { back } = useAppNav()
   const { user } = useStore()
   const current = tierFor(user.trustScore)
 
   return (
     <div className="flex min-h-full flex-col bg-bgAlt-0">
-      <TopBar alt title="How Tiers Works" onBack={() => navigate('/trust-score')} />
+      <TopBar alt title="How Tiers Works" onBack={back} />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         <p className="flex items-center gap-3 text-body-medium text-brand-primary">

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useAppNav } from '../../../app/useAppNav'
 import EmptyState from '../../../components/app/EmptyState'
 import StudyTypeTag from '../../../components/app/StudyTypeTag'
 import SuccessScreen from '../../../components/app/SuccessScreen'
@@ -33,6 +34,7 @@ export default function ScheduleFlow() {
   const { id = '', step } = useParams()
   const { pathname } = useLocation()
   const navigate = useNavigate()
+  const { back } = useAppNav()
   const { studyById, scheduleStudy, toast } = useStore()
   const study = studyById(id)
   const isReschedule = pathname.includes('/reschedule')
@@ -84,7 +86,7 @@ export default function ScheduleFlow() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <TopBar title={title} onBack={() => navigate(`/studies/${id}`)} />
+      <TopBar title={title} onBack={back} />
 
       <div className="flex flex-1 flex-col gap-6 px-4 pb-6 pt-4">
         <div className="flex flex-col gap-2 rounded-lg bg-bg-1 p-4">

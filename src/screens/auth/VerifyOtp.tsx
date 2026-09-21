@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import Button from '../../components/ui/Button'
 import OtpInput from '../../components/app/OtpInput'
 import { useStore } from '../../mock/store'
@@ -14,9 +15,11 @@ const COUNTDOWN = 59
  */
 export default function VerifyOtp() {
   const navigate = useNavigate()
+  const { back } = useAppNav()
   const { toast, signUp, onboarding, user } = useStore()
   const email = onboarding.email || user.email
   const [code, setCode] = useState('')
+  const [touched, setTouched] = useState(false)
   const [seconds, setSeconds] = useState(COUNTDOWN)
 
   useEffect(() => {
@@ -33,7 +36,7 @@ export default function VerifyOtp() {
   return (
     <AuthLayout
       barTitle="Verify Your Email"
-      onBack={() => navigate('/signup')}
+      onBack={back}
       title="Enter OTP"
       subtitle={
         <>
@@ -44,7 +47,7 @@ export default function VerifyOtp() {
       actions={
         <>
           <Button fullWidth disabled={code.length !== 6} onClick={() => { signUp(email); navigate('/dashboard', { replace: true }) }}
-            onBlocked={() => toast('Enter all 6 digits')}>
+            onBlocked={() => setTouched(true)}>
             Submit
           </Button>
           <Button variant="tertiary" fullWidth onClick={() => navigate('/signup')}>Cancel</Button>
@@ -52,6 +55,7 @@ export default function VerifyOtp() {
       }
     >
       <OtpInput value={code} onChange={setCode} />
+      {touched && code.length !== 6 && <p className="text-label text-state-danger">Enter all 6 digits of the code</p>}
 
       <p className="pt-2 text-center text-body-regular text-text-title">
         {seconds > 0 ? (

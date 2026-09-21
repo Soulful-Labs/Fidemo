@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import SuccessBadge from '../../components/app/SuccessBadge'
 import Button from '../../components/ui/Button'
 import CtaBar from '../../components/ui/CtaBar'
@@ -19,6 +20,7 @@ import { TIMINGS } from '../../mock/timings'
  */
 export default function ContactUs() {
   const navigate = useNavigate()
+  const { back } = useAppNav()
   const [params] = useSearchParams()
   const study = params.get('study') ?? undefined
   const { addTicket, toast } = useStore()
@@ -41,7 +43,7 @@ export default function ContactUs() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <TopBar title="Contact us" onBack={() => navigate(-1)} />
+      <TopBar title="Contact us" onBack={back} />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         <p className="text-text-regular text-text-subtitle">Send us a message</p>

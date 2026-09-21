@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom'
+import { useAppNav } from '../../../app/useAppNav'
 import EmptyState from '../../../components/app/EmptyState'
 import ProgressBar from '../../../components/app/ProgressBar'
 import Button from '../../../components/ui/Button'
@@ -29,6 +30,7 @@ export function resumeLabel(completed: number[], total: number): string {
 export default function DiaryOverview() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
+  const { back } = useAppNav()
   const { studyById, completeStudy, toast } = useStore()
   const study = studyById(id)
 
@@ -49,7 +51,7 @@ export default function DiaryOverview() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <TopBar title="Diary Study" onBack={() => navigate(`/studies/${id}`)} />
+      <TopBar title="Diary Study" onBack={back} />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         <div className="flex flex-col gap-3 rounded-lg bg-bg-1 bg-yellow-fade p-4">
@@ -70,8 +72,10 @@ export default function DiaryOverview() {
               <li key={day}>
                 <button
                   type="button"
-                  disabled={!done && !isNext}
-                  onClick={() => (done ? toast(`Day ${day} is already submitted`) : navigate(`/studies/${id}/diary/${day}`))}
+                  aria-disabled={!done && !isNext}
+                  onClick={() => (done ? toast(`Day ${day} is already submitted`)
+                    : isNext ? navigate(`/studies/${id}/diary/${day}`)
+                      : toast(finished ? 'This diary is complete' : `Day ${day} unlocks after day ${next}`))}
                   className={cn(
                     'flex h-btn w-full items-center gap-3 rounded-md px-4 text-left text-body-regular',
                     done ? 'bg-bg-1 text-text-title' : isNext ? 'border-1 border-yellow-700 bg-yellow-1000/40 text-brand-primary' : 'bg-bg-1 text-text-disabled',

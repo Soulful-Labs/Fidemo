@@ -6,6 +6,7 @@ import BottomNav from './BottomNav'
 import ModalHost from './ModalHost'
 import PhoneFrame from './PhoneFrame'
 import ToastHost from './ToastHost'
+import { recordNavigation } from './history'
 import { isAltPalette, showsNav } from './navigation'
 
 /**
@@ -31,8 +32,12 @@ function useScrollMemory(ref: React.RefObject<HTMLElement | null>, key: string) 
 }
 
 export default function AppShell({ children }: { children: ReactNode }) {
-  const { pathname, search } = useLocation()
+  const { pathname, search, key } = useLocation()
+  const navigationType = useNavigationType()
   const navigate = useNavigate()
+
+  // Back arrows return to where the person came from (history.ts).
+  useEffect(() => { recordNavigation(navigationType, key, pathname) }, [navigationType, key, pathname])
   const main = useRef<HTMLElement>(null)
   const { setSource } = useStore()
   const record = useRef(setSource)

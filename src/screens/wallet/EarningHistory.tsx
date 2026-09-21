@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import EmptyState from '../../components/app/EmptyState'
 import BottomSheet from '../../components/ui/BottomSheet'
 import Button from '../../components/ui/Button'
@@ -21,7 +21,7 @@ const ICON = 'flex h-input w-12 shrink-0 items-center justify-center rounded-md 
 
 /** PRD 10.1 Earning History, Figma 969:29138, with the sort and filter pop-ups. */
 export default function EarningHistory() {
-  const navigate = useNavigate()
+  const { back } = useAppNav()
   const { transactions } = useStore()
   const [range, setRange] = useState('All Time')
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>('All')
@@ -48,7 +48,7 @@ export default function EarningHistory() {
 
   return (
     <div className="flex min-h-full flex-col bg-bgAlt-0">
-      <TopBar alt title="Earning History" onBack={() => navigate('/wallet')} />
+      <TopBar alt title="Earning History" onBack={back} />
 
       <div className="flex flex-1 flex-col gap-2 px-4 pb-6 pt-4">
         <div className="flex items-center gap-2">

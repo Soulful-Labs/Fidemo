@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import Button from '../../components/ui/Button'
 import CtaBar from '../../components/ui/CtaBar'
 import Input from '../../components/ui/Input'
@@ -16,6 +17,7 @@ import SupportTickets from './SupportTickets'
  */
 export default function Support() {
   const navigate = useNavigate()
+  const { back } = useAppNav()
   const { pathname } = useLocation()
   const tickets = pathname.startsWith('/support/tickets')
   const [query, setQuery] = useState('')
@@ -28,7 +30,7 @@ export default function Support() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <TopBar title="Help & Support" onBack={() => navigate('/profile')} />
+      <TopBar title="Help & Support" onBack={back} />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         <TabBar items={[{ key: 'help', label: 'Get Help', to: '/support' }, { key: 'chats', label: 'Support Chats', to: '/support/tickets' }]} />

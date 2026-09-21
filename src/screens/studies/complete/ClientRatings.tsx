@@ -1,4 +1,5 @@
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { useAppNav } from '../../../app/useAppNav'
 import StarRating from '../../../components/app/StarRating'
 import TopBar from '../../../components/ui/TopBar'
 import { Star } from '../../../components/ui/icons'
@@ -13,14 +14,14 @@ import { useStore } from '../../../mock/store'
  */
 export default function ClientRatings() {
   const { clientId } = useParams()
-  const navigate = useNavigate()
+  const { back } = useAppNav()
   const { studies } = useStore()
   const client = studies.find((s) => s.client.id === clientId)?.client
   const reviews = clientReviews(clientId ?? '')
 
   return (
     <div className="flex min-h-full flex-col">
-      <TopBar title="Client Ratings" onBack={() => navigate(-1)} />
+      <TopBar title="Client Ratings" onBack={back} />
 
       <div className="flex flex-col gap-1 border-b-1 border-stroke-2 px-4 pb-4 pt-4">
         {client && <p className="text-body-medium text-text-title">{client.name}</p>}

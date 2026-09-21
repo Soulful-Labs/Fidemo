@@ -94,7 +94,7 @@ export default function MyStudies() {
           <StudyList
             studies={visible}
             showStatus={current === 'applied' || current === 'history'}
-            showActions={current !== 'history'}
+            showActions={(s) => current !== 'history' || ((s.status === 'paid' || s.status === 'late_show') && !s.userReview)}
             rejectable={current === 'invites'}
             footnoteFor={current === 'applied' ? appliedOn : undefined}
             onReject={current === 'invites' ? (s) => setRejecting(s) : undefined}

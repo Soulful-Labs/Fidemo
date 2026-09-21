@@ -13,7 +13,8 @@ export default function ToastHost({ navVisible }: { navVisible: boolean }) {
     <div
       className={cn(
         'pointer-events-none absolute inset-x-0 z-toast flex flex-col items-center gap-2 px-4',
-        navVisible ? 'bottom-nav' : 'bottom-6',
+        // Above the nav on tab screens; above the CTA bar everywhere else, so a toast never covers the primary button.
+        navVisible ? 'bottom-nav' : 'bottom-cta',
       )}
     >
       {toasts.map((toast) => (

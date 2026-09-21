@@ -19,17 +19,37 @@ export default function CelebrationModals() {
   const [earned, setEarned] = useState<PointsEntry | null>(null)
   const lastTier = useRef(user.tier)
   const seenPoints = useRef(new Set(pointsHistory.map((p) => p.id)))
+  const account = useRef(user.email)
+
+  // Signing into a different account is not a change worth celebrating: reset the
+  // baselines. A brand new account (just signed up) keeps its first points entry,
+  // the being-referred bonus, so that one still shows.
+  const switched = account.current !== user.email
+  useEffect(() => {
+    if (!switched) return
+    account.current = user.email
+    lastTier.current = user.tier
+    const brandNew = Date.now() - Date.parse(user.joinedAt) < 60_000
+    seenPoints.current = new Set(brandNew ? [] : pointsHistory.map((p) => p.id))
+    if (brandNew) {
+      const fresh = pointsHistory.find((p) => p.amount > 0)
+      pointsHistory.forEach((p) => seenPoints.current.add(p.id))
+      if (fresh) setEarned(fresh)
+    }
+  }, [switched, user.email, user.tier, user.joinedAt, pointsHistory])
 
   useEffect(() => {
+    if (switched) return
     if (RANK[user.tier] > RANK[lastTier.current]) setTierUp(user.tier)
     lastTier.current = user.tier
-  }, [user.tier])
+  }, [user.tier, switched])
 
   useEffect(() => {
+    if (switched) return
     const fresh = pointsHistory.find((p) => !seenPoints.current.has(p.id) && p.amount > 0)
     pointsHistory.forEach((p) => seenPoints.current.add(p.id))
     if (fresh) setEarned(fresh)
-  }, [pointsHistory])
+  }, [pointsHistory, switched])
 
   return (
     <>

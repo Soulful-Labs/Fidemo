@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import SuccessBadge from '../../components/app/SuccessBadge'
 import Button from '../../components/ui/Button'
 import CtaBar from '../../components/ui/CtaBar'
@@ -15,8 +16,10 @@ import { TIMINGS } from '../../mock/timings'
  */
 export default function DeactivateAccount() {
   const navigate = useNavigate()
-  const { signOut, toast } = useStore()
+  const { back } = useAppNav()
+  const { signOut } = useStore()
   const [password, setPassword] = useState('')
+  const [touched, setTouched] = useState(false)
   const [working, setWorking] = useState(false)
   const [done, setDone] = useState(false)
 
@@ -27,7 +30,7 @@ export default function DeactivateAccount() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <TopBar title="Deactivate Account" onBack={() => navigate('/profile/settings')} />
+      <TopBar title="Deactivate Account" onBack={back} />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         <h1 className="text-title-s text-text-title">Deactivate Your Account</h1>
@@ -37,12 +40,13 @@ export default function DeactivateAccount() {
           balance earnings to the default payout method.
         </p>
         <p className="pt-2 text-text-regular text-text-title">Enter password below to confirm this action</p>
-        <Input label="Password" type="password" placeholder="Enter password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <Input label="Password" type="password" placeholder="Enter password" value={password} onChange={(e) => setPassword(e.target.value)}
+          onBlur={() => setTouched(true)} error={touched && password.length === 0 ? 'Enter your password to confirm' : undefined} />
       </div>
 
       <CtaBar>
         <Button fullWidth loading={working} disabled={password.length === 0} onClick={deactivate}
-          onBlocked={() => toast('Enter your password to confirm')}>
+          onBlocked={() => setTouched(true)}>
           Deactivate Account
         </Button>
       </CtaBar>

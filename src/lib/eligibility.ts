@@ -32,7 +32,8 @@ export function applyBlocker(study: Study, user: User, studies: Study[]): ApplyB
       action: { label: 'Add a credential', to: '/profile/edit?tab=professional' },
     }
   }
-  if (study.repeatRule === 'exclude_previous' && hasTakenPartWith(studies, study.client.id, study.id)) {
+  // A client who has already invited this person has waived their own repeat rule.
+  if (study.repeatRule === 'exclude_previous' && study.status !== 'invited_to_apply' && hasTakenPartWith(studies, study.client.id, study.id)) {
     return {
       kind: 'repeat',
       title: 'Fresh participants only',

@@ -29,10 +29,13 @@ export default function PhoneField({
   code, number, onChange, label = 'Phone',
 }: { code: string; number: string; onChange: (next: { code: string; number: string }) => void; label?: string }) {
   const [open, setOpen] = useState(false)
+  const [touched, setTouched] = useState(false)
+  const digits = number.replace(/\D/g, '')
+  const error = touched && digits.length > 0 && digits.length < 7 ? 'Enter at least 7 digits' : undefined
   const current = COUNTRY_CODES.find((c) => c.code === code)?.label
   return (
     <>
-      <Input label={label} inputMode="tel" value={number} placeholder="Enter Phone Number"
+      <Input label={label} inputMode="tel" value={number} placeholder="Enter Phone Number" error={error} onBlur={() => setTouched(true)}
         onChange={(e) => onChange({ code, number: e.target.value.replace(/[^\d\s]/g, '') })}
         leftIcon={
           <button type="button" aria-label={`Country code ${code}`} onClick={() => setOpen(true)} className="flex items-center gap-0.5 text-body-regular text-text-title">

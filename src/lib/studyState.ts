@@ -49,7 +49,7 @@ export const STATUS: Record<StudyStatus, StatusMeta> = {
     secondary: 'Join Call', tab: 'scheduled',
   },
   pin_confirmed: {
-    label: 'Code Confirmed', tone: 'green', primary: 'Complete Study', tab: 'scheduled',
+    label: 'Code Confirmed', tone: 'green', primary: 'Complete Study', secondary: 'Join Call', tab: 'scheduled',
   },
   in_process: { label: 'In Process', tone: 'yellow', tab: 'history' },
   // danger tone is reserved for things that are wrong, per the colour rule.

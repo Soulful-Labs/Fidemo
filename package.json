@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "verify": "esbuild scripts/verify-mock.ts --bundle --platform=node --format=esm --outfile=node_modules/.tmp/verify.mjs --log-level=error && node node_modules/.tmp/verify.mjs",
     "shot": "node --experimental-websocket scripts/shot.mjs",
+    "audit": "node --experimental-websocket scripts/audit.mjs",
     "demo": "node --experimental-websocket scripts/demo.mjs"
   },
   "dependencies": {

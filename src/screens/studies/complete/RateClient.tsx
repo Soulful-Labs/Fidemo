@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useAppNav } from '../../../app/useAppNav'
 import EmptyState from '../../../components/app/EmptyState'
 import StarRating from '../../../components/app/StarRating'
 import Button from '../../../components/ui/Button'
@@ -17,10 +18,12 @@ import { TIMINGS } from '../../../mock/timings'
 export default function RateClient() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
+  const { back } = useAppNav()
   const { studyById, rateClient, toast } = useStore()
   const study = studyById(id)
   const [reliability, setReliability] = useState(study?.userReview?.reliability ?? 0)
   const [communication, setCommunication] = useState(study?.userReview?.communication ?? 0)
+  const [touched, setTouched] = useState(false)
   const [comment, setComment] = useState(study?.userReview?.comment ?? '')
   const [saving, setSaving] = useState(false)
 
@@ -42,12 +45,13 @@ export default function RateClient() {
     <section className="flex flex-col gap-3 rounded-lg bg-bg-1 p-4">
       <p className="text-body-medium text-text-title">{label}</p>
       <StarRating value={value} onChange={onChange} size="lg" label={label} />
+      {touched && value === 0 && <p className="text-label text-state-danger">Pick a star rating for {label.toLowerCase()}</p>}
     </section>
   )
 
   return (
     <div className="flex min-h-full flex-col">
-      <TopBar title={`Rate For ${study.title}`} onBack={() => navigate(`/studies/${id}`)} />
+      <TopBar title={`Rate For ${study.title}`} onBack={back} />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         <div className="flex items-center gap-3">
@@ -74,7 +78,7 @@ export default function RateClient() {
 
       <CtaBar>
         <Button fullWidth loading={saving} disabled={!valid} onClick={submit}
-          onBlocked={() => toast('Rate reliability and communication to submit')}>
+          onBlocked={() => setTouched(true)}>
           Submit
         </Button>
       </CtaBar>

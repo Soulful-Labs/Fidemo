@@ -116,7 +116,7 @@ function bannerContent(study: Study): BannerContent | null {
 
 /** Diary studies show their own progress banner alongside the state one. */
 export function diaryBannerFor(study: Study): BannerContent | null {
-  if (!study.diary || study.status === 'paid' || study.status === 'rejected') return null
+  if (!study.diary || !['invited_to_complete', 'in_process'].includes(study.status)) return null
   const { completedDays, totalDays, minDays } = study.diary
   return {
     tone: 'yellow',

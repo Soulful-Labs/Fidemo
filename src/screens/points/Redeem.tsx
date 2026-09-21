@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import SuccessScreen from '../../components/app/SuccessScreen'
 import BottomSheet from '../../components/ui/BottomSheet'
 import Button from '../../components/ui/Button'
@@ -21,6 +22,7 @@ import { TIMINGS } from '../../mock/timings'
 export default function Redeem() {
   const { step } = useParams()
   const navigate = useNavigate()
+  const { back } = useAppNav()
   const { user, redeemPoints, toast } = useStore()
   const [raw, setRaw] = useState('')
   const [sending, setSending] = useState(false)
@@ -52,7 +54,7 @@ export default function Redeem() {
 
   return (
     <div className="flex min-h-full flex-col bg-bgAlt-0">
-      <TopBar alt title="Redeem" onBack={() => navigate('/points')} />
+      <TopBar alt title="Redeem" onBack={back} />
 
       <div className="flex flex-1 flex-col items-center gap-4 px-4 pb-6 pt-6">
         <Tag tone="green" size="md">Balance: {fmt(user.points)} points</Tag>

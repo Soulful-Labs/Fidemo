@@ -41,7 +41,7 @@ export default {
                 status:'44px', logo:'24px', promo:'38px', halo:'136px', thumb:'90px',
                 // The phone shell, inset by spacing.4 top and bottom above 420px.
                 shell:'calc(100vh - 32px)' },
-      inset: { nav:'85px' },
+      inset: { nav:'85px', cta:'96px' },
       width: { logo:'20px', halo:'136px', 'dial-sm':'140px', 'dial-md':'200px', 'dial-lg':'272px', thumb:'90px', card:'320px' },
       maxWidth: { frame:'375px', content:'343px' },
       // Global interaction rule 9: the phone shell kicks in above 420px.

@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import EmptyState from '../../components/app/EmptyState'
 import TierChip from '../../components/app/TierChip'
 import TopBar from '../../components/ui/TopBar'
@@ -29,6 +30,7 @@ const POLICY_LINES = [
  */
 export default function Certificate() {
   const navigate = useNavigate()
+  const { back } = useAppNav()
   const { user, toast } = useStore()
   const certId = certificateId(user.email)
   const certLink = `https://humanlayer.app/certificate/${certId}`
@@ -50,7 +52,7 @@ export default function Certificate() {
   if (!user.verified.govId) {
     return (
       <div className="flex min-h-full flex-col">
-        <TopBar title="Human Certificate" onBack={() => navigate('/profile')} />
+        <TopBar title="Human Certificate" onBack={back} />
         <EmptyState title="Not issued yet" body="Your certificate is issued automatically the moment your ID passes. No studies needed first."
           actionLabel="Verify your ID" onAction={() => navigate('/onboarding/about')} />
       </div>
@@ -67,7 +69,7 @@ export default function Certificate() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <TopBar title="Human Certificate" onBack={() => navigate('/profile')}
+      <TopBar title="Human Certificate" onBack={back}
         right={
           <button type="button" aria-label="Copy the check link" onClick={share} className="text-text-title">
             <svg viewBox="0 0 24 24" fill="none" width="24" height="24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1.5 1.5M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.5-1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>

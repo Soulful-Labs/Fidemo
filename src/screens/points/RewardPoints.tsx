@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import EmptyState from '../../components/app/EmptyState'
 import Button from '../../components/ui/Button'
 import TabBar from '../../components/ui/TabBar'
@@ -28,6 +29,7 @@ function since(range: string): number {
 /** PRD 8.2, Figma 970:32231 / 978:62004: balance card and the two history tabs. */
 export default function RewardPoints() {
   const navigate = useNavigate()
+  const { back } = useAppNav()
   const { user, pointsHistory, redeemHistory } = useStore()
   const [tab, setTab] = useState<'points' | 'redeem'>('points')
   const [range, setRange] = useState('All Time')
@@ -46,7 +48,7 @@ export default function RewardPoints() {
 
   return (
     <div className="flex min-h-full flex-col bg-bgAlt-0">
-      <TopBar alt title="Reward Points" onBack={() => navigate('/wallet')}
+      <TopBar alt title="Reward Points" onBack={back}
         right={<button type="button" aria-label="How reward points work" onClick={() => navigate('/points/how-it-works')} className="text-text-title"><Info className="h-6 w-6" /></button>} />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">

@@ -65,9 +65,9 @@ export default function SchedulePicker({
               <button
                 key={day.toISOString()}
                 type="button"
-                disabled={!slot}
+                aria-disabled={!slot}
                 aria-pressed={on}
-                onClick={() => slot && onChange({ ...value, date: slot.date, slot: undefined })}
+                onClick={() => (slot ? onChange({ ...value, date: slot.date, slot: undefined }) : onBlocked('No sessions on this day'))}
                 className={cn(
                   'flex h-btn flex-col items-center justify-center rounded-md text-text-medium',
                   on ? 'bg-cta-primary text-cta-primaryText' : slot ? 'text-text-title hover:bg-bg-1' : 'text-text-disabled',

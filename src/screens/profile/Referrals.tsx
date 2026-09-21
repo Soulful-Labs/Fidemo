@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import EmptyState from '../../components/app/EmptyState'
 import Button from '../../components/ui/Button'
 import Tag from '../../components/ui/Tag'
@@ -22,7 +22,7 @@ const mask = (email: string) => {
  * in points and the "$25" chip is not shown.
  */
 export default function Referrals() {
-  const navigate = useNavigate()
+  const { back } = useAppNav()
   const { user, referrals, toast } = useStore()
   const REFERRAL_LINK = referralLink(user.name, user.email)
   const joined = referrals.length
@@ -42,7 +42,7 @@ export default function Referrals() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <TopBar title="Refer & Earn" onBack={() => navigate('/profile')} />
+      <TopBar title="Refer & Earn" onBack={back} />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         <section className="flex flex-col gap-4 rounded-lg bg-bg-1 bg-green-fade p-4">

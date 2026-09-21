@@ -3,6 +3,7 @@ import Button from '../../../components/ui/Button'
 import CtaBar from '../../../components/ui/CtaBar'
 import { ArrowLeft, ChevronRight, Close } from '../../../components/ui/icons'
 import { cn } from '../../../lib/cn'
+import { useStore } from '../../../mock/store'
 import type { PreScreenQuestion } from '../../../mock/types'
 
 /**
@@ -14,6 +15,7 @@ import type { PreScreenQuestion } from '../../../mock/types'
 export default function PreScreener({
   questions, onPass, onFail, onExit,
 }: { questions: PreScreenQuestion[]; onPass: () => void; onFail: () => void; onExit: () => void }) {
+  const { toast } = useStore()
   const [index, setIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const question = questions[index]
@@ -74,7 +76,7 @@ export default function PreScreener({
         <Button variant="secondary" onClick={() => (index === 0 ? onExit() : setIndex((i) => i - 1))} aria-label={index === 0 ? 'Exit' : 'Back'} className="w-12 shrink-0 px-0">
           <ArrowLeft />
         </Button>
-        <Button className="flex-1" disabled={!chosen} onClick={next} rightIcon={<ChevronRight className="h-5 w-5" />}>
+        <Button className="flex-1" disabled={!chosen} onClick={next} onBlocked={() => toast('Choose an answer to continue')} rightIcon={<ChevronRight className="h-5 w-5" />}>
           {last ? 'Check eligibility' : 'Continue'}
         </Button>
       </CtaBar>

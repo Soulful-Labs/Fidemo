@@ -11,7 +11,7 @@ import type { Study } from '../../mock/types'
  */
 export function useCardHandlers() {
   const navigate = useNavigate()
-  const { toggleSaved, toast, studyById, user, studies } = useStore()
+  const { toggleSaved, toast, studyById, user, studies, completeStudy } = useStore()
   const { openMatchScore, openGate } = useUI()
 
   const primary = (study: Study) => () => {
@@ -30,10 +30,14 @@ export function useCardHandlers() {
         navigate(`/studies/${study.id}/schedule`)
         break
       case 'invited_to_complete':
-        navigate(`/studies/${study.id}/${study.type === 'diary' ? 'diary' : 'survey'}`)
+        // Same branches as the detail screen: diary, survey, otherwise a session to book.
+        navigate(`/studies/${study.id}/${study.type === 'diary' ? 'diary' : study.type === 'survey' ? 'survey' : 'schedule'}`)
         break
       case 'scheduled':
         navigate(`/studies/${study.id}/pin`)
+        break
+      case 'pin_confirmed':
+        completeStudy(study.id); toast('Study completed, payment on its way')
         break
       case 'paid': case 'late_show':
         navigate(`/studies/${study.id}/rate`)

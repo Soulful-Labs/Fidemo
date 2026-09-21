@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import PasswordRules from '../../components/app/PasswordRules'
 import SuccessBadge from '../../components/app/SuccessBadge'
 import Button from '../../components/ui/Button'
@@ -14,6 +15,7 @@ import { TIMINGS } from '../../mock/timings'
 /** PRD 12 Change Password, Figma 979:74800, then the Password Updated! modal (1327:87135). */
 export default function ChangePassword() {
   const navigate = useNavigate()
+  const { back } = useAppNav()
   const { toast } = useStore()
   const [current, setCurrent] = useState('')
   const [next, setNext] = useState('')
@@ -32,17 +34,19 @@ export default function ChangePassword() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <TopBar title="Change Password" onBack={() => navigate('/profile/settings')} />
+      <TopBar title="Change Password" onBack={back} />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
-        <Input label="Current Password" type="password" placeholder="Enter current password" value={current} onChange={(e) => setCurrent(e.target.value)} />
+        <Input label="Current Password" type="password" placeholder="Enter current password" value={current} onChange={(e) => setCurrent(e.target.value)}
+          onBlur={() => setTouched(true)} error={touched && !current ? 'Enter your current password' : undefined} />
         <div className="flex flex-col gap-2">
-          <Input label="New Password" type="password" placeholder="Enter new password" value={next} onChange={(e) => setNext(e.target.value)} />
+          <Input label="New Password" type="password" placeholder="Enter new password" value={next} onChange={(e) => setNext(e.target.value)}
+            onBlur={() => setTouched(true)} error={touched && !next ? 'Enter a new password' : touched && !isValidPassword(next) ? 'The new password does not meet every rule below' : undefined} />
           <p className="text-text-regular text-text-subtitle">It must have at least:</p>
           <PasswordRules password={next} />
         </div>
         <Input label="Confirm New Password" type="password" placeholder="Re-enter new password" value={confirm}
-          onChange={(e) => setConfirm(e.target.value)} onBlur={() => setTouched(true)} error={mismatch ? 'Passwords do not match' : undefined} />
+          onChange={(e) => setConfirm(e.target.value)} onBlur={() => setTouched(true)} error={mismatch ? 'Passwords do not match' : touched && !confirm ? 'Re-enter the new password' : undefined} />
       </div>
 
       <CtaBar>

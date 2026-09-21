@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import Button from '../../components/ui/Button'
 import CtaBar from '../../components/ui/CtaBar'
 import Input from '../../components/ui/Input'
@@ -26,6 +27,7 @@ const ROWS = [
 /** PRD 12 Account Settings, Figma 979:74209. Save writes to the store and stays. */
 export default function AccountSettings() {
   const navigate = useNavigate()
+  const { back } = useAppNav()
   const { user, updateUser, toast } = useStore()
   const [name, setName] = useState(user.name)
   const [email, setEmail] = useState(user.email)
@@ -53,7 +55,7 @@ export default function AccountSettings() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <TopBar title="Account Settings" onBack={() => navigate('/profile')} />
+      <TopBar title="Account Settings" onBack={back} />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         <Input label="Full Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter Name" />

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import EmptyState from '../../components/app/EmptyState'
 import Button from '../../components/ui/Button'
 import CtaBar from '../../components/ui/CtaBar'
@@ -14,12 +15,13 @@ const last4 = (account: string) => `****${account.replace(/\s/g, '').slice(-4)}`
 /** PRD 10.1 Manage Payout Methods, Figma 969:29028, with Remove Bank Account? (1327:86970). */
 export default function PayoutMethods() {
   const navigate = useNavigate()
+  const { back } = useAppNav()
   const { payoutMethods, setDefaultPayoutMethod, removePayoutMethod, toast } = useStore()
   const [removing, setRemoving] = useState<PayoutMethod | null>(null)
 
   return (
     <div className="flex min-h-full flex-col bg-bgAlt-0">
-      <TopBar alt title="Manage Payout Methods" onBack={() => navigate('/wallet/payouts')} />
+      <TopBar alt title="Manage Payout Methods" onBack={back} />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         {payoutMethods.length === 0 ? (

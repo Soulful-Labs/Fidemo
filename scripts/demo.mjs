@@ -62,9 +62,48 @@ const goto = async (path) => {
   await sleep(300); await evaluate(helpers)
 }
 const nav = async (path) => { await evaluate(`__hlNavigate(${JSON.stringify(path)})`); await sleep(600) }
-const clickIn = async (sel, text, wait = 500) => { await evaluate(`__clickIn(${JSON.stringify(sel)}, ${JSON.stringify(text)})`); await sleep(wait) }
-const click = async (text, wait = 500) => { await evaluate(`__click(${JSON.stringify(text)})`); await sleep(wait) }
-const type = async (sel, value) => { await evaluate(`__type(${JSON.stringify(sel)}, ${JSON.stringify(value)})`); await sleep(100) }
+
+// REAL=1 drives the page the way a person does: a tap at the element's on-screen
+// position and keystrokes into the focused field, so an overlay covering a button
+// or a field that swallows input shows up as a failure.
+const REAL = process.env.REAL === '1'
+const tap = async (finder) => {
+  const box = await evaluate(`(() => { const el = ${finder}; if (!el) return null; el.scrollIntoView({ block: 'center' }); const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 } })()`)
+  if (!box) throw new Error('no element for: ' + finder)
+  const hit = await evaluate(`(() => { const el = ${finder}; const top = document.elementFromPoint(${box.x}, ${box.y}); return el.contains(top) || top?.contains(el) ? 'ok' : 'covered by ' + (top?.tagName + '.' + (top?.className || '').toString().slice(0, 40)) })()`)
+  if (hit !== 'ok') throw new Error(`${finder} is ${hit}`)
+  await s('Input.dispatchMouseEvent', { type: 'mousePressed', x: box.x, y: box.y, button: 'left', clickCount: 1 })
+  await s('Input.dispatchMouseEvent', { type: 'mouseReleased', x: box.x, y: box.y, button: 'left', clickCount: 1 })
+}
+const clickIn = async (sel, text, wait = 500) => {
+  if (REAL) await tap(`__q(${JSON.stringify(text)}, document.querySelector(${JSON.stringify(sel)}))`)
+  else await evaluate(`__clickIn(${JSON.stringify(sel)}, ${JSON.stringify(text)})`)
+  await sleep(wait)
+}
+const click = async (text, wait = 500) => {
+  if (REAL) await tap(`__q(${JSON.stringify(text)})`)
+  else await evaluate(`__click(${JSON.stringify(text)})`)
+  await sleep(wait)
+}
+const clickSel = async (sel, wait = 300) => {
+  if (REAL) await tap(`document.querySelector(${JSON.stringify(sel)})`)
+  else await evaluate(`document.querySelector(${JSON.stringify(sel)}).click()`)
+  await sleep(wait)
+}
+const clickNth = async (sel, n, wait = 300) => {
+  if (REAL) await tap(`document.querySelectorAll(${JSON.stringify(sel)})[${n}]`)
+  else await evaluate(`document.querySelectorAll(${JSON.stringify(sel)})[${n}].click()`)
+  await sleep(wait)
+}
+const type = async (sel, value) => {
+  if (REAL) {
+    await tap(`document.querySelector(${JSON.stringify(sel)})`)
+    await evaluate(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); el.focus(); el.select?.(); return true })()`)
+    await s('Input.insertText', { text: value })
+    await evaluate(`document.activeElement?.blur()`)
+  } else await evaluate(`__type(${JSON.stringify(sel)}, ${JSON.stringify(value)})`)
+  await sleep(100)
+}
 const path = () => evaluate('__path()')
 const store = (expr) => evaluate(`(() => { const st = window.__hl; return ${expr} })()`)
 
@@ -81,7 +120,7 @@ await goto('/signup?reset=1&ref=DEMO7')
 await step(1, 'Sign up, verify OTP, fill all three profile steps, accept consent, land on Welcome', async () => {
   await type('input[type=email]', 'demo@example.com')
   await type('input[type=password]', 'Passw0rd!')
-  await evaluate(`document.querySelector('[role=checkbox]').click()`); await sleep(200)
+  await clickSel('[role=checkbox]', 200)
   await click('Sign Up')
   expect(await path() === '/verify-otp', 'expected /verify-otp')
   for (let i = 1; i <= 6; i++) await type(`input[aria-label="Digit ${i}"]`, String(i))
@@ -90,6 +129,9 @@ await step(1, 'Sign up, verify OTP, fill all three profile steps, accept consent
   expect(await path() === '/dashboard', 'expected /dashboard after OTP')
   expect(await store('st.user.sourceCode') === 'DEMO7', 'sign-up link code not stored on the user')
   expect(await store('st.user.email') === 'demo@example.com', 'email not carried from sign-up')
+  // Being referred earns 100 points, and the points earned modal opens over the dashboard.
+  expect(await evaluate(`document.body.textContent.includes('For Being Referred')`), 'being referred points modal did not open')
+  await click('Done!')
   await click('Get Started')
   expect(await path() === '/onboarding/about', 'expected /onboarding/about')
   await type('input[placeholder="Enter Name"]', 'Demo Person')
@@ -113,13 +155,13 @@ await step(1, 'Sign up, verify OTP, fill all three profile steps, accept consent
 await step(2, 'Explore Studies, filter to Video Call, open a study, read the client rating', async () => {
   await click('Explore Studies')
   expect(await path() === '/studies', 'expected /studies')
-  await evaluate(`document.querySelector('button[aria-label^=Filters]').click()`); await sleep(400)
+  await clickSel('button[aria-label^=Filters]', 400)
   await click('Video Call'); await click('Apply')
   const cards = await evaluate(`document.querySelectorAll('article').length`)
   expect(cards > 0, 'no cards after filtering')
   await click('GLP-1 Care Plans')
   expect((await path()).startsWith('/studies/st-'), 'expected a study detail')
-  await evaluate(`document.querySelector('a[href*=ratings]').click()`); await sleep(400)
+  await clickSel('a[href*=ratings]', 400)
   expect((await path()).includes('/ratings'), 'expected client ratings')
 })
 
@@ -134,7 +176,7 @@ await step(3, 'Apply, answer the screener, exit part way, find it in Drafts, res
   await click('Yes'); await click('Check eligibility')
   expect(await evaluate(`document.body.textContent.includes('come from your profile')`), 'profile-derived line missing')
   await click('GLP-1 agonists'); await click('Continue')
-  await evaluate(`document.querySelector('button[aria-label=Close]').click()`); await sleep(300)
+  await clickSel('button[aria-label=Close]', 300)
   await click('Save and Exit')
   expect(await path() === '/studies/mine/drafts', 'expected drafts')
   expect(await store(`st.studies.find((x) => x.id === 'st-01').status`) === 'draft', 'status should be draft')
@@ -161,13 +203,13 @@ await step(4, 'See it move to Applied, then to Invites as Invited to Schedule', 
 await step(5, 'Schedule it: pick a date, a slot, agree to recording, review, confirm', async () => {
   await click('Schedule Session', 1200)
   expect(await path() === '/studies/st-01/schedule', 'expected the schedule screen')
-  const enabled = await evaluate(`document.querySelectorAll('.grid-cols-7 button:not([disabled])').length`)
+  const enabled = await evaluate(`document.querySelectorAll('.grid-cols-7 button:not([aria-disabled=true])').length`)
   expect(enabled > 0, `no enabled dates; availability = ${JSON.stringify(await store(`st.studies.find((x) => x.id === 'st-01').availability`))}`)
-  await evaluate(`document.querySelector('.grid-cols-7 button:not([disabled])').click()`); await sleep(200)
+  await clickSel('.grid-cols-7 button:not([aria-disabled=true])', 200)
   // Some slots are already taken (availability differs per study), so take the first open one.
-  await evaluate(`document.querySelector('.grid-cols-2 button:not([disabled])').click()`); await sleep(200)
+  await clickSel('.grid-cols-2 button:not([aria-disabled=true])', 200)
   await click('Proceed')
-  await evaluate(`document.querySelector('[role=dialog] [role=checkbox]').click()`); await sleep(200); await click('Agree & Join')
+  await clickSel('[role=dialog] [role=checkbox]', 200); await click('Agree & Join')
   await click('Confirm & Schedule', 800)
   expect(await path() === '/studies/st-01/schedule/done', 'expected scheduled done')
   expect(await store(`st.studies.find((x) => x.id === 'st-01').status`) === 'scheduled', 'should be scheduled')
@@ -209,7 +251,7 @@ await step(9, 'Rate the client, see the review recorded', async () => {
   await nav('/studies/st-01')
   await click('Rate Client')
   expect(await path() === '/studies/st-01/rate', 'expected the rate screen')
-  await evaluate(`[...document.querySelectorAll('[role=radiogroup]')].forEach((g) => g.querySelectorAll('[role=radio]')[4].click())`); await sleep(200)
+  for (const label of ['Reliability', 'Communication']) await clickNth(`[role=radiogroup][aria-label="${label}"] [role=radio]`, 4, 150)
   await click('Submit', 1000)
   expect(await store(`Boolean(st.studies.find((x) => x.id === 'st-01').userReview)`), 'review not recorded')
   expect(await evaluate(`document.body.textContent.includes('Your review for client')`), 'review not shown')
@@ -249,7 +291,7 @@ await step(11, 'Withdraw, see the balance drop and a Processing payout appear', 
 await step(12, 'Open Profile, change a setting, see it stick', async () => {
   await nav('/profile/settings/notifications')
   const before = await store('st.user.emailPrefs.newsletter')
-  await evaluate(`document.querySelectorAll('[role=switch]')[2].click()`); await sleep(300)
+  await clickNth('[role=switch]', 2, 300)
   expect(await store('st.user.emailPrefs.newsletter') === !before, 'toggle did not stick')
   await nav('/profile/settings/notifications')
   expect(await evaluate(`document.querySelectorAll('[role=switch]')[2].getAttribute('aria-checked')`) === String(!before), 'toggle reset after navigation')
@@ -267,7 +309,7 @@ await step(13, 'Raise a support ticket, open the chat, send a message', async ()
   await sleep(2800)
   expect(await evaluate(`document.body.textContent.includes('Automated reply from our guides')`), 'automated first reply missing')
   await type('input[aria-label="Write a message"]', 'Following up on this.')
-  await evaluate(`document.querySelector('button[aria-label=Send]').click()`); await sleep(300)
+  await clickSel('button[aria-label=Send]', 300)
   expect(await evaluate(`document.body.textContent.includes('Following up on this.')`), 'message not appended')
   expect(await evaluate(`document.querySelector('input[aria-label="Write a message"]').value`) === '', 'composer not cleared')
 })

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import EmptyState from '../../components/app/EmptyState'
 import Modal from '../../components/ui/Modal'
 import Button from '../../components/ui/Button'
@@ -30,6 +31,7 @@ function TicketInfo({ ticket }: { ticket: Ticket }) {
 export default function SupportChat() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
+  const { back } = useAppNav()
   const { tickets, sendTicketMessage, toast } = useStore()
   const ticket = tickets.find((t) => t.id === id)
   const [text, setText] = useState('')
@@ -51,7 +53,7 @@ export default function SupportChat() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <TopBar title={ticket.subject} onBack={() => navigate('/support/tickets')} />
+      <TopBar title={ticket.subject} onBack={back} />
 
       <div className="flex items-center gap-2 border-b-1 border-stroke-2 px-4 py-2">
         <Tag tone={ticket.status === 'open' ? 'yellow' : 'green'}>{ticket.status === 'open' ? 'Open' : 'Solved'}</Tag>

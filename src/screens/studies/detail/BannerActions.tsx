@@ -24,7 +24,7 @@ export default function BannerActions({
     return (
       <div className="flex gap-3">
         <Button className="flex-1" onClick={onSchedule}>
-          {study.status === 'invited_to_schedule' ? 'Schedule' : 'Accept & Apply'}
+          {study.status === 'invited_to_schedule' ? 'Schedule Session' : 'Accept & Apply'}
         </Button>
         <Button variant="tertiary" className="flex-1" onClick={onReject}>Reject</Button>
       </div>

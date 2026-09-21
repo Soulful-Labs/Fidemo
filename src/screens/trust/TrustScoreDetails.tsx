@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { useAppNav } from '../../app/useAppNav'
 import ProgressBar from '../../components/app/ProgressBar'
 import ScoreDial from '../../components/app/ScoreDial'
 import TierChip from '../../components/app/TierChip'
@@ -70,6 +71,7 @@ function ScoreHistory() {
 /** PRD 7.1 Trust Score Details, Figma 1114:95266. */
 export default function TrustScoreDetails() {
   const navigate = useNavigate()
+  const { back } = useAppNav()
   const { user } = useStore()
   const tier = tierFor(user.trustScore)
   const next = nextTier(user.trustScore)
@@ -78,7 +80,7 @@ export default function TrustScoreDetails() {
 
   return (
     <div className="flex min-h-full flex-col bg-bgAlt-0">
-      <TopBar alt title="Trust Score Details" onBack={() => navigate('/profile')}
+      <TopBar alt title="Trust Score Details" onBack={back}
         right={<button type="button" aria-label="Trust Score Rules" onClick={() => navigate('/trust-score/rules')} className="text-text-title"><Info className="h-6 w-6" /></button>} />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">

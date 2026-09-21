@@ -17,6 +17,8 @@ export default function ResetPassword() {
 
   const mismatch = touched && confirm.length > 0 && confirm !== password
   const valid = isValidPassword(password) && confirm === password
+  const passwordError = touched && !password ? 'Enter a new password' : touched && !isValidPassword(password) ? 'Your password does not meet the rules below' : undefined
+  const confirmError = mismatch ? 'Passwords do not match' : touched && !confirm ? 'Confirm your new password' : undefined
 
   return (
     <AuthLayout
@@ -31,13 +33,13 @@ export default function ResetPassword() {
     >
       <div className="flex flex-col gap-2">
         <Input label="Password" type="password" placeholder="Enter your password" value={password}
-          onChange={(e) => setPassword(e.target.value)} />
+          onChange={(e) => setPassword(e.target.value)} onBlur={() => setTouched(true)} error={passwordError} />
         <PasswordRules password={password} />
       </div>
 
       <Input label="Confirm Password" type="password" placeholder="Enter your password" value={confirm}
         onChange={(e) => setConfirm(e.target.value)} onBlur={() => setTouched(true)}
-        error={mismatch ? 'Passwords do not match' : undefined} />
+        error={confirmError} />
     </AuthLayout>
   )
 }
