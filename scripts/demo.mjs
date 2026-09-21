@@ -75,7 +75,8 @@ const step = async (n, name, fn) => {
 }
 const expect = (cond, msg) => { if (!cond) throw new Error(msg) }
 
-await goto('/signup?reset=1')
+// Arriving through a coded sign-up link (workflow 12): the code is stored on the new account.
+await goto('/signup?reset=1&ref=DEMO7')
 
 await step(1, 'Sign up, verify OTP, fill all three profile steps, accept consent, land on Welcome', async () => {
   await type('input[type=email]', 'demo@example.com')
@@ -85,6 +86,11 @@ await step(1, 'Sign up, verify OTP, fill all three profile steps, accept consent
   expect(await path() === '/verify-otp', 'expected /verify-otp')
   for (let i = 1; i <= 6; i++) await type(`input[aria-label="Digit ${i}"]`, String(i))
   await click('Submit')
+  // Workflow 15: a new account lands on the dashboard and can browse; Get Started opens verification.
+  expect(await path() === '/dashboard', 'expected /dashboard after OTP')
+  expect(await store('st.user.sourceCode') === 'DEMO7', 'sign-up link code not stored on the user')
+  expect(await store('st.user.email') === 'demo@example.com', 'email not carried from sign-up')
+  await click('Get Started')
   expect(await path() === '/onboarding/about', 'expected /onboarding/about')
   await type('input[placeholder="Enter Name"]', 'Demo Person')
   await type('input[inputmode=numeric]', '06 / 05 / 1990')
@@ -121,7 +127,13 @@ await step(3, 'Apply, answer the screener, exit part way, find it in Drafts, res
   await nav('/studies/st-01')
   await click('Apply')
   expect(await path() === '/studies/st-01/screener', 'expected the screener')
-  await click('Physician'); await click('Continue')
+  // Workflow 28: three eligibility questions first, nothing saved until they pass.
+  await click('Yes, regularly'); await click('Continue')
+  expect(await store(`st.studies.find((x) => x.id === 'st-01').status`) === 'available', 'pre-screener must not create an application')
+  await click('Yes'); await click('Continue')
+  await click('Yes'); await click('Check eligibility')
+  expect(await evaluate(`document.body.textContent.includes('come from your profile')`), 'profile-derived line missing')
+  await click('GLP-1 agonists'); await click('Continue')
   await evaluate(`document.querySelector('button[aria-label=Close]').click()`); await sleep(300)
   await click('Save and Exit')
   expect(await path() === '/studies/mine/drafts', 'expected drafts')
@@ -129,7 +141,7 @@ await step(3, 'Apply, answer the screener, exit part way, find it in Drafts, res
   await click('Resume Application')
   expect(await path() === '/studies/st-01/screener', 'expected the screener again')
   await click('Continue')
-  await click('GLP-1 agonists'); await click('Continue')
+  await click('6 to 15'); await click('Continue')
   await click('Easy'); await click('Continue')
   await type('textarea', 'Guidance is thin on dose titration for oncology patients.')
   await click('Submit', 1200)
@@ -147,10 +159,14 @@ await step(4, 'See it move to Applied, then to Invites as Invited to Schedule', 
 })
 
 await step(5, 'Schedule it: pick a date, a slot, agree to recording, review, confirm', async () => {
-  await click('Schedule Session')
+  await click('Schedule Session', 1200)
   expect(await path() === '/studies/st-01/schedule', 'expected the schedule screen')
+  const enabled = await evaluate(`document.querySelectorAll('.grid-cols-7 button:not([disabled])').length`)
+  expect(enabled > 0, `no enabled dates; availability = ${JSON.stringify(await store(`st.studies.find((x) => x.id === 'st-01').availability`))}`)
   await evaluate(`document.querySelector('.grid-cols-7 button:not([disabled])').click()`); await sleep(200)
-  await click('10:30 AM'); await click('Proceed')
+  // Some slots are already taken (availability differs per study), so take the first open one.
+  await evaluate(`document.querySelector('.grid-cols-2 button:not([disabled])').click()`); await sleep(200)
+  await click('Proceed')
   await evaluate(`document.querySelector('[role=dialog] [role=checkbox]').click()`); await sleep(200); await click('Agree & Join')
   await click('Confirm & Schedule', 800)
   expect(await path() === '/studies/st-01/schedule/done', 'expected scheduled done')
@@ -158,9 +174,9 @@ await step(5, 'Schedule it: pick a date, a slot, agree to recording, review, con
   await click('Done')
 })
 
-await step(6, 'Open it, Submit PIN with 407060, see it confirmed', async () => {
+await step(6, 'Open it, enter session code 407060, see it confirmed', async () => {
   expect(await path() === '/studies/st-01', 'expected the study')
-  await click('Submit PIN')
+  await click('Enter Session Code')
   for (const [i, d] of [...'407060'].entries()) await type(`input[aria-label="Digit ${i + 1}"]`, d)
   await click('Submit', 1200)
   expect(await path() === '/studies/st-01/pin/done', 'expected pin done')
@@ -177,13 +193,16 @@ await step(7, 'Complete it, watch it move to History and become Paid', async () 
   expect(await evaluate(`document.body.textContent.includes('GLP-1 Care Plans')`), 'not listed in History')
   await sleep(5200)
   expect(await store(`st.studies.find((x) => x.id === 'st-01').status`) === 'paid', 'should be paid after the delay')
+  expect(await store(`st.studies.find((x) => x.id === 'st-01').timeline.some((t) => t.label === 'Client approved payout')`), 'client approval missing from the timeline')
+  expect(await evaluate(`document.body.textContent.includes('Reward points earned')`), 'points earned modal did not open')
+  await click('Got It!')
 })
 
 await step(8, 'See the wallet balance, points and Trust Score all go up', async () => {
   const after = { wallet: await store('st.user.walletBalance'), points: await store('st.user.points'), trust: await store('st.user.trustScore') }
   expect(after.wallet === before.wallet + 150, `wallet ${before.wallet} -> ${after.wallet}`)
   expect(after.points === before.points + 25, `points ${before.points} -> ${after.points}`)
-  expect(after.trust === before.trust + 1, `trust ${before.trust} -> ${after.trust}`)
+  expect(after.trust === before.trust + 1 + 4, `trust ${before.trust} -> ${after.trust} (expected +1 completion, +4 for a 5 star client rating)`)
 })
 
 await step(9, 'Rate the client, see the review recorded', async () => {
@@ -197,7 +216,19 @@ await step(9, 'Rate the client, see the review recorded', async () => {
 })
 
 await step(10, 'Redeem 1000 points, see the wallet rise and points fall', async () => {
+  // A new account cannot have 1,000 points yet (100 for being referred, 25 per study), so the
+  // rule shows: Confirm is disabled with the reason. The returning account then redeems.
+  expect(await store('st.user.points') === 125, `new account should hold 125 points, has ${await store('st.user.points')}`)
+  await nav('/points/redeem')
+  await type('input[inputmode=numeric]', '1000')
+  expect(await evaluate(`document.body.textContent.includes('You do not have enough points')`), 'minimum / balance reason not shown')
+  await nav('/profile'); await click('Sign Out'); await click('Logout')
+  await type('input[type=email]', 'jonathan.reeve@example.com')
+  await type('input[type=password]', 'Passw0rd!')
+  await click('Login', 1200)
+  expect(await store('st.user.email') === 'jonathan.reeve@example.com', 'seed account not restored on sign-in')
   const w = await store('st.user.walletBalance'), p = await store('st.user.points')
+  expect(p >= 1000, `returning account should hold at least 1,000 points, has ${p}`)
   await nav('/points/redeem')
   await type('input[inputmode=numeric]', '1000')
   await click('Confirm'); await click('Redeem', 1000)
@@ -226,11 +257,15 @@ await step(12, 'Open Profile, change a setting, see it stick', async () => {
 
 await step(13, 'Raise a support ticket, open the chat, send a message', async () => {
   await nav('/support/contact')
-  await type('input[placeholder="Write subject here"]', 'Demo ticket')
-  await type('textarea', 'This is a message from the demo script run.')
+  await click('About money')
+  await type('input[placeholder="Write subject here"]', 'Payment status')
+  await type('textarea', 'What is the status of my incentive payment for the GLP-1 study?')
   await click('Submit', 1000)
+  expect(await evaluate(`document.body.textContent.includes('within 1 working day')`), 'money reply time not shown')
   await click('Go To Chat')
   expect((await path()).startsWith('/support/tickets/'), 'expected the chat')
+  await sleep(2800)
+  expect(await evaluate(`document.body.textContent.includes('Automated reply from our guides')`), 'automated first reply missing')
   await type('input[aria-label="Write a message"]', 'Following up on this.')
   await evaluate(`document.querySelector('button[aria-label=Send]').click()`); await sleep(300)
   expect(await evaluate(`document.body.textContent.includes('Following up on this.')`), 'message not appended')
@@ -242,7 +277,7 @@ await step(14, 'Sign out, sign back in', async () => {
   await click('Sign Out'); await click('Logout')
   expect(await path() === '/signin', 'expected /signin')
   expect(await store('st.signedIn') === false, 'still signed in')
-  await type('input[type=email]', 'demo@example.com')
+  await type('input[type=email]', 'jonathan.reeve@example.com')
   await type('input[type=password]', 'Passw0rd!')
   await click('Login', 1200)
   expect(await path() === '/dashboard', 'expected /dashboard')

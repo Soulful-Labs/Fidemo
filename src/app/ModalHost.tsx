@@ -2,6 +2,7 @@ import BottomSheet from '../components/ui/BottomSheet'
 import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
 import { useNavigate } from 'react-router-dom'
+import CelebrationModals from './CelebrationModals'
 import { useUI } from './ui'
 
 /**
@@ -17,6 +18,7 @@ export default function ModalHost() {
 
   return (
     <>
+    <CelebrationModals />
     <Modal open={gate !== null} onClose={closeGate} showClose={false}
       footer={
         <div className="flex gap-3">

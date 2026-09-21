@@ -1,4 +1,4 @@
-import { POINTS, TRUST } from '../../lib/rules'
+import { RATING_DELTA, POINTS, TRUST } from '../../lib/rules'
 import type { Action, AppState } from '../storeTypes'
 import type { Study } from '../types'
 
@@ -58,6 +58,11 @@ export function studyReducer(state: AppState, action: Action): AppState | null {
         ...patchStudy(state, action.id, {
           status: 'paid',
           timeline: [...study.timeline, { label: 'Client approved payout', at: now }, { label: 'Paid', at: now }],
+          // Workflow 46: the client rates the participant when approving the payout.
+          clientReview: study.clientReview ?? {
+            stars: 5, comment: 'Thoughtful, well prepared and on time. Would happily include again.',
+            expertise: 5, reliability: 5, communication: 4, trustDelta: RATING_DELTA[5],
+          },
         }),
         transactions: [
           { id: `tx-${Date.now()}`, studyId: study.id, approved: true, title: study.title, at: now,

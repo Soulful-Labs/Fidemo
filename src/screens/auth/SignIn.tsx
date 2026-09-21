@@ -22,7 +22,7 @@ export default function SignIn() {
   const login = () => {
     setLoading(true)
     setTimeout(() => {
-      signIn()
+      signIn(email)
       navigate('/dashboard')
     }, TIMINGS.fakeServer)
   }

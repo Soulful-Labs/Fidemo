@@ -2,7 +2,7 @@ import { createElement } from 'react'
 import type { ComponentType } from 'react'
 import type { RouteObject } from 'react-router-dom'
 import { Navigate } from 'react-router-dom'
-import Placeholder from './components/Placeholder'
+import NotFound from './screens/NotFound'
 import RootRedirect from './app/RootRedirect'
 import KitchenSink from './screens/kitchen-sink/KitchenSink'
 import SignUp from './screens/auth/SignUp'
@@ -58,23 +58,16 @@ import SupportChat from './screens/support/SupportChat'
 import ContactUs from './screens/support/ContactUs'
 
 /**
- * The complete route map from the build brief. Every screen route points at the
- * Step 0 Placeholder component for now; real screens replace them turn by turn
- * per the build order. Redirect routes use <Navigate>.
+ * The complete route map from the build brief. Every route points at its
+ * built screen; redirect routes use <Navigate>.
  *
- * `label` is the human-facing screen name, used by the placeholder and by any
- * tooling that wants to walk the route table.
+ * `label` is the human-facing screen name, used by tooling that walks the
+ * route table.
  */
 
 type ScreenRoute = RouteObject & { label?: string }
 
-const screen = (path: string, label: string): ScreenRoute => ({
-  path,
-  label,
-  element: createElement(Placeholder, { name: label }),
-})
-
-/** A built screen, replacing its placeholder. */
+/** A screen on the route map. */
 const built = (path: string, label: string, Component: ComponentType): ScreenRoute => ({
   path,
   label,
@@ -162,7 +155,7 @@ export const routes: ScreenRoute[] = [
   { path: '/kitchen-sink', label: 'Kitchen Sink', element: createElement(KitchenSink) },
 
   // ----- Fallback -----
-  screen('*', 'Not Found'),
+  built('*', 'Not Found', NotFound),
 ]
 
 export default routes

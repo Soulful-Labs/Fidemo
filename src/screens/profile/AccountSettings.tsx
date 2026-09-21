@@ -5,9 +5,11 @@ import CtaBar from '../../components/ui/CtaBar'
 import Input from '../../components/ui/Input'
 import Tag from '../../components/ui/Tag'
 import TopBar from '../../components/ui/TopBar'
-import { Calendar, ChevronRight } from '../../components/ui/icons'
+import DobField from '../../components/ui/DobField'
+import PhoneField, { splitPhone } from '../../components/ui/PhoneField'
+import { ChevronRight } from '../../components/ui/icons'
 import { dateLong } from '../../lib/format'
-import { isValidEmail } from '../../lib/validation'
+import { isValidDob, isValidEmail } from '../../lib/validation'
 import { useStore } from '../../mock/store'
 import { TIMINGS } from '../../mock/timings'
 import { ID_TYPES } from '../onboarding/options'
@@ -27,7 +29,7 @@ export default function AccountSettings() {
   const { user, updateUser, toast } = useStore()
   const [name, setName] = useState(user.name)
   const [email, setEmail] = useState(user.email)
-  const [phone, setPhone] = useState(user.phone.replace(/^\+1\s?/, ''))
+  const [phone, setPhone] = useState(splitPhone(user.phone))
   const [dob, setDob] = useState(user.profile.dob)
   const [idType, setIdType] = useState(user.profile.idType)
   const [saving, setSaving] = useState(false)
@@ -36,7 +38,7 @@ export default function AccountSettings() {
   const save = () => {
     setSaving(true)
     setTimeout(() => {
-      updateUser({ name: name.trim(), email: email.trim(), phone: phone ? `+1 ${phone}` : user.phone, profile: { ...user.profile, dob, idType } })
+      updateUser({ name: name.trim(), email: email.trim(), phone: phone.number ? `${phone.code} ${phone.number}` : user.phone, profile: { ...user.profile, dob, idType } })
       setSaving(false)
       toast('Saved')
     }, TIMINGS.fakeServer)
@@ -58,9 +60,8 @@ export default function AccountSettings() {
         <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter email address"
           error={!isValidEmail(email) && email ? 'Enter a valid email address' : undefined}
           rightSlot={isValidEmail(email) ? <VerifiedIcon className="text-brand-secondary" /> : undefined} />
-        <Input label="Phone" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value.replace(/[^\d\s]/g, ''))} placeholder="Enter Phone Number"
-          leftIcon={<span className="text-body-regular text-text-title">+1</span>} />
-        <Input label="Date of Birth" value={dob} onChange={(e) => setDob(e.target.value)} placeholder="DD  /  MM  /  YYYY" rightSlot={<Calendar className="text-text-title" />} />
+        <PhoneField code={phone.code} number={phone.number} onChange={setPhone} />
+        <DobField value={dob} onChange={setDob} error={dob && !isValidDob(dob) ? 'Use DD / MM / YYYY' : undefined} />
         <PickField label="Select ID" value={idType} placeholder="Passport" options={ID_TYPES} onChange={setIdType} title="Select ID" />
         {file(`${idType || 'ID'} front.pdf`)}
         {file(`${idType || 'ID'} back.pdf`)}

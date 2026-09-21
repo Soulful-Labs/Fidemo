@@ -24,7 +24,8 @@ type StoreValue = Omit<AppState, 'user'> & Actions & {
   toast: (message: string) => void
   dismissToast: (id: string) => void
   notify: (n: Omit<AppNotification, 'id' | 'at' | 'read'>) => void
-  signIn: () => void
+  /** Signing in with the seed account's email restores that account; any other email signs in the current one. */
+  signIn: (email?: string) => void
   signOut: () => void
 }
 
@@ -57,7 +58,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     toast,
     dismissToast: (id: string) => dispatch({ type: 'DISMISS_TOAST', id }),
     notify,
-    signIn: () => dispatch({ type: 'SIGN_IN' }),
+    signIn: (email?: string) => dispatch({ type: 'SIGN_IN', email }),
     signOut: () => dispatch({ type: 'SIGN_OUT' }),
   }), [state, toast, notify])
 

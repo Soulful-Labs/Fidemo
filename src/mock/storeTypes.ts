@@ -92,7 +92,7 @@ export interface AppState {
 }
 
 export type Action =
-  | { type: 'SIGN_IN' }
+  | { type: 'SIGN_IN'; email?: string }
   | { type: 'SIGN_UP'; email: string; sourceCode?: string }
   | { type: 'SET_SOURCE'; code: string }
   | { type: 'TAX_FORM_DONE' }

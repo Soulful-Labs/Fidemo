@@ -76,7 +76,8 @@ ok('pay -> status paid', paid.status === 'paid')
 ok('pay -> timeline records client approval then paid', paid.timeline.at(-2)!.label === 'Client approved payout' && paid.timeline.at(-1)!.label === 'Paid')
 ok('wallet +reward (derived)', Math.abs(a.walletBalance - (before.wallet + paid.reward)) < 0.001, `${before.wallet} -> ${a.walletBalance}`)
 ok('points +25 (derived)', a.points === before.points + 25)
-ok('trust +1 (derived)', a.trustScore === before.trust + 1, `${before.trust} -> ${a.trustScore}`)
+ok('pay -> client rating attached (workflow 46)', paid.clientReview?.stars === 5)
+ok('trust +1 completion +4 for a 5 star rating (derived)', a.trustScore === before.trust + 1 + 4, `${before.trust} -> ${a.trustScore}`)
 ok('completed studies +1 (derived)', a.completedStudies === before.studies + 1)
 ok('transaction added', state.transactions[0].studyId === 'st-01')
 ok('points entry added', state.pointsHistory[0].amount === 25)
@@ -111,6 +112,22 @@ ok('referral notification names a seeded referral', returningUserState().notific
 
 state = reducer(state, { type: 'MARK_ALL_READ' })
 ok('mark all read', state.notifications.every((n) => n.read))
+
+console.log('\n--- WORKFLOW GATES ---')
+let taxed: AppState = { ...returningUserState(), signedIn: true }
+taxed = reducer(taxed, { type: 'PAY_STUDY', id: 'st-01' })
+ok('tax form required once the year crosses $600 (workflow 49)', derive(taxed).taxFormRequired && derive(taxed).yearEarned >= 600, String(derive(taxed).yearEarned))
+taxed = reducer(taxed, { type: 'TAX_FORM_DONE' })
+ok('tax form on file lifts the block', !derive(taxed).taxFormRequired)
+let fresh2 = reducer({ ...returningUserState(), signedIn: false, arrivedVia: 'HL-020-C' }, { type: 'SIGN_UP', email: 'new.person@example.com' })
+ok('sign-up starts clean, signed in, unverified (workflow 15)', fresh2.signedIn && !fresh2.user.onboarded && fresh2.studies.every((x) => x.status === 'available') && fresh2.transactions.length === 0)
+ok('sign-up records the link code (workflow 12/14)', fresh2.user.sourceCode === 'HL-020-C' && derive(fresh2).points === R.POINTS.BEING_REFERRED)
+fresh2 = reducer(fresh2, { type: 'SIGN_OUT' })
+fresh2 = reducer(fresh2, { type: 'SIGN_IN', email: 'Jonathan.Reeve@example.com' })
+ok('signing in with the seed email restores the seed account', fresh2.user.email === 'jonathan.reeve@example.com' && fresh2.transactions.length > 0)
+ok('not_needed is paid in full with no trust effect (workflow 44)', derive(returningUserState()).completedStudies === STUDIES.filter((x) => x.status === 'paid' || x.status === 'not_needed').length && TRANSACTIONS.some((t) => t.studyId === 'st-16'))
+ok('premium studies are the highest paid (workflow 17)', Math.min(...STUDIES.filter((x) => x.premium).map((x) => x.reward)) > Math.max(...STUDIES.filter((x) => !x.premium).map((x) => x.reward)))
+ok('no screener asks age, location or job (workflow 30)', STUDIES.every((x) => x.screener.every((q) => !/(age|old are you|where do you live|city|country|occupation|job title)/i.test(q.prompt))))
 
 console.log('\n--- TAB DERIVATION ---')
 for (const tab of ['invites','scheduled','drafts','applied','history'] as const) {

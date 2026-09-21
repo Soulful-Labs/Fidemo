@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import FileField from '../../components/app/FileField'
+import DobField from '../../components/ui/DobField'
 import Input from '../../components/ui/Input'
 import TabBar from '../../components/ui/TabBar'
-import { Calendar } from '../../components/ui/icons'
 import { useAppNav } from '../../app/useAppNav'
 import { useStore } from '../../mock/store'
 import { isAdult, isValidDob } from '../../lib/validation'
@@ -43,12 +43,7 @@ export default function AboutYou() {
           onChange={(e) => setOnboarding({ fullName: e.target.value })}
         />
 
-        <Input
-          label="Date of Birth" placeholder="DD  /  MM  /  YYYY" value={dob}
-          onChange={(e) => setOnboarding({ dob: e.target.value })}
-          onBlur={() => setTouched(true)} error={dobError} inputMode="numeric"
-          rightSlot={<Calendar className="text-text-title" />}
-        />
+        <DobField value={dob} onChange={(v) => setOnboarding({ dob: v })} onBlur={() => setTouched(true)} error={dobError} />
 
         <div className="flex flex-col gap-1">
           <span className="text-text-regular text-text-subtitle">Gender</span>
