@@ -7,7 +7,7 @@ import type { AppState } from './storeTypes'
  * over from the seed; bump VERSION when the seed shape changes.
  */
 const KEY = 'hl-respondent-demo'
-const VERSION = 1
+const VERSION = 2
 
 export function loadPersisted(seed: AppState): AppState {
   try {

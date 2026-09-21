@@ -1,0 +1,42 @@
+import type { ProfileDetails, User } from '../mock/types'
+
+/** Fields that count towards "N% completed" on the profile card. */
+export const COUNTED: (keyof ProfileDetails | 'name' | 'phone')[] = [
+  'name', 'phone', 'gender', 'address', 'areaType', 'aboutMe', 'languages', 'nationality', 'income', 'ethnicity', 'pets',
+  'homeOwner', 'occupation', 'experience', 'licenseId', 'industry', 'education', 'topics', 'dob', 'idType', 'introVideo',
+]
+
+const filled = (v: unknown) => (Array.isArray(v) ? v.length > 0 : Boolean(v && String(v).trim()))
+
+/** Derived, never stored: how much of the profile is filled in. */
+export function profileCompletion(user: Pick<User, 'name' | 'phone' | 'profile'>): number {
+  const done = COUNTED.filter((k) =>
+    k === 'name' ? filled(user.name) : k === 'phone' ? filled(user.phone) : filled(user.profile[k]),
+  ).length
+  return Math.round((done / COUNTED.length) * 100)
+}
+
+/** Age in whole years from a "DD / MM / YYYY" date of birth, or undefined. */
+export function ageFrom(dob: string, now: Date = new Date()): number | undefined {
+  const m = /^(\d{2})\s*\/\s*(\d{2})\s*\/\s*(\d{4})$/.exec(dob.trim())
+  if (!m) return undefined
+  const [, dd, mm, yyyy] = m.map(Number)
+  let age = now.getFullYear() - yyyy
+  if (now.getMonth() + 1 < mm || (now.getMonth() + 1 === mm && now.getDate() < dd)) age -= 1
+  return age
+}
+
+/** A short stable code from the account, e.g. certificate id and referral link. */
+export function accountCode(email: string, length = 4): string {
+  let h = 0
+  for (const ch of email.toLowerCase()) h = (h * 31 + ch.charCodeAt(0)) >>> 0
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  let out = ''
+  for (let i = 0; i < length; i++) { out += alphabet[h % alphabet.length]; h = Math.floor(h / alphabet.length) + 7 }
+  return out
+}
+
+export const certificateId = (email: string) => `HL-R-${accountCode(email, 4)}-${accountCode(email + '#', 4)}`
+/** Workflow 12: a sign-up link carries a code the app records as the new person's source. */
+export const referralCode = (name: string, email: string) => `${(name.split(' ')[0] || 'friend').toUpperCase()}${accountCode(email, 3)}`
+export const referralLink = (name: string, email: string) => `https://humanlayer.app/signup?ref=${referralCode(name, email)}`

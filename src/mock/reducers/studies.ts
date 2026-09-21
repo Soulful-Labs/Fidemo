@@ -1,4 +1,4 @@
-import { applyTrustDelta, tierFor, POINTS, TRUST } from '../../lib/rules'
+import { POINTS, TRUST } from '../../lib/rules'
 import type { Action, AppState } from '../storeTypes'
 import type { Study } from '../types'
 
@@ -45,30 +45,24 @@ export function studyReducer(state: AppState, action: Action): AppState | null {
     case 'RATE_CLIENT':
       return patchStudy(state, action.id, { userReview: action.review, ratedByUser: true })
 
-    /** Completion payout: reward to the wallet, 25 points, +1 Trust Score. */
+    /**
+     * Workflow 46: the client approves the payout list, then the reward lands.
+     * The wallet, points and Trust Score are derived from the lists this
+     * appends to (lib/derive.ts), so nothing on the user is touched here.
+     */
     case 'PAY_STUDY': {
       const study = state.studies.find((s) => s.id === action.id)
       if (!study) return state
-      const trustScore = applyTrustDelta(state.user.trustScore, TRUST.STUDY_COMPLETION)
       const now = new Date().toISOString()
       return {
         ...patchStudy(state, action.id, {
           status: 'paid',
-          timeline: [...study.timeline, { label: 'Paid', at: now }],
+          timeline: [...study.timeline, { label: 'Client approved payout', at: now }, { label: 'Paid', at: now }],
         }),
-        user: {
-          ...state.user,
-          trustScore,
-          tier: tierFor(trustScore),
-          walletBalance: state.user.walletBalance + study.reward,
-          points: state.user.points + POINTS.STUDY_COMPLETION,
-          allTimeEarned: state.user.allTimeEarned + study.reward,
-          completedStudies: state.user.completedStudies + 1,
-        },
         transactions: [
-          { id: `tx-${Date.now()}`, studyId: study.id, title: study.title, at: now,
+          { id: `tx-${Date.now()}`, studyId: study.id, approved: true, title: study.title, at: now,
             amount: study.reward, txNumber: `#${Math.floor(100000 + Math.random() * 899999)}`,
-            category: study.type === 'survey' ? 'Survey' : 'Interview' },
+            category: study.type === 'survey' || study.type === 'diary' ? 'Survey' : study.type === 'in_person' ? 'In-Person' : study.type === 'video_call' ? 'Interview' : 'Focus Group' },
           ...state.transactions,
         ],
         pointsHistory: [
@@ -79,14 +73,15 @@ export function studyReducer(state: AppState, action: Action): AppState | null {
       }
     }
 
-    /** Cancelling a booked session is a late cancellation: -2 Trust Score. */
+    /** Cancelling a booked session is a late cancellation: -2 Trust Score, remembered as an event. */
     case 'CANCEL_STUDY': {
-      const trustScore = applyTrustDelta(state.user.trustScore, TRUST.LATE_CANCELLATION)
+      const study = state.studies.find((s) => s.id === action.id)
       return {
         ...patchStudy(state, action.id, {
           status: 'available', booking: undefined, pinConfirmed: false,
+          timeline: [...(study?.timeline ?? []), { label: 'Cancelled', at: new Date().toISOString() }],
         }),
-        user: { ...state.user, trustScore, tier: tierFor(trustScore) },
+        trustEvents: [...state.trustEvents, { label: `Late cancellation, ${study?.title ?? 'study'}`, delta: TRUST.LATE_CANCELLATION, at: new Date().toISOString() }],
       }
     }
 

@@ -7,10 +7,15 @@ import AuthLayout from './AuthLayout'
 
 const COUNTDOWN = 59
 
-/** PRD 4.4, Figma 915:50175. Any 6 digits pass, per the button table. */
+/**
+ * PRD 4.4, Figma 915:50175. Any 6 digits pass, per the button table. Submit
+ * creates the account and lands on the dashboard: workflow 15 lets a new
+ * member browse first and verify at the point of applying.
+ */
 export default function VerifyOtp() {
   const navigate = useNavigate()
-  const { toast } = useStore()
+  const { toast, signUp, onboarding, user } = useStore()
+  const email = onboarding.email || user.email
   const [code, setCode] = useState('')
   const [seconds, setSeconds] = useState(COUNTDOWN)
 
@@ -33,12 +38,12 @@ export default function VerifyOtp() {
       subtitle={
         <>
           Please enter a 6-digit OTP code sent to{' '}
-          <span className="font-semibold text-text-title">emailaddress@domain.com</span>
+          <span className="font-semibold text-text-title">{email}</span>
         </>
       }
       actions={
         <>
-          <Button fullWidth disabled={code.length !== 6} onClick={() => navigate('/onboarding/about')}
+          <Button fullWidth disabled={code.length !== 6} onClick={() => { signUp(email); navigate('/dashboard', { replace: true }) }}
             onBlocked={() => toast('Enter all 6 digits')}>
             Submit
           </Button>

@@ -3,7 +3,8 @@ import Tag from '../ui/Tag'
 import { Bookmark, Calendar, Clock, InviteIcon } from '../ui/icons'
 import { cn } from '../../lib/cn'
 import { bookingShort, dateLong, daysLeft, duration, money } from '../../lib/format'
-import { STATUS } from '../../lib/studyState'
+import { STATUS, outcomeFor } from '../../lib/studyState'
+import { useStore } from '../../mock/store'
 import type { Study } from '../../mock/types'
 import ScoreDial from './ScoreDial'
 import StudyTypeTag, { STUDY_TYPE_LABEL } from './StudyTypeTag'
@@ -48,6 +49,9 @@ export default function StudyCard({
   footnote,
 }: StudyCardProps) {
   const meta = STATUS[study.status]
+  const { user } = useStore()
+  const locked = Boolean(study.premium) && !user.verified.license
+  const outcome = outcomeFor(study.status)
   const compact = variant === 'compact'
   const booked = Boolean(study.booking) && (study.status === 'scheduled' || study.status === 'pin_confirmed')
   const history = HISTORY.includes(study.status)
@@ -71,7 +75,14 @@ export default function StudyCard({
     </button>
   )
 
-  const statusTag = <Tag tone={meta.tone} size="md" icon={<StatusIcon status={study.status} />}>{meta.label}</Tag>
+  const statusTag = (
+    <Tag tone={meta.tone} size="md" icon={<StatusIcon status={study.status} />}>
+      {meta.label}
+      {outcome && (
+        <span className={cn('ml-1 h-2 w-2 rounded-full', outcome.colour === 'green' ? 'bg-state-success' : outcome.colour === 'yellow' ? 'bg-brand-primary' : 'bg-state-danger')} aria-label={outcome.label} />
+      )}
+    </Tag>
+  )
 
   return (
     <article className={cn('flex flex-col gap-4 rounded-lg bg-bg-1 p-4', compact && 'w-card shrink-0')}>
@@ -79,6 +90,13 @@ export default function StudyCard({
         <p className={cn('flex items-center gap-2 text-body-medium', study.status === 'invited_to_apply' ? 'text-brand-primary' : 'text-brand-secondary')}>
           <InviteIcon />
           {meta.flag}
+        </p>
+      )}
+
+      {study.premium && (
+        <p className={cn('flex items-center gap-2 text-text-medium', locked ? 'text-text-body' : 'text-tier-gold')}>
+          <svg viewBox="0 0 24 24" fill="none" width="16" height="16" className="shrink-0"><rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" /><path d={locked ? 'M8 10V7a4 4 0 0 1 8 0v3' : 'M8 10V7a4 4 0 0 1 7.5-2'} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+          {locked ? 'Premium, needs a verified credential' : 'Premium study'}
         </p>
       )}
 

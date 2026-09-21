@@ -22,6 +22,9 @@ export const SAMPLE: Study = {
   client: { id: 'cl-01', name: 'RJP Pharma Ltd.', rating: 4.5, reviewCount: 124 },
   status: 'available',
   saved: false,
+  repeatRule: 'allow',
+  linkCode: 'HL-001-A',
+  preScreener: [],
   screener: [],
   timeline: [
     { label: 'Applied', at: '2026-05-13T10:36:00Z' },

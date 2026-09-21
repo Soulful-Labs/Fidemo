@@ -5,7 +5,7 @@ import Tag from '../../components/ui/Tag'
 import TopBar from '../../components/ui/TopBar'
 import { Copy, Share } from '../../components/ui/icons'
 import { POINTS } from '../../lib/rules'
-import { REFERRAL_LINK } from '../../mock/data'
+import { referralLink } from '../../lib/profile'
 import { useStore } from '../../mock/store'
 import { Avatar } from './Profile'
 import { ReferIcon } from './profileIcons'
@@ -24,6 +24,7 @@ const mask = (email: string) => {
 export default function Referrals() {
   const navigate = useNavigate()
   const { user, referrals, toast } = useStore()
+  const REFERRAL_LINK = referralLink(user.name, user.email)
   const joined = referrals.length
   const completed = referrals.filter((r) => r.status === 'completed').length
   const earned = completed * POINTS.REFERRAL

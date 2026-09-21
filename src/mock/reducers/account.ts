@@ -1,4 +1,5 @@
 import { pointsToUsd, WITHDRAWAL_FEE } from '../../lib/rules'
+import { newUserState } from '../data'
 import { DEFAULT_FILTERS } from '../storeTypes'
 import type { Action, AppState } from '../storeTypes'
 
@@ -9,6 +10,15 @@ export function accountReducer(state: AppState, action: Action): AppState | null
       return { ...state, signedIn: true }
     case 'SIGN_OUT':
       return { ...state, signedIn: false }
+    /** Workflow 15: a new account starts clean, signed in, free to browse. */
+    case 'SIGN_UP':
+      return { ...newUserState(action.email, action.sourceCode ?? state.arrivedVia), arrivedVia: state.arrivedVia }
+    /** Workflow 12 and 14: the coded link the person arrived through. */
+    case 'SET_SOURCE':
+      return state.arrivedVia === action.code ? state : { ...state, arrivedVia: action.code }
+    /** Workflow 49: the tax form is on file, withdrawals open again. */
+    case 'TAX_FORM_DONE':
+      return { ...state, user: { ...state.user, taxFormDone: true } }
 
     case 'SET_ONBOARDING':
       return { ...state, onboarding: { ...state.onboarding, ...action.patch } }
@@ -27,7 +37,6 @@ export function accountReducer(state: AppState, action: Action): AppState | null
       const now = new Date().toISOString()
       return {
         ...state,
-        user: { ...state.user, walletBalance: state.user.walletBalance - action.amount },
         payouts: [
           { id: `po-${Date.now()}`, at: now, amount: action.amount, fee: WITHDRAWAL_FEE,
             net: action.amount - WITHDRAWAL_FEE, destination: action.destination,
@@ -38,19 +47,18 @@ export function accountReducer(state: AppState, action: Action): AppState | null
       }
     }
 
+    /** Points leave the points history and arrive in the wallet as a transaction. */
     case 'REDEEM_POINTS': {
       const amount = pointsToUsd(action.points)
+      const now = new Date().toISOString()
+      const reference = `#${Math.floor(100000000 + Math.random() * 899999999)}`
       return {
         ...state,
-        user: {
-          ...state.user,
-          points: state.user.points - action.points,
-          walletBalance: state.user.walletBalance + amount,
-        },
-        redeemHistory: [
-          { id: `rd-${Date.now()}`, at: new Date().toISOString(), points: action.points, amount,
-            reference: `#${Math.floor(100000000 + Math.random() * 899999999)}` },
-          ...state.redeemHistory,
+        redeemHistory: [{ id: `rd-${Date.now()}`, at: now, points: action.points, amount, reference }, ...state.redeemHistory],
+        transactions: [
+          { id: `tx-rd-${Date.now()}`, title: `${action.points.toLocaleString('en-US')} points redeemed`, at: now,
+            amount, txNumber: reference, category: 'Redeem Points' },
+          ...state.transactions,
         ],
       }
     }

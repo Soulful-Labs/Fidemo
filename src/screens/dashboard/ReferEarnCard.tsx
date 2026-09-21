@@ -1,7 +1,7 @@
 import Button from '../../components/ui/Button'
 import { Copy, PointsCoin, Share } from '../../components/ui/icons'
 import { POINTS } from '../../lib/rules'
-import { REFERRAL_LINK } from '../../mock/data'
+import { referralLink } from '../../lib/profile'
 import { useStore } from '../../mock/store'
 
 function ReferIcon() {
@@ -30,7 +30,8 @@ function Gift() {
 
 /** PRD 5.1 Refer & Earn!, Figma 918:69716. Copy is quoted exactly, grammar included. */
 export default function ReferEarnCard({ subtitle }: { subtitle?: string }) {
-  const { toast } = useStore()
+  const { toast, user } = useStore()
+  const REFERRAL_LINK = referralLink(user.name, user.email)
 
   const copy = async () => {
     try {

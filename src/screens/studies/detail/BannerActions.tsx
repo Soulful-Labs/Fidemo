@@ -55,17 +55,23 @@ export default function BannerActions({
   return null
 }
 
-/** "Submit Confirmation PIN" note under the Scheduled banner body (PRD 6.11). */
+/**
+ * The session code note under the Scheduled banner. Workflow 42: a code is
+ * generated at the end of the session and shown to both sides; the
+ * participant enters it and so does the moderator. No code, no payment. The
+ * PRD 6.11 "Submit Confirmation PIN" screens are kept; the timing and copy
+ * follow the workflow.
+ */
 export function PinNote() {
   return (
     <div className="flex flex-col gap-1 border-t-1 border-stroke-3 pt-3">
       <p className="flex items-center gap-2 text-body-medium text-brand-primary">
         <WarningIcon />
-        Submit Confirmation PIN
+        Session code at the end
       </p>
       <p className="text-text-regular text-text-subtitle">
-        Join the call and get this code from the interviewer to submit for confirming your joining and get
-        reward after successful completion.
+        When the session ends a code is shown to you and the moderator. Enter it here to confirm you attended; the
+        moderator enters it too. No code, no payment.
       </p>
     </div>
   )

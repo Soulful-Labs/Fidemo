@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import CtaBar from '../../components/ui/CtaBar'
 import TabBar from '../../components/ui/TabBar'
@@ -14,11 +14,6 @@ import ProfileDetailsTab from './ProfileDetailsTab'
 
 export type Draft = ProfileDetails & { name: string }
 
-/** Fields that count towards "N% completed" on the profile card. */
-const COUNTED: (keyof Draft)[] = [
-  'name', 'gender', 'address', 'areaType', 'aboutMe', 'languages', 'nationality', 'income', 'ethnicity', 'pets',
-  'homeOwner', 'occupation', 'experience', 'licenseId', 'industry', 'education', 'topics', 'dob', 'idType', 'introVideo',
-]
 export const filled = (d: Draft, key: keyof Draft) => {
   const v = d[key]
   return Array.isArray(v) ? v.length > 0 : Boolean(v && String(v).trim())
@@ -28,7 +23,8 @@ export const filled = (d: Draft, key: keyof Draft) => {
 export default function MyProfile() {
   const navigate = useNavigate()
   const { user, updateUser, toast } = useStore()
-  const [tab, setTab] = useState<'details' | 'professional'>('details')
+  const [params] = useSearchParams()
+  const [tab, setTab] = useState<'details' | 'professional'>(params.get('tab') === 'professional' ? 'professional' : 'details')
   const [draft, setDraft] = useState<Draft>({ ...user.profile, name: user.name })
   const [info, setInfo] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -39,8 +35,8 @@ export default function MyProfile() {
     setSaving(true)
     setTimeout(() => {
       const { name, ...profile } = draft
-      const done = COUNTED.filter((k) => filled(draft, k)).length
-      updateUser({ name: name.trim() || user.name, profile, profileCompletion: Math.round((done / COUNTED.length) * 100) })
+      // Workflow 17: a licence number is checked against the public register automatically.
+      updateUser({ name: name.trim() || user.name, profile, verified: { ...user.verified, license: profile.licenseId.trim().length >= 6 } })
       setSaving(false)
       toast('Saved')
     }, TIMINGS.fakeServer)

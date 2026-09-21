@@ -6,7 +6,8 @@ import type { Action, AppState, PendingTransition } from './storeTypes'
 /** Session study types schedule; survey and diary go straight to completing. */
 const SESSION_TYPES = ['video_call', 'group_video_call', 'in_person', 'in_person_group']
 
-type Store = AppState & Actions & {
+type Store = Omit<AppState, 'user'> & Actions & {
+  user: AppState['user']
   dispatch: React.Dispatch<Action>
   toast: (message: string) => void
   notify: (n: Omit<AppNotification, 'id' | 'at' | 'read'>) => void
@@ -38,11 +39,12 @@ function fire(t: PendingTransition, store: Store) {
 
   if (t.kind === 'pay') {
     if (study.status !== 'in_process') return
+    // Workflow 46: the client has approved the payout list; the reward is released.
     store.dispatch({ type: 'PAY_STUDY', id: t.id })
     store.notify({
       kind: 'money',
       title: `You've received $${study.reward}!`,
-      body: `Your payment for ${study.title} has been added to your wallet.`,
+      body: `The client approved the payout list. Your reward for ${study.title} is in your wallet.`,
       to: '/wallet',
     })
     store.toast(`Paid $${study.reward}, +25 points, +1 Trust Score`)

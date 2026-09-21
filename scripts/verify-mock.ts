@@ -1,5 +1,6 @@
-import { STUDIES, ALL_TYPES, ALL_STATUSES } from '../src/mock/studies'
-import { NOTIFICATIONS, PAYOUTS, PAYOUT_METHODS, POINTS_HISTORY, REDEEM_HISTORY, REFERRALS, TICKETS, TRANSACTIONS, USER } from '../src/mock/data'
+import { STUDIES, ALL_TYPES, ALL_STATUSES } from '../src/mock/seed/studies'
+import { PAYOUTS, PAYOUT_METHODS, POINTS_HISTORY, REDEEM_HISTORY, REFERRALS, TICKETS, TRANSACTIONS, returningUserState } from '../src/mock/data'
+import { derive } from '../src/lib/derive'
 import { reducer } from '../src/mock/reducer'
 import type { AppState } from '../src/mock/storeTypes'
 import * as R from '../src/lib/rules'
@@ -14,11 +15,18 @@ const ok = (name: string, cond: boolean, detail = '') => {
 console.log('--- SEED COVERAGE ---')
 ok(`>= 12 studies`, STUDIES.length >= 12, `${STUDIES.length} studies`)
 for (const t of ALL_TYPES) ok(`type ${t}`, STUDIES.some((s) => s.type === t))
-for (const st of ALL_STATUSES) ok(`status ${st}`, STUDIES.some((s) => s.status === st))
+// 'applying' is transient (screener open) and is never seeded.
+for (const st of ALL_STATUSES.filter((x) => x !== 'applying')) ok(`status ${st}`, STUDIES.some((s) => s.status === st))
+ok('>= 24 studies with distinct titles', new Set(STUDIES.map((s) => s.title)).size >= 24 && new Set(STUDIES.map((s) => s.title)).size === STUDIES.length)
+ok('>= 10 clients', new Set(STUDIES.map((s) => s.client.id)).size >= 10)
+ok('no thumbnail cycling (each photo reused at most twice)', Math.max(...[...STUDIES.reduce((m, s) => m.set(s.image, (m.get(s.image) ?? 0) + 1), new Map<string, number>()).values()]) <= 2)
+ok('every study has 3 pre-screener questions', STUDIES.every((s) => s.preScreener.length === 3))
+ok('>= 8 screener sets', new Set(STUDIES.map((s) => s.screener.map((q) => q.id + q.prompt).join('|'))).size >= 8)
+ok('>= 6 tickets', TICKETS.length >= 6)
 const kinds = new Set(STUDIES.flatMap((s) => [...s.screener, ...(s.tasks ?? [])]).map((q) => q.kind))
 for (const k of ['single','multi','text','image','scale']) ok(`question kind ${k}`, kinds.has(k as never))
 ok('every study has a unique id', new Set(STUDIES.map((s) => s.id)).size === STUDIES.length)
-ok('seeds present', [NOTIFICATIONS, PAYOUTS, PAYOUT_METHODS, POINTS_HISTORY, REDEEM_HISTORY, REFERRALS, TICKETS, TRANSACTIONS].every((a) => a.length > 0))
+ok('seeds present', [returningUserState().notifications, PAYOUTS, PAYOUT_METHODS, POINTS_HISTORY, REDEEM_HISTORY, REFERRALS, TICKETS, TRANSACTIONS].every((a) => a.length > 0))
 ok('exactly one default payout method', PAYOUT_METHODS.filter((m) => m.isDefault).length === 1)
 
 console.log('\n--- BUSINESS RULES (CLAUDE.md values, not Figma) ---')
@@ -47,12 +55,8 @@ ok('reschedule allowed at 3 days, 0 used', R.canReschedule(0, new Date(Date.now(
 ok('diary needs 4 of 5', !R.diaryComplete([1,2,3]) && R.diaryComplete([1,2,3,4]))
 
 console.log('\n--- STATE MACHINE ---')
-let state: AppState = {
-  signedIn: false, user: USER, studies: STUDIES, notifications: NOTIFICATIONS,
-  transactions: TRANSACTIONS, payouts: PAYOUTS, payoutMethods: PAYOUT_METHODS,
-  pointsHistory: POINTS_HISTORY, redeemHistory: REDEEM_HISTORY, referrals: REFERRALS,
-  tickets: TICKETS, answers: {}, toasts: [], pending: [],
-}
+let state: AppState = { ...returningUserState(), signedIn: true }
+const user = () => derive(state)
 const get = (id: string) => state.studies.find((s) => s.id === id)!
 
 state = reducer(state, { type: 'SET_STATUS', id: 'st-01', status: 'applying' })
@@ -63,32 +67,47 @@ ok('applying -> draft keeps answers', get('st-01').status === 'draft' && state.a
 state = reducer(state, { type: 'SET_STATUS', id: 'st-01', status: 'applied', timelineLabel: 'Applied' })
 ok('draft -> applied adds timeline', get('st-01').status === 'applied' && get('st-01').timeline.at(-1)!.label === 'Applied')
 
-const before = { wallet: state.user.walletBalance, points: state.user.points, trust: state.user.trustScore, studies: state.user.completedStudies }
+const b = user()
+const before = { wallet: b.walletBalance, points: b.points, trust: b.trustScore, studies: b.completedStudies }
 state = reducer(state, { type: 'PAY_STUDY', id: 'st-01' })
 const paid = get('st-01')
+const a = user()
 ok('pay -> status paid', paid.status === 'paid')
-ok('wallet +reward', state.user.walletBalance === before.wallet + paid.reward, `${before.wallet} -> ${state.user.walletBalance}`)
-ok('points +25', state.user.points === before.points + 25)
-ok('trust +1', state.user.trustScore === before.trust + 1)
-ok('completed studies +1', state.user.completedStudies === before.studies + 1)
+ok('pay -> timeline records client approval then paid', paid.timeline.at(-2)!.label === 'Client approved payout' && paid.timeline.at(-1)!.label === 'Paid')
+ok('wallet +reward (derived)', Math.abs(a.walletBalance - (before.wallet + paid.reward)) < 0.001, `${before.wallet} -> ${a.walletBalance}`)
+ok('points +25 (derived)', a.points === before.points + 25)
+ok('trust +1 (derived)', a.trustScore === before.trust + 1, `${before.trust} -> ${a.trustScore}`)
+ok('completed studies +1 (derived)', a.completedStudies === before.studies + 1)
 ok('transaction added', state.transactions[0].studyId === 'st-01')
 ok('points entry added', state.pointsHistory[0].amount === 25)
 
-const trustBefore = state.user.trustScore
+const trustBefore = user().trustScore
 state = reducer(state, { type: 'CANCEL_STUDY', id: 'st-10' })
 ok('cancel -> available', get('st-10').status === 'available')
-ok('cancel costs 2 trust', state.user.trustScore === trustBefore - 2)
+ok('cancel costs 2 trust (derived from trustEvents)', user().trustScore === trustBefore - 2)
 ok('cancel clears booking', get('st-10').booking === undefined)
 
-const wBefore = state.user.walletBalance
+const wBefore = user().walletBalance
 state = reducer(state, { type: 'WITHDRAW', amount: 100, destination: '****7790' })
-ok('withdraw reduces balance', state.user.walletBalance === wBefore - 100)
+ok('withdraw reduces balance', Math.abs(user().walletBalance - (wBefore - 100)) < 0.001)
 ok('withdraw adds processing payout', state.payouts[0].status === 'processing' && state.payouts[0].net === 98)
 
-const pBefore = state.user.points
+const pBefore = user().points
 state = reducer(state, { type: 'REDEEM_POINTS', points: 1000 })
-ok('redeem deducts points', state.user.points === pBefore - 1000)
-ok('redeem credits $10', Math.round((state.user.walletBalance - (wBefore - 100)) * 100) / 100 === 10)
+ok('redeem deducts points', user().points === pBefore - 1000)
+ok('redeem credits $10', Math.round((user().walletBalance - (wBefore - 100)) * 100) / 100 === 10)
+
+console.log('\n--- DERIVED, NEVER HARDCODED ---')
+const fresh = derive(returningUserState())
+ok('all time earned = sum of study transactions', fresh.allTimeEarned === TRANSACTIONS.filter((t) => t.category !== 'Redeem Points').reduce((x, t) => x + t.amount, 0))
+ok('completed studies = paid + not needed', fresh.completedStudies === STUDIES.filter((s) => s.status === 'paid' || s.status === 'not_needed').length)
+ok('points = history - redemptions', fresh.points === POINTS_HISTORY.reduce((x, p) => x + p.amount, 0) - REDEEM_HISTORY.reduce((x, r) => x + r.points, 0))
+ok('trust score within 50..100 and Gold for the demo account', fresh.trustScore >= 50 && fresh.trustScore <= 100 && fresh.tier === 'gold', String(fresh.trustScore))
+ok('streak month is the current month', fresh.streak.month === new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }))
+ok('this month has earnings', TRANSACTIONS.some((t) => new Date(t.at).getMonth() === new Date().getMonth()))
+ok('year earnings just under the $600 tax threshold', fresh.yearEarned < 600 && fresh.yearEarned > 500, String(fresh.yearEarned))
+ok('every notification refers to a real study state', returningUserState().notifications.every((n) => !n.to || !n.to.startsWith('/studies/') || STUDIES.some((s) => n.to!.startsWith(`/studies/${s.id}`))))
+ok('referral notification names a seeded referral', returningUserState().notifications.filter((n) => n.kind === 'referral').every((n) => REFERRALS.some((r) => n.body.includes(r.name))))
 
 state = reducer(state, { type: 'MARK_ALL_READ' })
 ok('mark all read', state.notifications.every((n) => n.read))

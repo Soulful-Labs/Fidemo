@@ -10,6 +10,8 @@ export const TIMINGS = {
   completionToPaid: 5000,
   /** "Feels like a server" pause before an action resolves. */
   fakeServer: 600,
+  /** Support ticket -> automated first reply from the guides. */
+  autoReply: 2500,
   /** How long a toast stays up. */
   toast: 3000,
 } as const

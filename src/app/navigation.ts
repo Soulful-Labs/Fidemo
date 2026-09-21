@@ -64,7 +64,7 @@ const PARENTS: [pattern: string, parent: string][] = [
   ['/reset-password', '/check-email'],
   ['/password-updated', '/signin'],
   ['/forgot-password', '/signin'],
-  ['/onboarding/about', '/signup'],
+  ['/onboarding/about', '/dashboard'],
   ['/onboarding/professional', '/onboarding/about'],
   ['/onboarding/identity', '/onboarding/professional'],
   ['/onboarding/welcome', '/dashboard'],

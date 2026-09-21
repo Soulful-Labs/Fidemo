@@ -6,6 +6,7 @@ import Input from '../../components/ui/Input'
 import Tag from '../../components/ui/Tag'
 import { Search } from '../../components/ui/icons'
 import { dateLong } from '../../lib/format'
+import { REPLY_TIME } from '../../lib/support'
 import { useStore } from '../../mock/store'
 import TypeFilter from '../studies/TypeFilter'
 
@@ -44,7 +45,10 @@ export default function SupportTickets() {
           return (
             <Link key={t.id} to={`/support/tickets/${t.id}`} className="flex flex-col gap-2 rounded-lg bg-bg-1 p-4">
               <span className="flex items-center justify-between">
-                <Tag tone={t.status === 'open' ? 'yellow' : 'green'} size="md">{t.status === 'open' ? 'Open' : 'Solved'}</Tag>
+                <span className="flex items-center gap-2">
+                  <Tag tone={t.status === 'open' ? 'yellow' : 'green'} size="md">{t.status === 'open' ? 'Open' : 'Solved'}</Tag>
+                  {t.status === 'open' && <span className="text-label text-text-body">reply {REPLY_TIME[t.topic]}</span>}
+                </span>
                 <span className="text-text-regular text-text-body">#{t.id}</span>
               </span>
               <span className="text-body-medium text-text-title">{t.subject}</span>

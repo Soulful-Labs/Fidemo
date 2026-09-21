@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
 import { useAppNav } from '../../app/useAppNav'
+import { useStore } from '../../mock/store'
 import { isValidEmail } from '../../lib/validation'
 import AuthLayout from './AuthLayout'
 
@@ -10,6 +11,7 @@ import AuthLayout from './AuthLayout'
 export default function ForgotPassword() {
   const navigate = useNavigate()
   const { back } = useAppNav()
+  const { setOnboarding } = useStore()
   const [email, setEmail] = useState('')
   const [touched, setTouched] = useState(false)
 
@@ -22,7 +24,7 @@ export default function ForgotPassword() {
       title="Enter Email"
       subtitle="Please enter your email address"
       actions={
-        <Button fullWidth disabled={!isValidEmail(email)} onClick={() => navigate('/check-email')}
+        <Button fullWidth disabled={!isValidEmail(email)} onClick={() => { setOnboarding({ email: email.trim() }); navigate('/check-email') }}
           onBlocked={() => setTouched(true)}>
           Submit
         </Button>

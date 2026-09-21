@@ -1,12 +1,15 @@
 import { useNavigate } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import { useAppNav } from '../../app/useAppNav'
+import { useStore } from '../../mock/store'
 import AuthLayout from './AuthLayout'
 
 /** PRD 4.11, Check Email!. Figma 915:50203. "Open My Email" stands in for leaving the app. */
 export default function CheckEmail() {
   const navigate = useNavigate()
   const { back } = useAppNav()
+  const { onboarding, user } = useStore()
+  const email = onboarding.email || user.email
 
   return (
     <AuthLayout
@@ -25,7 +28,7 @@ export default function CheckEmail() {
       subtitle={
         <>
           Click on the link sent to your email{' '}
-          <span className="font-semibold text-text-title">emailaddress@domain.com</span>{' '}
+          <span className="font-semibold text-text-title">{email}</span>{' '}
           to verify and set new password
         </>
       }

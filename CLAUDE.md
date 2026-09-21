@@ -80,6 +80,7 @@ src/
 8. **One screen or one flow per turn.** Stop and show me. Do not batch.
 9. Do not build the selfie capture. Legal review is open. ID document upload only.
 10. **Match the design.** Before building or fixing any screen, call `get_screenshot` on that screen's own frame node in Figma and build to match the image. The PRD says what is on a screen. The Figma frame says what it looks like: the title bar, the logo, spacing, order of elements, button styles, and every exact string. After building, render the screen at 375px wide in headless Chromium, compare it against the Figma screenshot, list any differences, and fix them before moving on. Screenshot individual frame nodes, never whole sections (the Studies section alone is 9859px wide). Use `get_screenshot` only, never `get_design_context`, which fills the context window within a few screens.
+11. **Three sources, one order of precedence.** The 58 step platform workflow (`docs/Platform-Workflow-58-steps.html`, with the internal team console in `docs/Internal-Team-Console.html`) governs behaviour, Figma governs appearance, and the PRD bridges the two. Where the workflow and the PRD disagree about what happens, the workflow wins. Where the workflow and Figma disagree about how something looks, Figma wins. Flag every such case in the turn report rather than deciding silently.
 
 ---
 

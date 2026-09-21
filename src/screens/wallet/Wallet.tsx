@@ -4,6 +4,7 @@ import { PointsCoin } from '../../components/ui/icons'
 import { money, points } from '../../lib/format'
 import { useStore } from '../../mock/store'
 import { ViewAll } from '../dashboard/SectionHeader'
+import TaxFormBanner from './TaxFormBanner'
 import { CoinIcon, EarningRow, PayoutsIcon, RowCard } from './bits'
 
 function CoinBadge() {
@@ -19,7 +20,8 @@ function CoinBadge() {
 /** PRD 10.1, Figma 969:29004. The wallet home on the green palette. */
 export default function Wallet() {
   const navigate = useNavigate()
-  const { user, transactions } = useStore()
+  const { user, transactions, toast } = useStore()
+  const blocked = user.taxFormRequired
 
   return (
     <div className="flex min-h-full flex-col gap-4 bg-bgAlt-0 px-4 pb-6 pt-4">
@@ -31,13 +33,23 @@ export default function Wallet() {
           </div>
           <CoinBadge />
         </div>
-        <Button fullWidth onClick={() => navigate('/wallet/withdraw')}>Withdraw</Button>
+        <Button fullWidth disabled={blocked} onClick={() => navigate('/wallet/withdraw')}
+          onBlocked={() => toast('Withdrawals open once your tax form is on file')}>
+          Withdraw
+        </Button>
+        {user.pendingEarnings > 0 && (
+          <p className="text-center text-text-regular text-text-body">
+            {money(user.pendingEarnings)} awaiting client approval, then it moves to your balance
+          </p>
+        )}
         <p className="flex items-center gap-3 text-text-regular text-text-body">
           <span className="h-px flex-1 bg-stroke-3" />
           All Time Earned: <span className="text-text-title">{money(user.allTimeEarned)}</span>
           <span className="h-px flex-1 bg-stroke-3" />
         </p>
       </section>
+
+      <TaxFormBanner />
 
       <RowCard to="/points" icon={<PointsCoin className="h-5 w-5" />} label="Reward Points" value={points(user.points)} />
 

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../../mock/store'
 import { useUI } from '../../app/ui'
 import { openSession } from './detail/useDetailActions'
+import { applyBlocker } from '../../lib/eligibility'
 import type { Study } from '../../mock/types'
 
 /**
@@ -10,15 +11,18 @@ import type { Study } from '../../mock/types'
  */
 export function useCardHandlers() {
   const navigate = useNavigate()
-  const { toggleSaved, toast, studyById } = useStore()
-  const { openMatchScore } = useUI()
+  const { toggleSaved, toast, studyById, user, studies } = useStore()
+  const { openMatchScore, openGate } = useUI()
 
   const primary = (study: Study) => () => {
     switch (study.status) {
       case 'available':
-      case 'invited_to_apply':
-        navigate(`/studies/${study.id}/screener`)
+      case 'invited_to_apply': {
+        const blocker = applyBlocker(study, user, studies)
+        if (blocker) openGate(blocker)
+        else navigate(`/studies/${study.id}/screener`)
         break
+      }
       case 'draft':
         navigate(`/studies/${study.id}/screener`)
         break

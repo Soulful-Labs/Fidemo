@@ -4,6 +4,7 @@ import { bookingLong, dateTime, money } from '../../../lib/format'
 import { POINTS, TRUST } from '../../../lib/rules'
 import type { Study } from '../../../mock/types'
 import { BannerIcon } from './bannerIcons'
+import { outcomeFor } from '../../../lib/studyState'
 
 /** The attendance PIN used throughout the prototype (PRD 6.11). */
 export const ATTENDANCE_PIN = '407060'
@@ -38,6 +39,8 @@ export interface BannerContent {
   /** Second line under the title, e.g. "Earned $150!". */
   headline?: string
   subline?: string
+  /** Workflow 34: red, yellow or green outcome shown with the banner. */
+  outcome?: ReturnType<typeof outcomeFor>
 }
 
 /**
@@ -48,13 +51,18 @@ export interface BannerContent {
  * says to use those values rather than the ones drawn).
  */
 export function bannerFor(study: Study): BannerContent | null {
+  const content = bannerContent(study)
+  return content ? { ...content, outcome: outcomeFor(study.status) } : null
+}
+
+function bannerContent(study: Study): BannerContent | null {
   switch (study.status) {
     case 'invited_to_apply':
       return { tone: 'yellow', title: 'Invited To Apply', body: 'You are invited to apply for this study!' }
     case 'draft':
       return { tone: 'yellow', title: 'In Draft', body: "We've got you, your progress was saved! Resume right from where you left." }
     case 'applied':
-      return { tone: 'yellow', title: 'Applied', aside: 'In Review', body: 'Your application for this study has been submitted to be reviewed. It will be shown in scheduled if you will be selected.' }
+      return { tone: 'yellow', title: 'Applied', aside: 'In Review', body: 'Your application for this study has been submitted to be reviewed. It is still under consideration, so check back here for the outcome. It will be shown in scheduled if you will be selected.' }
     case 'invited_to_schedule':
       return { tone: 'yellow', title: 'Invited To Schedule', body: "Congratulation, you are qualified for this study!! You're invited to book your session on your preferred time to complete and earn reward." }
     case 'invited_to_complete':
@@ -66,9 +74,18 @@ export function bannerFor(study: Study): BannerContent | null {
         body: 'Can be rescheduled twice only before at least 24 hours. Cancellation may impact your profile score.',
       }
     case 'pin_confirmed':
-      return { tone: 'green', title: `Confirmed PIN successfully! #${ATTENDANCE_PIN}` }
+      return { tone: 'green', title: `Session code confirmed! #${ATTENDANCE_PIN}`, body: 'Both sides entered the code, so your attendance is on record. Complete the study to have your earnings credited.' }
     case 'in_process':
-      return { tone: 'blue', title: 'In Process', body: 'Your study response is under process and will be updated within 3-5 days.' }
+      return {
+        tone: 'blue', title: 'In Process', headline: `${money(study.reward)} credited, awaiting client approval`,
+        body: 'Your study response is under process. The client approves the payout list against the people they approved into the study, usually within 3-5 days, and the reward then lands in your wallet.',
+      }
+    case 'not_needed':
+      return {
+        tone: 'green', title: 'Turned up, not needed', pill: true, aside: dateTime(when(study, 'Paid') ?? study.endsAt),
+        headline: `Paid in full, ${money(study.reward)}`,
+        body: 'You turned up but the session was over-recruited and you were not needed this time. You are paid in full and your Trust Score is unaffected.',
+      }
     case 'paid':
       return {
         tone: 'green', title: 'Paid', pill: true, aside: dateTime(when(study, 'Paid') ?? study.endsAt),
@@ -124,6 +141,12 @@ export default function StateBanner({ content, children }: { content: BannerCont
           </span>
         )}
       </div>
+      {content.outcome && (content.outcome.colour === 'yellow' || content.outcome.colour === 'red') && (
+        <p className="flex items-center gap-2 text-text-regular text-text-subtitle">
+          <span className={cn('h-2.5 w-2.5 shrink-0 rounded-full', content.outcome.colour === 'yellow' ? 'bg-brand-primary' : 'bg-state-danger')} aria-hidden="true" />
+          {content.outcome.label}{content.outcome.colour === 'yellow' ? ', check back for the outcome' : ''}
+        </p>
+      )}
       {content.headline && (
         <p className={cn('text-body-medium', content.tone === 'yellow' ? 'rounded-md bg-yellow-1000/50 px-3 py-2 text-text-title' : TEXT[tone])}>
           {content.headline}

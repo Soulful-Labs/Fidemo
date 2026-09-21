@@ -34,6 +34,8 @@ export const DEFAULT_FILTERS: StudyFilters = {
 
 /** What the three onboarding steps collect before an account exists. */
 export interface OnboardingDraft {
+  /** The address typed on Sign Up / Reset Password, echoed on OTP and Check Email. */
+  email: string
   fullName: string
   dob: string
   gender: string
@@ -59,8 +61,16 @@ export interface PendingTransition {
   dueAt: number
 }
 
+/** A deduction the derived Trust Score has to remember (cancellations, fraud). */
+export interface TrustEvent {
+  label: string
+  delta: number
+  at: string
+}
+
 export interface AppState {
   signedIn: boolean
+  trustEvents: TrustEvent[]
   user: User
   studies: Study[]
   notifications: AppNotification[]
@@ -77,10 +87,15 @@ export interface AppState {
   filters: StudyFilters
   toasts: Toast[]
   pending: PendingTransition[]
+  /** Workflow 12 and 14: the code on the link this session arrived through, kept until sign-up records it on the user. */
+  arrivedVia?: string
 }
 
 export type Action =
   | { type: 'SIGN_IN' }
+  | { type: 'SIGN_UP'; email: string; sourceCode?: string }
+  | { type: 'SET_SOURCE'; code: string }
+  | { type: 'TAX_FORM_DONE' }
   | { type: 'SET_ONBOARDING'; patch: Partial<OnboardingDraft> }
   | { type: 'SET_FILTERS'; patch: Partial<StudyFilters> }
   | { type: 'RESET_FILTERS' }

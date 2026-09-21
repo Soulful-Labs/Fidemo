@@ -6,6 +6,7 @@ import Input from '../../components/ui/Input'
 import Tag from '../../components/ui/Tag'
 import TopBar from '../../components/ui/TopBar'
 import { Calendar, ChevronRight } from '../../components/ui/icons'
+import { dateLong } from '../../lib/format'
 import { isValidEmail } from '../../lib/validation'
 import { useStore } from '../../mock/store'
 import { TIMINGS } from '../../mock/timings'
@@ -73,6 +74,13 @@ export default function AccountSettings() {
           </button>
           {user.verified.govId && <Tag tone="green" size="md" icon={<VerifiedIcon className="h-4 w-4" />} className="self-start">Human Verified</Tag>}
         </div>
+
+        {user.sourceCode && (
+          <p className="text-text-regular text-text-body">
+            Joined via link <span className="text-text-title">{user.sourceCode}</span>
+            {user.joinedAt && <> on {dateLong(user.joinedAt)}</>}
+          </p>
+        )}
 
         <div className="flex flex-col gap-2 pt-2">
           {ROWS.map((r) => (

@@ -1,3 +1,4 @@
+import { autoReply } from '../lib/support'
 import type { Action, Answers, AppState, OnboardingDraft, StudyFilters } from './storeTypes'
 import type {
   PayoutMethod, Study, StudyStatus, Ticket, TicketMessage, User,
@@ -38,6 +39,12 @@ export function createActions({ state, dispatch, toast }: ActionDeps) {
     // --- profile and onboarding ---
     setOnboarding: (patch: Partial<OnboardingDraft>) =>
       dispatch({ type: 'SET_ONBOARDING', patch }),
+    /** Workflow 15: a new account, signed in and free to browse. */
+    signUp: (email: string, sourceCode?: string) => dispatch({ type: 'SIGN_UP', email, sourceCode }),
+    /** Workflow 12 and 14: remember the coded link the person arrived through. */
+    setSource: (code: string) => dispatch({ type: 'SET_SOURCE', code }),
+    /** Workflow 49: the tax form is on file. */
+    taxFormDone: () => dispatch({ type: 'TAX_FORM_DONE' }),
     setFilters: (patch: Partial<StudyFilters>) => dispatch({ type: 'SET_FILTERS', patch }),
     resetFilters: () => dispatch({ type: 'RESET_FILTERS' }),
     updateUser: (patch: Partial<User>) => dispatch({ type: 'UPDATE_USER', patch }),
@@ -71,7 +78,7 @@ export function createActions({ state, dispatch, toast }: ActionDeps) {
     },
     confirmPin: (id: string) => {
       dispatch({ type: 'CONFIRM_PIN', id })
-      setStatus(id, 'pin_confirmed', 'PIN confirmed')
+      setStatus(id, 'pin_confirmed', 'Session code confirmed')
     },
     completeStudy,
     completeDiaryDay: (id: string, day: number) => dispatch({ type: 'COMPLETE_DIARY_DAY', id, day }),
@@ -80,14 +87,19 @@ export function createActions({ state, dispatch, toast }: ActionDeps) {
     withdraw: (amount: number, destination: string) =>
       dispatch({ type: 'WITHDRAW', amount, destination }),
     redeemPoints: (points: number) => dispatch({ type: 'REDEEM_POINTS', points }),
-    addTicket: (subject: string, message: string, studyTitle?: string) => {
+    addTicket: (subject: string, message: string, studyTitle?: string, topic: Ticket['topic'] = 'general') => {
       const id = `FI-S${Math.floor(100000 + Math.random() * 899999)}`
       const now = new Date().toISOString()
       const ticket: Ticket = {
-        id, subject, message, studyTitle, status: 'open', createdAt: now, lastActivityAt: now,
+        id, subject, message, studyTitle, topic, status: 'open', createdAt: now, lastActivityAt: now,
         messages: [{ id: 'm1', from: 'you', text: message, at: now }],
       }
       dispatch({ type: 'ADD_TICKET', ticket })
+      // Workflow 56: the first answer is automatic, from the FAQs and guides.
+      setTimeout(() => dispatch({
+        type: 'SEND_TICKET_MESSAGE', ticketId: id,
+        message: { id: `m-${Date.now()}`, from: 'support', text: autoReply(subject, message, topic), at: new Date().toISOString() },
+      }), TIMINGS.autoReply)
       return id
     },
     sendTicketMessage: (ticketId: string, text: string) => {

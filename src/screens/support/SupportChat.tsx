@@ -7,6 +7,7 @@ import Tag from '../../components/ui/Tag'
 import TopBar from '../../components/ui/TopBar'
 import { Info } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
+import { REPLY_TIME, TOPIC_LABEL } from '../../lib/support'
 import { useStore } from '../../mock/store'
 import type { Ticket } from '../../mock/types'
 
@@ -56,6 +57,12 @@ export default function SupportChat() {
         <span className="text-body-regular text-text-title">#{ticket.id}</span>
         <button type="button" aria-label="Ticket info" onClick={() => setInfo(true)} className="ml-auto text-text-title"><Info className="h-6 w-6" /></button>
       </div>
+
+      {ticket.status === 'open' && (
+        <p className="border-b-1 border-stroke-2 px-4 py-2 text-label text-text-body">
+          {TOPIC_LABEL[ticket.topic]} • a person on the team replies {REPLY_TIME[ticket.topic]}
+        </p>
+      )}
 
       <div className="flex flex-1 flex-col gap-3 px-4 pb-4 pt-4">
         <p className="text-center text-text-regular text-text-body">{day(ticket.createdAt)}</p>

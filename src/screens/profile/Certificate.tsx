@@ -2,14 +2,13 @@ import { useNavigate } from 'react-router-dom'
 import ScoreDial from '../../components/app/ScoreDial'
 import TierChip from '../../components/app/TierChip'
 import TopBar from '../../components/ui/TopBar'
+import { certificateId } from '../../lib/profile'
 import { tierFor } from '../../lib/rules'
 import { useStore } from '../../mock/store'
 import { PerformanceRatings } from '../trust/TrustScoreDetails'
 import { Avatar } from './Profile'
 import { VerifiedIcon } from './profileIcons'
 
-const CERT_ID = 'HL-R-9F2A-3K7P'
-const CERT_LINK = `https://humanlayer.app/certificate/${CERT_ID}`
 
 /**
  * PRD 12.1, Figma 979:74343. The share icon copies a link. "Live Photo
@@ -19,10 +18,12 @@ const CERT_LINK = `https://humanlayer.app/certificate/${CERT_ID}`
 export default function Certificate() {
   const navigate = useNavigate()
   const { user, toast } = useStore()
+  const certId = certificateId(user.email)
+  const certLink = `https://humanlayer.app/certificate/${certId}`
   const tier = tierFor(user.trustScore)
 
   const share = async () => {
-    try { await navigator.clipboard.writeText(CERT_LINK) } catch { /* clipboard unavailable outside a secure context */ }
+    try { await navigator.clipboard.writeText(certLink) } catch { /* clipboard unavailable outside a secure context */ }
     toast('Certificate link copied')
   }
 
@@ -48,7 +49,7 @@ export default function Certificate() {
             <Avatar name={user.name} size={56} />
             <div className="flex flex-col gap-0.5">
               <span className="text-title-s text-text-title">{user.name}</span>
-              <span className="text-text-regular text-text-body">Cert. ID: <span className="text-text-title">{CERT_ID}</span></span>
+              <span className="text-text-regular text-text-body">Cert. ID: <span className="text-text-title">{certId}</span></span>
             </div>
           </div>
 

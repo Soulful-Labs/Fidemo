@@ -22,6 +22,7 @@ import { useDetailActions } from './useDetailActions'
 import { LocationsModal } from '../questions/ScreenerModals'
 import Button from '../../../components/ui/Button'
 import { resumeLabel } from '../complete/DiaryOverview'
+import { PremiumBanner, RepeatRuleRow, ShareStudyLink } from './EligibilityRows'
 
 /** Statuses drawn with the thumbnail-left layout and the Get Support row. */
 const AFTER_APPLY = ['applied', 'in_process', 'paid', 'rejected', 'no_show', 'draft']
@@ -110,6 +111,8 @@ export default function StudyDetail() {
           </StateBanner>
         )}
 
+        <PremiumBanner study={study} />
+
         <div className="flex items-center gap-2">
           <StudyTypeTag type={study.type} />
           <Tag tone="outline" size="md" className="ml-auto">{study.industry}</Tag>
@@ -119,8 +122,10 @@ export default function StudyDetail() {
         </div>
 
         <DescriptionBlock study={study} thumbnail={afterApply} />
+        <ShareStudyLink study={study} />
         <StudyLocations study={study} />
         <DetailTiles study={study} />
+        {!afterApply && <RepeatRuleRow study={study} />}
 
         {afterApply && (
           <button

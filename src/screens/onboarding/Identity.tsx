@@ -31,7 +31,8 @@ export default function Identity() {
   const finish = () => {
     // Account created: carry the draft onto the user and sign in.
     updateUser({
-      name: fullName || 'Jonathan Reeve',
+      name: fullName || user.name,
+      onboarded: true,
       verified: { govId: true, livePhoto: false, license: Boolean(onboarding.licenseId) },
       profile: {
         ...user.profile,

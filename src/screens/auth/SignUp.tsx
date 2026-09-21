@@ -4,6 +4,7 @@ import Button from '../../components/ui/Button'
 import Checkbox from '../../components/ui/Checkbox'
 import Input from '../../components/ui/Input'
 import { useUI } from '../../app/ui'
+import { useStore } from '../../mock/store'
 import { isValidEmail, isValidPassword } from '../../lib/validation'
 import AuthLayout from './AuthLayout'
 
@@ -13,6 +14,7 @@ const PASSWORD_HINT = 'Use 1 capital letter, 1 number, 1 special character and a
 export default function SignUp() {
   const navigate = useNavigate()
   const { openComingSoon } = useUI()
+  const { setOnboarding } = useStore()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [agreed, setAgreed] = useState(false)
@@ -30,7 +32,7 @@ export default function SignUp() {
       subtitle="Join and earn money by sharing your opinions to shape future products."
       actions={
         <>
-          <Button fullWidth disabled={!valid} onClick={() => navigate('/verify-otp')}
+          <Button fullWidth disabled={!valid} onClick={() => { setOnboarding({ email: email.trim() }); navigate('/verify-otp') }}
             onBlocked={() => setTouched({ email: true, password: true })}>
             Sign Up
           </Button>

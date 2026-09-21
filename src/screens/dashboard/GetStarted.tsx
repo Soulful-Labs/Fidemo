@@ -19,13 +19,13 @@ import SectionHeader from './SectionHeader'
  */
 export default function GetStarted() {
   const navigate = useNavigate()
-  const { referrals, toast } = useStore()
+  const { referrals, toast, user } = useStore()
 
   return (
     <div className="flex min-h-full flex-col">
       <DashboardHeader
         right={
-          <Button size="md" className="ml-auto" onClick={() => navigate('/profile/edit')}>
+          <Button size="md" className="ml-auto" onClick={() => navigate(user.onboarded ? '/profile/edit' : '/onboarding/about')}>
             Get Started
           </Button>
         }

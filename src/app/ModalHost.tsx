@@ -1,6 +1,7 @@
 import BottomSheet from '../components/ui/BottomSheet'
 import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
+import { useNavigate } from 'react-router-dom'
 import { useUI } from './ui'
 
 /**
@@ -11,10 +12,25 @@ import { useUI } from './ui'
  * sheet naming the screen, rather than doing nothing.
  */
 export default function ModalHost() {
-  const { comingSoon, closeComingSoon, matchScore, closeMatchScore } = useUI()
+  const { comingSoon, closeComingSoon, matchScore, closeMatchScore, gate, closeGate } = useUI()
+  const navigate = useNavigate()
 
   return (
     <>
+    <Modal open={gate !== null} onClose={closeGate} showClose={false}
+      footer={
+        <div className="flex gap-3">
+          <Button variant="tertiary" className="flex-1" onClick={closeGate}>Not now</Button>
+          {gate?.action && (
+            <Button className="flex-1" onClick={() => { const to = gate.action!.to; closeGate(); navigate(to) }}>{gate.action.label}</Button>
+          )}
+        </div>
+      }>
+      <div className="flex flex-col gap-2 text-center">
+        <h2 className="text-title-l text-text-title">{gate?.title}</h2>
+        <p className="text-body-regular text-text-subtitle">{gate?.body}</p>
+      </div>
+    </Modal>
     <Modal open={matchScore} onClose={closeMatchScore} title="Study matching score" showClose={false}
       footer={<Button fullWidth onClick={closeMatchScore}>Got It!</Button>}>
       <div className="flex flex-col gap-2">

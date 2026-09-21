@@ -32,7 +32,9 @@ export default function Withdraw() {
 
   const amount = Number(raw)
   const method = payoutMethods.find((m) => m.id === methodId)
-  const check = canWithdraw(amount, user.walletBalance)
+  const check = user.taxFormRequired
+    ? { ok: false as const, reason: 'A tax form is needed before you can withdraw. Upload it from the Wallet screen.' }
+    : canWithdraw(amount, user.walletBalance)
 
   if (step === 'done') {
     return (
@@ -72,7 +74,7 @@ export default function Withdraw() {
             className="w-40 bg-transparent text-center outline-none placeholder:text-text-disabled"
           />
         </label>
-        {raw && !check.ok && <p className="text-center text-label text-state-danger">{check.reason}</p>}
+        {(raw || user.taxFormRequired) && !check.ok && <p className="text-center text-label text-state-danger">{check.reason}</p>}
 
         <div className="flex items-center justify-between">
           <Tag tone="outline" size="md">Balance: <span className="text-brand-primary">{money(user.walletBalance)}</span></Tag>

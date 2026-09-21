@@ -16,7 +16,7 @@ export default function Welcome() {
 
   const go = (to: string) => {
     signIn()
-    navigate(to)
+    navigate(to, { replace: true })
   }
 
   return (

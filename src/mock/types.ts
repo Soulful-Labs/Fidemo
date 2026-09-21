@@ -23,6 +23,8 @@ export type StudyStatus =
   | 'paid'
   | 'rejected'
   | 'no_show'
+  // Workflow 44: turned up but was not needed. Paid in full, no penalty.
+  | 'not_needed'
 
 export type Question =
   | { id: string; kind: 'single'; prompt: string; options: string[] }
@@ -30,6 +32,23 @@ export type Question =
   | { id: string; kind: 'text'; prompt: string; placeholder?: string }
   | { id: string; kind: 'image'; prompt: string }
   | { id: string; kind: 'scale'; prompt: string; options: string[] }
+
+/**
+ * Workflow 28: the three pre-set eligibility questions asked before the
+ * full screener. Answering outside `passing` ends the application politely.
+ */
+export interface PreScreenQuestion {
+  id: string
+  prompt: string
+  options: string[]
+  passing: string[]
+}
+
+/** Workflow 57: each study sets its own rule on repeat participants. */
+export type RepeatRule = 'allow' | 'prefer_fresh' | 'exclude_previous'
+
+/** Workflow 34: every application carries one of three outcomes. */
+export type Outcome = 'green' | 'yellow' | 'red'
 
 export interface Study {
   id: string
@@ -49,6 +68,14 @@ export interface Study {
   availability?: { date: string; slots: string[] }[]
   status: StudyStatus
   saved: boolean
+  /** Workflow 17: premium studies need a verified professional credential. */
+  premium?: boolean
+  repeatRule: RepeatRule
+  /** City the in-person locations belong to. */
+  city?: string
+  /** Workflow 12: the coded link this study is shared with. */
+  linkCode: string
+  preScreener: PreScreenQuestion[]
   screener: Question[]
   tasks?: Question[] // survey and diary questions
   diary?: { totalDays: number; minDays: number; completedDays: number[] }
@@ -96,6 +123,15 @@ export interface User {
   email: string
   phone: string
   profile: ProfileDetails
+  /** Workflow 15: profile and ID are done at the point of applying, not before. */
+  onboarded: boolean
+  /** Workflow 49: asked for at $600 earned in a year; blocks withdrawal until done. */
+  taxFormDone: boolean
+  /** Workflow 12 and 14: the coded link this account arrived through. */
+  sourceCode?: string
+  joinedAt: string
+  // The figures below are never stored as literals: lib/derive.ts computes
+  // them from the transaction, points, study and payout lists on every render.
   trustScore: number // 50 to 100
   tier: 'silver' | 'gold' | 'platinum'
   profileCompletion: number
@@ -155,6 +191,8 @@ export type EarningCategory =
 export interface Transaction {
   id: string
   studyId?: string
+  /** Workflow 46: credited on completion, released once the client approves. */
+  approved?: boolean
   title: string
   at: string
   amount: number
@@ -225,6 +263,8 @@ export interface Ticket {
   subject: string
   message: string
   studyTitle?: string
+  /** Workflow 56: money tickets are answered within one working day, others two. */
+  topic: 'money' | 'general'
   status: 'open' | 'closed'
   createdAt: string
   lastActivityAt: string

@@ -3,42 +3,23 @@ import { loadPersisted, persist } from './persist'
 import type { ReactNode } from 'react'
 import { createActions } from './actions'
 import type { Actions } from './actions'
-import {
-  NOTIFICATIONS, PAYOUTS, PAYOUT_METHODS, POINTS_HISTORY, REDEEM_HISTORY,
-  REFERRALS, STUDIES, TICKETS, TRANSACTIONS, USER,
-} from './data'
+import { returningUserState } from './data'
+import { deriveUser } from '../lib/derive'
+import type { DerivedFigures } from '../lib/derive'
 import { reducer } from './reducer'
 import { usePendingTransitions } from './transitions'
 import { TIMINGS } from './timings'
-import { DEFAULT_FILTERS } from './storeTypes'
 import type { Action, AppState } from './storeTypes'
-import type { AppNotification } from './types'
+import type { AppNotification, User } from './types'
 
 export { TIMINGS } from './timings'
 
-const initialState: AppState = {
-  signedIn: false,
-  user: USER,
-  studies: STUDIES,
-  notifications: NOTIFICATIONS,
-  transactions: TRANSACTIONS,
-  payouts: PAYOUTS,
-  payoutMethods: PAYOUT_METHODS,
-  pointsHistory: POINTS_HISTORY,
-  redeemHistory: REDEEM_HISTORY,
-  referrals: REFERRALS,
-  tickets: TICKETS,
-  answers: {},
-  onboarding: {
-    fullName: '', dob: '', gender: '', address: '',
-    occupation: '', licenseId: '', industry: '', education: '', idType: '',
-  },
-  filters: DEFAULT_FILTERS,
-  toasts: [],
-  pending: [],
-}
+/** Boot into the returning demo account; Sign Up swaps in a clean one. */
+const initialState: AppState = returningUserState()
 
-type StoreValue = AppState & Actions & {
+type StoreValue = Omit<AppState, 'user'> & Actions & {
+  /** The stored user with every derived figure filled in (lib/derive.ts). */
+  user: User & DerivedFigures
   dispatch: React.Dispatch<Action>
   toast: (message: string) => void
   dismissToast: (id: string) => void
@@ -70,6 +51,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<StoreValue>(() => ({
     ...state,
+    user: deriveUser(state),
     ...createActions({ state, dispatch, toast }),
     dispatch,
     toast,

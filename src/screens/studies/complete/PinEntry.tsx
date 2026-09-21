@@ -32,7 +32,7 @@ export default function PinEntry() {
     return (
       <SuccessScreen
         title="Confirmed successfully!"
-        body="Your joining attendance is confirmed and verified! You can complete your study if running now."
+        body="Your joining attendance is confirmed and verified! Complete your study to have your earnings credited; the client then approves the payout."
         onAction={() => navigate(`/studies/${id}`, { replace: true })}
       />
     )
@@ -55,12 +55,13 @@ export default function PinEntry() {
       <TopBar title="Submit Confirmation PIN" onBack={() => navigate(`/studies/${id}`)} />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
-        <h1 className="text-title-m leading-tight text-text-title">Enter the attendance confirmation PIN code</h1>
+        <h1 className="text-title-m leading-tight text-text-title">Enter the session code shown at the end</h1>
         <p className="rounded-lg bg-bg-1 p-4 text-text-regular text-text-subtitle">
-          Join call and get this code from the interviewer who will share it with you.
+          A code is generated at the end of every session and shown to you and the moderator. You enter it here, the
+          moderator enters it on their side.
         </p>
         <p className="text-text-regular text-text-subtitle">
-          This code is required to be submitted to confirm your joining and get reward after successful completion.
+          Both entries are matched to confirm you attended. No code, no payment.
         </p>
 
         <div className="flex flex-col gap-1 pt-2">

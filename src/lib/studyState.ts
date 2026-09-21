@@ -45,17 +45,35 @@ export const STATUS: Record<StudyStatus, StatusMeta> = {
     primary: 'Start Study', rejectable: true, tab: 'invites',
   },
   scheduled: {
-    label: 'Scheduled', tone: 'green', primary: 'Submit PIN',
+    label: 'Scheduled', tone: 'green', primary: 'Enter Session Code',
     secondary: 'Join Call', tab: 'scheduled',
   },
   pin_confirmed: {
-    label: 'PIN Confirmed', tone: 'green', primary: 'Complete Study', tab: 'scheduled',
+    label: 'Code Confirmed', tone: 'green', primary: 'Complete Study', tab: 'scheduled',
   },
   in_process: { label: 'In Process', tone: 'yellow', tab: 'history' },
   // danger tone is reserved for things that are wrong, per the colour rule.
   paid: { label: 'Paid', tone: 'green', primary: 'Rate Client', tab: 'history' },
   rejected: { label: 'Rejected', tone: 'danger', tab: 'history' },
   no_show: { label: 'No Show', tone: 'danger', tab: 'history' },
+  // Workflow 44: turned up but not needed. Paid in full, no penalty.
+  not_needed: { label: 'Turned up, not needed', tone: 'green', tab: 'history' },
+}
+
+/**
+ * Workflow 34: every application carries one of three outcomes. Yellow means
+ * still under consideration, so the person can check back.
+ */
+export function outcomeFor(status: StudyStatus): { colour: 'green' | 'yellow' | 'red'; label: string } | null {
+  switch (status) {
+    case 'applied': return { colour: 'yellow', label: 'Under consideration' }
+    case 'invited_to_schedule': case 'invited_to_complete': case 'scheduled': case 'pin_confirmed':
+    case 'in_process': case 'paid': case 'not_needed':
+      return { colour: 'green', label: 'Selected' }
+    case 'rejected': return { colour: 'red', label: 'Not selected' }
+    case 'no_show': return { colour: 'red', label: 'No show' }
+    default: return null
+  }
 }
 
 /** Statuses listed under each My Studies sub-tab. */

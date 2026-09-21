@@ -16,7 +16,7 @@ export default function ClientRatings() {
   const navigate = useNavigate()
   const { studies } = useStore()
   const client = studies.find((s) => s.client.id === clientId)?.client
-  const reviews = clientReviews()
+  const reviews = clientReviews(clientId ?? '')
 
   return (
     <div className="flex min-h-full flex-col">
