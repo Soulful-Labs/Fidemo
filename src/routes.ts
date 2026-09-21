@@ -53,6 +53,9 @@ import Referrals from './screens/profile/Referrals'
 import TrustScoreDetails from './screens/trust/TrustScoreDetails'
 import TrustScoreRules from './screens/trust/TrustScoreRules'
 import HowTiersWork from './screens/trust/HowTiersWork'
+import Support from './screens/support/Support'
+import SupportChat from './screens/support/SupportChat'
+import ContactUs from './screens/support/ContactUs'
 
 /**
  * The complete route map from the build brief. Every screen route points at the
@@ -150,10 +153,10 @@ export const routes: ScreenRoute[] = [
   built('/trust-score', 'Trust Score Details', TrustScoreDetails),
   built('/trust-score/rules', 'Trust Score Rules', TrustScoreRules),
   built('/trust-score/tiers', 'How Tiers Works', HowTiersWork),
-  screen('/support', 'Help and Support'),
-  screen('/support/tickets', 'Support Tickets'),
-  screen('/support/tickets/:id', 'Support Chat'),
-  screen('/support/contact', 'Contact us'),
+  built('/support', 'Help and Support', Support),
+  built('/support/tickets', 'Support Tickets', Support),
+  built('/support/tickets/:id', 'Support Chat', SupportChat),
+  built('/support/contact', 'Contact us', ContactUs),
 
   // ----- Dev -----
   { path: '/kitchen-sink', label: 'Kitchen Sink', element: createElement(KitchenSink) },
