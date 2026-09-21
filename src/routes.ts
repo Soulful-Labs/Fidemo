@@ -42,6 +42,12 @@ import AddBankAccount from './screens/wallet/AddBankAccount'
 import RewardPoints from './screens/points/RewardPoints'
 import Redeem from './screens/points/Redeem'
 import HowPointsWork from './screens/points/HowPointsWork'
+import Profile from './screens/profile/Profile'
+import MyProfile from './screens/profile/MyProfile'
+import AccountSettings from './screens/profile/AccountSettings'
+import ChangePassword from './screens/profile/ChangePassword'
+import DeactivateAccount from './screens/profile/DeactivateAccount'
+import { ConsentSettings, EmailNotifications } from './screens/profile/SettingsToggles'
 
 /**
  * The complete route map from the build brief. Every screen route points at the
@@ -127,15 +133,15 @@ export const routes: ScreenRoute[] = [
   built('/points/how-it-works', 'How reward points work', HowPointsWork),
 
   // ----- Profile tab -----
-  screen('/profile', 'Profile'),
-  screen('/profile/edit', 'My Profile'),
+  built('/profile', 'Profile', Profile),
+  built('/profile/edit', 'My Profile, two tabs', MyProfile),
   screen('/profile/certificate', 'Human Certificate'),
   screen('/profile/referrals', 'Refer and Earn'),
-  screen('/profile/settings', 'Account Settings'),
-  screen('/profile/settings/password', 'Change Password'),
-  screen('/profile/settings/notifications', 'Email Notifications'),
-  screen('/profile/settings/consent', 'Consent and Cookies'),
-  screen('/profile/settings/deactivate', 'Deactivate Account'),
+  built('/profile/settings', 'Account Settings', AccountSettings),
+  built('/profile/settings/password', 'Change Password', ChangePassword),
+  built('/profile/settings/notifications', 'Email Notifications', EmailNotifications),
+  built('/profile/settings/consent', 'Consent and Cookies', ConsentSettings),
+  built('/profile/settings/deactivate', 'Deactivate Account', DeactivateAccount),
   screen('/trust-score', 'Trust Score Details'),
   screen('/trust-score/rules', 'Trust Score Rules'),
   screen('/trust-score/tiers', 'How Tiers Works'),

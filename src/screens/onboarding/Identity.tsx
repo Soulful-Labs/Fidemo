@@ -21,7 +21,7 @@ import { ID_TYPES } from './options'
 export default function Identity() {
   const navigate = useNavigate()
   const { back } = useAppNav()
-  const { onboarding, setOnboarding, updateUser, toast } = useStore()
+  const { onboarding, setOnboarding, updateUser, user, toast } = useStore()
   const [picker, setPicker] = useState(false)
   const [consent, setConsent] = useState(false)
 
@@ -33,6 +33,18 @@ export default function Identity() {
     updateUser({
       name: fullName || 'Jonathan Reeve',
       verified: { govId: true, livePhoto: false, license: Boolean(onboarding.licenseId) },
+      profile: {
+        ...user.profile,
+        gender: onboarding.gender || user.profile.gender,
+        address: onboarding.address || user.profile.address,
+        dob: onboarding.dob || user.profile.dob,
+        occupation: onboarding.occupation || user.profile.occupation,
+        licenseId: onboarding.licenseId || user.profile.licenseId,
+        industry: onboarding.industry || user.profile.industry,
+        education: onboarding.education || user.profile.education,
+        idType: idType || user.profile.idType,
+        introVideo: onboarding.introVideo,
+      },
     })
     setConsent(false)
     navigate('/onboarding/welcome')

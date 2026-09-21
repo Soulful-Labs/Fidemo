@@ -51,3 +51,12 @@ export const PROFESSIONS = [
   'SENCOs', 'Product Designer', 'Software Engineer', 'Small business owners',
   'Online shoppers', 'General public',
 ]
+
+export const AREA_TYPES = ['Urban', 'Suburban', 'Rural']
+export const LANGUAGES = ['English', 'Spanish', 'French', 'German', 'Hindi', 'Mandarin', 'Portuguese', 'Arabic']
+export const NATIONALITIES = ['American', 'British', 'Canadian', 'Indian', 'Australian', 'German', 'French', 'Other']
+export const INCOME_RANGES = ['Under $25,000', '$25,000 - $50,000', '$50,000 - $100,000', '$100,000 - $150,000', 'Over $150,000', 'Prefer not to say']
+export const ETHNICITIES = ['Asian', 'Black or African American', 'Hispanic or Latino', 'White', 'Mixed', 'Other', 'Prefer not to say']
+export const PETS = ['Dog', 'Cat', 'Bird', 'Fish', 'Reptile', 'None']
+export const EXPERIENCE = ['Less than 1 year', '1-3 years', '3-5 years', '5-10 years', '10 years', 'More than 10 years']
+export const TOPICS = ['Wellness', 'Fitness & Yoga', 'Spirituality', 'Travel', 'Science', 'Technology', 'Finance', 'Food', 'Parenting', 'Education']

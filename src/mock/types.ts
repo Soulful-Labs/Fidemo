@@ -68,10 +68,34 @@ export interface Study {
   ratedByUser?: boolean
 }
 
+/** Everything My Profile and Account Settings can edit (PRD 12). */
+export interface ProfileDetails {
+  gender: string
+  address: string
+  areaType: string
+  aboutMe: string
+  languages: string[]
+  nationality: string
+  income: string
+  ethnicity: string
+  pets: string[]
+  homeOwner: '' | 'Yes' | 'No'
+  occupation: string
+  experience: string
+  licenseId: string
+  industry: string
+  education: string
+  topics: string[]
+  dob: string
+  idType: string
+  introVideo?: string
+}
+
 export interface User {
   name: string
   email: string
   phone: string
+  profile: ProfileDetails
   trustScore: number // 50 to 100
   tier: 'silver' | 'gold' | 'platinum'
   profileCompletion: number
