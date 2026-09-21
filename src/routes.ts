@@ -39,6 +39,9 @@ import Payouts from './screens/wallet/Payouts'
 import PayoutDetails from './screens/wallet/PayoutDetails'
 import PayoutMethods from './screens/wallet/PayoutMethods'
 import AddBankAccount from './screens/wallet/AddBankAccount'
+import RewardPoints from './screens/points/RewardPoints'
+import Redeem from './screens/points/Redeem'
+import HowPointsWork from './screens/points/HowPointsWork'
 
 /**
  * The complete route map from the build brief. Every screen route points at the
@@ -119,11 +122,9 @@ export const routes: ScreenRoute[] = [
   built('/wallet/payouts/:payoutId', 'Payout Details', PayoutDetails),
   built('/wallet/payout-methods', 'Manage Payout Methods', PayoutMethods),
   built('/wallet/payout-methods/add', 'Add Bank Account', AddBankAccount),
-  screen('/points', 'Reward Points'),
-  screen('/points/redeem', 'Redeem'),
-  screen('/points/redeem/confirm', 'Confirm Redeem'),
-  screen('/points/redeem/done', 'Redeemed successfully'),
-  screen('/points/how-it-works', 'How reward points work'),
+  built('/points', 'Reward Points', RewardPoints),
+  built('/points/redeem/:step?', 'Redeem, Confirm Redeem, Redeemed successfully', Redeem),
+  built('/points/how-it-works', 'How reward points work', HowPointsWork),
 
   // ----- Profile tab -----
   screen('/profile', 'Profile'),
