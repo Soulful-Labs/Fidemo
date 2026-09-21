@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<!-- saved from url=(0084)file:///C:/Users/PopStation/Desktop/jimc/Internal%20Team%20Console%20(workflow).html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOCUS INSITE Internal Team Console</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --ink:#1f2933; --grey:#6b7178; --line:#e2e5e8; --wash:#f6f8f9;
+    --green:#2f7d4a; --greenbg:#e4f1e8;
+    --red:#c0392b; --redbg:#fae9e7;
+    --blue:#2e6fa8; --bluebg:#eef4fb;
+  }
+  body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;
+       color:var(--ink);background:#fff;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:34px 26px 60px}
+
+  .hdr{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:22px}
+  h1{font-size:26px;font-weight:700;letter-spacing:-.01em}
+  h1 b{font-weight:800}
+  .prep{font-size:13px;color:var(--grey);margin-top:3px}
+  .sub{color:var(--grey);font-size:14.5px;margin-top:10px;max-width:880px}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin-top:16px;font-size:12.5px}
+  .lg{display:inline-flex;align-items:center;gap:7px;color:#4a525b;font-weight:600}
+  .dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .dot.g{background:var(--green)} .dot.r{background:var(--red)}
+
+  .loop{background:var(--wash);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:30px}
+  .loop h2{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--grey);margin-bottom:5px}
+  .loopnote{font-size:13px;color:var(--grey);margin-bottom:15px;max-width:880px}
+  .rail{display:flex;align-items:stretch;flex-wrap:wrap}
+  .rstep{flex:1;min-width:190px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+  .rnum{font-size:10px;font-weight:800;letter-spacing:.14em;color:var(--blue);display:block;margin-bottom:4px}
+  .rstep b{display:block;font-size:13.5px;margin-bottom:4px}
+  .rstep span{font-size:12.5px;color:var(--grey);display:block}
+  .rex{font-size:11.5px;color:#8a929a;display:block;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
+  .arrow{display:flex;align-items:center;padding:0 9px;color:#9aa3ab;font-size:17px}
+  @media(max-width:900px){.arrow{display:none}.rail{gap:9px}}
+
+  h2.grp{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--grey);
+         margin:32px 0 4px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .grpnote{font-size:13.5px;color:var(--grey);margin:8px 0 16px;max-width:880px}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .scr{border:1px solid var(--line);border-radius:10px;padding:16px 18px 15px;background:#fff}
+  .scr.core{border-left:4px solid var(--blue)}
+  .scr.wide{grid-column:1 / -1}
+  .scr header{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}
+  .num{background:#fff;border:1px solid var(--line);border-radius:6px;width:26px;height:26px;
+       display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#626a72;flex:none}
+  .scr h3{font-size:16px;font-weight:700;flex:1;min-width:150px;line-height:1.25;padding-top:2px}
+  .purpose{font-size:13.5px;color:#4a525b;margin:10px 0 12px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:620px){.two{grid-template-columns:1fr}}
+  h4{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey);margin-bottom:6px}
+  ul{list-style:none}
+  li{font-size:12.5px;color:var(--grey);line-height:1.45;padding-left:11px;position:relative;margin-bottom:5px}
+  li::before{content:"";position:absolute;left:0;top:7px;width:3px;height:3px;border-radius:50%;background:#9aa3ab}
+  li b{color:var(--ink);font-weight:600}
+
+  /* the board mock */
+  .board{border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:12px 0 4px}
+  .brow{display:grid;grid-template-columns:14px 1fr 150px 110px;gap:12px;align-items:center;
+        padding:9px 14px;border-bottom:1px solid var(--line);font-size:12.5px}
+  .brow:last-child{border-bottom:none}
+  .brow.head{background:var(--wash);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey);font-weight:700}
+  .brow.ok{background:var(--greenbg)} .brow.no{background:var(--redbg)}
+  .bname{font-weight:600;color:var(--ink)}
+  .bwhat{color:var(--grey)}
+  .bwho{color:var(--grey);font-size:11.5px}
+  @media(max-width:700px){.brow{grid-template-columns:14px 1fr}.brow .bwho,.brow .bwhat{display:none}}
+
+  .from{margin-top:11px;padding-top:9px;border-top:1px dashed var(--line);font-size:11.5px;color:var(--grey)}
+  .from b{color:#4a525b;font-weight:700;letter-spacing:.08em;font-size:10px;text-transform:uppercase;
+          display:block;margin-bottom:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hdr">
+    <h1><b>FOCUS INSITE</b> Internal Team Console</h1>
+    <p class="sub">Every step in the platform workflow that a person on our side has to finish, and the screen
+      where they finish it. Eighteen steps in the workflow sit with the team. Everyone sees the same console,
+      because the job is clearing the queue, and what each person did is recorded in the audit log rather than
+      restricted in advance.</p>
+    <div class="legend">
+      <span class="lg"><span class="dot g"></span>Green, nothing waiting on us</span>
+      <span class="lg"><span class="dot r"></span>Red, waiting on someone here</span>
+    </div>
+  </div>
+
+  <div class="loop">
+    <h2>How work reaches the team</h2>
+    <p class="loopnote">The platform runs on its own until it hits something it cannot decide. At that moment
+      four things happen, in this order.</p>
+    <div class="rail">
+      <div class="rstep">
+        <span class="rnum">1</span>
+        <b>A step cannot finish on its own</b>
+        <span>An automatic check fails, or the workflow says a person has to decide.</span>
+        <span class="rex">An ID check comes back inconclusive. A screener answer is a near miss. A payout is waiting to be released.</span>
+      </div>
+      <div class="arrow">→</div>
+      <div class="rstep">
+        <span class="rnum">2</span>
+        <b>It turns red on the dashboard, and the team is notified</b>
+        <span>The study turns red, the item lands in the right queue with the person attached, and a notification goes at the same time.</span>
+        <span class="rex">Nothing waits for someone to think to go and look.</span>
+      </div>
+      <div class="arrow">→</div>
+      <div class="rstep">
+        <span class="rnum">3</span>
+        <b>Someone on the team opens it and decides</b>
+        <span>Approve, adjust, reject, release, or place the person into the study by hand.</span>
+        <span class="rex">The decision is always a person's. The platform never makes it.</span>
+      </div>
+      <div class="arrow">→</div>
+      <div class="rstep">
+        <span class="rnum">4</span>
+        <b>It turns green and the study moves on</b>
+        <span>The decision is written back, recorded in the audit log, and the client or participant is told.</span>
+        <span class="rex">The study only goes green once nothing at all is waiting on us.</span>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="grp">The six screens used every day</h2>
+  <p class="grpnote">Each one exists because the workflow reaches a point the platform cannot decide on its own.</p>
+
+  <div class="grid">
+
+    <article class="scr core wide">
+      <header><span class="num">01</span><h3>Dashboard</h3></header>
+      <p class="purpose">The one screen to open in the morning. Every live study on a row, green if nothing is
+        waiting on us, red if something is. The row says what is waiting and who it is waiting on, so nobody
+        has to go hunting through queues to find out where a study is stuck.</p>
+
+      <div class="board">
+        <div class="brow head"><span></span><span>Study</span><span>What is waiting</span><span>Where</span></div>
+        <div class="brow ok"><span class="dot g"></span><span class="bname">Instacart shoppers, 30</span><span class="bwhat">Nothing waiting</span><span class="bwho">Running</span></div>
+        <div class="brow no"><span class="dot r"></span><span class="bname">Cardiologists, 12</span><span class="bwhat">2 identity checks unresolved</span><span class="bwho">Exceptions</span></div>
+        <div class="brow no"><span class="dot r"></span><span class="bname">Fleet managers, 20</span><span class="bwhat">Shortlist not confirmed</span><span class="bwho">Study detail</span></div>
+        <div class="brow no"><span class="dot r"></span><span class="bname">Parents and teens, 16</span><span class="bwhat">9 payouts to release</span><span class="bwho">Money</span></div>
+        <div class="brow ok"><span class="dot g"></span><span class="bname">Coffee drinkers, 25</span><span class="bwhat">Nothing waiting</span><span class="bwho">Delivered</span></div>
+      </div>
+
+      <div class="two" style="margin-top:12px">
+        <div><h4>What turns a study red</h4><ul>
+          <li>A business or identity check the platform could not resolve</li>
+          <li>A flagged account waiting on a decision</li>
+          <li>A shortlist not yet confirmed</li>
+          <li>A borderline screener answer held for review</li>
+          <li>A payout or an invoice waiting to go out</li>
+          <li>A study that did not reach its number</li></ul></div>
+        <div><h4>What the team does here</h4><ul>
+          <li>Sees every stuck study in one place, without opening each one</li>
+          <li>Clicks the row and lands on the exact screen that clears it</li>
+          <li>Watches it turn green once nothing is left waiting</li>
+          <li>Sees fill progress and what has been charged on each study</li></ul></div>
+      </div>
+      <div class="from"><b>From the workflow</b>Every band. The red states come from steps 3, 18, 19, 20, 29, 32, 35, 44, 48, 53 and 54</div>
+    </article>
+
+    <article class="scr core">
+      <header><span class="num">02</span><h3>Study detail</h3></header>
+      <p class="purpose">The workhorse. One study, six tabs, everything about it in one place.</p>
+      <div class="two">
+        <div><h4>Tabs</h4><ul>
+          <li><b>Setup and screener.</b> The AI draft, the team's edits, the client's approval, and re-pricing when the screener changes</li>
+          <li><b>Pricing.</b> The bid, the estimated incidence level, the team's adjustment, the confirmed price</li>
+          <li><b>Recruiting.</b> Who the panel already holds, what has to be sourced outside, and the one working day answer on whether the shortfall can be filled</li></ul></div>
+        <div><h4>&nbsp;</h4><ul>
+          <li><b>Applicants.</b> Who passed the pre-screener, who terminated, and the borderline answers held for review</li>
+          <li><b>Sessions.</b> Bookings, links, attendance codes, no-shows and reschedules</li>
+          <li><b>Payouts and delivery.</b> The payout list, the client's approval, and the release of results</li></ul></div>
+      </div>
+      <div class="from"><b>From the workflow</b>Steps 7 configure, 8 and 9 pricing, 11 launch, 25 sourcing, 29 screener, 32 shortlist, 39 sessions, 46 payout approval, 50 results</div>
+    </article>
+
+    <article class="scr core">
+      <header><span class="num">03</span><h3>Exceptions queue</h3></header>
+      <p class="purpose">One queue, several types, because they all need the same thing: a person deciding.</p>
+      <div class="two">
+        <div><h4>What lands here</h4><ul>
+          <li>A business check where one of the four did not pass</li>
+          <li>An identity check that could not resolve, or a profession with no public register</li>
+          <li>Duplicate accounts, rushed answers and bot activity, flagged but never blocked automatically</li>
+          <li>Borderline screener answers held for review rather than rejected</li></ul></div>
+        <div><h4>&nbsp;</h4><ul>
+          <li>Screening the team has to do itself</li>
+          <li>Phone checks, for a first specialist study or answers that do not match</li>
+          <li>No-shows and reschedules</li>
+          <li>Studies that did not reach their number</li></ul></div>
+      </div>
+      <div class="from"><b>From the workflow</b>Steps 3 team review, 18 exceptions, 19 and 20 flags, 29 team screening, 35 phone check, 44 no-show, 54 underfill</div>
+    </article>
+
+    <article class="scr core">
+      <header><span class="num">04</span><h3>Money</h3></header>
+      <p class="purpose">Everything the platform collects and everything it pays out.</p>
+      <div class="two">
+        <div><h4>What the team does</h4><ul>
+          <li>Releases the Tremendous payouts once the client has approved the list</li>
+          <li>Raises the invoice for a completed study</li>
+          <li>Takes the payment where there is no card on file, which only the internal team can do</li></ul></div>
+        <div><h4>Records</h4><ul>
+          <li>Each participant's balance, and their request to withdraw</li>
+          <li>The tax form asked for at six hundred dollars earned in a year</li>
+          <li>Credits back to the client where a study underfilled</li>
+          <li>The twenty per cent, the incentives and the fee, per study</li></ul></div>
+      </div>
+      <div class="from"><b>From the workflow</b>Steps 10 deposit, 33 incentives, 36 fee and slimCD, 45 earnings, 47 and 48 payment, 49 tax form, 53 invoice, 54 credits</div>
+    </article>
+
+    <article class="scr core">
+      <header><span class="num">05</span><h3>Participants</h3></header>
+      <p class="purpose">Search, profile, and the two actions only the team may take.</p>
+      <div class="two">
+        <div><h4>What it shows</h4><ul>
+          <li>What was verified: the ID, the selfie, and any professional credential</li>
+          <li>The certificate, the score and the tier, with what moved the score</li>
+          <li>Studies taken part in, and the ratings given</li></ul></div>
+        <div><h4>Team only</h4><ul>
+          <li><b>Revealing contact details,</b> with every reveal logged</li>
+          <li>Placing someone into a study by hand, since the certificate is not a gate on taking part</li>
+          <li>Blocking an account, which is always a person's decision</li></ul></div>
+      </div>
+      <div class="from"><b>From the workflow</b>Steps 16 identity, 17 credential, 22 certificate, 23 verified pool, 27 masked profiles, 52 ratings, 57 score and tier</div>
+    </article>
+
+    <article class="scr core">
+      <header><span class="num">06</span><h3>Pricing admin</h3></header>
+      <p class="purpose">So a price can be changed without a developer.</p>
+      <div class="two">
+        <div><h4>Editable</h4><ul>
+          <li>The pricing sheet, which is the basis for every bid</li>
+          <li>The incidence bands, the probability of finding these people</li>
+          <li>The Focus Insite fee applied on top</li></ul></div>
+        <div><h4>Why it is here</h4><ul>
+          <li>The AI bid engine prices from these rules with nobody involved</li>
+          <li>The team adjusts the bid where a study is harder than the rules assume</li>
+          <li>A rule that is wrong is wrong on every study until someone fixes it</li></ul></div>
+      </div>
+      <div class="from"><b>From the workflow</b>Step 8 the bid and the incidence level, step 9 the sheet editable from the internal dashboard</div>
+    </article>
+
+  </div>
+
+  <h2 class="grp">The other four, and why each has to exist</h2>
+  <p class="grpnote">Opened less often. Each one is here because without it a specific step in the workflow
+    has nowhere to happen.</p>
+
+  <div class="grid">
+
+    <article class="scr">
+      <header><span class="num">07</span><h3>Client accounts</h3></header>
+      <p class="purpose"><b>Why:</b> a client whose business check fails cannot request a study until a person
+        approves them. Without this screen they sit blocked with nobody looking.</p>
+      <div class="two">
+        <div><h4>The decision</h4><ul>
+          <li>Approve or reject a client where one of the four checks did not pass</li></ul></div>
+        <div><h4>The record it holds</h4><ul>
+          <li>Terms, privacy policy and NDA signed at sign-up</li>
+          <li>The study contract, signed before the price is agreed</li>
+          <li>Card on file, and any credit carried forward</li></ul></div>
+      </div>
+      <div class="from"><b>From the workflow</b>Steps 1, 2, 3 and 8</div>
+    </article>
+
+    <article class="scr">
+      <header><span class="num">08</span><h3>Sessions and moderation</h3></header>
+      <p class="purpose"><b>Why:</b> no code means no payment. Somebody has to issue the link, assign the
+        moderator and confirm who actually attended, or nobody gets paid.</p>
+      <div class="two">
+        <div><h4>The decision</h4><ul>
+          <li>Who moderates, and who is marked as having attended</li>
+          <li>What happens on a no-show or a reschedule</li></ul></div>
+        <div><h4>The record it holds</h4><ul>
+          <li>The code entered by both sides</li>
+          <li>The recording and transcript, for the client only</li></ul></div>
+      </div>
+      <div class="from"><b>From the workflow</b>Steps 38 to 44</div>
+    </article>
+
+    <article class="scr">
+      <header><span class="num">09</span><h3>Support</h3></header>
+      <p class="purpose"><b>Why:</b> a ticket is first answered automatically from a fixed set of FAQs and
+        platform guides. Anything those do not cover comes to a person, and there are response times attached
+        to it.</p>
+      <div class="two">
+        <div><h4>The decision</h4><ul>
+          <li>Answering what the FAQs could not cover, from either side</li></ul></div>
+        <div><h4>Against the clock</h4><ul>
+          <li>One working day for clients</li>
+          <li>Two for participants</li>
+          <li>Anything about money, one day</li></ul></div>
+      </div>
+      <div class="from"><b>From the workflow</b>Steps 55 and 56</div>
+    </article>
+
+    <article class="scr">
+      <header><span class="num">10</span><h3>Audit and compliance</h3></header>
+      <p class="purpose"><b>Why:</b> everyone can do everything, so this log is the only record of who did what.
+        It is also what proves the biometric obligations are being met.</p>
+      <div class="two">
+        <div><h4>What it records</h4><ul>
+          <li>Every reveal of a participant's contact details</li>
+          <li>Who changed a price, released a payout or overrode a check</li></ul></div>
+        <div><h4>What it proves</h4><ul>
+          <li>Written consent for the ID and the selfie</li>
+          <li>A published retention schedule and a deletion date</li></ul></div>
+      </div>
+      <div class="from"><b>From the workflow</b>Steps 16, 21 and 27</div>
+    </article>
+
+  </div>
+
+</div>
+
+
+</body></html>
