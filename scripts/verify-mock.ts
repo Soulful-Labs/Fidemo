@@ -51,7 +51,7 @@ let state: AppState = {
   signedIn: false, user: USER, studies: STUDIES, notifications: NOTIFICATIONS,
   transactions: TRANSACTIONS, payouts: PAYOUTS, payoutMethods: PAYOUT_METHODS,
   pointsHistory: POINTS_HISTORY, redeemHistory: REDEEM_HISTORY, referrals: REFERRALS,
-  tickets: TICKETS, answers: {}, toasts: [],
+  tickets: TICKETS, answers: {}, toasts: [], pending: [],
 }
 const get = (id: string) => state.studies.find((s) => s.id === id)!
 

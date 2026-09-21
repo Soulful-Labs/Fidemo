@@ -51,6 +51,14 @@ export interface OnboardingDraft {
 /** One answer per screener/survey/diary question. */
 export type Answers = Record<string, string | string[]>
 
+/** A fake server transition waiting to fire, kept so a reload does not lose it. */
+export interface PendingTransition {
+  id: string
+  kind: 'invite' | 'pay'
+  /** Epoch ms when it fires. */
+  dueAt: number
+}
+
 export interface AppState {
   signedIn: boolean
   user: User
@@ -68,6 +76,7 @@ export interface AppState {
   onboarding: OnboardingDraft
   filters: StudyFilters
   toasts: Toast[]
+  pending: PendingTransition[]
 }
 
 export type Action =
@@ -98,5 +107,7 @@ export type Action =
   | { type: 'ADD_NOTIFICATION'; notification: AppNotification }
   | { type: 'ADD_TICKET'; ticket: Ticket }
   | { type: 'SEND_TICKET_MESSAGE'; ticketId: string; message: TicketMessage }
+  | { type: 'ADD_PENDING'; transition: PendingTransition }
+  | { type: 'REMOVE_PENDING'; id: string; kind: PendingTransition['kind'] }
   | { type: 'TOAST'; toast: Toast }
   | { type: 'DISMISS_TOAST'; id: string }

@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from 'react'
+import { loadPersisted, persist } from './persist'
 import type { ReactNode } from 'react'
 import { createActions } from './actions'
 import type { Actions } from './actions'
@@ -7,6 +8,7 @@ import {
   REFERRALS, STUDIES, TICKETS, TRANSACTIONS, USER,
 } from './data'
 import { reducer } from './reducer'
+import { usePendingTransitions } from './transitions'
 import { TIMINGS } from './timings'
 import { DEFAULT_FILTERS } from './storeTypes'
 import type { Action, AppState } from './storeTypes'
@@ -33,6 +35,7 @@ const initialState: AppState = {
   },
   filters: DEFAULT_FILTERS,
   toasts: [],
+  pending: [],
 }
 
 type StoreValue = AppState & Actions & {
@@ -47,18 +50,10 @@ type StoreValue = AppState & Actions & {
 const StoreContext = createContext<StoreValue | null>(null)
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, initialState)
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([])
+  const [state, dispatch] = useReducer(reducer, initialState, loadPersisted)
 
-  const later = useCallback((fn: () => void, ms: number) => {
-    timers.current.push(setTimeout(fn, ms))
-  }, [])
-
-  // Never leave a pending transition running after unmount.
-  useEffect(() => {
-    const pending = timers.current
-    return () => pending.forEach(clearTimeout)
-  }, [])
+  // Keep the demo alive across a refresh or a phone putting the tab to sleep.
+  useEffect(() => { persist(state) }, [state])
 
   const toast = useCallback((message: string) => {
     const id = `${Date.now()}-${Math.random()}`
@@ -75,14 +70,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<StoreValue>(() => ({
     ...state,
-    ...createActions({ state, dispatch, toast, notify, later }),
+    ...createActions({ state, dispatch, toast }),
     dispatch,
     toast,
     dismissToast: (id: string) => dispatch({ type: 'DISMISS_TOAST', id }),
     notify,
     signIn: () => dispatch({ type: 'SIGN_IN' }),
     signOut: () => dispatch({ type: 'SIGN_OUT' }),
-  }), [state, toast, notify, later])
+  }), [state, toast, notify])
+
+  usePendingTransitions(state, value)
 
   // Dev only: a handle for driving state in the browser, used by the
   // verification scripts and to reach states the seed does not start in

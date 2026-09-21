@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { useLocation, useNavigationType } from 'react-router-dom'
+import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import BottomNav from './BottomNav'
 import ModalHost from './ModalHost'
@@ -31,7 +31,14 @@ function useScrollMemory(ref: React.RefObject<HTMLElement | null>, key: string) 
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const main = useRef<HTMLElement>(null)
+
+  // Dev only: lets scripts/demo.mjs move around the app without a reload,
+  // which would drop the in-memory transition timers.
+  useEffect(() => {
+    if (import.meta.env.DEV) (window as unknown as { __hlNavigate?: unknown }).__hlNavigate = navigate
+  }, [navigate])
   useScrollMemory(main, pathname)
 
   const navVisible = showsNav(pathname)

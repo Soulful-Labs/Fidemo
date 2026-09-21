@@ -1,71 +1,37 @@
-import { STUDIES } from './studies'
 import type { Action, Answers, AppState, OnboardingDraft, StudyFilters } from './storeTypes'
 import type {
-  AppNotification, PayoutMethod, Study, StudyStatus, Ticket, TicketMessage, User,
+  PayoutMethod, Study, StudyStatus, Ticket, TicketMessage, User,
 } from './types'
 import { TIMINGS } from './timings'
-
-/** Session study types schedule; survey and diary go straight to completing. */
-const SESSION_TYPES: Study['type'][] = [
-  'video_call', 'group_video_call', 'in_person', 'in_person_group',
-]
 
 export interface ActionDeps {
   state: AppState
   dispatch: React.Dispatch<Action>
   toast: (message: string) => void
-  notify: (n: Omit<AppNotification, 'id' | 'at' | 'read'>) => void
-  later: (fn: () => void, ms: number) => void
 }
 
 /**
  * Every action the screens can take. The study state machine lives here: each
  * action moves a status, and the cards, tabs and detail screen derive from it.
  */
-export function createActions({ state, dispatch, toast, notify, later }: ActionDeps) {
+export function createActions({ state, dispatch, toast }: ActionDeps) {
   const setStatus = (id: string, status: StudyStatus, timelineLabel?: string) =>
     dispatch({ type: 'SET_STATUS', id, status, timelineLabel })
 
-  const find = (id: string) => state.studies.find((s) => s.id === id) ?? STUDIES.find((s) => s.id === id)
-
-  /** Screener submitted: Applied now, invited after a short delay. */
+  /**
+   * Screener submitted: Applied now, invited after a short delay. The delay
+   * is a pending transition in the store (see transitions.ts), so it fires
+   * even if the page is reloaded in between.
+   */
   const submitScreener = (id: string) => {
     setStatus(id, 'applied', 'Applied')
-    later(() => {
-      const study = find(id)
-      const session = study ? SESSION_TYPES.includes(study.type) : true
-      setStatus(
-        id,
-        session ? 'invited_to_schedule' : 'invited_to_complete',
-        session ? 'Invited to schedule' : 'Invited to complete',
-      )
-      notify({
-        kind: 'study',
-        title: session
-          ? "You've been selected to complete!"
-          : "Congrats! You're invited to complete study!",
-        body: `${study?.title ?? 'Your study'} is ready for the next step.`,
-        actionLabel: session ? 'Schedule Now' : 'Start Study',
-        to: session ? `/studies/${id}/schedule` : `/studies/${id}`,
-      })
-      toast(session ? 'You are invited to schedule' : 'You are invited to complete')
-    }, TIMINGS.screenerToInvite)
+    dispatch({ type: 'ADD_PENDING', transition: { id, kind: 'invite', dueAt: Date.now() + TIMINGS.screenerToInvite } })
   }
 
   /** Completed: In Process now, Paid after a delay, with the reward and points. */
   const completeStudy = (id: string) => {
     setStatus(id, 'in_process', 'Completed')
-    later(() => {
-      const study = find(id)
-      dispatch({ type: 'PAY_STUDY', id })
-      notify({
-        kind: 'money',
-        title: `You've received $${study?.reward ?? 0}!`,
-        body: `Your payment for ${study?.title ?? 'your study'} has been added to your wallet.`,
-        to: '/wallet',
-      })
-      toast(`Paid $${study?.reward ?? 0}, +25 points, +1 Trust Score`)
-    }, TIMINGS.completionToPaid)
+    dispatch({ type: 'ADD_PENDING', transition: { id, kind: 'pay', dueAt: Date.now() + TIMINGS.completionToPaid } })
   }
 
   return {

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import StudyCard from '../../components/app/StudyCard'
 import { isExplorable } from '../../lib/studyState'
 import { useStore } from '../../mock/store'
+import { useUI } from '../../app/ui'
 import SectionHeader, { ViewAll } from './SectionHeader'
 
 /**
@@ -12,7 +13,8 @@ export default function RecommendedStudies({
   title = 'Recommended Studies', layout = 'rail', limit = 6,
 }: { title?: string; layout?: 'rail' | 'list'; limit?: number }) {
   const navigate = useNavigate()
-  const { studies, toggleSaved, toast } = useStore()
+  const { studies, toggleSaved } = useStore()
+  const { openMatchScore } = useUI()
 
   const recommended = studies
     .filter((s) => isExplorable(s.status))
@@ -29,7 +31,7 @@ export default function RecommendedStudies({
       showActions={false}
       onOpen={() => navigate(`/studies/${study.id}`)}
       onToggleSave={() => toggleSaved(study.id)}
-      onMatchScore={() => toast('Match score shows how relevant this study is to your profile')}
+      onMatchScore={openMatchScore}
     />
   ))
 

@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../../mock/store'
+import { useUI } from '../../app/ui'
+import { openSession } from './detail/useDetailActions'
 import type { Study } from '../../mock/types'
 
 /**
@@ -9,6 +11,7 @@ import type { Study } from '../../mock/types'
 export function useCardHandlers() {
   const navigate = useNavigate()
   const { toggleSaved, toast, studyById } = useStore()
+  const { openMatchScore } = useUI()
 
   const primary = (study: Study) => () => {
     switch (study.status) {
@@ -43,9 +46,12 @@ export function useCardHandlers() {
       toast(studyById(study.id)?.saved ? 'Removed from saved' : 'Saved')
     },
     primary,
-    secondary: (study: Study) => () => navigate(`/studies/${study.id}`),
+    // Join Call / Get Directions on a booked card; View Details otherwise.
+    secondary: (study: Study) => () =>
+      study.status === 'scheduled' || study.status === 'pin_confirmed'
+        ? openSession(study)
+        : navigate(`/studies/${study.id}`),
     reject: (study: Study) => () => navigate(`/studies/${study.id}`),
-    matchScore: () => () =>
-      toast('Match score shows how relevant this study is to your profile'),
+    matchScore: () => openMatchScore,
   }
 }

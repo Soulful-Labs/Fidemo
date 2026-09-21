@@ -1,12 +1,14 @@
 import { useNavigate } from 'react-router-dom'
 import StudyCard from '../../components/app/StudyCard'
 import { useStore } from '../../mock/store'
+import { useUI } from '../../app/ui'
 import SectionHeader, { ViewAll } from './SectionHeader'
 
 /** Invite and scheduled cards (PRD 5.1), using the one StudyCard. */
 export default function UpdatesSection() {
   const navigate = useNavigate()
-  const { studies, toggleSaved, toast } = useStore()
+  const { studies, toggleSaved } = useStore()
+  const { openMatchScore } = useUI()
 
   const updates = studies
     .filter((s) => ['invited_to_schedule', 'invited_to_apply', 'invited_to_complete', 'scheduled'].includes(s.status))
@@ -32,7 +34,7 @@ export default function UpdatesSection() {
           onToggleSave={() => toggleSaved(study.id)}
           onPrimary={primaryFor(study.id, study.status)}
           onSecondary={() => navigate(`/studies/${study.id}`)}
-          onMatchScore={() => toast('Match score shows how relevant this study is to your profile')}
+          onMatchScore={openMatchScore}
         />
       ))}
       <ViewAll to="/studies/mine/invites" />

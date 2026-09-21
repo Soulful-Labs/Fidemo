@@ -86,6 +86,11 @@ export function accountReducer(state: AppState, action: Action): AppState | null
         notifications: state.notifications.map((n) =>
           n.id === action.id ? { ...n, read: true } : n),
       }
+    case 'ADD_PENDING':
+      return { ...state, pending: [...state.pending.filter((t) => !(t.id === action.transition.id && t.kind === action.transition.kind)), action.transition] }
+    case 'REMOVE_PENDING':
+      return { ...state, pending: state.pending.filter((t) => !(t.id === action.id && t.kind === action.kind)) }
+
     case 'ADD_NOTIFICATION':
       return { ...state, notifications: [action.notification, ...state.notifications] }
 
