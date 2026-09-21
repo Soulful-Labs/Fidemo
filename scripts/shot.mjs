@@ -75,7 +75,12 @@ ws.onmessage = (e) => {
     const { resolve, reject } = pending.get(msg.id)
     pending.delete(msg.id)
     msg.error ? reject(new Error(JSON.stringify(msg.error))) : resolve(msg.result)
-  } else if (msg.method) events.push(msg)
+  } else if (msg.method) {
+    events.push(msg)
+    // Surface page errors so a blank capture explains itself.
+    if (msg.method === 'Runtime.exceptionThrown') console.error('page error:', msg.params.exceptionDetails.exception?.description ?? msg.params.exceptionDetails.text)
+    if (msg.method === 'Runtime.consoleAPICalled' && msg.params.type === 'error') console.error('console.error:', msg.params.args.map((a) => a.value ?? a.description).join(' '))
+  }
 }
 const send = (method, params = {}, sessionId) =>
   new Promise((resolve, reject) => {

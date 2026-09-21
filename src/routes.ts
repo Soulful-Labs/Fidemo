@@ -31,6 +31,14 @@ import DiaryOverview from './screens/studies/complete/DiaryOverview'
 import DiaryDay from './screens/studies/complete/DiaryDay'
 import RateClient from './screens/studies/complete/RateClient'
 import ClientRatings from './screens/studies/complete/ClientRatings'
+import Wallet from './screens/wallet/Wallet'
+import Withdraw from './screens/wallet/Withdraw'
+import EarningHistory from './screens/wallet/EarningHistory'
+import TransactionDetails from './screens/wallet/TransactionDetails'
+import Payouts from './screens/wallet/Payouts'
+import PayoutDetails from './screens/wallet/PayoutDetails'
+import PayoutMethods from './screens/wallet/PayoutMethods'
+import AddBankAccount from './screens/wallet/AddBankAccount'
 
 /**
  * The complete route map from the build brief. Every screen route points at the
@@ -103,16 +111,14 @@ export const routes: ScreenRoute[] = [
   built('/clients/:clientId/ratings', 'Client Ratings', ClientRatings),
 
   // ----- Wallet tab -----
-  screen('/wallet', 'Wallet'),
-  screen('/wallet/withdraw', 'Withdraw'),
-  screen('/wallet/withdraw/method', 'Select payout method'),
-  screen('/wallet/withdraw/done', 'Withdrawal request sent'),
-  screen('/wallet/earnings', 'Earning History'),
-  screen('/wallet/earnings/:txId', 'Transaction Details'),
-  screen('/wallet/payouts', 'Payout and Payout History'),
-  screen('/wallet/payouts/:payoutId', 'Payout Details'),
-  screen('/wallet/payout-methods', 'Manage Payout Methods'),
-  screen('/wallet/payout-methods/add', 'Add Bank Account'),
+  built('/wallet', 'Wallet', Wallet),
+  built('/wallet/withdraw/:step?', 'Withdraw, Select payout method, Withdrawal request sent', Withdraw),
+  built('/wallet/earnings', 'Earning History', EarningHistory),
+  built('/wallet/earnings/:txId', 'Transaction Details', TransactionDetails),
+  built('/wallet/payouts', 'Payout and Payout History', Payouts),
+  built('/wallet/payouts/:payoutId', 'Payout Details', PayoutDetails),
+  built('/wallet/payout-methods', 'Manage Payout Methods', PayoutMethods),
+  built('/wallet/payout-methods/add', 'Add Bank Account', AddBankAccount),
   screen('/points', 'Reward Points'),
   screen('/points/redeem', 'Redeem'),
   screen('/points/redeem/confirm', 'Confirm Redeem'),

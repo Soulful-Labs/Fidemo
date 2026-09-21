@@ -11,11 +11,11 @@ import { TABS, activeTab } from './navigation'
  * which NavLink's own matching cannot express, and NavLink would overwrite the
  * aria-current we set from activeTab.
  */
-export default function BottomNav({ pathname }: { pathname: string }) {
+export default function BottomNav({ pathname, alt = false }: { pathname: string; alt?: boolean }) {
   const active = activeTab(pathname)
 
   return (
-    <nav className="flex h-nav shrink-0 items-start gap-2 rounded-t-xl border-t-1 border-stroke-3 bg-bg-0 px-2 pt-2">
+    <nav className={cn('flex h-nav shrink-0 items-start gap-2 rounded-t-xl border-t-1 border-stroke-3 px-2 pt-2', alt ? 'bg-bgAlt-0' : 'bg-bg-0')}>
       {TABS.map((tab) => {
         const isActive = active === tab.key
         return (

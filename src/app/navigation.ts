@@ -41,6 +41,11 @@ export function showsNav(pathname: string): boolean {
   return NAV_ROUTES.some((route) => matchPath({ path: route, end: true }, pathname) !== null)
 }
 
+/** Screens on the green-tinted palette: Trust Score, Reward Points and Wallet. */
+export function isAltPalette(pathname: string): boolean {
+  return ['/wallet', '/points', '/trust-score'].some((p) => pathname === p || pathname.startsWith(`${p}/`))
+}
+
 export function activeTab(pathname: string): string | undefined {
   return TABS.find((tab) =>
     tab.owns.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)),

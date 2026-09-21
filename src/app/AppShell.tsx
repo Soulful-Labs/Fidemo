@@ -5,7 +5,7 @@ import BottomNav from './BottomNav'
 import ModalHost from './ModalHost'
 import PhoneFrame from './PhoneFrame'
 import ToastHost from './ToastHost'
-import { showsNav } from './navigation'
+import { isAltPalette, showsNav } from './navigation'
 
 /**
  * Global interaction rule 8: scroll resets on a new navigation and is restored
@@ -35,14 +35,15 @@ export default function AppShell({ children }: { children: ReactNode }) {
   useScrollMemory(main, pathname)
 
   const navVisible = showsNav(pathname)
+  const alt = isAltPalette(pathname)
 
   return (
-    <PhoneFrame>
+    <PhoneFrame alt={alt}>
       <main ref={main} className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
         {children}
       </main>
 
-      {navVisible && <BottomNav pathname={pathname} />}
+      {navVisible && <BottomNav pathname={pathname} alt={alt} />}
 
       <ToastHost navVisible={navVisible} />
       <ModalHost />
