@@ -53,6 +53,7 @@ import Referrals from './screens/profile/Referrals'
 import TrustScoreDetails from './screens/trust/TrustScoreDetails'
 import TrustScoreRules from './screens/trust/TrustScoreRules'
 import HowTiersWork from './screens/trust/HowTiersWork'
+import ScoreHistory from './screens/trust/ScoreHistory'
 import Support from './screens/support/Support'
 import SupportChat from './screens/support/SupportChat'
 import ContactUs from './screens/support/ContactUs'
@@ -146,6 +147,7 @@ export const routes: ScreenRoute[] = [
   built('/trust-score', 'Trust Score Details', TrustScoreDetails),
   built('/trust-score/rules', 'Trust Score Rules', TrustScoreRules),
   built('/trust-score/tiers', 'How Tiers Works', HowTiersWork),
+  built('/trust-score/history', 'Score History', ScoreHistory),
   built('/support', 'Help and Support', Support),
   built('/support/tickets', 'Support Tickets', Support),
   built('/support/tickets/:id', 'Support Chat', SupportChat),

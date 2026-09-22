@@ -50,6 +50,7 @@ export default function OverviewTiles() {
           label="This Month"
           value={money(thisMonth)}
           delta={change !== 0 ? moneyDelta(change) : undefined}
+          deltaLabel={change !== 0 ? 'vs last month' : undefined}
           onClick={() => navigate('/wallet')}
         />
         <StatTile tint="purple" icon={<Clock className="h-5 w-5" />} label="Studies In Review" value={String(inReview)} onClick={() => navigate('/studies/mine/applied')} />

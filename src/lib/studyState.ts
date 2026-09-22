@@ -59,7 +59,7 @@ export const STATUS: Record<StudyStatus, StatusMeta> = {
   // Policy deduction: took part but arrived late. Paid, -2 Trust Score.
   late_show: { label: 'Late Show Up', tone: 'yellow', primary: 'Rate Client', tab: 'history' },
   // Workflow 44: turned up but not needed. Paid in full, no penalty.
-  not_needed: { label: 'Turned up, not needed', tone: 'green', tab: 'history' },
+  not_needed: { label: 'Not needed', tone: 'green', tab: 'history' },
 }
 
 /**

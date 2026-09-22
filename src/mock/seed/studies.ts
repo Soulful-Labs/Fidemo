@@ -56,9 +56,15 @@ function mk(seed: Seed): Study {
   const daysLeft = seed.daysLeft ?? 6 + (n % 17)
   const inPerson = seed.type === 'in_person' || seed.type === 'in_person_group'
   const session = inPerson || seed.type === 'video_call' || seed.type === 'group_video_call'
+  // A study that has ended has a real end date: the day it was completed,
+  // rejected or missed (the last timeline event before the payout steps).
+  // Open studies end daysLeft from now.
+  const PAYOUT_STEPS = ['Earnings credited', 'Client approved payout', 'Paid']
+  const doneAt = seed.timeline?.filter((t) => !PAYOUT_STEPS.includes(t.label)).at(-1)?.at
+  const endsAt = doneAt && daysLeft === 0 ? doneAt : at(daysLeft)
   return {
     matchScore: 60 + ((n * 13) % 38),
-    endsAt: at(daysLeft),
+    endsAt,
     daysLeft,
     client: CLIENTS.rjp,
     saved: false,

@@ -1,5 +1,6 @@
 import AppBitsSection from './AppBitsSection'
 import ButtonsSection from './ButtonsSection'
+import CelebrationsSection from './CelebrationsSection'
 import FormsSection from './FormsSection'
 import NavSection from './NavSection'
 import OverlaysSection from './OverlaysSection'
@@ -29,6 +30,7 @@ export default function KitchenSink() {
       <TagsSection toast={toast} />
       <NavSection toast={toast} />
       <OverlaysSection toast={toast} />
+      <CelebrationsSection />
       <StudyCardSection toast={toast} />
       <AppBitsSection toast={toast} />
 

@@ -15,6 +15,8 @@ export interface StatTileProps {
    * month is not an error.
    */
   delta?: string
+  /** What the delta is against, e.g. "vs last month"; shown under it. */
+  deltaLabel?: string
   icon?: ReactNode
   /** The coloured fade at the top of the tile, as drawn on the dashboard. */
   tint?: TileTint
@@ -31,7 +33,7 @@ const TINT: Record<TileTint, string> = {
 }
 
 /** The dashboard overview tiles (PRD 5.1, Figma 918:69716). Tappable ones route. */
-export default function StatTile({ label, value, delta, icon, tint = 'none', onClick, alt = false }: StatTileProps) {
+export default function StatTile({ label, value, delta, deltaLabel, icon, tint = 'none', onClick, alt = false }: StatTileProps) {
   const Wrapper = onClick ? 'button' : 'div'
   return (
     <Wrapper
@@ -50,8 +52,9 @@ export default function StatTile({ label, value, delta, icon, tint = 'none', onC
       <div className="flex items-center gap-2">
         <span className="text-title-l text-text-title">{value}</span>
         {delta && (
-          <span className={cn('text-body-medium', delta.startsWith('-') ? 'text-text-body' : 'text-state-success')}>
-            {delta}
+          <span className="flex flex-col items-end">
+            <span className={cn('text-body-medium', delta.startsWith('-') ? 'text-text-body' : 'text-state-success')}>{delta}</span>
+            {deltaLabel && <span className="text-label text-text-body">{deltaLabel}</span>}
           </span>
         )}
         {onClick && !delta && <ChevronRight className="text-text-title" />}

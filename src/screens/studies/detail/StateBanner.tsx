@@ -82,7 +82,7 @@ function bannerContent(study: Study): BannerContent | null {
       }
     case 'not_needed':
       return {
-        tone: 'green', title: 'Turned up, not needed', pill: true, aside: dateTime(when(study, 'Paid') ?? study.endsAt),
+        tone: 'green', title: 'Not needed', pill: true, aside: dateTime(when(study, 'Paid') ?? study.endsAt),
         headline: `Paid in full, ${money(study.reward)}`,
         body: 'You turned up but the session was over-recruited and you were not needed this time. You are paid in full and your Trust Score is unaffected.',
       }

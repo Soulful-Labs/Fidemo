@@ -3,6 +3,8 @@ import CtaBar from '../../../components/ui/CtaBar'
 import { STATUS } from '../../../lib/studyState'
 import type { Study } from '../../../mock/types'
 import { resumeLabel } from '../complete/DiaryOverview'
+import { completeBlocker } from '../../../lib/session'
+import { useStore } from '../../../mock/store'
 import { ChevronRight } from '../../../components/ui/icons'
 
 export interface DetailActionsProps {
@@ -25,6 +27,9 @@ export default function DetailActions({ study, onPrimary, onSecondary }: DetailA
   const inPerson = study.type === 'in_person' || study.type === 'in_person_group'
   const secondaryLabel = scheduled ? (inPerson ? 'Get Directions' : 'Join Call') : undefined
 
+  const { toast } = useStore()
+  // Complete Study waits for the session to have started.
+  const blocker = completeBlocker(study)
   const diary = study.type === 'diary' && study.diary
   const diaryOpen = diary && study.status === 'invited_to_complete'
   const primaryLabel =
@@ -43,7 +48,8 @@ export default function DetailActions({ study, onPrimary, onSecondary }: DetailA
       {secondaryLabel && (
         <Button variant="secondary" className="flex-1" onClick={onSecondary}>{secondaryLabel}</Button>
       )}
-      <Button className="flex-1" onClick={onPrimary} rightIcon={diaryOpen ? <ChevronRight className="h-5 w-5" /> : undefined}>{primaryLabel}</Button>
+      <Button className="flex-1" onClick={onPrimary} disabled={Boolean(blocker)} onBlocked={() => blocker && toast(blocker)}
+        rightIcon={diaryOpen ? <ChevronRight className="h-5 w-5" /> : undefined}>{primaryLabel}</Button>
     </CtaBar>
   )
 }

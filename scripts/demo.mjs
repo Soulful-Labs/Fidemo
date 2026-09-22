@@ -129,8 +129,10 @@ await step(1, 'Sign up, verify OTP, fill all three profile steps, accept consent
   expect(await path() === '/dashboard', 'expected /dashboard after OTP')
   expect(await store('st.user.sourceCode') === 'DEMO7', 'sign-up link code not stored on the user')
   expect(await store('st.user.email') === 'demo@example.com', 'email not carried from sign-up')
-  // Being referred earns 100 points, and the points earned modal opens over the dashboard.
-  expect(await evaluate(`document.body.textContent.includes('For Being Referred')`), 'being referred points modal did not open')
+  // Being referred earns 100 points; the points earned modal opens once the dashboard has landed.
+  let shown = false
+  for (let i = 0; i < 20 && !shown; i++) { await sleep(400); shown = await evaluate(`document.body.textContent.includes('For Being Referred')`) }
+  expect(shown, 'being referred points modal did not open')
   await click('Done!')
   await click('Get Started')
   expect(await path() === '/onboarding/about', 'expected /onboarding/about')
@@ -229,6 +231,11 @@ await step(6, 'Open it, enter session code 407060, see it confirmed', async () =
 const before = { wallet: await store('st.user.walletBalance'), points: await store('st.user.points'), trust: await store('st.user.trustScore') }
 
 await step(7, 'Complete it, watch it move to History and become Paid', async () => {
+  // Complete Study waits for the session to have started, so the clock moves on: the
+  // booking is set an hour into the past (the one place the script touches state directly).
+  expect(await evaluate(`[...document.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Complete Study' && b.getAttribute('aria-disabled') === 'true')`), 'Complete Study should wait for the session')
+  await evaluate(`(() => { const st = __hl; const s = st.studies.find((x) => x.id === 'st-01'); const d = new Date(Date.now() - 3600e3); const slot = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }); st.dispatch({ type: 'SET_BOOKING', id: 'st-01', booking: { ...s.booking, date: d.toISOString(), slot } }) })()`)
+  await sleep(300)
   await click('Complete Study', 800)
   expect(await store(`st.studies.find((x) => x.id === 'st-01').status`) === 'in_process', 'should be in_process')
   await nav('/studies/mine/history')

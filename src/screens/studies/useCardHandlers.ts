@@ -3,6 +3,7 @@ import { useStore } from '../../mock/store'
 import { useUI } from '../../app/ui'
 import { openSession } from './detail/useDetailActions'
 import { applyBlocker } from '../../lib/eligibility'
+import { completeBlocker } from '../../lib/session'
 import type { Study } from '../../mock/types'
 
 /**
@@ -36,9 +37,12 @@ export function useCardHandlers() {
       case 'scheduled':
         navigate(`/studies/${study.id}/pin`)
         break
-      case 'pin_confirmed':
-        completeStudy(study.id); toast('Study completed, payment on its way')
+      case 'pin_confirmed': {
+        const blocker = completeBlocker(study)
+        if (blocker) toast(blocker)
+        else { completeStudy(study.id); toast('Study completed, payment on its way') }
         break
+      }
       case 'paid': case 'late_show':
         navigate(`/studies/${study.id}/rate`)
         break

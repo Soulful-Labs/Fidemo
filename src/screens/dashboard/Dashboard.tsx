@@ -18,7 +18,7 @@ export default function Dashboard() {
 
   if (user.completedStudies === 0) return <GetStarted />
 
-  const firstName = user.name.split(' ')[0]
+  const firstName = user.name.trim().split(' ')[0]
 
   return (
     <div className="flex min-h-full flex-col">
@@ -26,7 +26,7 @@ export default function Dashboard() {
 
       <div className="flex flex-col gap-6 px-4 pb-6 pt-2">
         <h1 className="text-title-m text-text-title">
-          {greeting()}, <span className="text-brand-secondary">{firstName}!</span>
+          {firstName ? <>{greeting()}, <span className="text-brand-secondary">{firstName}!</span></> : `${greeting()}!`}
         </h1>
 
         <TrustScoreCard />

@@ -165,7 +165,7 @@ async function walkStatuses() {
 | Status | Tab | Card tag | Card actions | Banner | Detail actions |
 |---|---|---|---|---|---|`)
   const statuses = ['available', 'invited_to_apply', 'applying', 'draft', 'applied', 'invited_to_schedule', 'invited_to_complete', 'scheduled', 'pin_confirmed', 'in_process', 'paid', 'rejected', 'no_show', 'late_show', 'not_needed']
-  const LABELS = 'Open|Invited To Schedule|Invited To Complete|Invited|Applying|In Draft|In Review|Scheduled|Code Confirmed|In Process|Paid|Rejected|No Show|Late Show Up|Turned up, not needed'
+  const LABELS = 'Open|Invited To Schedule|Invited To Complete|Invited|Applying|In Draft|In Review|Scheduled|Code Confirmed|In Process|Paid|Rejected|No Show|Late Show Up|Not needed'
   for (const status of statuses) {
     await goto('/dashboard?reset=1')
     const title = await store(`st.studies.find((x) => x.id === ${JSON.stringify(study)}).title`)

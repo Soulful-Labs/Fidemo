@@ -52,7 +52,7 @@ export default function Certificate() {
           <div className="flex items-center gap-3">
             <Avatar name={user.name} size={56} />
             <div className="flex flex-col gap-0.5">
-              <span className="text-title-s text-text-title">{user.name}</span>
+              {user.name && <span className="text-title-s text-text-title">{user.name}</span>}
               <span className="text-text-regular text-text-body">Cert. ID: <span className="text-text-title">{certId}</span></span>
             </div>
           </div>

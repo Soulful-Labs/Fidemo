@@ -7,9 +7,11 @@ import Button from '../../components/ui/Button'
 import TopBar from '../../components/ui/TopBar'
 import { ChevronRight, Info } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import { dateLong, money } from '../../lib/format'
+import { money } from '../../lib/format'
 import { TIERS, nextTier, tierFor } from '../../lib/rules'
 import { useStore } from '../../mock/store'
+import { ViewAll } from '../dashboard/SectionHeader'
+import { ScoreHistoryRow } from './ScoreHistory'
 
 const RATINGS: { key: 'expertise' | 'reliability' | 'communication' | 'successRate'; label: string; hint: string }[] = [
   { key: 'expertise', label: 'Expertise', hint: 'How clients rate your subject knowledge' },
@@ -38,41 +40,11 @@ export function PerformanceRatings({ alt = true }: { alt?: boolean }) {
   )
 }
 
-/**
- * Every line the score is made of (policy section 1), newest first, each
- * traceable to its study. Not drawn in Figma; added so a deduction such as
- * a late show up can be followed back to where it came from.
- */
-function ScoreHistory() {
-  const navigate = useNavigate()
-  const { trustHistory } = useStore()
-  return (
-    <div className="flex flex-col rounded-lg bg-bgAlt-2 px-4">
-      {trustHistory.map((e, i) => {
-        const Row = e.studyId ? 'button' : 'div'
-        return (
-          <Row key={`${e.label}-${e.at}-${i}`} type={e.studyId ? 'button' : undefined}
-            onClick={e.studyId ? () => navigate(`/studies/${e.studyId}`) : undefined}
-            className="flex items-center gap-3 border-b-1 border-stroke-3 py-3 text-left last:border-b-0">
-            <span className="flex min-w-0 flex-1 flex-col">
-              <span className="text-text-medium text-text-title">{e.label}</span>
-              {e.detail && <span className="truncate text-label text-text-body">{e.detail} • {dateLong(e.at)}</span>}
-            </span>
-            <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-text-medium', e.delta > 0 ? 'bg-green-900/60 text-brand-secondary' : e.delta < 0 ? 'bg-state-dangerBg text-state-danger' : 'bg-bg-2 text-text-body')}>
-              {e.delta > 0 ? '+' : ''}{e.delta}
-            </span>
-          </Row>
-        )
-      })}
-    </div>
-  )
-}
-
 /** PRD 7.1 Trust Score Details, Figma 1114:95266. */
 export default function TrustScoreDetails() {
   const navigate = useNavigate()
   const { back } = useAppNav()
-  const { user } = useStore()
+  const { user, trustHistory } = useStore()
   const tier = tierFor(user.trustScore)
   const next = nextTier(user.trustScore)
   const floor = TIERS[tier]
@@ -114,7 +86,10 @@ export default function TrustScoreDetails() {
         <PerformanceRatings />
 
         <h2 className="text-body-medium text-text-title">Score history</h2>
-        <ScoreHistory />
+        <section className="flex flex-col rounded-lg bg-bgAlt-2 px-4">
+          {trustHistory.slice(0, 3).map((e, i) => <ScoreHistoryRow key={`${e.label}-${e.at}-${i}`} entry={e} />)}
+          <div className="py-3"><ViewAll to="/trust-score/history" /></div>
+        </section>
 
         <h2 className="text-body-medium text-text-title">Stats</h2>
         <div className="grid grid-cols-2 gap-3">

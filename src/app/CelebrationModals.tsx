@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../mock/store'
+import { TIMINGS } from '../mock/timings'
 import type { PointsEntry, User } from '../mock/types'
 import PointsEarned from './PointsEarned'
 import TierUpgrade from './TierUpgrade'
@@ -20,6 +21,7 @@ export default function CelebrationModals() {
   const lastTier = useRef(user.tier)
   const seenPoints = useRef(new Set(pointsHistory.map((p) => p.id)))
   const account = useRef(user.email)
+  const pause = useRef<number | undefined>(undefined)
 
   // Signing into a different account is not a change worth celebrating: reset the
   // baselines. A brand new account (just signed up) keeps its first points entry,
@@ -31,12 +33,15 @@ export default function CelebrationModals() {
     lastTier.current = user.tier
     const brandNew = Date.now() - Date.parse(user.joinedAt) < 60_000
     seenPoints.current = new Set(brandNew ? [] : pointsHistory.map((p) => p.id))
-    if (brandNew) {
-      const fresh = pointsHistory.find((p) => p.amount > 0)
-      pointsHistory.forEach((p) => seenPoints.current.add(p.id))
-      if (fresh) setEarned(fresh)
-    }
+    if (!brandNew) return
+    // Let the dashboard land first: the sign-up bonus is celebrated after a pause.
+    const fresh = pointsHistory.find((p) => p.amount > 0)
+    pointsHistory.forEach((p) => seenPoints.current.add(p.id))
+    if (!fresh) return
+    window.clearTimeout(pause.current)
+    pause.current = window.setTimeout(() => setEarned(fresh), TIMINGS.signUpCelebration)
   }, [switched, user.email, user.tier, user.joinedAt, pointsHistory])
+  useEffect(() => () => window.clearTimeout(pause.current), [])
 
   useEffect(() => {
     if (switched) return

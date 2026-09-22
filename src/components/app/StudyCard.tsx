@@ -4,6 +4,7 @@ import { Bookmark, Calendar, Clock, InviteIcon } from '../ui/icons'
 import { cn } from '../../lib/cn'
 import { bookingShort, dateLong, daysLeft, duration, money } from '../../lib/format'
 import { STATUS, outcomeFor } from '../../lib/studyState'
+import { completeBlocker } from '../../lib/session'
 import { useStore } from '../../mock/store'
 import type { Study } from '../../mock/types'
 import ScoreDial from './ScoreDial'
@@ -49,7 +50,8 @@ export default function StudyCard({
   footnote,
 }: StudyCardProps) {
   const meta = STATUS[study.status]
-  const { user } = useStore()
+  const { user, toast } = useStore()
+  const blocker = completeBlocker(study)
   const locked = Boolean(study.premium) && !user.verified.license
   const outcome = outcomeFor(study.status)
   const compact = variant === 'compact'
@@ -182,7 +184,7 @@ export default function StudyCard({
               {study.type === 'in_person' || study.type === 'in_person_group' ? 'Get Directions' : meta.secondary}
             </Button>
           )}
-          <Button onClick={onPrimary} className="flex-1">{meta.primary}</Button>
+          <Button onClick={onPrimary} className="flex-1" disabled={Boolean(blocker)} onBlocked={() => blocker && toast(blocker)}>{meta.primary}</Button>
           {!booked && onReject && (
             <Button variant="secondary" onClick={onReject} className="flex-1">Reject</Button>
           )}

@@ -27,6 +27,7 @@ export default {
         'gold-glow':     'radial-gradient(circle at 50% 32%, #e4b30052 0%, #e4b30014 35%, #0c0800 70%)',
         'platinum-glow': 'radial-gradient(circle at 50% 32%, #9139f652 0%, #9139f614 35%, #0c0800 70%)',
         'green-glow':    'radial-gradient(circle at 50% 18%, #3fb98440 0%, #3fb98410 30%, #202623 60%)',
+        'silver-glow':   'radial-gradient(circle at 50% 32%, #b9b9b952 0%, #b9b9b914 35%, #0c0800 70%)',
         'purple-fade': 'linear-gradient(180deg, #ac99fb26 0%, #ac99fb00 100%)',
         'blue-fade':   'linear-gradient(180deg, #68b6f126 0%, #68b6f100 100%)',
         // The selected segment in the Explore / My Studies / Saved control.

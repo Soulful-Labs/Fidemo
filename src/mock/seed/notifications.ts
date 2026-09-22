@@ -15,6 +15,11 @@ interface Sources {
   trustScore: number
   tier: string
   profileCompletion: number
+  /** When the account was created; the profile reminder is a week after it. */
+  joinedAt: string
+  /** When the Trust Score last rose and when it crossed into the current tier, from the score history. */
+  trustRoseAt?: string
+  tierReachedAt?: string
 }
 
 /**
@@ -24,11 +29,17 @@ interface Sources {
  */
 export function buildNotifications(src: Sources): AppNotification[] {
   const out: AppNotification[] = []
-  const add = (n: Omit<AppNotification, 'read'>) => out.push({ ...n, read: true })
+  // Seeded events are in the past: nothing here happened "just now", so any timestamp
+  // that lands within the last hour (or in the future) is pulled back an hour.
+  const add = (n: Omit<AppNotification, 'read'>) => out.push({ ...n, at: new Date(Math.min(new Date(n.at).getTime(), Date.now() - 60 * 60_000)).toISOString(), read: true })
   const last = (s: Study, label: string) => s.timeline.find((t) => t.label === label)?.at
   // "... at the Downtown Research Lab" for in-person sessions, nothing for calls.
   const venue = (s: Study) => { const l = s.locations?.find((x) => x.id === s.booking?.locationId); return l ? ` at the ${l.label}` : '' }
   const bank = (destination: string) => src.payoutMethods?.find((m: PayoutMethod) => m.accountNumber.replace(/\s/g, '').endsWith(destination.replace(/\D/g, '')))?.bankName ?? 'bank'
+  const now = Date.now()
+  // An open study was listed three weeks before it closes; that is when invitations,
+  // matches and saved-study updates about it went out (never later than now).
+  const listedAt = (s: Study) => new Date(Math.min(new Date(s.endsAt).getTime() - 21 * DAY, now - 60 * 60_000)).toISOString()
 
   for (const s of src.studies) {
     const applied = last(s, 'Applied')
@@ -38,9 +49,10 @@ export function buildNotifications(src: Sources): AppNotification[] {
           body: `You've been qualified and invited to schedule study for ${s.title}`,
           at: last(s, 'Invited to complete') ?? applied ?? s.endsAt,
           actionLabel: 'Start Study', to: `/studies/${s.id}/${s.type === 'diary' ? 'diary' : 'survey'}`, secondaryActionLabel: 'View Details', secondaryTo: `/studies/${s.id}` })
-        if (s.daysLeft <= 3) add({ id: `nt-${s.id}-deadline`, kind: 'study', title: 'Study deadline approaching!',
-          body: `You have ${s.daysLeft <= 1 ? '24 hours' : `${s.daysLeft} days`} left to complete your ${s.title} study. Don't leave money on table!`,
-          at: shift(s.endsAt, -3 * 24 * 60), actionLabel: 'Complete Study - Earn Faster!', to: `/studies/${s.id}` })
+        // Sent 24 hours before the study closes, so it only exists once that moment has passed.
+        if (new Date(s.endsAt).getTime() - DAY <= now) add({ id: `nt-${s.id}-deadline`, kind: 'study', title: 'Study deadline approaching!',
+          body: `You have 24 hours left to complete your ${s.title} study. Don't leave money on table!`,
+          at: shift(s.endsAt, -24 * 60), actionLabel: 'Complete Study - Earn Faster!', to: `/studies/${s.id}` })
         break
       case 'invited_to_schedule':
         add({ id: `nt-${s.id}-schedule`, kind: 'study', title: "You've been selected to complete!",
@@ -50,7 +62,7 @@ export function buildNotifications(src: Sources): AppNotification[] {
       case 'invited_to_apply':
         add({ id: `nt-${s.id}-invite`, kind: 'study', title: "You've been invited to a study!",
           body: `A researcher has directly invited you to participate in the ${s.title} study (${money(s.reward)}). Review the details and apply.`,
-          at: new Date(Date.now() - (s.daysLeft % 3 + 1) * DAY).toISOString(), actionLabel: 'View Invitation', to: `/studies/${s.id}` })
+          at: last(s, 'Invited') ?? listedAt(s), actionLabel: 'View Invitation', to: `/studies/${s.id}` })
         break
       case 'applied':
         add({ id: `nt-${s.id}-screener`, kind: 'study', title: 'Screener submitted',
@@ -61,7 +73,8 @@ export function buildNotifications(src: Sources): AppNotification[] {
           at: shift(applied ?? s.endsAt, 26 * 60), to: `/studies/${s.id}` })
         break
       case 'scheduled':
-        if (s.booking) add({ id: `nt-${s.id}-soon`, kind: 'session', title: 'Session starting in 15 minutes!',
+        // Sent 15 minutes before the session, so it only exists once that moment has passed.
+        if (s.booking && new Date(s.booking.date).getTime() - 15 * 60_000 <= now) add({ id: `nt-${s.id}-soon`, kind: 'session', title: 'Session starting in 15 minutes!',
           body: `Your ${label(s)} session for the ${s.title} study starts at ${s.booking.slot}. Make sure your camera and mic are ready.`,
           at: shift(s.booking.date, -15), actionLabel: 'Join Session', to: `/studies/${s.id}` })
         if (s.timeline.some((t) => t.label === 'Rescheduled')) add({ id: `nt-${s.id}-resched`, kind: 'session', title: 'Your session has been rescheduled',
@@ -102,13 +115,13 @@ export function buildNotifications(src: Sources): AppNotification[] {
         break
     }
     if (s.status === 'available' && s.saved) add({ id: `nt-${s.id}-saved`, kind: 'study', title: 'Update on a saved study',
-      body: `The ${s.title} study you saved now has ${3 + (Number(s.id.replace(/\D/g, '')) % 5)} spots remaining. Apply soon!`, at: new Date(Date.now() - 6 * DAY).toISOString(), actionLabel: 'Apply Now', to: `/studies/${s.id}` })
+      body: `The ${s.title} study you saved now has ${3 + (Number(s.id.replace(/\D/g, '')) % 5)} spots remaining. Apply soon!`, at: shift(listedAt(s), 3 * 24 * 60), actionLabel: 'Apply Now', to: `/studies/${s.id}` })
   }
 
   const best = [...src.studies].filter((s) => s.status === 'available' && !s.premium).sort((a, b) => b.matchScore - a.matchScore)[0]
   if (best) add({ id: `nt-${best.id}-match`, kind: 'study', title: 'New study match!',
     body: `A ${best.title} study (${money(best.reward)}) matches your profile. Apply before spots fill up!`,
-    at: new Date(Date.now() - 12 * 60_000).toISOString(), to: `/studies/${best.id}` })
+    at: listedAt(best), to: `/studies/${best.id}` })
 
   for (const p of src.payouts) {
     if (p.status === 'completed') add({ id: `nt-${p.id}`, kind: 'money', title: 'Your withdrawal has been processed!',
@@ -134,12 +147,12 @@ export function buildNotifications(src: Sources): AppNotification[] {
       body: `The support team has responded to your ticket #${t.id} regarding ${t.topic === 'money' ? 'payout issues' : 'your request'}. Check update!`, at: reply.at, actionLabel: 'View Message', to: `/support/tickets/${t.id}` })
   }
 
-  if (src.tier === 'gold' || src.tier === 'platinum') add({ id: 'nt-tier', kind: 'tier', title: `You've been upgraded to ${src.tier === 'gold' ? 'Gold' : 'Platinum'} tier!`,
-    body: `Congratulations! Your consistent participation has earned you ${src.tier === 'gold' ? 'Gold' : 'Platinum'} tier status.`, at: new Date(Date.now() - 25 * DAY).toISOString(), to: '/trust-score/tiers' })
-  add({ id: 'nt-trust', kind: 'trust', title: 'Your trust score increased!',
-    body: `Great work! Your trust score has increased to ${src.trustScore}/100. A higher score means more study invitations.`, at: new Date(Date.now() - 17 * DAY).toISOString(), to: '/trust-score' })
+  if ((src.tier === 'gold' || src.tier === 'platinum') && src.tierReachedAt) add({ id: 'nt-tier', kind: 'tier', title: `You've been upgraded to ${src.tier === 'gold' ? 'Gold' : 'Platinum'} tier!`,
+    body: `Congratulations! Your consistent participation has earned you ${src.tier === 'gold' ? 'Gold' : 'Platinum'} tier status.`, at: src.tierReachedAt, to: '/trust-score/tiers' })
+  if (src.trustRoseAt) add({ id: 'nt-trust', kind: 'trust', title: 'Your trust score increased!',
+    body: `Great work! Your trust score has increased to ${src.trustScore}/100. A higher score means more study invitations.`, at: src.trustRoseAt, to: '/trust-score' })
   if (src.profileCompletion < 100) add({ id: 'nt-profile', kind: 'profile', title: 'Complete your profile for more studies',
-    body: `Your profile is ${src.profileCompletion}% complete. Add your education and industry details to unlock more study opportunities.`, at: new Date(Date.now() - 7 * DAY).toISOString(), actionLabel: 'Complete Profile', to: '/profile/edit' })
+    body: `Your profile is ${src.profileCompletion}% complete. Add your education and industry details to unlock more study opportunities.`, at: shift(src.joinedAt, 7 * 24 * 60), actionLabel: 'Complete Profile', to: '/profile/edit' })
 
   const sorted = out.sort((a, b) => b.at.localeCompare(a.at))
   return sorted.map((n, i) => ({ ...n, read: i >= 4 }))

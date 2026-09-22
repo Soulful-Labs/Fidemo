@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import { Play, Star } from '../../components/ui/icons'
 import { LEARN_VIDEO_IMAGE } from '../../mock/data'
+import { useUI } from '../../app/ui'
 import { useStore } from '../../mock/store'
 import DashboardHeader from './DashboardHeader'
 import RecommendedStudies from './RecommendedStudies'
@@ -19,7 +20,9 @@ import SectionHeader from './SectionHeader'
  */
 export default function GetStarted() {
   const navigate = useNavigate()
-  const { referrals, toast, user } = useStore()
+  const { referrals, user } = useStore()
+  // The intro video has not been produced; the play controls say so honestly (hard rule 1).
+  const { openComingSoon } = useUI()
 
   return (
     <div className="flex min-h-full flex-col">
@@ -37,7 +40,7 @@ export default function GetStarted() {
           <div className="flex flex-col gap-3 rounded-lg bg-bg-1 p-3">
             <button
               type="button"
-              onClick={() => toast('Video player is not part of this prototype')}
+              onClick={() => openComingSoon('Intro video')}
               aria-label="Play the HumanLayer introduction"
               className="relative aspect-video w-full overflow-hidden rounded-md bg-bg-2"
             >
@@ -52,7 +55,7 @@ export default function GetStarted() {
               variant="tertiary"
               fullWidth
               leftIcon={<Star filled={false} className="h-5 w-5" />}
-              onClick={() => toast('Video player is not part of this prototype')}
+              onClick={() => openComingSoon('Intro video')}
             >
               Watch in full-screen
             </Button>

@@ -14,6 +14,8 @@ export interface SuccessScreenProps {
   actionLabel?: string
   onAction: () => void
   alt?: boolean
+  /** Replaces the green tick, e.g. the brand badge for a neutral outcome. */
+  badge?: ReactNode
 }
 
 /**
@@ -22,12 +24,12 @@ export interface SuccessScreenProps {
  * tick in its halo, a title, body and the Done button in the CTA bar.
  */
 export default function SuccessScreen({
-  title, body, steps, children, actionLabel = 'Done', onAction, alt = false,
+  title, body, steps, children, actionLabel = 'Done', onAction, alt = false, badge,
 }: SuccessScreenProps) {
   return (
     <div className={cn('flex min-h-full flex-col', alt ? 'bg-bgAlt-0' : 'bg-bg-0', 'bg-green-fade')}>
       <div className="flex flex-1 flex-col items-center gap-6 px-4 pb-6 pt-12 text-center">
-        <SuccessBadge tone="success" />
+        {badge ?? <SuccessBadge tone="success" />}
         <div className="flex flex-col gap-2">
           <h1 className="text-title-l text-text-title">{title}</h1>
           {body && <p className="text-body-regular text-text-body">{body}</p>}

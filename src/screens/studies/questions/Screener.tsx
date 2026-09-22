@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import EmptyState from '../../../components/app/EmptyState'
-import Button from '../../../components/ui/Button'
-import CtaBar from '../../../components/ui/CtaBar'
+import SuccessBadge from '../../../components/app/SuccessBadge'
+import SuccessScreen from '../../../components/app/SuccessScreen'
 import { ageFrom } from '../../../lib/profile'
 import { useStore } from '../../../mock/store'
 import { TIMINGS } from '../../../mock/timings'
@@ -52,19 +52,18 @@ export default function Screener() {
 
   if (phase === 'failed') {
     return (
-      <div className="flex min-h-full flex-col">
-        <div className="flex flex-1 flex-col gap-3 px-4 pb-6 pt-12 text-center">
-          <h1 className="text-title-l text-text-title">Not a match this time</h1>
-          <p className="text-body-regular text-text-body">
-            Thanks for checking. This study is looking for a slightly different group, so we won&apos;t take you through the
-            full screener. Nothing has been saved and it does not affect your Trust Score.
-          </p>
-          <p className="text-text-regular text-text-subtitle">Other studies that match your profile are waiting in Explore.</p>
-        </div>
-        <CtaBar>
-          <Button fullWidth onClick={() => navigate('/studies', { replace: true })}>Back to Explore</Button>
-        </CtaBar>
-      </div>
+      <SuccessScreen
+        badge={<SuccessBadge tone="brand" />}
+        title="Not a match this time"
+        body="Thanks for checking. This study is looking for a slightly different group, so we won't take you through the full screener."
+        steps={[
+          'Nothing has been saved and no draft was created.',
+          'It does not affect your Trust Score.',
+          'Other studies that match your profile are waiting in Explore.',
+        ]}
+        actionLabel="Back to Explore"
+        onAction={() => navigate('/studies', { replace: true })}
+      />
     )
   }
 

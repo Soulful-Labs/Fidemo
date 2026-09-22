@@ -2,7 +2,8 @@
 // starting states the app can boot into: the returning demo account and a
 // brand new account created through Sign Up.
 
-import { derive } from '../lib/derive'
+import { derive, trustHistory } from '../lib/derive'
+import { TIERS } from '../lib/rules'
 import { DEFAULT_FILTERS } from './storeTypes'
 import type { AppState } from './storeTypes'
 import type { User } from './types'
@@ -45,21 +46,27 @@ export function returningUserState(): AppState {
     pending: [],
   }
   const d = derive(base)
+  // Walk the score history oldest first to find when the score last rose and when it entered the current tier.
+  const history = [...trustHistory(base)].reverse()
+  let running = 0
+  let tierReachedAt: string | undefined
+  for (const e of history) {
+    running += e.delta
+    if (!tierReachedAt && d.tier !== 'silver' && running >= TIERS[d.tier]) tierReachedAt = e.at
+    if (running < TIERS[d.tier]) tierReachedAt = undefined
+  }
+  const trustRoseAt = [...history].reverse().find((e) => e.delta > 0 && e.label !== 'Onboarding')?.at
   return {
     ...base,
     notifications: buildNotifications({
       payoutMethods: PAYOUT_METHODS,
       studies: STUDIES, payouts: PAYOUTS, pointsHistory: POINTS_HISTORY, referrals: REFERRALS, tickets: TICKETS,
       trustScore: d.trustScore, tier: d.tier, profileCompletion: profileCompletion(USER),
+      joinedAt: USER.joinedAt, trustRoseAt, tierReachedAt,
     }),
   }
 }
 
-/** "Demo" from demo@example.com, "Jane" from jane.doe@…, used until a name is typed. */
-export function nameFromEmail(email: string): string {
-  const local = email.split('@')[0] ?? 'there'
-  return local.split(/[._-]/).filter(Boolean).map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(' ') || 'New Member'
-}
 
 /**
  * A brand new account (workflow 15): can browse and search every open study,
@@ -69,7 +76,8 @@ export function nameFromEmail(email: string): string {
 export function newUserState(email: string, sourceCode?: string): AppState {
   const user: User = {
     ...USER,
-    name: nameFromEmail(email),
+    // No name until the person types one (About You or Account Settings); nothing is invented from the email.
+    name: '',
     email,
     phone: '',
     profile: {
