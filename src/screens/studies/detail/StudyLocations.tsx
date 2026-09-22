@@ -53,7 +53,7 @@ export default function StudyLocations({ study }: { study: Study }) {
             aria-expanded={open}
             className="flex h-input w-full items-center justify-between gap-2 rounded-md border-1 border-stroke-3 px-4 text-left text-body-regular text-text-title"
           >
-            <span className="truncate">{current.label}, {current.address.split(', ').slice(-2).join(', ')}</span>
+            <span className="truncate">{current.short ?? `${current.label}, ${current.address.split(', ').slice(-2).join(', ')}`}</span>
             <ChevronDown className={cn('shrink-0 text-text-title transition-transform', open && 'rotate-180')} />
           </button>
           {open && (

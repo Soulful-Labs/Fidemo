@@ -7,24 +7,23 @@ import { TIERS, tierFor } from '../../lib/rules'
 import { useStore } from '../../mock/store'
 
 /**
- * Policy section 3 is the only source for what a tier is: a Trust Score
- * band. The drawn descriptors ("You're in top expert participants", "In Top
- * 20%", "Higher tiers unlock better opportunities and rewards") are not in
- * the policy and are not shown.
+ * Every string as drawn on Figma 1114:95843, including "In Top 25%" for Gold
+ * (the dashboard chip says 20%; Figma is not made consistent) and the notes.
+ * Thresholds are the policy's.
  */
 const TIER_ROWS = [
-  { key: 'platinum', text: 'text-tier-platinum', bg: 'bg-purple-fade', ring: 'border-tier-platinum' },
-  { key: 'gold', text: 'text-tier-gold', bg: 'bg-yellow-fade', ring: 'border-tier-gold' },
-  { key: 'silver', text: 'text-tier-silver', bg: '', ring: 'border-tier-silver' },
+  { key: 'platinum', top: 'In Top 5%', line: "You're in top expert participants.", text: 'text-tier-platinum', bg: 'bg-purple-fade', ring: 'border-tier-platinum' },
+  { key: 'gold', top: 'In Top 25%', line: "You're in most trusted participants!", text: 'text-tier-gold', bg: 'bg-yellow-fade', ring: 'border-tier-gold' },
+  { key: 'silver', top: 'In Top 50%', line: "You're rising on your way up!", text: 'text-tier-silver', bg: '', ring: 'border-tier-silver' },
 ] as const
 
 const NOTES = [
-  'Tier is determined by the current Trust Score.',
-  'Tier thresholds are based only on Trust Score.',
-  'Adding a credential does not affect Trust Score or tier.',
+  'Your current Trust Score will be determining your tier',
+  'Higher trust scores moves you to the higher tiers',
+  'Higher tiers unlock better opportunities and rewards.',
 ]
 
-/** PRD 7.4, Figma 1114:95843, with the policy's tier bands and notes. */
+/** PRD 7.4, Figma 1114:95843. */
 export default function HowTiersWork() {
   const { back } = useAppNav()
   const { user } = useStore()
@@ -55,16 +54,17 @@ export default function HowTiersWork() {
                 <span className="flex flex-col gap-0.5">
                   <span className="flex items-center gap-2">
                     <span className={cn('text-title-s', t.text)}>{name}</span>
-                    {active && <Tag tone={t.key === 'platinum' ? 'purple' : t.key === 'gold' ? 'yellow' : 'neutral'}>Your tier</Tag>}
+                    <Tag tone={t.key === 'platinum' ? 'purple' : t.key === 'gold' ? 'yellow' : 'neutral'}>{t.top}</Tag>
                   </span>
                   <span className="text-text-regular text-text-title">Trust Score {TIERS[t.key]}+</span>
+                  <span className="text-label text-text-body">{t.line}</span>
                 </span>
               </li>
             )
           })}
         </ol>
 
-        <p className="pt-2 text-center text-text-regular text-text-subtitle">Tier is determined by your current Trust Score.</p>
+        <p className="pt-2 text-center text-text-regular text-text-subtitle">Your tier shows where you stand based on your Trust Score.</p>
 
         <ol className="flex flex-col gap-2">
           {NOTES.map((note, i) => (

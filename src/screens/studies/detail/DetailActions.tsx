@@ -29,6 +29,8 @@ export default function DetailActions({ study, onPrimary, onSecondary }: DetailA
   const diaryOpen = diary && study.status === 'invited_to_complete'
   const primaryLabel =
     study.status === 'available' ? 'Apply'
+      // Figma draws "Schedule" on the detail screen and "Schedule Session" on the card.
+      : study.status === 'invited_to_schedule' ? 'Schedule'
       : diaryOpen && study.diary!.completedDays.length > 0 ? resumeLabel(study.diary!.completedDays, study.diary!.totalDays)
           // Rate Client lives in the Paid banner; the bar only repeats it until it is done.
           : (study.status === 'paid' || study.status === 'late_show') && study.userReview ? undefined

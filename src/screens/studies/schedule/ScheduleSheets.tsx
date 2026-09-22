@@ -84,7 +84,7 @@ export function ReviewSheet({
       <div className="flex flex-col gap-4">
         {row(<Calendar className="h-5 w-5" />, 'Date', dateLabel)}
         {row(<Clock className="h-5 w-5" />, 'Time', slot)}
-        {address && row(<Pin />, 'Location Address', address)}
+        {address && row(<Pin />, 'Location Address', `At ${address}`)}
         <p className="text-text-regular text-text-body">Review these details carefully and confirm the session appointment</p>
         <p className="rounded-md bg-yellow-1000/40 px-3 py-2 text-text-regular text-text-subtitle">
           At the end of the session a code is shown to you and the moderator. You both enter it to confirm attendance. No code, no payment.

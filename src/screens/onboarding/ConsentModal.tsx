@@ -35,7 +35,7 @@ export default function ConsentModal({
           checked={consent.shareProfile}
           onChange={(v) => setConsent('shareProfile', v)}
           label="Share profile details with platform"
-          description="This helps us personalize your study exploration to find you most relevant studies"
+          description="This helps us personalize your study exploration to find you more relevant studies"
         />
         <span className="h-px w-full bg-stroke-3" />
         <Toggle

@@ -4,22 +4,18 @@ import Button from '../../components/ui/Button'
 import Tag from '../../components/ui/Tag'
 import TopBar from '../../components/ui/TopBar'
 import { Copy, Share } from '../../components/ui/icons'
-import { POINTS } from '../../lib/rules'
+import { money } from '../../lib/format'
+import { POINTS, pointsToUsd } from '../../lib/rules'
 import { referralLink } from '../../lib/profile'
 import { useStore } from '../../mock/store'
 import { Avatar } from './Profile'
 import { ReferIcon } from './profileIcons'
 
-/** "a***@example.com" — conflict 22: other people's addresses are masked. */
-const mask = (email: string) => {
-  const [local, domain] = email.split('@')
-  return `${local.charAt(0)}${'*'.repeat(Math.max(3, local.length - 1))}@${domain}`
-}
-
 /**
- * PRD 9, Figma 1114:96038. One scheme only: 200 points when the referred
- * person completes their first study (conflict 6), so the Earned stat is
- * in points and the "$25" chip is not shown.
+ * PRD 9, Figma 1114:96038, string for string: the Earned stat is drawn in
+ * dollars (the points earned at the redemption rate) and the rows show the
+ * full address as drawn. One scheme only: 200 points when the referred
+ * person completes their first study.
  */
 export default function Referrals() {
   const { back } = useAppNav()
@@ -27,7 +23,7 @@ export default function Referrals() {
   const REFERRAL_LINK = referralLink(user.name, user.email)
   const joined = referrals.length
   const completed = referrals.filter((r) => r.status === 'completed').length
-  const earned = completed * POINTS.REFERRAL
+  const earned = money(pointsToUsd(completed * POINTS.REFERRAL))
 
   const copy = async () => {
     try { await navigator.clipboard.writeText(REFERRAL_LINK) } catch { /* clipboard unavailable outside a secure context */ }
@@ -84,7 +80,7 @@ export default function Referrals() {
                 <Avatar name={r.name} size={40} />
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="text-body-medium text-text-title">{r.name}</span>
-                  <span className="truncate text-text-regular text-text-body">{mask(r.email)}</span>
+                  <span className="truncate text-text-regular text-text-body">{r.email}</span>
                 </span>
                 <Tag tone={r.status === 'completed' ? 'green' : 'yellow'} size="md">{r.status === 'completed' ? 'Completed' : 'Joined'}</Tag>
               </li>

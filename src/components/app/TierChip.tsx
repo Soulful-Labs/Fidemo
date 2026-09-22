@@ -1,19 +1,19 @@
 import { cn } from '../../lib/cn'
-import { TIERS } from '../../lib/rules'
 import { ChevronRight } from '../ui/icons'
 import type { User } from '../../mock/types'
 
 type Tier = User['tier']
 
 /**
- * Tier names and the policy line under each (section 3: "Trust Score 50%+"
- * and so on). Figma's "In Top 20%" percentile labels are a ranking the policy
- * does not define and its guardrails rule out, so they are not shown.
+ * Tier names and the "In Top" line under each, exactly as drawn on the chip
+ * (Figma: dashboard, Welcome, Trust Score Details, certificate). The policy
+ * does not define these percentiles; the words come from Figma per the copy
+ * rule and are flagged in the turn report.
  */
 export const TIER_LABEL: Record<Tier, { name: string; top: string }> = {
-  silver: { name: 'Silver', top: `Trust Score ${TIERS.silver}+` },
-  gold: { name: 'Gold', top: `Trust Score ${TIERS.gold}+` },
-  platinum: { name: 'Platinum', top: `Trust Score ${TIERS.platinum}+` },
+  silver: { name: 'Silver', top: 'In Top 50%' },
+  gold: { name: 'Gold', top: 'In Top 20%' },
+  platinum: { name: 'Platinum', top: 'In Top 5%' },
 }
 
 const TIER_TEXT: Record<Tier, string> = {

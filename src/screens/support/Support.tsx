@@ -11,6 +11,9 @@ import { cn } from '../../lib/cn'
 import { FAQS } from '../../mock/data'
 import SupportTickets from './SupportTickets'
 
+/** The four questions drawn as plain links above the FAQ list (979:74536). */
+const QUICK = [1, 0, 2, 3]
+
 /**
  * PRD 12.2 Help & Support, Figma 979:74536. /support is the Get Help tab,
  * /support/tickets the Support Chats tab; the segmented control routes.
@@ -42,9 +45,19 @@ export default function Support() {
             <h1 className="text-title-m leading-snug text-text-title">Hey there! 👋<br />We are here to help you!</h1>
             <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search your queries" aria-label="Search your queries" leftIcon={<Search className="text-text-title" />} />
 
+            {!query && (
+              <ul className="flex flex-col">
+                {QUICK.map((i) => (
+                  <li key={FAQS[i].q} className="border-b-1 border-stroke-2">
+                    <button type="button" onClick={() => setOpen(i)} className="flex w-full py-3 text-left text-body-regular text-text-title">{FAQS[i].q}</button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
             <h2 className="pt-2 text-body-medium text-text-title">Frequently Asked Questions</h2>
             <ul className="flex flex-col">
-              {faqs.map((f) => {
+              {faqs.filter((f) => query || !QUICK.includes(f.i) || f.i === 3).map((f) => {
                 const on = open === f.i
                 return (
                   <li key={f.q} className="border-b-1 border-stroke-2">

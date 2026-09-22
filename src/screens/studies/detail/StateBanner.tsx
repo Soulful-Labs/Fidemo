@@ -62,7 +62,7 @@ function bannerContent(study: Study): BannerContent | null {
     case 'draft':
       return { tone: 'yellow', title: 'In Draft', body: "We've got you, your progress was saved! Resume right from where you left." }
     case 'applied':
-      return { tone: 'yellow', title: 'Applied', aside: 'In Review', body: 'Your application for this study has been submitted to be reviewed. It is still under consideration, so check back here for the outcome. It will be shown in scheduled if you will be selected.' }
+      return { tone: 'yellow', title: 'Applied', aside: 'In Review', body: 'Your application for this study has been submitted to be reviewed. It will be shown in scheduled if you will be selected.' }
     case 'invited_to_schedule':
       return { tone: 'yellow', title: 'Invited To Schedule', body: "Congratulation, you are qualified for this study!! You're invited to book your session on your preferred time to complete and earn reward." }
     case 'invited_to_complete':

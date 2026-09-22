@@ -45,7 +45,7 @@ export const STATUS: Record<StudyStatus, StatusMeta> = {
     primary: 'Start Study', rejectable: true, tab: 'invites',
   },
   scheduled: {
-    label: 'Scheduled', tone: 'green', primary: 'Enter Session Code',
+    label: 'Scheduled', tone: 'green', primary: 'Submit PIN',
     secondary: 'Join Call', tab: 'scheduled',
   },
   pin_confirmed: {

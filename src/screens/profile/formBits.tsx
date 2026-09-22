@@ -31,12 +31,12 @@ function VerifiedDot() {
 
 /** A select field backed by the shared Picker sheet (single value). */
 export function PickField({
-  label, value, placeholder, options, onChange, title, searchable,
-}: { label: string; value: string; placeholder: string; options: string[]; onChange: (v: string) => void; title?: string; searchable?: boolean }) {
+  label, value, placeholder, options, onChange, title, searchable, error,
+}: { label: string; value: string; placeholder: string; options: string[]; onChange: (v: string) => void; title?: string; searchable?: boolean; error?: string }) {
   const [open, setOpen] = useState(false)
   return (
     <>
-      <SelectField label={label} value={value} placeholder={placeholder} onOpen={() => setOpen(true)} />
+      <SelectField label={label} value={value} placeholder={placeholder} onOpen={() => setOpen(true)} error={error} />
       <Picker open={open} onClose={() => setOpen(false)} title={title ?? label} options={options} value={value} onSelect={onChange} searchable={searchable} />
     </>
   )

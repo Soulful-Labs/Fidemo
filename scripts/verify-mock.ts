@@ -113,7 +113,7 @@ ok('streak month is the current month', fresh.streak.month === new Date().toLoca
 ok('this month has earnings', TRANSACTIONS.some((t) => new Date(t.at).getMonth() === new Date().getMonth()))
 ok('year earnings just under the $600 tax threshold', fresh.yearEarned < 600 && fresh.yearEarned > 500, String(fresh.yearEarned))
 ok('every notification refers to a real study state', returningUserState().notifications.every((n) => !n.to || !n.to.startsWith('/studies/') || STUDIES.some((s) => n.to!.startsWith(`/studies/${s.id}`))))
-ok('referral notification names a seeded referral', returningUserState().notifications.filter((n) => n.kind === 'referral').every((n) => REFERRALS.some((r) => n.body.includes(r.name))))
+ok('referral notification names a seeded referral', returningUserState().notifications.filter((n) => n.kind === 'referral').every((n) => REFERRALS.some((r) => n.body.startsWith(r.name.split(' ')[0]))))
 
 state = reducer(state, { type: 'MARK_ALL_READ' })
 ok('mark all read', state.notifications.every((n) => n.read))

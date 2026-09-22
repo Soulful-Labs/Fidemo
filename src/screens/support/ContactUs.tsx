@@ -81,7 +81,7 @@ export default function ContactUs() {
         <div className="flex flex-col items-center gap-4 pt-2 text-center">
           <SuccessBadge />
           <h2 className="text-title-l text-text-title">Submitted successfully!</h2>
-          <p className="text-body-regular text-text-body">Your issue has been sent to our Support team and they will revert back to you shortly! Expect a reply {REPLY_TIME[topic]}.</p>
+          <p className="text-body-regular text-text-body">Your message has been sent to the support team and they will revert back to you shortly!</p>
         </div>
       </Modal>
     </div>

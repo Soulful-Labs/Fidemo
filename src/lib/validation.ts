@@ -5,12 +5,12 @@ export interface Rule {
   ok: boolean
 }
 
-export function passwordRules(password: string): Rule[] {
+export function passwordRules(password: string, lengthLabel = 'at least 8 character'): Rule[] {
   return [
     { label: '1 capital letter', ok: /[A-Z]/.test(password) },
     { label: '1 number', ok: /\d/.test(password) },
     { label: '1 special character', ok: /[^A-Za-z0-9]/.test(password) },
-    { label: 'at least 8 character', ok: password.length >= 8 },
+    { label: lengthLabel, ok: password.length >= 8 },
   ]
 }
 

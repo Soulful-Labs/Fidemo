@@ -5,10 +5,10 @@ import { passwordRules } from '../../lib/validation'
  * The four live rules from PRD 4.11, drawn as a bulleted list (Figma
  * 915:50217). A rule turns green once the password meets it.
  */
-export default function PasswordRules({ password }: { password: string }) {
+export default function PasswordRules({ password, lengthLabel }: { password: string; lengthLabel?: string }) {
   return (
     <ul className="flex flex-col gap-0.5 pl-2">
-      {passwordRules(password).map((rule) => (
+      {passwordRules(password, lengthLabel).map((rule) => (
         <li
           key={rule.label}
           className={cn(

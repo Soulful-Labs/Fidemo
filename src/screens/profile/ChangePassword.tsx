@@ -43,7 +43,7 @@ export default function ChangePassword() {
           <Input label="New Password" type="password" placeholder="Enter new password" value={next} onChange={(e) => setNext(e.target.value)}
             onBlur={() => setTouched(true)} error={touched && !next ? 'Enter a new password' : touched && !isValidPassword(next) ? 'The new password does not meet every rule below' : undefined} />
           <p className="text-text-regular text-text-subtitle">It must have at least:</p>
-          <PasswordRules password={next} />
+          <PasswordRules password={next} lengthLabel="total 8 character" />
         </div>
         <Input label="Confirm New Password" type="password" placeholder="Re-enter new password" value={confirm}
           onChange={(e) => setConfirm(e.target.value)} onBlur={() => setTouched(true)} error={mismatch ? 'Passwords do not match' : touched && !confirm ? 'Re-enter the new password' : undefined} />

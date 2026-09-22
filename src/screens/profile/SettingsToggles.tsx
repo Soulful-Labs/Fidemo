@@ -43,7 +43,7 @@ export function ConsentSettings() {
         <Toggle checked={consent.shareProfession} onChange={(v) => { setConsent('shareProfession', v); toast('Saved') }}
           label="Share profession with study clients" description="To match with relevant studies, share your professional details" />
         <Toggle checked={consent.shareProfile} onChange={(v) => { setConsent('shareProfile', v); toast('Saved') }}
-          label="Share profile details with platform" description="This helps us personalize your study exploration to find you most relevant studies" />
+          label="Share profile details with platform" description="This helps us personalize your study exploration to find you more relevant studies" />
         <span className="h-px w-full bg-stroke-3" />
         <Toggle checked locked onChange={() => undefined} onBlocked={() => toast('Essential cookies are required for the site to function')}
           label="Essential cookies" description="These are essential for site to function fully." />

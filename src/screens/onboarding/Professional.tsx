@@ -46,7 +46,7 @@ export default function Professional() {
       <Picker
         open={picker === 'industry'} onClose={() => setPicker(null)}
         title="Select Industry" subtitle="Select industry field of your profession"
-        options={INDUSTRIES} value={industry} searchable searchPlaceholder="Search industry..."
+        options={INDUSTRIES} value={industry} searchable searchPlaceholder="Search insustry..."
         onSelect={(value) => setOnboarding({ industry: value })}
       />
       <Picker

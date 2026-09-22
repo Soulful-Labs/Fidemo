@@ -218,7 +218,7 @@ await step(5, 'Schedule it: pick a date, a slot, agree to recording, review, con
 
 await step(6, 'Open it, enter session code 407060, see it confirmed', async () => {
   expect(await path() === '/studies/st-01', 'expected the study')
-  await click('Enter Session Code')
+  await click('Submit PIN')
   for (const [i, d] of [...'407060'].entries()) await type(`input[aria-label="Digit ${i + 1}"]`, d)
   await click('Submit', 1200)
   expect(await path() === '/studies/st-01/pin/done', 'expected pin done')

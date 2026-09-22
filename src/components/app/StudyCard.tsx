@@ -178,7 +178,9 @@ export default function StudyCard({
       {showActions && meta.primary && (
         <div className="flex items-center gap-3">
           {booked && meta.secondary && (
-            <Button variant="secondary" onClick={onSecondary} className="flex-1">{meta.secondary}</Button>
+            <Button variant="secondary" onClick={onSecondary} className="flex-1">
+              {study.type === 'in_person' || study.type === 'in_person_group' ? 'Get Directions' : meta.secondary}
+            </Button>
           )}
           <Button onClick={onPrimary} className="flex-1">{meta.primary}</Button>
           {!booked && onReject && (

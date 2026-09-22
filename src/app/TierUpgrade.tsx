@@ -7,14 +7,15 @@ import type { User } from '../mock/types'
 type Tier = User['tier']
 
 /**
- * The drawn "Benefits" list (fee discounts, priority support, more
- * invitations) is in no source and the policy states no tier benefits, so
- * the card carries only what the policy says a tier is (sections 2 and 3).
+ * The "Benefits" lines as drawn (1433:50005, 1433:49079). The two drawn fee
+ * lines ("25% / 50% less fees on withdrawals") are left out: the policy owns
+ * fees and the wallet charges a flat $2. Flagged in the turn report.
  */
-const POLICY_LINES = [
-  'Tier is determined by your current Trust Score.',
-  'The tier on your certificate moves up or down after every study.',
-]
+const BENEFITS: Record<Tier, string[]> = {
+  silver: [],
+  gold: ['Get more visibility to researcher clients', 'Receive more invitations to apply'],
+  platinum: ['Get access to high-paying studies', 'Fast and priority help support access', 'Higher chances to qualify studies'],
+}
 
 function TierCoin({ tier }: { tier: Tier }) {
   const gold = tier === 'gold'
@@ -63,12 +64,12 @@ export default function TierUpgrade({ tier, score, onClose }: { tier: Tier | nul
           </span>
           <span className="flex flex-col items-start whitespace-nowrap">
             <span className={cn('text-title-s leading-tight', accent)}>{TIER_LABEL[tier].name}</span>
-            <span className="text-text-regular text-text-subtitle">{TIER_LABEL[tier].top}</span>
+            <span className="text-text-regular text-text-subtitle">You are in {TIER_LABEL[tier].top.replace('In ', '')}</span>
           </span>
         </span>
         <div className="flex flex-col items-center gap-3 rounded-lg bg-bgAlt-2/70 bg-green-fade px-4 pb-5 pt-10">
-          <p className="text-title-s text-text-title">What this means</p>
-          {POLICY_LINES.map((line, i) => (
+          <p className="text-title-s text-text-title">Benefits</p>
+          {BENEFITS[tier].map((line, i) => (
             <p key={line} className="flex flex-col items-center gap-3 text-text-regular text-brand-secondary">
               {i > 0 && <span className="h-1 w-1 rounded-full bg-text-disabled" />}
               {line}

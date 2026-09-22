@@ -83,7 +83,7 @@ export default function FormsSection({ toast }: { toast: (msg: string) => void }
             checked={profile}
             onChange={(v) => { setProfile(v); toast(`Share profile ${v ? 'on' : 'off'}`) }}
             label="Share profile details with platform"
-            description="This helps us personalize your study exploration to find you most relevant studies"
+            description="This helps us personalize your study exploration to find you more relevant studies"
           />
           <Toggle
             checked={essential}

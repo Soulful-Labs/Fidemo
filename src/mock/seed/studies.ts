@@ -14,8 +14,8 @@ export function at(offsetDays: number, hour = 10, minute = 0): string {
 /** In-person venues, per city. */
 export const CITIES: Record<string, Study['locations']> = {
   'New York': [
-    { id: 'nyc-ts', label: 'Times Square', address: 'At 124, Prestige Empire, Jenn’s Street, Times Square, NYC, US 160248' },
-    { id: 'nyc-bk', label: 'Brooklyn Heights', address: 'At 8, Water Tower Road, Brooklyn Heights, NYC, US 160312' },
+    { id: 'nyc-ts', label: 'Times Square', short: 'Times Square, NYC, New York 160248', address: '124, Prestige Empire, Jenn\'s Street, Times Square, NYC, US 160248' },
+    { id: 'nyc-bk', label: 'Brooklyn Heights', short: 'Brooklyn Heights, NYC, New York 160312', address: '8, Water Tower Road, Brooklyn Heights, NYC, US 160312' },
   ],
   Chicago: [
     { id: 'chi-loop', label: 'The Loop', address: '233 S Wacker Drive, Suite 4100, Chicago, IL 60606' },

@@ -33,14 +33,8 @@ export default function Welcome() {
           <ScoreDial score={TRUST.ONBOARDING} size="lg">
             <TierChip tier="silver" />
           </ScoreDial>
-          {/*
-            Conflict 7: the drawn line credits profile completion, streaks and
-            referrals to the Trust Score. They earn reward points; only study
-            completion and ratings move the score (PRD 7.3). Corrected here.
-          */}
           <p className="text-center text-text-regular text-text-subtitle">
-            Your Trust Score climbs as you complete studies and earn good ratings. Completing your
-            profile, keeping streaks and referring others earn you reward points.
+            Score and tiers climbs as you complete profile, studies, get ratings, win streaks, refer, and participate more!
           </p>
         </div>
       </div>

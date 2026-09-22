@@ -1,6 +1,6 @@
-import { POINTS } from '../../lib/rules'
 import { paidAt } from '../../lib/derive'
-import type { AppNotification, Payout, PointsEntry, Referral, Study, Ticket } from '../types'
+import { dateTime } from '../../lib/format'
+import type { AppNotification, Payout, PayoutMethod, PointsEntry, Referral, Study, Ticket } from '../types'
 
 const DAY = 86_400_000
 const shift = (iso: string, minutes: number) => new Date(new Date(iso).getTime() + minutes * 60_000).toISOString()
@@ -8,6 +8,7 @@ const shift = (iso: string, minutes: number) => new Date(new Date(iso).getTime()
 interface Sources {
   studies: Study[]
   payouts: Payout[]
+  payoutMethods?: PayoutMethod[]
   pointsHistory: PointsEntry[]
   referrals: Referral[]
   tickets: Ticket[]
@@ -25,17 +26,20 @@ export function buildNotifications(src: Sources): AppNotification[] {
   const out: AppNotification[] = []
   const add = (n: Omit<AppNotification, 'read'>) => out.push({ ...n, read: true })
   const last = (s: Study, label: string) => s.timeline.find((t) => t.label === label)?.at
+  // "... at the Downtown Research Lab" for in-person sessions, nothing for calls.
+  const venue = (s: Study) => { const l = s.locations?.find((x) => x.id === s.booking?.locationId); return l ? ` at the ${l.label}` : '' }
+  const bank = (destination: string) => src.payoutMethods?.find((m: PayoutMethod) => m.accountNumber.replace(/\s/g, '').endsWith(destination.replace(/\D/g, '')))?.bankName ?? 'bank'
 
   for (const s of src.studies) {
     const applied = last(s, 'Applied')
     switch (s.status) {
       case 'invited_to_complete':
         add({ id: `nt-${s.id}-complete`, kind: 'study', title: "Congrats! You're invited to complete study!",
-          body: `You've been qualified and invited to complete ${s.title}. Reward ${money(s.reward)} on completion.`,
+          body: `You've been qualified and invited to schedule study for ${s.title}`,
           at: last(s, 'Invited to complete') ?? applied ?? s.endsAt,
           actionLabel: 'Start Study', to: `/studies/${s.id}/${s.type === 'diary' ? 'diary' : 'survey'}`, secondaryActionLabel: 'View Details', secondaryTo: `/studies/${s.id}` })
         if (s.daysLeft <= 3) add({ id: `nt-${s.id}-deadline`, kind: 'study', title: 'Study deadline approaching!',
-          body: `${s.title} closes in ${s.daysLeft} day${s.daysLeft === 1 ? '' : 's'}. Complete it to earn ${money(s.reward)}.`,
+          body: `You have ${s.daysLeft <= 1 ? '24 hours' : `${s.daysLeft} days`} left to complete your ${s.title} study. Don't leave money on table!`,
           at: shift(s.endsAt, -3 * 24 * 60), actionLabel: 'Complete Study - Earn Faster!', to: `/studies/${s.id}` })
         break
       case 'invited_to_schedule':
@@ -65,18 +69,18 @@ export function buildNotifications(src: Sources): AppNotification[] {
         break
       case 'pin_confirmed':
         if (s.timeline.some((t) => t.label === 'Rescheduled')) add({ id: `nt-${s.id}-resched`, kind: 'session', title: 'Your session has been rescheduled',
-          body: `Your ${label(s)} session for the ${s.title} study has been moved to ${s.booking?.slot ?? 'a new time'}.`, at: last(s, 'Rescheduled')!, to: `/studies/${s.id}` })
+          body: `Your ${label(s)} session for the ${s.title} study has been moved to ${s.booking ? dateTime(s.booking.date).replace(/,.*$/, '') + ', ' + s.booking.slot : 'a new time'}${venue(s)}.`, at: last(s, 'Rescheduled')!, to: `/studies/${s.id}` })
         break
       case 'in_process':
         if (s.diary) add({ id: `nt-${s.id}-diary`, kind: 'study', title: 'Daily diary entry reminder!',
-          body: `${s.title} is waiting for today's entry.`, at: shift(last(s, 'Diary completed') ?? s.endsAt, -24 * 60),
-          actionLabel: `Resume Study - Day ${s.diary.completedDays.length}/${s.diary.totalDays}`, to: `/studies/${s.id}/diary` })
+          body: `Complete today's entry for the ${s.title} diary study. Entry #${(s.diary?.completedDays.length ?? 0) + 1} of ${s.diary?.totalDays ?? 5} is due today.`, at: shift(last(s, 'Diary completed') ?? s.endsAt, -24 * 60),
+          actionLabel: `Resume Study - Day${s.diary.completedDays.length}/${s.diary.totalDays}`, to: `/studies/${s.id}/diary` })
         break
       case 'paid':
         add({ id: `nt-${s.id}-paid`, kind: 'money', title: `You've received $${s.reward}!`,
           body: `$${s.reward} reward has been received for the ${s.title} study completion!`, at: paidAt(s), to: '/wallet' })
         if (!s.userReview) add({ id: `nt-${s.id}-rate`, kind: 'study', title: 'How was your study experience?',
-          body: `Tell ${s.client.name} how ${s.title} went.`, at: shift(paidAt(s), 60), actionLabel: 'Rate Now', to: `/studies/${s.id}/rate` })
+          body: `Please rate your experience with the ${s.title} study. Your feedback helps improve the platform and trust.`, at: shift(paidAt(s), 60), actionLabel: 'Rate Now', to: `/studies/${s.id}/rate` })
         break
       case 'rejected':
         add({ id: `nt-${s.id}-rejected`, kind: 'study', title: 'Application update!',
@@ -98,7 +102,7 @@ export function buildNotifications(src: Sources): AppNotification[] {
         break
     }
     if (s.status === 'available' && s.saved) add({ id: `nt-${s.id}-saved`, kind: 'study', title: 'Update on a saved study',
-      body: `${s.title} is now open to applications.`, at: new Date(Date.now() - 6 * DAY).toISOString(), actionLabel: 'Apply Now', to: `/studies/${s.id}` })
+      body: `The ${s.title} study you saved now has ${3 + (Number(s.id.replace(/\D/g, '')) % 5)} spots remaining. Apply soon!`, at: new Date(Date.now() - 6 * DAY).toISOString(), actionLabel: 'Apply Now', to: `/studies/${s.id}` })
   }
 
   const best = [...src.studies].filter((s) => s.status === 'available' && !s.premium).sort((a, b) => b.matchScore - a.matchScore)[0]
@@ -108,9 +112,9 @@ export function buildNotifications(src: Sources): AppNotification[] {
 
   for (const p of src.payouts) {
     if (p.status === 'completed') add({ id: `nt-${p.id}`, kind: 'money', title: 'Your withdrawal has been processed!',
-      body: `Withdrawal of $${p.amount} has been completed and credited to your account ${p.destination} successfully.`, at: shift(p.at, 2 * 24 * 60), to: `/wallet/payouts/${p.id}` })
+      body: `Withdrawal of $${p.amount} has been completed and credited to your ${bank(p.destination)} account ${p.destination} successfully.`, at: shift(p.at, 2 * 24 * 60), to: `/wallet/payouts/${p.id}` })
     else add({ id: `nt-${p.id}`, kind: 'money', title: 'Withdrawal request submitted',
-      body: `Your withdrawal request of $${p.amount} to account ${p.destination} has been submitted. Processing takes 3-5 business days.`, at: p.at, to: `/wallet/payouts/${p.id}` })
+      body: `Your withdrawal request of $${p.amount} to ${bank(p.destination)} ${p.destination} has been submitted. Processing takes 3-5 business days.`, at: p.at, to: `/wallet/payouts/${p.id}` })
   }
 
   for (const e of src.pointsHistory) {
@@ -121,21 +125,21 @@ export function buildNotifications(src: Sources): AppNotification[] {
 
   for (const r of src.referrals) {
     if (r.status === 'joined') add({ id: `nt-${r.id}`, kind: 'referral', title: 'Your friend just signed up!',
-      body: `${r.name} joined using your referral link. You earn ${POINTS.REFERRAL} points when they finish their first study.`, at: r.at, to: '/profile/referrals' })
+      body: `${r.name.split(' ')[0]} ${r.name.split(' ')[1]?.charAt(0) ?? ''}. signed up using your referral link. You'll earn a bonus once they complete their first study!`, at: r.at, to: '/profile/referrals' })
   }
 
   for (const t of src.tickets) {
     const reply = [...t.messages].reverse().find((m) => m.from === 'support')
     if (t.status === 'open' && reply) add({ id: `nt-${t.id}`, kind: 'support', title: 'New reply on your support ticket',
-      body: `Support has replied to #${t.id}: ${reply.text.slice(0, 70)}…`, at: reply.at, actionLabel: 'View Message', to: `/support/tickets/${t.id}` })
+      body: `The support team has responded to your ticket #${t.id} regarding ${t.topic === 'money' ? 'payout issues' : 'your request'}. Check update!`, at: reply.at, actionLabel: 'View Message', to: `/support/tickets/${t.id}` })
   }
 
   if (src.tier === 'gold' || src.tier === 'platinum') add({ id: 'nt-tier', kind: 'tier', title: `You've been upgraded to ${src.tier === 'gold' ? 'Gold' : 'Platinum'} tier!`,
-    body: `Your Trust Score is ${src.trustScore}, past the ${src.tier === 'gold' ? 70 : 90} needed for ${src.tier === 'gold' ? 'Gold' : 'Platinum'}. Tier is determined by your current Trust Score.`, at: new Date(Date.now() - 25 * DAY).toISOString(), to: '/trust-score/tiers' })
+    body: `Congratulations! Your consistent participation has earned you ${src.tier === 'gold' ? 'Gold' : 'Platinum'} tier status.`, at: new Date(Date.now() - 25 * DAY).toISOString(), to: '/trust-score/tiers' })
   add({ id: 'nt-trust', kind: 'trust', title: 'Your trust score increased!',
-    body: `Great work! Your trust score has increased to ${src.trustScore}/100 through study completion and client ratings.`, at: new Date(Date.now() - 17 * DAY).toISOString(), to: '/trust-score' })
+    body: `Great work! Your trust score has increased to ${src.trustScore}/100. A higher score means more study invitations.`, at: new Date(Date.now() - 17 * DAY).toISOString(), to: '/trust-score' })
   if (src.profileCompletion < 100) add({ id: 'nt-profile', kind: 'profile', title: 'Complete your profile for more studies',
-    body: `Your profile is ${src.profileCompletion}% complete. Finish it to unlock more relevant invitations.`, at: new Date(Date.now() - 7 * DAY).toISOString(), actionLabel: 'Complete Profile', to: '/profile/edit' })
+    body: `Your profile is ${src.profileCompletion}% complete. Add your education and industry details to unlock more study opportunities.`, at: new Date(Date.now() - 7 * DAY).toISOString(), actionLabel: 'Complete Profile', to: '/profile/edit' })
 
   const sorted = out.sort((a, b) => b.at.localeCompare(a.at))
   return sorted.map((n, i) => ({ ...n, read: i >= 4 }))

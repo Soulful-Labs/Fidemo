@@ -48,6 +48,7 @@ export function returningUserState(): AppState {
   return {
     ...base,
     notifications: buildNotifications({
+      payoutMethods: PAYOUT_METHODS,
       studies: STUDIES, payouts: PAYOUTS, pointsHistory: POINTS_HISTORY, referrals: REFERRALS, tickets: TICKETS,
       trustScore: d.trustScore, tier: d.tier, profileCompletion: profileCompletion(USER),
     }),

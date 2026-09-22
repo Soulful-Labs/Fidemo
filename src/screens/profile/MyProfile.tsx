@@ -20,6 +20,15 @@ export const filled = (d: Draft, key: keyof Draft) => {
   return Array.isArray(v) ? v.length > 0 : Boolean(v && String(v).trim())
 }
 
+/** Required to save (workflow 15 gates applying on a complete profile): location, employment status (Occupation), industry. */
+export const REQUIRED: { key: keyof Draft; message: string; tab: 'details' | 'professional' }[] = [
+  { key: 'address', message: 'Enter your location', tab: 'details' },
+  { key: 'occupation', message: 'Enter your occupation', tab: 'professional' },
+  { key: 'industry', message: 'Select your industry', tab: 'professional' },
+]
+export const requiredError = (d: Draft, key: keyof Draft, touched: boolean) =>
+  touched && !filled(d, key) ? REQUIRED.find((r) => r.key === key)?.message : undefined
+
 /** PRD 12 My Profile, Figma 979:74128 / 979:74874: two tabs, one Save. */
 export default function MyProfile() {
   const { back } = useAppNav()
@@ -29,8 +38,16 @@ export default function MyProfile() {
   const [draft, setDraft] = useState<Draft>({ ...user.profile, name: user.name })
   const [info, setInfo] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [touched, setTouched] = useState(false)
+  const missing = REQUIRED.filter((r) => !filled(draft, r.key))
 
   const patch = (p: Partial<Draft>) => setDraft((d) => ({ ...d, ...p }))
+
+  const blocked = () => {
+    setTouched(true)
+    setTab(missing[0]?.tab ?? tab)
+    toast(missing.map((r) => r.message).join(', '))
+  }
 
   const save = () => {
     setSaving(true)
@@ -50,11 +67,11 @@ export default function MyProfile() {
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         <TabBar items={[{ key: 'details', label: 'Profile Details' }, { key: 'professional', label: 'Professional Info' }]} value={tab} onChange={(k) => setTab(k as typeof tab)} />
-        {tab === 'details' ? <ProfileDetailsTab draft={draft} patch={patch} /> : <ProfessionalTab draft={draft} patch={patch} />}
+        {tab === 'details' ? <ProfileDetailsTab draft={draft} patch={patch} touched={touched} /> : <ProfessionalTab draft={draft} patch={patch} touched={touched} />}
       </div>
 
       <CtaBar>
-        <Button fullWidth loading={saving} onClick={save}>Save</Button>
+        <Button fullWidth loading={saving} disabled={missing.length > 0} onClick={save} onBlocked={blocked}>Save</Button>
       </CtaBar>
 
       <DetailsInfoModal open={info} onClose={() => setInfo(false)} />

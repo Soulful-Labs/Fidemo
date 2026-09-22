@@ -35,7 +35,9 @@ export default function AccountSettings() {
   const [dob, setDob] = useState(user.profile.dob)
   const [idType, setIdType] = useState(user.profile.idType)
   const [saving, setSaving] = useState(false)
-  const valid = name.trim().length > 1 && isValidEmail(email)
+  const [touched, setTouched] = useState(false)
+  const dobError = !dob ? 'Enter your date of birth' : !isValidDob(dob) ? 'Use DD / MM / YYYY' : undefined
+  const valid = name.trim().length > 1 && isValidEmail(email) && !dobError
 
   const save = () => {
     setSaving(true)
@@ -63,7 +65,7 @@ export default function AccountSettings() {
           error={!isValidEmail(email) && email ? 'Enter a valid email address' : undefined}
           rightSlot={isValidEmail(email) ? <VerifiedIcon className="text-brand-secondary" /> : undefined} />
         <PhoneField code={phone.code} number={phone.number} onChange={setPhone} />
-        <DobField value={dob} onChange={setDob} error={dob && !isValidDob(dob) ? 'Use DD / MM / YYYY' : undefined} />
+        <DobField value={dob} onChange={setDob} onBlur={() => setTouched(true)} error={touched || dob ? dobError : undefined} />
         <PickField label="Select ID" value={idType} placeholder="Passport" options={ID_TYPES} onChange={setIdType} title="Select ID" />
         {file(`${idType || 'ID'} front.pdf`)}
         {file(`${idType || 'ID'} back.pdf`)}
@@ -97,7 +99,7 @@ export default function AccountSettings() {
       </div>
 
       <CtaBar>
-        <Button fullWidth loading={saving} disabled={!valid} onClick={save} onBlocked={() => toast('Enter your name and a valid email')}>Save</Button>
+        <Button fullWidth loading={saving} disabled={!valid} onClick={save} onBlocked={() => { setTouched(true); toast(dobError ?? 'Enter your name and a valid email') }}>Save</Button>
       </CtaBar>
     </div>
   )

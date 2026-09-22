@@ -66,7 +66,7 @@ export interface Study {
   daysLeft: number
   targetProfession: string
   client: { id: string; name: string; rating: number; reviewCount: number }
-  locations?: { id: string; label: string; address: string }[]
+  locations?: { id: string; label: string; address: string; /** The one-line form on Study Details, as drawn. */ short?: string }[]
   availability?: { date: string; slots: string[] }[]
   status: StudyStatus
   saved: boolean

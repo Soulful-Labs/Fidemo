@@ -24,7 +24,7 @@ export default function BannerActions({
     return (
       <div className="flex gap-3">
         <Button className="flex-1" onClick={onSchedule}>
-          {study.status === 'invited_to_schedule' ? 'Schedule Session' : 'Accept & Apply'}
+          {study.status === 'invited_to_schedule' ? 'Schedule' : 'Accept & Apply'}
         </Button>
         <Button variant="tertiary" className="flex-1" onClick={onReject}>Reject</Button>
       </div>
@@ -67,11 +67,11 @@ export function PinNote() {
     <div className="flex flex-col gap-1 border-t-1 border-stroke-3 pt-3">
       <p className="flex items-center gap-2 text-body-medium text-brand-primary">
         <WarningIcon />
-        Session code at the end
+        Submit Confirmation PIN
       </p>
       <p className="text-text-regular text-text-subtitle">
-        When the session ends a code is shown to you and the moderator. Enter it here to confirm you attended; the
-        moderator enters it too. No code, no payment.
+        Join the call and get this code from the interviewer to submit for confirming your joining and get reward
+        after successful completion.
       </p>
     </div>
   )
