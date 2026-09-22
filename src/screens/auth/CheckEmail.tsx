@@ -35,6 +35,8 @@ export default function CheckEmail() {
       actions={
         <Button variant="secondary" fullWidth onClick={() => navigate('/reset-password')}>Open My Email</Button>
       }
-    />
+    >
+      <p className="text-center text-label text-text-body">Demo mode. No email is sent. Tap Open My Email to continue.</p>
+    </AuthLayout>
   )
 }

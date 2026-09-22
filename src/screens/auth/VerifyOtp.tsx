@@ -7,11 +7,15 @@ import { useStore } from '../../mock/store'
 import AuthLayout from './AuthLayout'
 
 const COUNTDOWN = 59
+/** No backend sends a code, so the screen says so and accepts this one only. */
+export const DEMO_OTP = '123456'
+export const DEMO_LINE = `Demo mode. No email is sent. Enter ${DEMO_OTP}.`
 
 /**
- * PRD 4.4, Figma 915:50175. Any 6 digits pass, per the button table. Submit
- * creates the account and lands on the dashboard: workflow 15 lets a new
- * member browse first and verify at the point of applying.
+ * PRD 4.4, Figma 915:50175. Only the demo code passes; a wrong one shows the
+ * error state. Submit creates the account and lands on the dashboard:
+ * workflow 15 lets a new member browse first and verify at the point of
+ * applying.
  */
 export default function VerifyOtp() {
   const navigate = useNavigate()
@@ -20,6 +24,7 @@ export default function VerifyOtp() {
   const email = onboarding.email || user.email
   const [code, setCode] = useState('')
   const [touched, setTouched] = useState(false)
+  const [wrong, setWrong] = useState(false)
   const [seconds, setSeconds] = useState(COUNTDOWN)
 
   useEffect(() => {
@@ -31,6 +36,12 @@ export default function VerifyOtp() {
   const resend = () => {
     setSeconds(COUNTDOWN)
     toast('Code sent')
+  }
+
+  const submit = () => {
+    if (code !== DEMO_OTP) { setWrong(true); return }
+    signUp(email)
+    navigate('/dashboard', { replace: true })
   }
 
   return (
@@ -46,7 +57,7 @@ export default function VerifyOtp() {
       }
       actions={
         <>
-          <Button fullWidth disabled={code.length !== 6} onClick={() => { signUp(email); navigate('/dashboard', { replace: true }) }}
+          <Button fullWidth disabled={code.length !== 6} onClick={submit}
             onBlocked={() => setTouched(true)}>
             Submit
           </Button>
@@ -54,8 +65,14 @@ export default function VerifyOtp() {
         </>
       }
     >
-      <OtpInput value={code} onChange={setCode} />
-      {touched && code.length !== 6 && <p className="text-label text-state-danger">Enter all 6 digits of the code</p>}
+      <OtpInput value={code} onChange={(next) => { setCode(next); setWrong(false) }} />
+      {wrong ? (
+        <p className="text-label text-state-danger">Incorrect code</p>
+      ) : touched && code.length !== 6 ? (
+        <p className="text-label text-state-danger">Enter all 6 digits of the code</p>
+      ) : (
+        <p className="text-label text-text-body">{DEMO_LINE}</p>
+      )}
 
       <p className="pt-2 text-center text-body-regular text-text-title">
         {seconds > 0 ? (

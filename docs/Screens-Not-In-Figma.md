@@ -125,6 +125,8 @@ All three use the Cancel Study? modal frame: centred title, body, a "Not now" te
 
 ## Also undrawn, for completeness
 
+- **Demo-mode helper lines** where nothing can be sent: Enter OTP ("Demo mode. No email is sent. Enter 123456."), Check Email! ("Demo mode. No email is sent. Tap Open My Email to continue."), Submit Confirmation PIN ("Demo mode. No interviewer shares a code. Enter 407060."). Helper-text style, under the field.
+
 - The **"vs last month"** caption under the This Month delta on the dashboard.
 - The **Complete Study** button's blocked state on a code-confirmed session before it starts: toast "Your session starts Fri, Sep 25 • 10:30 AM ET. Complete the study once it has run."
 - The **diary day list** (`/studies/:id/diary`) with Completed / Up next / Locked rows; Figma draws only the diary detail and one day.
