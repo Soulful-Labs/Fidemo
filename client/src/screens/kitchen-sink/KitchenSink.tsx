@@ -12,7 +12,6 @@ import PageHead, { SectionHead } from '../../components/client/PageHead'
 import Button from '../../components/ui/Button'
 import Card, { CardHead } from '../../components/ui/Card'
 import Input from '../../components/ui/Input'
-import Modal from '../../components/ui/Modal'
 import Popover, { PopoverItem } from '../../components/ui/Popover'
 import Progress from '../../components/ui/Progress'
 import Select from '../../components/ui/Select'
@@ -24,6 +23,9 @@ import Toggle from '../../components/ui/Toggle'
 import { Clock, Edit, Info, MoneyMark, Plus, Search, Trash, TrustMark, VerifiedMark } from '../../components/ui/icons'
 import { STUDY_STATUS, STUDY_TYPE } from '../../lib/studyTypes'
 import type { StudyStatus, StudyType } from '../../lib/studyTypes'
+import Checkbox from '../../components/ui/Checkbox'
+import ViewToggle from '../../components/client/ViewToggle'
+import { CompletedMenu, DeleteStudyModal, DraftMenu, OngoingMenu, PauseStudyModal, StudyTypeMenu } from '../studies/StudyMenus'
 import Section, { Row } from './Section'
 
 const RESPONDENT: Respondent = { id: 'r1', name: 'Ferry L.', role: 'Physiology Therapist, Orthopedic', score: 95, tier: 'platinum', professionVerified: true }
@@ -46,6 +48,10 @@ export default function KitchenSink() {
   const [modal, setModal] = useState(false)
   const [menu, setMenu] = useState(false)
   const [toggle, setToggle] = useState(true)
+  const [view, setView] = useState<'table' | 'grid'>('table')
+  const [check, setCheck] = useState(true)
+  const [studyMenu, setStudyMenu] = useState<string | null>(null)
+  const [pause, setPause] = useState(false)
 
   return (
     <AppShell crumbs={[{ label: 'Kitchen Sink' }]}>
@@ -166,14 +172,32 @@ export default function KitchenSink() {
           <SectionHead title="Sections have a heading row too" action={<Button size="sm" variant="ghost">View All</Button>} />
         </Section>
 
+        <Section title="Studies menus and dialogs" node="1518:90959, 1726:57600, 1726:77013, 1518:90965">
+          <Row label="Row menus">
+            <span className="relative"><Button variant="tertiary" onClick={() => setStudyMenu(studyMenu === 'ongoing' ? null : 'ongoing')}>Ongoing</Button>
+              <OngoingMenu open={studyMenu === 'ongoing'} onClose={() => setStudyMenu(null)} onPause={() => { setStudyMenu(null); setPause(true) }} onCopy={() => setStudyMenu(null)} /></span>
+            <span className="relative"><Button variant="tertiary" onClick={() => setStudyMenu(studyMenu === 'draft' ? null : 'draft')}>Drafts</Button>
+              <DraftMenu open={studyMenu === 'draft'} onClose={() => setStudyMenu(null)} onDelete={() => { setStudyMenu(null); setModal(true) }} /></span>
+            <span className="relative"><Button variant="tertiary" onClick={() => setStudyMenu(studyMenu === 'completed' ? null : 'completed')}>Completed</Button>
+              <CompletedMenu open={studyMenu === 'completed'} onClose={() => setStudyMenu(null)} onCopy={() => setStudyMenu(null)} /></span>
+            <span className="relative"><Button variant="tertiary" onClick={() => setStudyMenu(studyMenu === 'type' ? null : 'type')}>Study Type</Button>
+              <StudyTypeMenu open={studyMenu === 'type'} onClose={() => setStudyMenu(null)} value={[]} onChange={() => undefined} /></span>
+          </Row>
+          <Row label="Checkbox, view toggle, pause dialog">
+            <span className="w-48 rounded-sm border-1 border-stroke-input"><Checkbox checked={check} label="All" onChange={() => setCheck((c) => !c)} /></span>
+            <ViewToggle view={view} onChange={setView} />
+            <Button variant="tertiary" onClick={() => setPause(true)}>Pause Study Participation? (460)</Button>
+          </Row>
+        </Section>
+
+        <PauseStudyModal open={pause} onClose={() => setPause(false)} onConfirm={() => setPause(false)} />
+
         <SidePanel open={panel} onClose={() => setPanel(false)} title="Ferry L."
           footer={<div className="flex gap-3"><Button className="flex-1">Invite To Study</Button><Button variant="secondary" className="flex-1">Save To Micropanel</Button></div>}>
           <RespondentCard respondent={RESPONDENT} />
         </SidePanel>
 
-        <Modal open={modal} onClose={() => setModal(false)} title="Delete Study?"
-          body={<>“About goal-tracking methods” will be permanently deleted. This cannot be undone.</>}
-          footer={<><Button variant="tertiary" className="flex-1" onClick={() => setModal(false)}>Cancel</Button><Button variant="danger" className="flex-1">Delete</Button></>} />
+        <DeleteStudyModal open={modal} onClose={() => setModal(false)} onConfirm={() => setModal(false)} name="About goal-tracking methods" />
       </div>
     </AppShell>
   )

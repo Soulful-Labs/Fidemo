@@ -4,6 +4,9 @@ import type { ComponentType } from 'react'
 import type { RouteObject } from 'react-router-dom'
 import Placeholder from './screens/Placeholder'
 import KitchenSink from './screens/kitchen-sink/KitchenSink'
+import StudiesList from './screens/studies/StudiesList'
+import PausedStudy from './screens/studies/PausedStudy'
+import AudienceNoMatch from './screens/create/AudienceNoMatch'
 
 /**
  * The client route map. `node` is the Figma frame each route is built to, so
@@ -44,15 +47,14 @@ const routes: ScreenRoute[] = [
   page('/dashboard/empty', 'Dashboard, no studies', '826:85659', 'Dashboard'),
 
   // ----- Studies list (1518:72486) -----
-  page('/studies', 'Studies, Ongoing', '1518:90600', 'Studies'),
-  page('/studies/drafts', 'Studies, Drafts', '1518:90624', 'Studies'),
-  page('/studies/completed', 'Studies, Completed', '1518:90760', 'Studies'),
-  page('/studies/grid', 'Studies, card view', '1518:90966', 'Studies'),
+  { path: '/studies', label: 'Studies, Ongoing', node: '1518:90600 (table), 1518:90966 (cards)', section: 'Studies', kind: 'page', element: createElement(StudiesList, { tab: 'ongoing' }) },
+  { path: '/studies/drafts', label: 'Studies, Drafts', node: '1518:90624', section: 'Studies', kind: 'page', element: createElement(StudiesList, { tab: 'drafts' }) },
+  { path: '/studies/completed', label: 'Studies, Completed', node: '1518:90760', section: 'Studies', kind: 'page', element: createElement(StudiesList, { tab: 'completed' }) },
 
   // ----- Create, one flow for every type (see CLAUDE.md) -----
   page('/studies/create/about', 'Create, About', '1622:81504', 'Create'),
   page('/studies/create/audience', 'Create, Audience', '1622:81615', 'Create'),
-  page('/studies/create/audience/no-match', 'Create, no matching audience', '1518:91273', 'Create'),
+  { path: '/studies/create/audience/no-match', label: 'Create, no matching audience', node: '1518:91273', section: 'Create', kind: 'page', element: createElement(AudienceNoMatch) },
   page('/studies/create/screener', 'Create, Screener', '1622:81771', 'Create'),
   page('/studies/create/study', 'Create, Study setup', '1518:91922', 'Create'),
   page('/studies/create/publish', 'Create, Payment & Publish', '1622:87629', 'Create'),
@@ -70,7 +72,7 @@ const routes: ScreenRoute[] = [
   page('/studies/:id/payment', 'Payment', '1627:96956', 'Manage'),
   page('/studies/:id/respondent/:rid', 'Respondent result', '1627:97305', 'Manage'),
   page('/studies/:id/respondent/:rid/activity', 'Activity of respondent', '1627:97901', 'Manage'),
-  page('/studies/:id/paused', 'Paused study', '1704:143783', 'Manage'),
+  { path: '/studies/:id/paused', label: 'Paused study', node: '1704:143783', section: 'Manage', kind: 'page', element: createElement(PausedStudy) },
 
   // ----- Pool (1645:161429) -----
   page('/pool', 'Pool', '1645:161580', 'Pool'),

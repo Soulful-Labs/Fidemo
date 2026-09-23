@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { cn } from '../../lib/cn'
 
-export interface TabItem { key: string; label: string; to?: string }
+export interface TabItem { key: string; label: string; to?: string; /** Drawn greyed, as the study tabs are while a study is paused. */ muted?: boolean }
 
 /**
  * Two tab treatments are drawn in the client file:
@@ -13,10 +13,10 @@ export default function Tabs({
 }: { items: TabItem[]; value?: string; onChange?: (key: string) => void; variant?: 'underline' | 'segmented'; className?: string }) {
   if (variant === 'segmented') {
     return (
-      <div className={cn('inline-flex items-center gap-1 rounded-sm bg-bg-1 p-1', className)} role="tablist">
+      <div className={cn('inline-flex items-center rounded-full bg-bgAlt-2 p-1', className)} role="tablist">
         {items.map((t) => {
           const on = t.key === value
-          const inner = cn('flex h-btn items-center rounded-sm px-4 text-text-medium transition-colors', on ? 'bg-bgAlt-2 text-green-700' : 'text-text-subtitle hover:text-text-title')
+          const inner = cn('flex h-[39px] w-[112px] items-center justify-center rounded-full text-body-regular transition-colors', on ? 'bg-green-200 text-text-title' : 'text-text-subtitle hover:text-text-title')
           return t.to
             ? <NavLink key={t.key} to={t.to} role="tab" aria-selected={on} className={inner}>{t.label}</NavLink>
             : <button key={t.key} type="button" role="tab" aria-selected={on} onClick={() => onChange?.(t.key)} className={inner}>{t.label}</button>
@@ -28,7 +28,10 @@ export default function Tabs({
     <div className={cn('flex items-center gap-6 border-b-1 border-stroke-input', className)} role="tablist">
       {items.map((t) => {
         const on = t.key === value
-        const inner = cn('-mb-px border-b-2 px-1 pb-3 text-text-medium transition-colors', on ? 'border-cta-primary text-brand-primary' : 'border-transparent text-text-subtitle hover:text-text-title')
+        const inner = cn('-mb-px border-b-2 px-1 pb-3 text-body-regular transition-colors',
+          on ? 'border-cta-primary text-brand-primary'
+            : t.muted ? 'border-transparent text-text-disabled'
+              : 'border-transparent text-text-subtitle hover:text-text-title')
         return t.to
           ? <NavLink key={t.key} to={t.to} role="tab" aria-selected={on} className={inner}>{t.label}</NavLink>
           : <button key={t.key} type="button" role="tab" aria-selected={on} onClick={() => onChange?.(t.key)} className={inner}>{t.label}</button>

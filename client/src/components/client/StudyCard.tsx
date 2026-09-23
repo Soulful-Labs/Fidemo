@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import Progress from '../ui/Progress'
 import Tag from '../ui/Tag'
 import StudyTypeTag from './StudyTypeTag'
@@ -15,6 +16,8 @@ export interface Study {
   dates: string
   daysLeft: string
   completedPct: number
+  /** How far the yellow screening segment runs past the green one. */
+  qualifiedPct?: number
   required: number
   /** Drawn under the bar on a diary study: completed, screening, remaining. */
   breakdown?: { completed: number; screening: number; remaining: number }
@@ -24,17 +27,20 @@ export interface Study {
  * The ongoing-study card on the Dashboard (826:85021). One card for every
  * study type; only the type tag and the thumbnail change.
  */
-export default function StudyCard({ study, onOpen, onMenu, className }: { study: Study; onOpen?: () => void; onMenu?: () => void; className?: string }) {
+export default function StudyCard({ study, onOpen, onMenu, menu, className }: { study: Study; onOpen?: () => void; onMenu?: () => void; menu?: ReactNode; className?: string }) {
   const status = STUDY_STATUS[study.status]
   return (
-    <article className={cn('flex flex-col gap-3 rounded-lg border-1 border-stroke-input bg-bg p-4', className)}>
+    <article className={cn('relative flex flex-col gap-3 rounded-lg bg-bgAlt-1 p-4', className)}>
       <div className="flex items-center justify-between gap-2">
         <StudyTypeTag type={study.type} />
         <div className="flex items-center gap-2">
           <Tag tone={status.tone}>{status.label}</Tag>
-          <button type="button" aria-label="Study options" onClick={onMenu} className="text-text-subtitle hover:text-text-title">
-            <MoreVertical className="h-5 w-5" />
-          </button>
+          <span className="relative flex">
+            <button type="button" aria-label="Study options" onClick={onMenu} className="text-text-subtitle hover:text-text-title">
+              <MoreVertical className="h-5 w-5" />
+            </button>
+            {menu}
+          </span>
         </div>
       </div>
 
@@ -57,20 +63,23 @@ export default function StudyCard({ study, onOpen, onMenu, className }: { study:
         <span className="text-text-title"><span className="text-body-medium">{study.completedPct}%</span> <span className="text-text-subtitle">completed</span></span>
         <span className="text-text-title"><span className="text-body-medium">{study.required}</span> <span className="text-text-subtitle">required</span></span>
       </div>
-      {study.breakdown ? (
-        <Progress max={study.required} segments={[
-          { value: study.breakdown.completed, tone: 'green' },
-          { value: study.breakdown.screening, tone: 'yellow' },
-          { value: study.breakdown.remaining, tone: 'grey' },
-        ]} />
-      ) : (
-        <Progress value={study.completedPct} />
-      )}
+      <Progress max={100} segments={
+        study.breakdown
+          ? [
+              { value: (study.breakdown.completed / study.required) * 100, tone: 'green' },
+              { value: (study.breakdown.screening / study.required) * 100, tone: 'yellow' },
+              { value: (study.breakdown.remaining / study.required) * 100, tone: 'grey' },
+            ]
+          : [
+              { value: study.completedPct, tone: 'green' },
+              { value: Math.max(0, (study.qualifiedPct ?? 0) - study.completedPct), tone: 'yellow' },
+            ]
+      } />
       {study.breakdown && (
-        <div className="flex items-center gap-4 text-label text-text-subtitle">
-          <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-brand-secondary" />Completed: {study.breakdown.completed}</span>
-          <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-cta-primary" />Screening: {study.breakdown.screening}</span>
-          <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-bg-4" />Remaining: {study.breakdown.remaining}</span>
+        <div className="absolute -bottom-4 left-4 right-4 flex items-center justify-between gap-3 rounded-sm bg-bg px-4 py-2.5 text-text-regular text-text-subtitle shadow-[0_2px_8px_rgba(32,30,25,0.08)]">
+          <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-brand-secondary" />Completed: <span className="text-text-title">{study.breakdown.completed}</span></span>
+          <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-cta-primary" />Screening: <span className="text-text-title">{study.breakdown.screening}</span></span>
+          <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-bg-4" />Remaining: <span className="text-text-title">{study.breakdown.remaining}</span></span>
         </div>
       )}
     </article>

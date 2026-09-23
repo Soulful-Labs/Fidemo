@@ -19,11 +19,27 @@ Corollaries:
 
 ---
 
+## Rule 2, the compare loop
+
+Every screen, every turn:
+
+1. **Before building**, call `get_screenshot` on that screen's own frame node and build to match the image. Screenshot individual frames, never whole sections. `get_screenshot` and `get_metadata` only, never `get_design_context`.
+2. **After building**, render the screen at 1440 wide in headless Chromium (`npm run shot -- <route> <out.png> --full`) and put it beside the Figma screenshot.
+3. **List every difference**, fix them, and only then move on.
+
+A screen is not done until the rendered image and the frame look the same. Anything that cannot be matched goes in the turn report with the reason.
+
+Measuring beats guessing: sampling pixels out of the Figma PNG (panel edges, row pitch, column starts, pill bounds) settles spacing questions in seconds, and the same script run against the render proves the fix.
+
+---
+
 ## Stack
 
 Vite, React 19, TypeScript, Tailwind v4, React Router 7. No other UI libraries. `npm run dev` serves on **5174** so both apps can run side by side.
 
-Desktop first at **1440**: a 240px left navigation, a 72px top bar, a 1200px max content column, **600px** side panels, **460px** modals.
+Desktop first at **1440**: a 240px left navigation, a 68px top bar, **600px** side panels, **460px** modals.
+
+Chrome, measured off the Studies frames: the navigation, the top bar and the page behind the content are all `yellow-20` (#f7f4f0); the content panel is `bg-0` (#fdfdfc) inset 8px from the nav and the right edge; the active nav item is a white pill. The Create frames keep the same nav but tint their top bar `bgAlt-2`. Table rows and header bands are 52px with 22px cell padding; the segmented tab group is 343×47 with 112px tabs, `bgAlt-2` track and a `green-200` pill.
 
 ---
 
@@ -107,10 +123,9 @@ Roughly **90 unique screens**, not 216: 126 frames are the same screen drawn onc
 ### Studies — section 1518:72486
 | Route | Screen | Node | Kind |
 |---|---|---|---|
-| `/studies` | Studies, Ongoing | 1518:90600 | page |
+| `/studies` | Studies, Ongoing (table, and cards via the view toggle) | 1518:90600, 1518:90966 | page |
 | `/studies/drafts` | Studies, Drafts | 1518:90624 | page |
 | `/studies/completed` | Studies, Completed | 1518:90760 | page |
-| `/studies/grid` | Studies, card view | 1518:90966 | page |
 | — | Ongoing study options | 1518:90959, 1726:77013, 1726:57600, 1518:90965 | popover |
 | — | Delete Study? | 1726:77088 | modal |
 | — | Pause Study Participation? | 1713:144170 | modal |
@@ -218,9 +233,9 @@ One section per turn, each ending with renders compared against the frames.
 | # | Turn | Nodes |
 |---|---|---|
 | 1 | **Foundation** (done): folder, tokens, shell, components, kitchen sink, this map | 826:85021, 290:16858 |
-| 2 | Studies list: Ongoing, Drafts, Completed, card view, row menus, Delete and Pause dialogs | 1518:90600–90966, 1726:77088, 1713:144170 |
+| 2 | **Studies list** (done): Ongoing table and cards, Drafts, Completed, the four row menus, Pause and Delete dialogs, Paused study, and the Audience no-match screen | 1518:90600–90966, 1726:77088, 1713:144170, 1704:143783, 1518:91273 |
 | 3 | Dashboard, both states, plus the notification panel and the respondent panel it opens | 826:85021, 826:85659, 1518:71845, 1704:141690 |
-| 4 | Create, steps 1–3: About, Audience (and no-match), Screener, with the seven popovers | 1622:81504, 81615, 81771, 1518:91273 |
+| 4 | Create, steps 1–3: About, Audience (no-match already built), Screener, with the seven popovers | 1622:81504, 81615, 81771 |
 | 5 | Create, steps 4–5: the four type setups, Set Address & Availability, overrides, Payment & Publish, Published | 1518:91922, 93678, 92729, 94580, 1622:87629 |
 | 6 | Manage, the study frame: Overview, Manage Study, the tab bar, the type summary row | 1627:95956, 96085 |
 | 7 | Manage, recruiting: Matched, Invited, Recruited (both states), the profile and invite panels | 1627:96237, 96329, 96535, 101612, 98130 |

@@ -57,9 +57,9 @@ export default {
         'title-l': ['24px', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '600' }],
       },
       // Desktop frame: 1440 wide, 240 nav, 72 top bar, 600 side panels, 460 modals.
-      width: { nav: '240px', panel: '600px', modal: '460px' },
       maxWidth: { frame: '1440px', page: '1200px', panel: '600px', modal: '460px' },
-      height: { topbar: '72px', btn: '40px', 'btn-sm': '32px', input: '44px' },
+      height: { topbar: '68px', btn: '40px', 'btn-sm': '32px', input: '48px', row: '52px' },
+      width: { nav: '240px', panel: '600px', modal: '460px', input: '48px', btn: '40px' },
     },
   },
   plugins: [],

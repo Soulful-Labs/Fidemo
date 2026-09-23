@@ -17,7 +17,7 @@ export default function Tag({
   tone = 'neutral', icon, children, className,
 }: { tone?: TagTone; icon?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <span className={cn('inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-label', TONES[tone], className)}>
+    <span className={cn('inline-flex h-7 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-text-regular', TONES[tone], className)}>
       {icon}
       {children}
     </span>
