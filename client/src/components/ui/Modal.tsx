@@ -22,14 +22,14 @@ export default function Modal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-text-title/25 px-4" role="presentation" onClick={onClose}>
       <div role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}
-        className={cn('flex w-modal flex-col rounded-lg bg-bg text-center shadow-xl', className)}>
-        <div className="flex flex-col gap-3 px-10 pb-6 pt-10">
-          {title && <h2 className="text-title-m font-semibold text-text-title">{title}</h2>}
-          {body && <div className="text-body-regular text-text-subtitle">{body}</div>}
+        className={cn('flex w-modal flex-col rounded-lg bg-bg-0 text-center shadow-xl', className)}>
+        <div className="flex flex-col gap-4 px-10 pb-[38px] pt-[44px]">
+          {title && <h2 className="text-title-l text-text-title">{title}</h2>}
+          {body && <div className="mx-auto max-w-[330px] text-body-regular text-text-subtitle">{body}</div>}
           {children}
         </div>
         {footer && (
-          <div className="flex gap-3 border-t-1 border-stroke-1 px-4 py-4 [&_button]:h-[41px] [&_button]:text-body-regular">{footer}</div>
+          <div className="flex gap-4 border-t-1 border-stroke-1 px-4 py-4 [&_button]:h-12 [&_button]:text-body-regular">{footer}</div>
         )}
       </div>
     </div>

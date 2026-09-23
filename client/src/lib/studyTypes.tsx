@@ -6,12 +6,12 @@ import type { TagTone } from '../components/ui/Tag'
 export type StudyType = 'survey' | 'video_call' | 'group_video_call' | 'in_person' | 'in_person_group' | 'diary'
 
 export const STUDY_TYPE: Record<StudyType, { label: string; icon: ReactNode; tone: TagTone }> = {
-  survey: { label: 'Survey', icon: <SurveyIcon className="h-4 w-4" />, tone: 'blue' },
-  video_call: { label: 'Video Call', icon: <VideoIcon className="h-4 w-4" />, tone: 'green' },
-  group_video_call: { label: 'Group Video Call', icon: <GroupVideoIcon className="h-4 w-4" />, tone: 'green' },
-  in_person: { label: 'In-Person', icon: <InPersonIcon className="h-4 w-4" />, tone: 'green' },
-  in_person_group: { label: 'In-Person Group', icon: <InPersonGroupIcon className="h-4 w-4" />, tone: 'green' },
-  diary: { label: 'Diary Study', icon: <DiaryIcon className="h-4 w-4" />, tone: 'green' },
+  survey: { label: 'Survey', icon: <SurveyIcon className="h-4 w-4" />, tone: 'type' },
+  video_call: { label: 'Video Call', icon: <VideoIcon className="h-4 w-4" />, tone: 'type' },
+  group_video_call: { label: 'Group Video Call', icon: <GroupVideoIcon className="h-4 w-4" />, tone: 'type' },
+  in_person: { label: 'In-Person', icon: <InPersonIcon className="h-4 w-4" />, tone: 'type' },
+  in_person_group: { label: 'In-Person Group', icon: <InPersonGroupIcon className="h-4 w-4" />, tone: 'type' },
+  diary: { label: 'Diary Study', icon: <DiaryIcon className="h-4 w-4" />, tone: 'type' },
 }
 
 /** Study lifecycle, as the status pill and the Studies tabs draw it. */

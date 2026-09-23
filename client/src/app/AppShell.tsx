@@ -22,10 +22,10 @@ export function SideNav() {
   return (
     <nav className="sticky top-0 flex h-screen w-nav shrink-0 flex-col border-r-1 border-stroke-input bg-yellow-20">
       <div className="flex h-topbar items-center px-6">
-        <span className="text-title-m font-semibold text-text-title">Focus Insite</span>
+        <span className="text-title-l text-text-title">Focus Insite</span>
       </div>
 
-      <ul className="flex flex-1 flex-col gap-1.5 px-4 pt-4">
+      <ul className="flex flex-1 flex-col gap-2 px-4 pt-5">
         {NAV.map(({ to, label, Icon }) => {
           const on = pathname === to || pathname.startsWith(`${to}/`)
           return (
@@ -41,8 +41,9 @@ export function SideNav() {
         })}
       </ul>
 
-      <NavLink to="/account" className="m-4 flex items-center gap-3 rounded-sm border-1 border-stroke-input bg-bg p-3 hover:bg-bg-1">
-        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-bg-2 text-text-medium text-text-subtitle">JL</span>
+      <div className="mx-4 border-t-1 border-stroke-input" />
+      <NavLink to="/account" className="m-4 flex items-center gap-3 rounded-sm bg-bg p-3 shadow-[0_1px_2px_rgba(32,30,25,0.06)] hover:bg-bg-1">
+        <span className="flex h-9 w-9 items-center justify-center rounded-sm bg-bg-2 text-text-medium text-text-subtitle">JL</span>
         <span className="flex min-w-0 flex-col">
           <span className="truncate text-text-medium text-text-title">Jennifer Lee</span>
           <span className="truncate text-label text-text-body">Product Manager</span>
@@ -67,7 +68,7 @@ export default function AppShell({
       <SideNav />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-topbar shrink-0 items-center justify-between gap-4 border-b-1 border-stroke-input bg-yellow-20 px-6">
+        <header className="sticky top-0 z-30 flex h-topbar shrink-0 items-center justify-between gap-4 border-b-1 border-stroke-input bg-yellow-20 px-4">
           <nav className="flex items-center gap-1 text-body-regular text-text-subtitle" aria-label="Breadcrumb">
             {crumbs.map((c, i) => (
               <span key={c.label} className="flex items-center gap-1">
@@ -80,11 +81,11 @@ export default function AppShell({
             {action ?? (
               <>
                 <NavLink to="/notifications" aria-label="Notifications"
-                  className="flex h-8 w-8 items-center justify-center rounded-full border-1 border-stroke-input bg-bg text-text-subtitle hover:text-text-title">
-                  <BellIcon className="h-4 w-4" />
+                  className="flex h-[38px] w-[38px] items-center justify-center rounded-full border-1 border-stroke-input bg-bg text-text-subtitle hover:text-text-title">
+                  <BellIcon className="h-5 w-5" />
                 </NavLink>
                 <NavLink to="/studies/create/about">
-                  <Button size="sm" leftIcon={<Plus className="h-4 w-4" />}>Create Study</Button>
+                  <Button size="sm" className="h-[38px]" leftIcon={<Plus className="h-4 w-4" />}>Create Study</Button>
                 </NavLink>
               </>
             )}

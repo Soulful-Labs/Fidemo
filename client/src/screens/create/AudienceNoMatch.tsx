@@ -7,22 +7,25 @@ import { cn } from '../../lib/cn'
 import CreateShell from './CreateShell'
 
 /** A form section heading: small green icon, title, and the line under it. */
-function SectionHead({ icon, title, sub }: { icon: React.ReactNode; title: string; sub: string }) {
+function Section({ icon, title, sub, children }: { icon: React.ReactNode; title: string; sub: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-start gap-2 pb-4">
-      <span className="mt-0.5 text-brand-secondary">{icon}</span>
-      <div className="flex flex-col gap-0.5">
-        <h2 className="text-body-medium text-text-title">{title}</h2>
-        <p className="text-text-regular text-text-subtitle">{sub}</p>
+    <section className="flex border-b-1 border-stroke-1 px-2 py-5 last:border-b-0">
+      <span className="w-5 shrink-0 text-brand-secondary">{icon}</span>
+      <div className="flex-1 pr-[10px]">
+        <div className="flex flex-col gap-0.5 pb-4">
+          <h2 className="text-body-medium text-text-title">{title}</h2>
+          <p className="text-text-regular text-text-subtitle">{sub}</p>
+        </div>
+        {children}
       </div>
-    </div>
+    </section>
   )
 }
 
 /** A read-only field as the frame draws them: label above, value in the box. */
 function Field({ label, value, placeholder, className }: { label: string; value?: string; placeholder?: string; className?: string }) {
   return (
-    <label className={cn('flex flex-col gap-1.5', className)}>
+    <label className={cn('flex flex-col gap-0.5', className)}>
       <span className="text-text-regular text-text-subtitle">{label}</span>
       <span className="flex h-input items-center rounded-sm border-1 border-stroke-input bg-bg px-4 text-body-regular text-text-title">
         {value ?? <span className="text-text-body">{placeholder}</span>}
@@ -54,25 +57,24 @@ export default function AudienceNoMatch() {
 
   return (
     <CreateShell step="audience">
-      <div className="flex items-start gap-6 rounded-lg bg-bg-0 p-4">
-        <div className="flex w-[622px] shrink-0 flex-col gap-4">
-          <div className="flex items-center justify-between gap-4 rounded-lg border-1 border-stroke-2 bg-bgAlt-1 px-5 py-4">
+      <div className="flex items-start gap-12 rounded-lg bg-bg-0 p-6">
+        <div className="flex w-[600px] shrink-0 flex-col">
+          <div className="flex items-center justify-between gap-4 rounded-lg border-1 border-stroke-2 bg-bgAlt-1 px-5 py-3.5">
             <div className="flex flex-col gap-0.5">
               <p className="flex items-center gap-2 text-body-medium text-text-title">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" className="text-brand-secondary" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" className="text-text-title" aria-hidden="true">
                   <path d="m12 3 1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3Zm7 10 .8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
                 </svg>
                 Generate with AI
               </p>
               <p className="text-text-regular text-text-subtitle">Set target audience base with AI using study context</p>
             </div>
-            <Button variant="secondary">Fill with AI</Button>
+            <Button variant="secondary" leftIcon={<svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><path d="m12 3 1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3Zm7 10 .8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /></svg>}>Fill with AI</Button>
           </div>
 
-          <div className="flex flex-col rounded-lg border-1 border-stroke-input bg-bg">
-          <section className="border-b-1 border-stroke-input p-6 last:border-b-0">
-            <SectionHead icon={<PoolIcon className="h-5 w-5" />} title="Set Target Audience" sub="Who qualifies for this study" />
-            <div className="flex flex-col gap-4">
+          <div className="flex flex-col">
+          <Section icon={<PoolIcon className="h-5 w-5" />} title="Set Target Audience" sub="Who qualifies for this study">
+            <div className="flex flex-col gap-3.5">
               <div className="rounded-md bg-bg-1 p-4">
                 <Input label="Number of target participants" defaultValue="10" />
               </div>
@@ -90,25 +92,23 @@ export default function AudienceNoMatch() {
                 </div>
               </div>
             </div>
-          </section>
+          </Section>
 
-          <section className="border-b-1 border-stroke-input p-6 last:border-b-0">
-            <SectionHead
-              icon={<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true"><path d="M12 3v4m0 0-2 3 2 11 2-11-2-3Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg>}
-              title="Work details" sub="Who qualifies for this study" />
-            <div className="flex flex-col gap-4">
+          <Section
+            icon={<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true"><path d="M12 3v4m0 0-2 3 2 11 2-11-2-3Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg>}
+            title="Work details" sub="Who qualifies for this study">
+            <div className="flex flex-col gap-3.5">
               <Field label="Roles" placeholder="Choose job roles..." />
               <Field label="Work Functions" placeholder="Select job functions..." />
               <Field label="Industries" placeholder="Choose industry domains..." />
               <Field label="Organization size" placeholder="Choose company sizes..." />
             </div>
-          </section>
+          </Section>
 
-          <section className="border-b-1 border-stroke-input p-6 last:border-b-0">
-            <SectionHead
-              icon={<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true"><path d="M4 5h16l-6 7v6l-4 2v-8L4 5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg>}
-              title="Set conditions to apply" sub="Allow participants to apply only if they meet the following criteria" />
-            <div className="flex flex-col gap-4">
+          <Section
+            icon={<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true"><path d="M4 5h16l-6 7v6l-4 2v-8L4 5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg>}
+            title="Set conditions to apply" sub="Allow participants to apply only if they meet the following criteria">
+            <div className="flex flex-col gap-3.5">
               <div className="flex flex-col gap-4 rounded-md bg-bg-1 p-4">
                 {[
                   { key: 'na', label: 'N/A' },
@@ -135,11 +135,11 @@ export default function AudienceNoMatch() {
                 <Select value="Select trust score" />
               </div>
             </div>
-          </section>
+          </Section>
           </div>
         </div>
 
-        <aside className="sticky top-[88px] w-[462px] shrink-0 rounded-lg border-1 border-stroke-input bg-bg">
+        <aside className="sticky top-[88px] w-[488px] shrink-0 rounded-lg border-1 border-stroke-input bg-bg-0">
           <h2 className="flex items-center gap-2 border-b-1 border-stroke-input px-5 py-4 text-body-medium text-text-title">
             Participation Forecast
             <Info className="h-4 w-4 text-text-body" />
@@ -168,7 +168,7 @@ export default function AudienceNoMatch() {
 
             <dl className="flex flex-col">
               {[['Average Score', '86%'], ['Recommended Incentive', '$100-200'], ['Estimated Time To Fill', '15-20 days']].map(([k, v]) => (
-                <div key={k} className="flex items-center justify-between border-b-1 border-stroke-input py-3 last:border-b-0">
+                <div key={k} className="flex items-center justify-between border-b-1 border-stroke-input py-2 last:border-b-0">
                   <dt className="text-text-regular text-text-subtitle">{k}</dt>
                   <dd className="text-text-medium text-text-title">{v}</dd>
                 </div>

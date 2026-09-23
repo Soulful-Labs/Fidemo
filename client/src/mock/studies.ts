@@ -17,6 +17,12 @@ export interface StudyRow {
   dates?: string
   daysLeft?: string
   completedPct?: number
+  /**
+   * The three bar segments the cards frame draws: completed, screening and
+   * remaining, in percent. The frame draws these rather than computing them
+   * from required/qualified/completed, so they are measured off the frame.
+   */
+  segments?: [number, number, number]
   breakdown?: { completed: number; screening: number; remaining: number }
 }
 
@@ -30,33 +36,33 @@ export const ONGOING: StudyRow[] = [
   {
     id: 'st-goal', name: 'About goal-tracking methods', type: 'video_call', status: 'recruiting',
     required: 40, qualified: 20, completed: 0, created: '30 Jul, 2026',
-    image: '/img/goals.jpg', dates: 'Jan 25 – Feb 24', daysLeft: '16 days left', completedPct: 0,
+    image: '/img/goals.jpg', dates: 'Jan 25 – Feb 24', daysLeft: '16 days left', completedPct: 0, segments: [0, 55, 45],
   },
   {
     id: 'st-pay', name: 'How Do You Make Your Digital Payments Mostly?', cardName: 'How do you make your digital payments mostly?', type: 'diary', status: 'recruiting',
     required: 12, qualified: 8, completed: 3, created: '25 Jul, 2026',
-    image: '/img/card.jpg', dates: 'Jan 25 – Feb 24', daysLeft: '16 days left', completedPct: 25,
+    image: '/img/card.jpg', dates: 'Jan 25 – Feb 24', daysLeft: '16 days left', completedPct: 25, segments: [25, 55, 20],
     breakdown: { completed: 3, screening: 6, remaining: 3 },
   },
   {
     id: 'st-sleep', name: 'Share About Your Sleep Cycle', cardName: 'Share about your sleep cycle', type: 'in_person', status: 'billing',
     required: 60, qualified: 64, completed: 60, created: '15 Jul, 2026',
-    image: '/img/sleep.jpg', dates: 'Jan 25 – Feb 24', daysLeft: '16 days left', completedPct: 100,
+    image: '/img/sleep.jpg', dates: 'Jan 25 – Feb 24', daysLeft: '16 days left', completedPct: 100, segments: [100, 0, 0],
   },
   {
     id: 'st-fitness', name: 'Fitness Tracker Apps Experience', cardName: 'Fitness tracker apps experience', type: 'group_video_call', status: 'billing',
     required: 60, qualified: 32, completed: 20, created: '20 Jul, 2026',
-    image: '/img/runner.jpg', dates: 'Jan 25 – Feb 24', daysLeft: '16 days left', completedPct: 33,
+    image: '/img/runner.jpg', dates: 'Jan 25 – Feb 24', daysLeft: '16 days left', completedPct: 33, segments: [33, 33, 34],
   },
   {
     id: 'st-travel', name: 'Travel preferences and experiences', type: 'in_person_group', status: 'billing',
     required: 45, qualified: 40, completed: 45, created: '10 Jul, 2026',
-    image: '/img/airport.jpg', dates: 'Jan 25 – Feb 24', daysLeft: '16 days left', completedPct: 100,
+    image: '/img/airport.jpg', dates: 'Jan 25 – Feb 24', daysLeft: '16 days left', completedPct: 100, segments: [100, 0, 0],
   },
   {
     id: 'st-social', name: 'Social media posts designing apps', type: 'survey', status: 'recruiting',
     required: 12, qualified: 8, completed: 5, created: '10 Jul, 2026',
-    image: '/img/canva.jpg', dates: 'Jan 25 – Feb 24', daysLeft: '16 days left', completedPct: 25,
+    image: '/img/canva.jpg', dates: 'Jan 25 – Feb 24', daysLeft: '16 days left', completedPct: 25, segments: [25, 55, 20],
   },
 ]
 

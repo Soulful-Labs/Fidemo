@@ -93,7 +93,7 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
 
   return (
     <AppShell crumbs={[{ label: 'Studies' }]}>
-      <div className="min-h-[890px] rounded-lg bg-bg-0 px-4 pb-4 pt-6">
+      <div className="min-h-[890px] rounded-lg bg-bg-0 px-4 pb-4 pt-[25px]">
         {tab === 'completed' && <h1 className="pb-2 text-title-s text-text-title">My Studies</h1>}
 
         <div className="flex items-center justify-between gap-4 pb-6">
@@ -115,7 +115,7 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
                 study={{
                   id: s.id, title: s.cardName ?? s.name, type: s.type, status: s.status, image: s.image,
                   dates: s.dates ?? '', daysLeft: s.daysLeft ?? '', completedPct: s.completedPct ?? 0,
-                  qualifiedPct: s.required ? Math.min(100, (s.qualified / s.required) * 100) : 0,
+                  segments: s.segments ?? [s.completedPct ?? 0, 0, 100 - (s.completedPct ?? 0)],
                   required: s.required, breakdown: s.breakdown,
                 }} />
             ))}

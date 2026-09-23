@@ -12,7 +12,7 @@ const icon = (path: React.ReactNode, viewBox = '0 0 24 24') =>
 // ----- Left navigation (826:85021) -----
 export const DashboardIcon = icon(<><rect x="3" y="3" width="7" height="7" rx="2" {...stroke} /><rect x="14" y="3" width="7" height="7" rx="2" {...stroke} /><rect x="3" y="14" width="7" height="7" rx="2" {...stroke} /><rect x="14" y="14" width="7" height="7" rx="2" {...stroke} /></>)
 export const StudiesIcon = icon(<><rect x="5" y="3" width="14" height="18" rx="3" {...stroke} /><path d="M9 8h6M9 12h6M9 16h4" {...stroke} /></>)
-export const PoolIcon = icon(<><circle cx="9" cy="8" r="3.2" {...stroke} /><path d="M3 19c0-3.2 2.7-5 6-5s6 1.8 6 5" {...stroke} /><path d="M16 5.5a3 3 0 0 1 0 5.8M18 19c0-2.4-.9-4-2.4-5" {...stroke} /></>)
+export const PoolIcon = icon(<><circle cx="9.5" cy="9" r="2.8" {...stroke} /><circle cx="17" cy="7.5" r="2" {...stroke} /><circle cx="4" cy="8.5" r="1.8" {...stroke} /><path d="M4.5 19c0-2.9 2.3-4.6 5-4.6s5 1.7 5 4.6" {...stroke} /><path d="M16 13.6c2.2.2 3.9 1.6 3.9 4M3.2 13.8C1.6 14.3.6 15.6.6 17.4" {...stroke} /></>)
 export const PaymentsIcon = icon(<><rect x="3" y="6" width="18" height="13" rx="3" {...stroke} /><path d="M3 10.5h18" {...stroke} /></>)
 export const BellIcon = icon(<><path d="M18 9a6 6 0 1 0-12 0c0 5-2 6-2 6h16s-2-1-2-6Z" {...stroke} /><path d="M10.5 20a2 2 0 0 0 3 0" {...stroke} /></>)
 export const HelpIcon = icon(<><circle cx="12" cy="12" r="9" {...stroke} /><path d="M9.6 9.3a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4M12 16.6v.4" {...stroke} /></>)
@@ -41,11 +41,11 @@ export const Copy = icon(<><rect x="8" y="8" width="12" height="12" rx="2.5" {..
 
 // ----- Study type tags (the card and table tags) -----
 export const SurveyIcon = icon(<><path d="M6 20V10m6 10V4m6 16v-7" {...stroke} /></>)
-export const VideoIcon = icon(<><rect x="3" y="6" width="12" height="12" rx="3" {...stroke} /><path d="m15 11 6-3.5v9L15 13" {...stroke} /></>)
-export const GroupVideoIcon = icon(<><rect x="2.5" y="7" width="11" height="10" rx="2.5" {...stroke} /><path d="m13.5 11 5-3v8l-5-3" {...stroke} /><circle cx="19" cy="17" r="2" {...stroke} /></>)
-export const InPersonIcon = icon(<><circle cx="12" cy="7.5" r="3.2" {...stroke} /><path d="M5.5 20c0-3.4 2.9-5.5 6.5-5.5s6.5 2.1 6.5 5.5" {...stroke} /></>)
-export const InPersonGroupIcon = icon(<><circle cx="9" cy="8" r="3" {...stroke} /><circle cx="17" cy="9" r="2.4" {...stroke} /><path d="M3 19c0-3 2.6-4.8 6-4.8s6 1.8 6 4.8M16 14.5c2.7 0 5 1.5 5 4.5" {...stroke} /></>)
-export const DiaryIcon = icon(<><rect x="5" y="3" width="14" height="18" rx="3" {...stroke} /><path d="M9 8h6M9 12h6M9 16h3" {...stroke} /><path d="M5 7h3" {...stroke} /></>)
+export const VideoIcon = icon(<><rect x="2.5" y="4" width="19" height="14" rx="3.5" {...stroke} /><circle cx="12" cy="9.2" r="1.9" {...stroke} /><path d="M9 14.2c0-1.6 1.3-2.6 3-2.6s3 1 3 2.6M12 18v2.5M9.2 20.5h5.6" {...stroke} /></>)
+export const GroupVideoIcon = icon(<><path d="M3 19V8.5A5.5 5.5 0 0 1 8.5 3h7A5.5 5.5 0 0 1 21 8.5V19" {...stroke} /><circle cx="8.6" cy="10.4" r="1.7" {...stroke} /><circle cx="15.4" cy="10.4" r="1.7" {...stroke} /><path d="M5.6 16.6c0-1.6 1.3-2.8 3-2.8s3 1.2 3 2.8M12.4 16.6c0-1.6 1.3-2.8 3-2.8s3 1.2 3 2.8" {...stroke} /></>)
+export const InPersonIcon = icon(<><circle cx="12" cy="12" r="9" {...stroke} /><circle cx="12" cy="9.3" r="2.1" {...stroke} /><path d="M7.8 16.6c0-2.1 1.9-3.5 4.2-3.5s4.2 1.4 4.2 3.5" {...stroke} /></>)
+export const InPersonGroupIcon = icon(<><circle cx="12" cy="12" r="9" {...stroke} /><circle cx="9" cy="9.6" r="1.7" {...stroke} /><circle cx="15" cy="9.6" r="1.7" {...stroke} /><path d="M6.2 15.8c0-1.6 1.2-2.7 2.8-2.7s2.8 1.1 2.8 2.7M12.2 15.8c0-1.6 1.2-2.7 2.8-2.7s2.8 1.1 2.8 2.7" {...stroke} /></>)
+export const DiaryIcon = icon(<><path d="M6 20V10m6 10V4m6 16v-7" {...stroke} /></>)
 
 // ----- Tier and score marks -----
 export const TrustMark = icon(<><circle cx="12" cy="12" r="8" {...stroke} /><path d="M12 8.2 13.4 11l3.1.4-2.3 2.1.6 3-2.8-1.5-2.8 1.5.6-3-2.3-2.1 3.1-.4L12 8.2Z" {...stroke} /></>)

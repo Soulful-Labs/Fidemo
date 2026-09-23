@@ -16,7 +16,7 @@ export default function Tabs({
       <div className={cn('inline-flex items-center rounded-full bg-bgAlt-2 p-1', className)} role="tablist">
         {items.map((t) => {
           const on = t.key === value
-          const inner = cn('flex h-[39px] w-[112px] items-center justify-center rounded-full text-body-regular transition-colors', on ? 'bg-green-200 text-text-title' : 'text-text-subtitle hover:text-text-title')
+          const inner = cn('flex h-[40px] w-[112px] items-center justify-center rounded-full text-body-regular transition-colors', on ? 'bg-green-200 text-text-title' : 'text-text-subtitle hover:text-text-title')
           return t.to
             ? <NavLink key={t.key} to={t.to} role="tab" aria-selected={on} className={inner}>{t.label}</NavLink>
             : <button key={t.key} type="button" role="tab" aria-selected={on} onClick={() => onChange?.(t.key)} className={inner}>{t.label}</button>
@@ -25,10 +25,10 @@ export default function Tabs({
     )
   }
   return (
-    <div className={cn('flex items-center gap-6 border-b-1 border-stroke-input', className)} role="tablist">
+    <div className={cn('flex items-end gap-6 border-b-1 border-neutral-500', className)} role="tablist">
       {items.map((t) => {
         const on = t.key === value
-        const inner = cn('-mb-px border-b-2 px-1 pb-3 text-body-regular transition-colors',
+        const inner = cn('-mb-px border-b-1 px-1 pb-2 text-body-regular transition-colors',
           on ? 'border-cta-primary text-brand-primary'
             : t.muted ? 'border-transparent text-text-disabled'
               : 'border-transparent text-text-subtitle hover:text-text-title')

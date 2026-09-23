@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
 
-export type TagTone = 'neutral' | 'green' | 'yellow' | 'purple' | 'blue' | 'grey'
+export type TagTone = 'neutral' | 'type' | 'green' | 'yellow' | 'purple' | 'blue' | 'grey'
 
 const TONES: Record<TagTone, string> = {
-  neutral: 'border-1 border-cta-tertiaryStroke bg-bg text-text-subtitle',
+  neutral: 'border-1 border-stroke-3 text-text-subtitle',
+  type: 'bg-bgAlt-2 text-text-subtitle [&>svg]:text-brand-secondary',
   green: 'bg-bgAlt-2 text-green-700',
   yellow: 'bg-yellow-30 text-yellow-700',
   purple: 'bg-purple-100 text-purple-600',

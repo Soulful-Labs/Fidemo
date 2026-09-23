@@ -17,7 +17,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  * ("View Profile", "Cancel") and the red destructive ("Delete").
  */
 const ENABLED = {
-  primary: 'bg-cta-primary text-cta-primaryText hover:bg-yellow-400',
+  primary: 'border-b-2 border-yellow-700 bg-gradient-to-b from-[#fdc86f] to-[#fca311] text-cta-primaryText hover:to-yellow-700',
   secondary: 'bg-cta-secondary text-cta-secondaryText hover:bg-yellow-300',
   tertiary: 'border-1 border-cta-tertiaryStroke bg-bg text-text-title hover:bg-bg-1',
   danger: 'bg-[#e33a38] text-white hover:opacity-90',

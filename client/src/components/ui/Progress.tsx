@@ -4,12 +4,17 @@ import { cn } from '../../lib/cn'
 export default function Progress({
   value, max = 100, segments, className,
 }: { value?: number; max?: number; segments?: { value: number; tone: 'green' | 'yellow' | 'grey' }[]; className?: string }) {
-  const TONE = { green: 'bg-brand-secondary', yellow: 'bg-cta-primary', grey: 'bg-bg-4' }
+  const TONE = { green: 'bg-brand-secondary', yellow: 'bg-yellow-300', grey: 'bg-neutral-500' }
   return (
-    <div className={cn('flex h-2 w-full overflow-hidden rounded-full bg-bg-3', className)}>
+    <div className={cn('flex h-[10px] w-full gap-0.5', className)}>
       {segments
-        ? segments.map((s, i) => <span key={i} className={cn('h-full', TONE[s.tone])} style={{ width: `${(s.value / (max || 1)) * 100}%` }} />)
-        : <span className="h-full rounded-full bg-cta-primary" style={{ width: `${Math.min(100, ((value ?? 0) / (max || 1)) * 100)}%` }} />}
+        ? segments
+            .filter((s) => s.value > 0)
+            .map((s, i) => <span key={i} className={cn('h-full rounded-full', TONE[s.tone])} style={{ width: `${(s.value / (max || 1)) * 100}%` }} />)
+        : <>
+            <span className="h-full rounded-full bg-cta-primary" style={{ width: `${Math.min(100, ((value ?? 0) / (max || 1)) * 100)}%` }} />
+            <span className="h-full flex-1 rounded-full bg-neutral-500" />
+          </>}
     </div>
   )
 }

@@ -31,7 +31,7 @@ import Section, { Row } from './Section'
 const RESPONDENT: Respondent = { id: 'r1', name: 'Ferry L.', role: 'Physiology Therapist, Orthopedic', score: 95, tier: 'platinum', professionVerified: true }
 const STUDY: Study = {
   id: 's1', title: 'How do you make your digital payments mostly?', type: 'diary', status: 'recruiting',
-  dates: 'Jan 25 – Feb 24', daysLeft: '16 days left', completedPct: 25, required: 12,
+  dates: 'Jan 25 – Feb 24', daysLeft: '16 days left', completedPct: 25, required: 12, segments: [25, 55, 20],
   breakdown: { completed: 3, screening: 6, remaining: 3 },
 }
 const ROWS = [
