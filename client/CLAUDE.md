@@ -39,7 +39,7 @@ Vite, React 19, TypeScript, Tailwind v4, React Router 7. No other UI libraries. 
 
 Desktop first at **1440**: a 240px left navigation, a 68px top bar, **600px** side panels, **460px** modals.
 
-Chrome, measured off the Studies frames: the navigation, the top bar and the page behind the content are all `yellow-20` (#f7f4f0); the content panel is `bg-0` (#fdfdfc) inset 8px from the nav and the right edge; the active nav item is a white pill. The Create frames keep the same nav but tint their top bar `bgAlt-2`. Table rows and header bands are 52px with 22px cell padding; the segmented tab group is 343×47 with 112px tabs, `bgAlt-2` track and a `green-200` pill.
+Chrome, measured off the Studies frames: the navigation, the top bar and the page behind the content are all `yellow-20` (#f7f4f0); the content panel is `bg-0` (#fdfdfc) inset 8px from the nav and the right edge; the active nav item is a white pill. The Create frames keep the same nav; their top bar carries the same `yellow-20` tint (69px, hairline under it, then 8px before the panel) and only the four step chips are pills — white, with the active one `bgAlt-2`. Table rows and header bands are 52px with 22px cell padding; the segmented tab group is 343×48 with 112px tabs, `bgAlt-2` track and a `green-200` pill. The page panel has 25px of padding above its first element (24 on the Create frames). The primary CTA is a vertical gradient, #fdc86f to #fca311, with a 2px `yellow-700` bottom edge; its height is per frame (38 in the top bar, 36 in a banner, 48 in a dialog). The 460px dialog is `bg-0`: 40px sides, 44 above the 24px title, a 330px body column, 38 below it, then the hairline, 16, and 48px buttons 16 apart.
 
 ---
 
