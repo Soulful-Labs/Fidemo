@@ -52,7 +52,7 @@ export default function PausedStudy() {
 
   return (
     <AppShell crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
-      <div className="min-h-[890px] rounded-lg bg-bg-0 px-4 pb-4 pt-[25px]">
+      <div className="min-h-[881px] rounded-lg bg-bg-0 p-4">
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-6 rounded-lg border-1 border-[#ffd1c7] bg-[#fff0ed] px-4 py-4">
           <div className="flex flex-col gap-1">
@@ -60,8 +60,8 @@ export default function PausedStudy() {
             <p className="text-text-regular text-text-subtitle">This study is paused now to get new participations. You can resume it back or mark completed.</p>
           </div>
           <div className="flex shrink-0 items-center gap-3">
-            <Button variant="secondary" className="h-9 px-3">Mark as completed</Button>
-            <Button className="h-9 px-3" onClick={() => navigate(`/studies/${id}`)}>Resume Study</Button>
+            <Button variant="secondary" size="none" className="h-9 px-3">Mark as completed</Button>
+            <Button size="none" className="h-9 px-3" onClick={() => navigate(`/studies/${id}`)}>Resume Study</Button>
           </div>
         </div>
 

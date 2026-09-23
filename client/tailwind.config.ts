@@ -32,6 +32,12 @@ export default {
         purple: { 100: '#f5f2ff', 600: '#9780fa' },
         blue: { 100: '#ecf6fd', 600: '#42a4ed' },
         neutral: { 500: '#e9e8e7', 700: '#e0dedc', 800: '#dad9d7', 1000: '#ceccca' },
+        // Tier chips, measured off the respondent cards (826:85021).
+        tier: {
+          gold: '#e4b300', goldBg: '#f8f0d2',
+          platinum: '#9139f6', platinumBg: '#ebdcfa',
+          silver: '#7f9fb1', silverBg: '#e7edef',
+        },
       },
       // Space/* and Element/*.
       spacing: {

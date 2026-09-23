@@ -16,7 +16,7 @@ export interface Respondent {
 }
 
 /** Initials avatar, as drawn on every respondent card and row. */
-export function Avatar({ name, size = 36 }: { name: string; size?: number }) {
+export function Avatar({ name, size = 40 }: { name: string; size?: number }) {
   return (
     <span style={{ width: size, height: size }}
       className="flex shrink-0 items-center justify-center rounded-full bg-bg-2 text-text-medium text-text-subtitle">
@@ -28,14 +28,14 @@ export function Avatar({ name, size = 36 }: { name: string; size?: number }) {
 /** The score, tier and Profession-Verified row shared by the card and the profile panel. */
 export function RespondentMeta({ r }: { r: Respondent }) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex h-8 items-center gap-2 [&>span]:h-8">
       <span className="inline-flex items-center gap-1.5 text-body-medium text-text-title">
         <TrustMark className="h-5 w-5 text-brand-primary" />
         {r.score}%
       </span>
       <TierChip tier={r.tier} />
       {r.professionVerified && (
-        <Tag tone="neutral" icon={<VerifiedMark className="h-4 w-4 text-brand-secondary" />}>Profession-Verified</Tag>
+        <Tag tone="type" icon={<VerifiedMark className="h-4 w-4" />}>Profession-Verified</Tag>
       )}
     </div>
   )
@@ -50,8 +50,8 @@ export default function RespondentCard({
   respondent, actions, onView, saveable, className,
 }: { respondent: Respondent; actions?: ReactNode; onView?: () => void; saveable?: boolean; className?: string }) {
   return (
-    <article className={cn('flex flex-col gap-3 rounded-lg border-1 border-stroke-input bg-bg p-4', className)}>
-      <div className="flex items-center gap-3">
+    <article className={cn('flex flex-col gap-3.5 rounded-lg bg-bg-1 p-3', className)}>
+      <div className="flex items-center gap-2">
         <Avatar name={respondent.name} />
         <div className="flex min-w-0 flex-col">
           <span className="truncate text-text-regular text-text-subtitle">{respondent.name}</span>

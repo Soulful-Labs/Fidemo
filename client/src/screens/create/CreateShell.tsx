@@ -49,12 +49,12 @@ export default function CreateShell({ step, children }: { step: CreateStep; chil
           </ol>
 
           <div className="flex items-center gap-3">
-            <Button variant="tertiary" className="h-[38px]">Save Draft &amp; Exit</Button>
-            <Button className="h-[38px]" disabled>Publish Study</Button>
+            <Button variant="tertiary" size="row">Save Draft &amp; Exit</Button>
+            <Button size="row" disabled>Publish Study</Button>
           </div>
         </header>
 
-        <main className="flex-1 px-2 pb-2 pt-2">{children}</main>
+        <main className="flex-1 px-2 pb-2 pt-[9px]">{children}</main>
       </div>
     </div>
   )

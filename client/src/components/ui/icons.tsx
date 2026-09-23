@@ -48,9 +48,19 @@ export const InPersonGroupIcon = icon(<><circle cx="12" cy="12" r="9" {...stroke
 export const DiaryIcon = icon(<><path d="M6 20V10m6 10V4m6 16v-7" {...stroke} /></>)
 
 // ----- Tier and score marks -----
-export const TrustMark = icon(<><circle cx="12" cy="12" r="8" {...stroke} /><path d="M12 8.2 13.4 11l3.1.4-2.3 2.1.6 3-2.8-1.5-2.8 1.5.6-3-2.3-2.1 3.1-.4L12 8.2Z" {...stroke} /></>)
+export const TrustMark = icon(<><path d="M12 3 5 5.8v5.4c0 4 2.9 7.6 7 9.3 4.1-1.7 7-5.3 7-9.3V5.8L12 3Z" {...stroke} /><circle cx="12" cy="10.4" r="2" {...stroke} /><path d="M8.5 16.4c0-1.8 1.6-2.9 3.5-2.9s3.5 1.1 3.5 2.9" {...stroke} /></>)
 export const PlatinumMark = icon(<path d="M7 5h10l4 5-9 9-9-9 4-5Z" {...stroke} />)
 export const GoldMark = icon(<path d="M4 18h16M4 18 3 8l5 3 4-6 4 6 5-3-1 10" {...stroke} />)
 export const SilverMark = icon(<path d="m12 4 2.5 5.2 5.5.8-4 4 .9 5.6L12 17l-4.9 2.6.9-5.6-4-4 5.5-.8L12 4Z" {...stroke} />)
 export const VerifiedMark = icon(<><circle cx="12" cy="12" r="8.5" {...stroke} /><path d="m8.5 12.3 2.4 2.4 4.6-5" {...stroke} /></>)
 export const MoneyMark = icon(<><circle cx="12" cy="12" r="8.5" {...stroke} /><path d="M12 7.5v9M14.2 9.8c0-1-1-1.7-2.2-1.7s-2.2.7-2.2 1.7 1 1.7 2.2 1.7 2.2.7 2.2 1.7-1 1.7-2.2 1.7-2.2-.7-2.2-1.7" {...stroke} /></>)
+
+// ----- Notification row glyphs (1518:71845) -----
+export const TaskIcon = icon(<><rect x="4" y="3" width="16" height="18" rx="3" {...stroke} /><path d="M8 9h8M8 13h8M8 17h5" {...stroke} /></>)
+export const UsersIcon = icon(<><circle cx="9" cy="8.5" r="3" {...stroke} /><path d="M3.5 19.5c0-3 2.5-4.8 5.5-4.8s5.5 1.8 5.5 4.8" {...stroke} /><path d="M16.5 6.4a2.8 2.8 0 0 1 0 5.4M17 14.9c2.1.4 3.5 1.9 3.5 4.1" {...stroke} /></>)
+export const NoteIcon = icon(<><rect x="4.5" y="3" width="15" height="18" rx="3" {...stroke} /><path d="M8.5 8h7M8.5 12h7M8.5 16h4" {...stroke} /><path d="M4.5 6.5h2" {...stroke} /></>)
+export const InvoiceIcon = icon(<><path d="M5 3h14v18l-2.3-1.6L14.3 21 12 19.4 9.7 21l-2.4-1.6L5 21V3Z" {...stroke} /><path d="M12 7v8M14 9.2c0-.9-.9-1.5-2-1.5s-2 .6-2 1.5.9 1.5 2 1.5 2 .6 2 1.5-.9 1.5-2 1.5-2-.6-2-1.5" {...stroke} /></>)
+export const MessageIcon = icon(<><path d="M21 12.5a7.5 7.5 0 0 1-7.5 7.5c-1.2 0-2.4-.3-3.4-.8L4.5 21l1.6-4.8A7.5 7.5 0 1 1 21 12.5Z" {...stroke} /><path d="M9 11h6M9 14.5h4" {...stroke} /></>)
+export const ClockArrow = icon(<><path d="M20.5 12a8.5 8.5 0 1 1-3-6.5" {...stroke} /><path d="M20.5 3.5V8H16" {...stroke} /><path d="M12 7.5V12l3 2" {...stroke} /></>)
+export const ShieldIcon = icon(<><path d="M12 3 5 5.8v5.4c0 4 2.9 7.6 7 9.3 4.1-1.7 7-5.3 7-9.3V5.8L12 3Z" {...stroke} /><circle cx="12" cy="10.5" r="2.1" {...stroke} /><path d="M8.4 16.6c0-1.8 1.6-3 3.6-3s3.6 1.2 3.6 3" {...stroke} /></>)
+export const DollarCircle = icon(<><circle cx="12" cy="12" r="9" {...stroke} /><path d="M12 6.8v10.4M14.3 9.4c0-1-1-1.8-2.3-1.8s-2.3.8-2.3 1.8 1 1.8 2.3 1.8 2.3.8 2.3 1.8-1 1.8-2.3 1.8-2.3-.8-2.3-1.8" {...stroke} /></>)

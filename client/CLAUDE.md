@@ -39,7 +39,7 @@ Vite, React 19, TypeScript, Tailwind v4, React Router 7. No other UI libraries. 
 
 Desktop first at **1440**: a 240px left navigation, a 68px top bar, **600px** side panels, **460px** modals.
 
-Chrome, measured off the Studies frames: the navigation, the top bar and the page behind the content are all `yellow-20` (#f7f4f0); the content panel is `bg-0` (#fdfdfc) inset 8px from the nav and the right edge; the active nav item is a white pill. The Create frames keep the same nav; their top bar carries the same `yellow-20` tint (69px, hairline under it, then 8px before the panel) and only the four step chips are pills — white, with the active one `bgAlt-2`. Table rows and header bands are 52px with 22px cell padding; the segmented tab group is 343×48 with 112px tabs, `bgAlt-2` track and a `green-200` pill. The page panel has 25px of padding above its first element (24 on the Create frames). The primary CTA is a vertical gradient, #fdc86f to #fca311, with a 2px `yellow-700` bottom edge; its height is per frame (38 in the top bar, 36 in a banner, 48 in a dialog). The 460px dialog is `bg-0`: 40px sides, 44 above the 24px title, a 330px body column, 38 below it, then the hairline, 16, and 48px buttons 16 apart.
+Chrome, measured off the Studies frames: the navigation, the top bar and the page behind the content are all `yellow-20` (#f7f4f0); the content panel is `bg-0` (#fdfdfc) inset 8px from the nav and the right edge and starting at y=78 (68 of top bar, its hairline, then 9 of page); the Dashboard panel is `bgAlt-0` (#fbfefd) instead; the active nav item is a white pill. The Create frames keep the same nav; their top bar carries the same `yellow-20` tint (69px, hairline under it, then 8px before the panel) and only the four step chips are pills — white, with the active one `bgAlt-2`. Table rows and header bands are 52px with 22px cell padding; the segmented tab group is 343×48 with 112px tabs, `bgAlt-2` track and a `green-200` pill. The page panel has 25px of padding above its first element (24 on the Create frames). The primary CTA is a vertical gradient, #fdc86f to #fca311, with a 2px `yellow-700` bottom edge; its height is per frame, so `Button` carries them as sizes: `md` 40, `row` 38 (top bar, Create bar, notification rows), `sm` 32, `none` when the caller sets its own (36 in a banner, 48 in a dialog). `cn` is a plain join, so a height in `className` will not beat a size class — pass `size="none"`. The 460px dialog is `bg-0`: 40px sides, 44 above the 24px title, a 330px body column, 38 below it, then the hairline, 16, and 48px buttons 16 apart.
 
 ---
 
@@ -113,10 +113,16 @@ Roughly **90 unique screens**, not 216: 126 frames are the same screen drawn onc
 | `/welcome` | Welcome | 1484:81512 | page |
 
 ### Dashboard — section 826:85653
+
+Only one dashboard state is drawn. `826:86322` (and the `826:85659` inside it) is
+**hidden in the file** and holds an older copy of the populated dashboard, not an
+empty state, so it cannot be screenshotted and there is nothing to match a
+no-studies screen against. The dashboard and the Studies cards view draw the same
+`StudyCard`, at 376 and 368 wide.
 | Route | Screen | Node | Kind |
 |---|---|---|---|
 | `/dashboard` | Dashboard | 826:85021 | page |
-| `/dashboard/empty` | Dashboard, no studies yet | 826:85659 | page |
+| `/dashboard/empty` | Dashboard, no studies yet | **not drawn** | page |
 | `/notifications` (panel form) | Notifications | 1518:71845 | panel |
 | — | Respondent Profile Details | 1704:141690 | panel |
 
@@ -170,7 +176,7 @@ Roughly **90 unique screens**, not 216: 126 frames are the same screen drawn onc
 | Route | Screen | Node | Kind |
 |---|---|---|---|
 | `/pool` | Pool | 1645:161580 | page |
-| `/pool/empty` | Pool, empty | 1645:161430 | page |
+| `/pool/empty` | Pool, empty | **check: 1645:161430 draws the populated Pool** | page |
 | `/pool/panels/:id/members` | My Panel, Members | 1645:161734 | page |
 | `/pool/panels/:id/matched` | My Panel, Matched | 1645:162050 | page |
 | `/pool/featured/:id` | Featured Panel, Details | 1645:161904 | page |

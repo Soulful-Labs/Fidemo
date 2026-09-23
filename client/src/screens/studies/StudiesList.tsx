@@ -93,7 +93,7 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
 
   return (
     <AppShell crumbs={[{ label: 'Studies' }]}>
-      <div className="min-h-[890px] rounded-lg bg-bg-0 px-4 pb-4 pt-[25px]">
+      <div className="min-h-[881px] rounded-lg bg-bg-0 p-4">
         {tab === 'completed' && <h1 className="pb-2 text-title-s text-text-title">My Studies</h1>}
 
         <div className="flex items-center justify-between gap-4 pb-6">

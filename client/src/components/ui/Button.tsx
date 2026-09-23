@@ -3,7 +3,7 @@ import { cn } from '../../lib/cn'
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'tertiary' | 'danger' | 'ghost'
-  size?: 'md' | 'sm'
+  size?: 'md' | 'row' | 'sm' | 'none'
   fullWidth?: boolean
   leftIcon?: ReactNode
   rightIcon?: ReactNode
@@ -30,7 +30,12 @@ const DISABLED = {
   danger: 'bg-bg-4 text-text-disabled',
   ghost: 'text-text-disabled',
 }
-const SIZES = { md: 'h-btn rounded-sm px-4 text-text-medium', sm: 'h-btn-sm rounded-sm px-3 text-text-medium' }
+const SIZES = {
+  md: 'h-btn rounded-sm px-4 text-text-medium',
+  row: 'h-[38px] rounded-sm px-4 text-text-medium',
+  sm: 'h-btn-sm rounded-sm px-3 text-text-medium',
+  none: 'rounded-sm px-4 text-text-medium',
+}
 
 export default function Button({
   variant = 'primary', size = 'md', fullWidth, leftIcon, rightIcon, className, children, disabled, type = 'button', ...rest

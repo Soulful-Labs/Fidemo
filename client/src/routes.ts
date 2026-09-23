@@ -7,6 +7,7 @@ import KitchenSink from './screens/kitchen-sink/KitchenSink'
 import StudiesList from './screens/studies/StudiesList'
 import PausedStudy from './screens/studies/PausedStudy'
 import AudienceNoMatch from './screens/create/AudienceNoMatch'
+import Dashboard from './screens/dashboard/Dashboard'
 
 /**
  * The client route map. `node` is the Figma frame each route is built to, so
@@ -43,8 +44,8 @@ const routes: ScreenRoute[] = [
   page('/welcome', 'Welcome', '1484:81512', 'Onboarding'),
 
   // ----- Dashboard (826:85653) -----
-  page('/dashboard', 'Dashboard', '826:85021', 'Dashboard'),
-  page('/dashboard/empty', 'Dashboard, no studies', '826:85659', 'Dashboard'),
+  { path: '/dashboard', label: 'Dashboard', node: '826:85021', section: 'Dashboard', kind: 'page', element: createElement(Dashboard) },
+  { path: '/dashboard/empty', label: 'Dashboard, no studies yet', node: 'not drawn in Figma', section: 'Dashboard', kind: 'page', element: createElement(Dashboard, { empty: true }) },
 
   // ----- Studies list (1518:72486) -----
   { path: '/studies', label: 'Studies, Ongoing', node: '1518:90600 (table), 1518:90966 (cards)', section: 'Studies', kind: 'page', element: createElement(StudiesList, { tab: 'ongoing' }) },

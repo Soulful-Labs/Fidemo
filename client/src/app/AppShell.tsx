@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import Button from '../components/ui/Button'
+import NotificationsPanel from '../screens/dashboard/NotificationsPanel'
+import { NOTIFICATIONS } from '../mock/dashboard'
 import { BellIcon, ChevronRight, DashboardIcon, HelpIcon, PaymentsIcon, Plus, PoolIcon, StudiesIcon } from '../components/ui/icons'
 import { cn } from '../lib/cn'
 
@@ -61,6 +64,9 @@ export function SideNav() {
 export default function AppShell({
   crumbs = [], action, children, bare,
 }: { crumbs?: Crumb[]; action?: ReactNode; children: ReactNode; bare?: boolean }) {
+  const [notifications, setNotifications] = useState(false)
+  const [rows, setRows] = useState(NOTIFICATIONS)
+  const unread = rows.filter((n) => n.unread).length
   if (bare) return <div className="min-h-screen bg-yellow-20">{children}</div>
 
   return (
@@ -80,20 +86,25 @@ export default function AppShell({
           <div className="flex items-center gap-3">
             {action ?? (
               <>
-                <NavLink to="/notifications" aria-label="Notifications"
-                  className="flex h-[38px] w-[38px] items-center justify-center rounded-full border-1 border-stroke-input bg-bg text-text-subtitle hover:text-text-title">
+                <button type="button" aria-label="Notifications" onClick={() => setNotifications(true)}
+                  className="relative flex h-[38px] w-[38px] items-center justify-center rounded-full border-1 border-stroke-input bg-bg text-text-subtitle hover:text-text-title">
                   <BellIcon className="h-5 w-5" />
-                </NavLink>
+                  {unread > 0 && <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-cta-primary" />}
+                </button>
                 <NavLink to="/studies/create/about">
-                  <Button size="sm" className="h-[38px]" leftIcon={<Plus className="h-4 w-4" />}>Create Study</Button>
+                  <Button size="row" leftIcon={<Plus className="h-4 w-4" />}>Create Study</Button>
                 </NavLink>
               </>
             )}
           </div>
         </header>
 
-        <main className="flex-1 px-2 pb-2 pt-px">{children}</main>
+        <main className="flex-1 px-2 pb-2 pt-[10px]">{children}</main>
       </div>
+
+      <NotificationsPanel open={notifications} rows={rows} onClose={() => setNotifications(false)}
+        onMarkAllRead={() => setRows((r) => r.map((n) => ({ ...n, unread: false })))}
+        onAction={() => setNotifications(false)} />
     </div>
   )
 }

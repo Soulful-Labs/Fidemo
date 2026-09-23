@@ -73,7 +73,7 @@ export default function StudyCard({ study, onOpen, onMenu, menu, className }: { 
         { value: study.segments[2], tone: 'grey' },
       ]} />
       {study.breakdown && (
-        <div className="absolute -bottom-4 left-4 right-4 flex items-center justify-between gap-3 rounded-sm bg-bg px-4 py-2.5 text-text-regular text-text-subtitle shadow-[0_2px_8px_rgba(32,30,25,0.08)]">
+        <div className="absolute -bottom-8 left-2 right-2 flex items-center justify-between gap-3 rounded-sm bg-bg px-4 py-2.5 text-text-regular text-text-subtitle shadow-[0_2px_8px_rgba(32,30,25,0.08)]">
           <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-brand-secondary" />Completed: <span className="text-text-title">{study.breakdown.completed}</span></span>
           <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-cta-primary" />Screening: <span className="text-text-title">{study.breakdown.screening}</span></span>
           <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-bg-4" />Remaining: <span className="text-text-title">{study.breakdown.remaining}</span></span>
