@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { SideNav } from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import { DiaryIcon, Info, PoolIcon, StudiesIcon } from '../../components/ui/icons'
@@ -19,8 +20,10 @@ const STEPS: { key: CreateStep; label: string; Icon: typeof Info; to: string }[]
  * "Create Study / Study Name", the four step chips and the Save Draft & Exit
  * and Publish Study buttons instead of the bell and Create Study.
  */
-export default function CreateShell({ step, children }: { step: CreateStep; children: ReactNode }) {
+export default function CreateShell({ step, action, children }: { step: CreateStep; action?: ReactNode; children: ReactNode }) {
   const index = STEPS.findIndex((s) => s.key === step)
+  const next = STEPS[index + 1]
+  const navigate = useNavigate()
 
   return (
     <div className="flex min-h-screen bg-yellow-20">
@@ -49,8 +52,12 @@ export default function CreateShell({ step, children }: { step: CreateStep; chil
           </ol>
 
           <div className="flex items-center gap-3">
-            <Button variant="tertiary" size="row">Save Draft &amp; Exit</Button>
-            <Button size="row" disabled>Publish Study</Button>
+            {action ?? (
+              <>
+                <Button variant="tertiary" size="row" onClick={() => navigate('/studies/drafts')}>Save Draft &amp; Exit</Button>
+                <Button size="row" onClick={() => next && navigate(next.to)}>Continue</Button>
+              </>
+            )}
           </div>
         </header>
 

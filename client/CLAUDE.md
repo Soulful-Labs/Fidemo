@@ -33,6 +33,18 @@ Measuring beats guessing: sampling pixels out of the Figma PNG (panel edges, row
 
 ---
 
+## Rule 3, a shared change re-opens what it touches
+
+When a turn changes a shared component, a token or the shell, re-run the compare
+loop on the screens already signed off and report their new diff percentages.
+A screen is only still signed off if it is still matching.
+
+Three turns running, a fix to a shared component or to the shell changed every
+screen already built: the primary CTA gradient, the panel's y-offset, and the
+button heights that `className` could never override.
+
+---
+
 ## Stack
 
 Vite, React 19, TypeScript, Tailwind v4, React Router 7. No other UI libraries. `npm run dev` serves on **5174** so both apps can run side by side.
@@ -111,6 +123,22 @@ Roughly **90 unique screens**, not 216: 126 frames are the same screen drawn onc
 | `/payment-method` | Payment Method | 1512:68177 | page |
 | `/in-review` | In Review | 1484:81502 | page |
 | `/welcome` | Welcome | 1484:81512 | page |
+
+### Create, the three shared steps
+
+About, Audience and Screener are one 600px column of `Section` blocks: the green
+glyph in a 20px gutter, the copy and fields at +28, a `stroke-1` divider between
+sections, and the heading at 18 (`title-s`). About centres its column in the
+panel; Audience and Screener put a 488px aside at x 920 with a 48px gutter. The
+Create top bar carries **Save Draft & Exit + Continue** on these three steps.
+
+**The two Audience drawings disagree.** 1622:81615 (the numbered step) and
+1518:91273 (its no-match state) differ on the field list — Country with flag
+chips vs Location, Skills vs Organization size, two conditions vs three, and
+Trust Score only in the no-match frame — on the forecast, which only the
+no-match frame gives a "No matching respondents?" block, and on the top-bar
+button, Continue vs a disabled Publish Study. They are built as two screens so
+each matches its own frame; the numbered step is the canonical one.
 
 ### Dashboard — section 826:85653
 

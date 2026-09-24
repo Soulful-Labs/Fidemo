@@ -7,6 +7,9 @@ import KitchenSink from './screens/kitchen-sink/KitchenSink'
 import StudiesList from './screens/studies/StudiesList'
 import PausedStudy from './screens/studies/PausedStudy'
 import AudienceNoMatch from './screens/create/AudienceNoMatch'
+import About from './screens/create/About'
+import Audience from './screens/create/Audience'
+import Screener from './screens/create/Screener'
 import Dashboard from './screens/dashboard/Dashboard'
 
 /**
@@ -53,10 +56,10 @@ const routes: ScreenRoute[] = [
   { path: '/studies/completed', label: 'Studies, Completed', node: '1518:90760', section: 'Studies', kind: 'page', element: createElement(StudiesList, { tab: 'completed' }) },
 
   // ----- Create, one flow for every type (see CLAUDE.md) -----
-  page('/studies/create/about', 'Create, About', '1622:81504', 'Create'),
-  page('/studies/create/audience', 'Create, Audience', '1622:81615', 'Create'),
+  { path: '/studies/create/about', label: 'Create, About', node: '1622:81504', section: 'Create', kind: 'page', element: createElement(About) },
+  { path: '/studies/create/audience', label: 'Create, Audience', node: '1622:81615', section: 'Create', kind: 'page', element: createElement(Audience) },
   { path: '/studies/create/audience/no-match', label: 'Create, no matching audience', node: '1518:91273', section: 'Create', kind: 'page', element: createElement(AudienceNoMatch) },
-  page('/studies/create/screener', 'Create, Screener', '1622:81771', 'Create'),
+  { path: '/studies/create/screener', label: 'Create, Screener', node: '1622:81771', section: 'Create', kind: 'page', element: createElement(Screener) },
   page('/studies/create/study', 'Create, Study setup', '1518:91922', 'Create'),
   page('/studies/create/publish', 'Create, Payment & Publish', '1622:87629', 'Create'),
   page('/studies/create/published', 'Create, Published', '1518:92376', 'Create'),

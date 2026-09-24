@@ -24,3 +24,28 @@ body {
   font-family: 'Geist', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+
+/* The Duration slider on Create / About (1622:81504): a 6px track with the
+   filled part in the CTA yellow and a 16px white-ringed thumb. */
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 16px;
+  background: transparent;
+}
+.slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 100px;
+  background: var(--slider-track);
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -5px;
+  height: 16px;
+  width: 16px;
+  border-radius: 100px;
+  background: #fca311;
+  border: 3px solid #fdfdfc;
+  box-shadow: 0 0 0 1px #fca311;
+}

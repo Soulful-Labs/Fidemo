@@ -12,8 +12,8 @@ function Section({ icon, title, sub, children }: { icon: React.ReactNode; title:
     <section className="flex border-b-1 border-stroke-1 px-2 py-5 last:border-b-0">
       <span className="w-5 shrink-0 text-brand-secondary">{icon}</span>
       <div className="flex-1 pr-[10px]">
-        <div className="flex flex-col gap-0.5 pb-4">
-          <h2 className="text-body-medium text-text-title">{title}</h2>
+        <div className="flex flex-col gap-0.5 pb-2.5">
+          <h2 className="text-title-s text-text-title">{title}</h2>
           <p className="text-text-regular text-text-subtitle">{sub}</p>
         </div>
         {children}
@@ -56,7 +56,12 @@ export default function AudienceNoMatch() {
   const [condition, setCondition] = useState('na')
 
   return (
-    <CreateShell step="audience">
+    <CreateShell step="audience" action={
+      <>
+        <Button variant="tertiary" size="row">Save Draft &amp; Exit</Button>
+        <Button size="row" disabled>Publish Study</Button>
+      </>
+    }>
       <div className="flex items-start gap-12 rounded-lg bg-bg-0 p-6">
         <div className="flex w-[600px] shrink-0 flex-col">
           <div className="flex items-center justify-between gap-4 rounded-lg border-1 border-stroke-2 bg-bgAlt-1 px-5 py-3.5">

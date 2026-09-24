@@ -64,3 +64,4 @@ export const MessageIcon = icon(<><path d="M21 12.5a7.5 7.5 0 0 1-7.5 7.5c-1.2 0
 export const ClockArrow = icon(<><path d="M20.5 12a8.5 8.5 0 1 1-3-6.5" {...stroke} /><path d="M20.5 3.5V8H16" {...stroke} /><path d="M12 7.5V12l3 2" {...stroke} /></>)
 export const ShieldIcon = icon(<><path d="M12 3 5 5.8v5.4c0 4 2.9 7.6 7 9.3 4.1-1.7 7-5.3 7-9.3V5.8L12 3Z" {...stroke} /><circle cx="12" cy="10.5" r="2.1" {...stroke} /><path d="M8.4 16.6c0-1.8 1.6-3 3.6-3s3.6 1.2 3.6 3" {...stroke} /></>)
 export const DollarCircle = icon(<><circle cx="12" cy="12" r="9" {...stroke} /><path d="M12 6.8v10.4M14.3 9.4c0-1-1-1.8-2.3-1.8s-2.3.8-2.3 1.8 1 1.8 2.3 1.8 2.3.8 2.3 1.8-1 1.8-2.3 1.8-2.3-.8-2.3-1.8" {...stroke} /></>)
+export const DiaryBookIcon = icon(<><rect x="4.5" y="3" width="15" height="18" rx="3" {...stroke} /><path d="M4.5 7.5h3M8.5 8.5h7" {...stroke} /><path d="M15.8 12.4 9.4 18.8l-2.6.6.6-2.6 6.4-6.4a1.4 1.4 0 0 1 2 2Z" {...stroke} /></>)

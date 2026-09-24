@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter, useRoutes } from 'react-router-dom'
 import './index.css'
 import routes from './routes'
+import { CreateProvider } from './mock/createStore'
 
 function Routed() {
   return useRoutes(routes)
@@ -11,7 +12,9 @@ function Routed() {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <Routed />
+      <CreateProvider>
+        <Routed />
+      </CreateProvider>
     </BrowserRouter>
   </StrictMode>,
 )
