@@ -332,6 +332,55 @@ it, costing roughly 1,800 differing pixels (0.1%). This is the frame being a
 1024 screenshot pasted onto a long artboard, not a layout error, and it is left
 alone.
 
+### Results and the respondent screens
+
+**Results** (1627:96628) is three figures, an AI summaries card, the completed
+respondents on 70px rows with `Rate Now` or a flat `Rated` per row, and the
+study verification certificate. Its table takes a fifth, unlabelled column for
+the button; the pager is `‹ 1 2 ›`.
+
+**Everything behind one respondent is a single screen with three tabs**, not
+three screens: Screener, Study Result and Activity, on routes
+`/studies/:id/respondent/:rid`, `/result` and `/activity`. The study strip, the
+profile rail and the bottom bar are shared; only the tab body and the bar
+change. `?state=recruited` drops the Study Result tab and swaps the bar for
+Qualify / Disqualify, which is how 1627:97305 differs from 1627:97609.
+
+**The fork is the Study Result tab and nothing else.** Survey and diary list
+the answers (the diary under `DAY n` bars); a session study shows the booked
+slot, the verification PIN and a rich-text interview notes card instead
+(1627:102694, 1627:102902). The Screener tab, the Activity tab, the rail and
+the strip are identical for every type. **There is no recording anywhere in
+these frames** — the session fork is slot, PIN, notes and a completion
+confirmation with `Mark No-show` / `Mark Completed`.
+
+**The slot has three states**, and `1627:103111` from the first inventory no
+longer exists: the fragment is now **`1769:93628`, 846x423**, sitting on the
+canvas on top of the Scheduled Study respondent frame. It is not a screen, it
+is the same session card drawn twice more — running, with `Finish` and a
+`0:25:16` timer, and finished, greyed out with a `Completed` chip. Built as
+`?session=running` and `?session=finished`.
+
+**Respondent Profile Details is the Dashboard's panel.** 1627:98130 and
+1704:141690 differ in 2.43% of pixels: the four Verified items are ordered
+column-major on the Dashboard and row-major here, the meta line reads 10 years
+on one and 12 on the other, and the Manage frame is 24px taller. Same panel,
+same footer (`Invite To Study`, `Save To Micropanel`), so it is imported, not
+forked.
+
+**Rate (1627:98286) asks for three things and no arithmetic.** Expertise,
+Reliability and Communication at five stars each, plus an optional written
+review, then Submit / Cancel. The frame shows no weighting, no resulting score
+and nothing about the Trust Score, so the panel records stars and stops there.
+
+**Three frames of one screen disagree.** The left card is 824px wide on
+1627:97305 and 836px on 1627:97609 and 1627:97901, which moves the gutter to
+the rail from 25 to 13; the breadcrumb reads "Ferry L" while the rail and the
+strip name John M; and the Rate panel and the Results breadcrumb name the
+survey study on a diary frame. The build keeps one card width (824, the
+recruited frame), names the row from Results and the profile from the rail, and
+leaves the rest as the frames have it.
+
 ### Manage study — one flow, sections 1627:95955 / 98349 / 100939 / 103596 / 107079 / 1645:131435
 | Route | Screen | Node | Kind |
 |---|---|---|---|
