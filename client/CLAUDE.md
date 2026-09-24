@@ -61,6 +61,20 @@ it, and say so in the report when one does not.
 
 ---
 
+## Rule 5, prove the render before trusting the diff
+
+**A dead dev server does not produce an error, it produces a plausible diff of
+nothing.** `scripts/shot.mjs` will happily capture a blank or redirected page
+and the diff will come back as a believable number. Before trusting any diff,
+confirm the render captured the route you asked for: the script prints the route
+it landed on, so `(/)` when you asked for `/studies/create/study` means the app
+redirected and the image is worthless. If a diff jumps and you cannot name the
+reason, run `curl -s -o /dev/null -w "%{http_code}" http://localhost:5174/`
+before changing a single pixel. A `000` means the server is gone; restart it and
+re-measure rather than chasing the phantom.
+
+---
+
 ## Rule 4, push after each screen
 
 Commit and push as soon as a screen matches, not only at the end of the turn.
