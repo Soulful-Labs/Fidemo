@@ -45,6 +45,22 @@ button heights that `className` could never override.
 
 ---
 
+## Hidden frames
+
+**Frames switched off in the file are common, and a node id is not proof a screen
+exists.** Four found so far: `826:86322` and `826:85659` (an older copy of the
+populated dashboard, briefed as the empty state), `1518:92891` (Video Call Setup
+- Platform Managed) and `1518:93673` (a 2642px reference board of pasted
+bitmaps). The tell is that `get_screenshot` returns a **1x1 image** while the
+JSON still reports the node's real `original_width` and `original_height`. A
+hidden frame cannot be rendered at any size or with `contentsOnly`, and its
+children cannot be rendered either, so the only way to read one is
+`get_metadata`, which gives layer names, text and geometry but not the label of
+any component instance inside it. Check a node renders before planning work on
+it, and say so in the report when one does not.
+
+---
+
 ## Rule 4, push after each screen
 
 Commit and push as soon as a screen matches, not only at the end of the turn.
