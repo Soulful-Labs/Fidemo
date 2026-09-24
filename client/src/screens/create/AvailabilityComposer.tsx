@@ -37,8 +37,8 @@ function IconBtn({ label, children }: { label: string; children: React.ReactNode
  * that opens beside the study settings on a session study. The group flavour
  * swaps Weekly Hours for scheduled sessions and the limit for seats.
  */
-export default function AvailabilityComposer({ group, onBack, onSubmit }: {
-  group: boolean; onBack: () => void; onSubmit: () => void
+export default function AvailabilityComposer({ group, address, onBack, onSubmit }: {
+  group: boolean; address?: boolean; onBack: () => void; onSubmit: () => void
 }) {
   const { draft, set } = useDraft()
 
@@ -56,6 +56,35 @@ export default function AvailabilityComposer({ group, onBack, onSubmit }: {
       </div>
 
       <div className="flex flex-col gap-4 p-4">
+        {address && (
+          <div className="flex flex-col gap-3 rounded-md bg-yellow-30 p-4">
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-text-regular text-text-title">Set the address for participants to book in-person</p>
+              <Button variant="secondary" size="none" className="h-[38px] px-4" leftIcon={<Plus className="h-4 w-4" />}>Add Address</Button>
+            </div>
+            <div className="flex items-center justify-between gap-3 rounded-sm border-1 border-stroke-input bg-bg px-4 py-3">
+              <span className="text-text-regular text-text-title">Street 2, Carolina, Texas, USA - 10001</span>
+              <span className="flex items-center gap-2">
+                <IconBtn label="Edit address"><Edit className="h-4 w-4" /></IconBtn>
+                <IconBtn label="Delete address"><Trash className="h-4 w-4" /></IconBtn>
+              </span>
+            </div>
+            <div className="flex flex-col gap-3 rounded-sm bg-bg-1 p-3">
+              <input placeholder="Street name, Area"
+                className="h-[38px] w-full rounded-sm border-1 border-stroke-input bg-bg px-4 text-text-regular text-text-title placeholder:text-text-body" />
+              <div className="grid grid-cols-2 gap-3">
+                <input placeholder="City"
+                  className="h-[38px] w-full rounded-sm border-1 border-stroke-input bg-bg px-4 text-text-regular text-text-title placeholder:text-text-body" />
+                <input placeholder="Zip Code"
+                  className="h-[38px] w-full rounded-sm border-1 border-stroke-input bg-bg px-4 text-text-regular text-text-title placeholder:text-text-body" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Button variant="secondary" size="none" className="h-[38px]">Save Address</Button>
+                <Button variant="tertiary" size="none" className="h-[38px]">Cancel</Button>
+              </div>
+            </div>
+          </div>
+        )}
         <Card title="Limits">
           {group ? (
             <label className="flex flex-col gap-1">

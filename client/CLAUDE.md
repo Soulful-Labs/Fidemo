@@ -149,6 +149,25 @@ no-match frame gives a "No matching respondents?" block, and on the top-bar
 button, Continue vs a disabled Publish Study. They are built as two screens so
 each matches its own frame; the numbered step is the canonical one.
 
+### Create step 4, Study setup
+
+One step, four variants, driven by the type chosen on step 1. Each variant is
+the same three sections — Incentive Payments, Costing Summary, Payment, all
+identical across types — under a settings section of its own, and each is drawn
+in **states, not separate screens**: the thing still to set up, set up, and the
+composer open beside the settings in a two-column split. The top bar's primary
+becomes **Proceed to Publish**, drawn disabled.
+
+Survey 1518:91922 / 91779 / 92064. Diary 1518:94580 / 94742 / 94904. Video Call
+1518:92729 / 93042 (1:1) / 93335 (focus group). In-Person 1518:93678 / 93998 /
+94157 / 94316. The group flavour of a session study swaps seats per session for
+the meeting buffer and scheduled sessions for weekly hours.
+
+**Two frames in this section are switched off in the file and cannot be
+rendered.** `1518:92891`, Video Call Setup - Platform Managed, and `1518:93673`,
+Study Setup & Pricing — the latter is a 2642px reference board holding three
+pasted bitmaps and no text, not a screen.
+
 ### Dashboard — section 826:85653
 
 Only one dashboard state is drawn. `826:86322` (and the `826:85659` inside it) is

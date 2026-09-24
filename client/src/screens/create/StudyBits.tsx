@@ -44,7 +44,7 @@ export function IncentivePayments() {
   const { draft, set } = useDraft()
   const pct = ((draft.incentive - 5) / 995) * 100
   return (
-    <Section icon={DOLLAR} title="Incentive Payments" sub="Set the reward payment amount for each participant in your study." headPad="pb-4">
+    <Section icon={DOLLAR} title="Incentive Payments" sub="Set the reward payment amount for each participant in your study." headPad="pb-4" titleLead="leading-[22px]">
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-4">
           <span className="text-text-regular text-text-title">Incentive Amount</span>
@@ -80,7 +80,7 @@ export function IncentivePayments() {
 /** Costing Summary, the same on every study type. */
 export function CostingSummary() {
   return (
-    <Section icon={FORM} title="Costing Summary" sub="" headPad="pb-2">
+    <Section icon={FORM} title="Costing Summary" sub="" headPad="pb-2" titleLead="leading-[22px]">
       <div className="flex flex-col gap-2">
         <p className="flex items-center gap-2 text-text-regular text-text-title">
           20x participants <span className="text-text-body">&bull;</span> $700 incentive
@@ -98,7 +98,7 @@ export function CostingSummary() {
 /** Payment, the same on every study type. */
 export function Payment() {
   return (
-    <Section icon={RECEIPT} title="Payment" sub="" headPad="pb-2">
+    <Section icon={RECEIPT} title="Payment" sub="" headPad="pb-2" titleLead="leading-[22px]">
       <div className="flex flex-col gap-3">
         <p className="text-text-regular text-text-title">
           This payment will contribute towards your total project cost.{' '}

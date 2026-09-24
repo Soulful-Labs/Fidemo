@@ -30,7 +30,7 @@ function SurveySettings() {
   const [params] = useSearchParams()
   const made = params.get('state') === 'created' || draft.surveyQuestions !== null
   return (
-    <Section icon={TARGET} title="Survey Settings" sub="Setup your survey for the participants" headPad="pb-4" pad="py-4">
+    <Section icon={TARGET} title="Survey Settings" sub="Setup your survey for the participants" headPad="pb-4" titleLead="leading-[22px]" pad="py-4">
       <SettingsCard title="Custom Survey Form" sub={made ? undefined : 'Make the input form for survey questions'}>
         {made ? (
           <>
@@ -66,7 +66,7 @@ function DiarySettings() {
   const [params] = useSearchParams()
   const made = params.get('state') === 'created'
   return (
-    <Section icon={TARGET} title="Diary Study Settings" sub="Setup your Diary study for the participants" headPad="pb-4" pad="py-4">
+    <Section icon={TARGET} title="Diary Study Settings" sub="Setup your Diary study for the participants" headPad="pb-4" titleLead="leading-[22px]" pad="py-4">
       <div className="flex flex-col gap-3.5 rounded-lg bg-yellow-30 p-4">
         <span className="flex flex-col gap-0.5">
           <span className="text-body-medium text-text-title">Diary Study Setup</span>
@@ -124,12 +124,31 @@ function VideoSettings({ group, open }: { group: boolean; open: boolean }) {
     <Section icon={TARGET}
       title={group ? 'Focus Group Video Call Settings' : 'Video Call Settings'}
       sub={group ? 'Setup scheduler for group video call for the participants' : 'Setup scheduler for individual 1:1 video call for the participants'}
-      headPad="pb-4" pad="py-4">
+      headPad="pb-4" titleLead="leading-[22px]" pad="py-4">
       <SettingsCard
         title={group ? 'Set Availability for Group sessions' : 'Set Availability'}
         sub="Set your availability to allow participants to book sessions with you and let you conduct your individual video calls with them at your convenient timings">
         <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" disabled={open}
           onClick={() => set('surveyOpen', true)}>Set Timing Availability</Button>
+      </SettingsCard>
+    </Section>
+  )
+}
+
+
+/** In-Person Interiew Settings (1518:93678), the frame's own spelling. */
+function InPersonSettings({ group, open }: { group: boolean; open: boolean }) {
+  const { set } = useDraft()
+  return (
+    <Section icon={TARGET}
+      title={group ? 'Focus Group In-Person Settings' : 'In-Person Interiew Settings'}
+      sub="Setup your in-person details for the participants" headPad="pb-4" titleLead="leading-[22px]" pad="py-4">
+      <SettingsCard tone="plain" title="Set Availability"
+        sub={group
+          ? 'Availability to allow participants to book group in-person sessions with you and let you conduct your sessions with them at your convenient timings'
+          : 'Availability to allow participants to book 1:1 individual in-person sessions with you and let you conduct your individual sessions with them at your convenient timings'}>
+        <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" disabled={open}
+          onClick={() => set('surveyOpen', true)}>Set Address &amp; Availability</Button>
       </SettingsCard>
     </Section>
   )
@@ -143,6 +162,7 @@ function TypeSettings({ type, group, open }: { type: string; group: boolean; ope
   if (type === 'survey') return <SurveySettings />
   if (type === 'diary') return <DiarySettings />
   if (type === 'video_call') return <VideoSettings group={group} open={open} />
+  if (type === 'in_person') return <InPersonSettings group={group} open={open} />
   return null
 }
 
@@ -156,7 +176,7 @@ export default function StudySetup() {
   const [params] = useSearchParams()
   const type = params.get('type') ?? draft.type
   const group = params.get('group') === '1' || (type === 'video_call' ? draft.groupVideo : draft.groupInPerson)
-  const open = (draft.surveyOpen || params.get('state') === 'building') && type !== 'in_person'
+  const open = draft.surveyOpen || params.get('state') === 'building'
 
   return (
     <CreateShell step="study" action={
@@ -165,11 +185,12 @@ export default function StudySetup() {
         <Button size="row" disabled>Proceed to Publish</Button>
       </>
     }>
-      <div className={`rounded-lg bg-bg-0 px-6 pt-[9px] ${type === 'diary' ? 'min-h-[1707px]' : type === 'video_call' ? (open ? 'min-h-[1408px]' : 'min-h-[1374px]') : 'min-h-[1302px]'}`}>
+      <div className={`rounded-lg bg-bg-0 px-6 pt-[9px] ${type === 'diary' ? 'min-h-[1707px]' : type === 'video_call' ? (open ? 'min-h-[1408px]' : 'min-h-[1374px]') : type === 'in_person' ? 'min-h-[1579px]' : 'min-h-[1302px]'}`}>
         {open ? (
           <div className="flex items-start gap-6 pb-6">
-            {type === 'video_call' ? (
-              <AvailabilityComposer group={group} onBack={() => set('surveyOpen', false)} onSubmit={() => set('surveyOpen', false)} />
+            {type === 'video_call' || type === 'in_person' ? (
+              <AvailabilityComposer group={group} address={type === 'in_person'}
+                onBack={() => set('surveyOpen', false)} onSubmit={() => set('surveyOpen', false)} />
             ) : type === 'diary' ? (
               <SurveyComposer title="Create Diary Form" submit="Submit Diary Form" dayGroup="DAY 1"
                 lead="Setup your form inputs form for users with AI or manually" kind="Multi-line input" seed={2}
