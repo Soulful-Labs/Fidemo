@@ -104,10 +104,10 @@ export function DayBar({ label }: { label: string }) {
 export function PinCard({ variant }: { variant: 'activity' | 'session' }) {
   const wide = variant === 'activity'
   return (
-    <div className={cn('rounded-lg bg-bgAlt-1 p-4', wide ? 'flex items-center justify-between gap-4' : 'flex flex-col gap-3')}>
+    <div className={cn('rounded-lg p-4', wide ? 'flex items-center justify-between gap-4 bg-bg-1' : 'flex flex-col gap-3 bg-bgAlt-1')}>
       <div className="flex flex-col gap-1">
-        <p className="text-title-s leading-[22px] text-text-title">{VERIFICATION_PIN.title}</p>
-        <p className="max-w-[344px] text-text-regular text-text-subtitle">
+        <p className="text-body-large text-text-title">{VERIFICATION_PIN.title}</p>
+        <p className={cn('text-text-regular text-text-subtitle', !wide && 'max-w-[344px]')}>
           {wide ? VERIFICATION_PIN.activityBody : VERIFICATION_PIN.sessionBody}
         </p>
       </div>
@@ -185,19 +185,19 @@ export function NotesCard({ download }: { download?: boolean }) {
 /** Study activity: a checked list, some entries with their own bullets. */
 export function ActivityList() {
   return (
-    <div className="flex flex-col gap-4 px-4 pt-4">
-      <h2 className="text-title-s leading-[22px] text-text-title">Study activity</h2>
-      <ol className="flex flex-col gap-4">
+    <>
+      <h2 className="pt-[18px] text-title-s leading-[22px] text-text-title">Study activity</h2>
+      <ol className="flex flex-col gap-4 pt-[9px]">
         {ACTIVITY.map((a, i) => (
           <li key={i} className="flex gap-3">
             <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-brand-secondary" />
-            <div className="flex flex-col gap-1">
-              <p className="text-text-regular text-text-title">
-                {a.label}{a.strong && <span className="text-text-large text-text-title">{a.strong}</span>}
+            <div className="flex flex-col">
+              <p className="text-text-regular leading-5 text-text-title">
+                {a.label}{a.strong && <span className="text-text-large">{a.strong}</span>}
               </p>
-              {a.at && <p className="text-text-regular text-text-body">{a.at}</p>}
+              {a.at && <p className="text-text-regular leading-5 text-text-body">{a.at}</p>}
               {a.bullets?.map((b) => (
-                <p key={b.text} className="flex gap-2 text-text-regular text-text-title">
+                <p key={b.text} className="flex gap-2 pl-2 text-text-regular leading-5 text-text-title">
                   <span>&bull;</span>{b.text}
                   <span className="text-text-body">&bull;</span>
                   <span className="text-text-body">{b.at}</span>
@@ -207,6 +207,6 @@ export function ActivityList() {
           </li>
         ))}
       </ol>
-    </div>
+    </>
   )
 }

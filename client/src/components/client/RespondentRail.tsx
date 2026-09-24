@@ -17,17 +17,17 @@ function Block({ title, children }: { title?: string; children: React.ReactNode 
 export function RatePrompt({ wide, onRate }: { wide?: boolean; onRate?: () => void }) {
   return (
     <div className={wide
-      ? 'flex items-center justify-between gap-4 rounded-lg bg-bgAlt-1 px-4 py-4'
-      : 'flex flex-col gap-2 rounded-lg bg-bgAlt-1 px-4 py-4'}>
+      ? 'flex h-20 items-center justify-between gap-4 rounded-lg bg-green-50 px-4'
+      : 'flex flex-col gap-2 bg-green-50 px-3 py-4'}>
       <div className="flex flex-col gap-1">
-        <p className="inline-flex items-center gap-2 text-text-large text-text-title">
-          <Star className="h-4 w-4 text-brand-secondary" />{RATE_PROMPT.title}
+        <p className="inline-flex items-center gap-2 text-body-large text-text-title">
+          <Star className="h-5 w-5 text-brand-secondary" />{RATE_PROMPT.title}
         </p>
         <p className={wide ? 'text-text-regular text-text-subtitle' : 'max-w-[248px] text-text-regular text-text-subtitle'}>
           {wide ? RATE_PROMPT.wide : RATE_PROMPT.rail}
         </p>
       </div>
-      <Button size="none" className={wide ? 'h-11 px-6' : 'mt-2 h-11 w-full'} onClick={onRate}>{RATE_PROMPT.cta}</Button>
+      <Button size="none" className={wide ? 'h-12 px-6' : 'mt-3 h-12 w-full'} onClick={onRate}>{RATE_PROMPT.cta}</Button>
     </div>
   )
 }
@@ -40,7 +40,7 @@ export default function RespondentRail({ rate, onRate }: { rate?: boolean; onRat
   const r = RESPONDENT
   return (
     <aside className="flex h-fit w-[304px] shrink-0 flex-col overflow-hidden rounded-lg border-1 border-stroke-input bg-bg-0">
-      {rate && <div className="p-1.5 pb-0"><RatePrompt onRate={onRate} /></div>}
+      {rate && <RatePrompt onRate={onRate} />}
 
       <div className="flex flex-col gap-2 px-4 pb-4 pt-4">
         <p className="flex items-center gap-2">

@@ -75,7 +75,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
 
           <div className="flex gap-6">
             <section className="min-h-[1129px] flex-1 overflow-hidden rounded-lg border-1 border-stroke-input">
-              <div className="flex h-11 items-center gap-6 border-b-1 border-stroke-1 bg-bg-1 px-4">
+              <div className="flex h-11 items-center gap-8 border-b-1 border-stroke-1 bg-bg-1 px-4">
                 {tabs.map((t) => (
                   <button key={t.key} type="button" onClick={() => nav(to(t.key))}
                     className={cn('flex h-11 items-center gap-2 border-b-1 text-body-regular',
@@ -86,10 +86,10 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
               </div>
 
               {tab === 'activity' && (
-                <div className="flex flex-col gap-4 px-4 pb-4 pt-4">
+                <div className="flex flex-col px-4 pb-4 pt-5">
                   {done && <RatePrompt wide onRate={() => setRate(true)} />}
-                  <div className="-mx-4"><ActivityList /></div>
-                  <PinCard variant="activity" />
+                  <ActivityList />
+                  <div className="pt-[14px]"><PinCard variant="activity" /></div>
                 </div>
               )}
 
