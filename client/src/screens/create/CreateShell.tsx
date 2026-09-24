@@ -5,7 +5,7 @@ import Button from '../../components/ui/Button'
 import { DiaryIcon, Info, PoolIcon, StudiesIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 
-export type CreateStep = 'about' | 'audience' | 'screener' | 'study'
+export type CreateStep = 'about' | 'audience' | 'screener' | 'study' | 'publish'
 
 /** The four step chips in the Create top bar, with the rule between them. */
 const STEPS: { key: CreateStep; label: string; Icon: typeof Info; to: string }[] = [

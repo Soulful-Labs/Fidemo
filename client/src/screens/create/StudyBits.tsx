@@ -78,9 +78,9 @@ export function IncentivePayments() {
 }
 
 /** Costing Summary, the same on every study type. */
-export function CostingSummary() {
+export function CostingSummary({ className }: { className?: string } = {}) {
   return (
-    <Section icon={FORM} title="Costing Summary" sub="" headPad="pb-2" titleLead="leading-[22px]">
+    <Section icon={FORM} title="Costing Summary" sub="" headPad="pb-2" titleLead="leading-[22px]" className={className}>
       <div className="flex flex-col gap-2">
         <p className="flex items-center gap-2 text-text-regular text-text-title">
           20x participants <span className="text-text-body">&bull;</span> $700 incentive
@@ -96,9 +96,9 @@ export function CostingSummary() {
 }
 
 /** Payment, the same on every study type. */
-export function Payment() {
+export function Payment({ className }: { className?: string } = {}) {
   return (
-    <Section icon={RECEIPT} title="Payment" sub="" headPad="pb-2" titleLead="leading-[22px]">
+    <Section icon={RECEIPT} title="Payment" sub="" headPad="pb-2" titleLead="leading-[22px]" className={className}>
       <div className="flex flex-col gap-3">
         <p className="text-text-regular text-text-title">
           This payment will contribute towards your total project cost.{' '}

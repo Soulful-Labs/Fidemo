@@ -10,7 +10,7 @@ export function Section({ icon, title, sub, children, className, headPad = 'pb-2
   className?: string; headPad?: string; pad?: string; titleLead?: string
 }) {
   return (
-    <section className={cn('flex border-b-1 border-stroke-1 px-2 last:border-b-0', pad, className)}>
+    <section className={cn('flex border-b-1 border-stroke-1 last:border-b-0 px-2', pad, className)}>
       <span className="w-5 shrink-0 text-brand-secondary">{icon}</span>
       <div className="flex-1 pr-[10px]">
         <div className={cn('flex flex-col gap-0.5', headPad)}>
