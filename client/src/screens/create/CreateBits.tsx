@@ -5,16 +5,16 @@ import { cn } from '../../lib/cn'
  * A Create form section: the green glyph hangs in a 20px gutter and the copy
  * and fields line up in the column beside it (1622:81504, 1622:81615).
  */
-export function Section({ icon, title, sub, children, className, headPad = 'pb-2.5' }: {
-  icon: ReactNode; title: string; sub: string; children: ReactNode; className?: string; headPad?: string
+export function Section({ icon, title, sub, children, className, headPad = 'pb-2.5', pad = 'py-[15px]' }: {
+  icon: ReactNode; title: string; sub: string; children: ReactNode; className?: string; headPad?: string; pad?: string
 }) {
   return (
-    <section className={cn('flex border-b-1 border-stroke-1 px-2 py-[15px] last:border-b-0', className)}>
+    <section className={cn('flex border-b-1 border-stroke-1 px-2 last:border-b-0', pad, className)}>
       <span className="w-5 shrink-0 text-brand-secondary">{icon}</span>
       <div className="flex-1 pr-[10px]">
         <div className={cn('flex flex-col gap-0.5', headPad)}>
-          <h2 className="text-title-s text-text-title">{title}</h2>
-          <p className="text-text-regular text-text-subtitle">{sub}</p>
+          <h2 className="text-title-s leading-[22px] text-text-title">{title}</h2>
+          {sub && <p className="text-text-regular text-text-subtitle">{sub}</p>}
         </div>
         {children}
       </div>

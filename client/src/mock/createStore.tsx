@@ -24,6 +24,11 @@ export interface CreateDraft {
   condition: string
   tiers: string
   questions: Question[]
+  /** Step 4, Study setup. Seeded from the setup frames. */
+  incentive: number
+  autoPay: boolean
+  surveyQuestions: Question[] | null
+  surveyOpen: boolean
 }
 
 export type QuestionKind =
@@ -88,6 +93,7 @@ const INITIAL: CreateDraft = {
   roles: '', functions: '', skills: '', industries: '',
   condition: 'na', tiers: '',
   questions: SEED_QUESTIONS,
+  incentive: 700, autoPay: true, surveyQuestions: null, surveyOpen: false,
 }
 
 interface Ctx { draft: CreateDraft; set: <K extends keyof CreateDraft>(k: K, v: CreateDraft[K]) => void }

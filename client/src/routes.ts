@@ -10,6 +10,7 @@ import AudienceNoMatch from './screens/create/AudienceNoMatch'
 import About from './screens/create/About'
 import Audience from './screens/create/Audience'
 import Screener from './screens/create/Screener'
+import StudySetup from './screens/create/StudySetup'
 import Dashboard from './screens/dashboard/Dashboard'
 
 /**
@@ -60,7 +61,7 @@ const routes: ScreenRoute[] = [
   { path: '/studies/create/audience', label: 'Create, Audience', node: '1622:81615', section: 'Create', kind: 'page', element: createElement(Audience) },
   { path: '/studies/create/audience/no-match', label: 'Create, no matching audience', node: '1518:91273', section: 'Create', kind: 'page', element: createElement(AudienceNoMatch) },
   { path: '/studies/create/screener', label: 'Create, Screener', node: '1622:81771', section: 'Create', kind: 'page', element: createElement(Screener) },
-  page('/studies/create/study', 'Create, Study setup', '1518:91922', 'Create'),
+  { path: '/studies/create/study', label: 'Create, Study setup', node: '1518:91922 (survey), 1518:92729 (video), 1518:93678 (in-person), 1518:94580 (diary)', section: 'Create', kind: 'page', element: createElement(StudySetup) },
   page('/studies/create/publish', 'Create, Payment & Publish', '1622:87629', 'Create'),
   page('/studies/create/published', 'Create, Published', '1518:92376', 'Create'),
 

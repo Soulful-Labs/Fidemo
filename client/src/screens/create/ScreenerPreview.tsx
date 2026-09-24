@@ -73,7 +73,7 @@ export default function ScreenerPreview() {
             ))}
           </div>
 
-          <Button className="h-12 w-full text-body-large">Apply</Button>
+          <Button size="none" className="h-12 w-full text-body-large">Apply</Button>
         </div>
       </div>
     </aside>
