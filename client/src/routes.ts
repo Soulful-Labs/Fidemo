@@ -7,6 +7,7 @@ import KitchenSink from './screens/kitchen-sink/KitchenSink'
 import StudiesList from './screens/studies/StudiesList'
 import PausedStudy from './screens/studies/PausedStudy'
 import StudyOverview from './screens/studies/StudyOverview'
+import ManageStudy from './screens/studies/ManageStudy'
 import AudienceNoMatch from './screens/create/AudienceNoMatch'
 import About from './screens/create/About'
 import Audience from './screens/create/Audience'
@@ -70,7 +71,7 @@ const routes: ScreenRoute[] = [
 
   // ----- Manage, one flow for every type (see CLAUDE.md) -----
   { path: '/studies/:id', label: 'Study Overview', node: '1627:95956', section: 'Manage', kind: 'page', element: createElement(StudyOverview) },
-  page('/studies/:id/manage', 'Manage Study', '1627:96085', 'Manage'),
+  { path: '/studies/:id/manage', label: 'Manage Study', node: '1627:96085', section: 'Manage', kind: 'page', element: createElement(ManageStudy) },
   page('/studies/:id/matched', 'Matched Respondents', '1627:96237', 'Manage'),
   page('/studies/:id/invited', 'Invited Respondents', '1627:96329', 'Manage'),
   page('/studies/:id/recruited', 'Recruited Respondents', '1627:96535', 'Manage'),
