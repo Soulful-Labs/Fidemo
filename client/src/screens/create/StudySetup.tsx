@@ -139,16 +139,30 @@ function VideoSettings({ group, open }: { group: boolean; open: boolean }) {
 /** In-Person Interiew Settings (1518:93678), the frame's own spelling. */
 function InPersonSettings({ group, open }: { group: boolean; open: boolean }) {
   const { set } = useDraft()
+  const [params] = useSearchParams()
+  const saved = params.get('state') === 'created'
   return (
     <Section icon={TARGET}
-      title={group ? 'Focus Group In-Person Settings' : 'In-Person Interiew Settings'}
-      sub="Setup your in-person details for the participants" headPad="pb-4" titleLead="leading-[22px]" pad="py-4">
-      <SettingsCard tone="plain" title="Set Availability"
+      title={group ? 'In-Person Group Interview Settings' : 'In-Person Interiew Settings'}
+      sub={group ? 'Setup your in-person group sessions details for the participants' : 'Setup your in-person details for the participants'} headPad="pb-4" titleLead="leading-[22px]" pad="py-4">
+      <SettingsCard title={group ? 'Set Availability for Group sessions' : 'Set Availability'}
         sub={group
-          ? 'Availability to allow participants to book group in-person sessions with you and let you conduct your sessions with them at your convenient timings'
-          : 'Availability to allow participants to book 1:1 individual in-person sessions with you and let you conduct your individual sessions with them at your convenient timings'}>
-        <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" disabled={open}
-          onClick={() => set('surveyOpen', true)}>Set Address &amp; Availability</Button>
+          ? 'Availability to allow participants to book seat in Group in-person sessions with you and let you conduct your group sessions with them at your convenient timings'
+          : 'Availability to allow participants to book 1:1 individual in-person sessions with you and let you conduct your individual sessions  with them at your convenient timings'}>
+        {saved ? (
+          <>
+            <button type="button" onClick={() => set('surveyOpen', true)}
+              className="flex h-[38px] items-center justify-between gap-3 rounded-sm border-1 border-stroke-input bg-bg px-4 text-text-regular text-text-title">
+              {group ? '2 sessions, 10 seats per sessions, 1 address' : '2 addresses, available 5 days/week, custom timings, 2 days overrides'}
+              <ChevronRight className="h-4 w-4 text-text-subtitle" />
+            </button>
+            <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" leftIcon={<Edit className="h-5 w-5" />}
+              onClick={() => set('surveyOpen', true)}>{group ? 'Update Timing Availability' : 'Update Address & Availability'}</Button>
+          </>
+        ) : (
+          <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" disabled={open}
+            onClick={() => set('surveyOpen', true)}>Set Address &amp; Availability</Button>
+        )}
       </SettingsCard>
     </Section>
   )
@@ -185,11 +199,12 @@ export default function StudySetup() {
         <Button size="row" disabled>Proceed to Publish</Button>
       </>
     }>
-      <div className={`rounded-lg bg-bg-0 px-6 pt-[9px] ${type === 'diary' ? 'min-h-[1707px]' : type === 'video_call' ? (open ? 'min-h-[1408px]' : 'min-h-[1374px]') : type === 'in_person' ? 'min-h-[1579px]' : 'min-h-[1302px]'}`}>
+      <div className={`rounded-lg bg-bg-0 px-6 pt-[9px] ${type === 'diary' ? 'min-h-[1707px]' : type === 'video_call' ? (open ? 'min-h-[1408px]' : 'min-h-[1374px]') : type === 'in_person' ? (open ? (group ? 'min-h-[1408px]' : 'min-h-[1579px]') : 'min-h-[1374px]') : 'min-h-[1302px]'}`}>
         {open ? (
           <div className="flex items-start gap-6 pb-6">
             {type === 'video_call' || type === 'in_person' ? (
               <AvailabilityComposer group={group} address={type === 'in_person'}
+                title={type === 'in_person' && !group ? 'Set Address & Availability' : 'Set Availability'}
                 onBack={() => set('surveyOpen', false)} onSubmit={() => set('surveyOpen', false)} />
             ) : type === 'diary' ? (
               <SurveyComposer title="Create Diary Form" submit="Submit Diary Form" dayGroup="DAY 1"
