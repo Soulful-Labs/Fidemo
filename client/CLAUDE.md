@@ -73,6 +73,16 @@ reason, run `curl -s -o /dev/null -w "%{http_code}" http://localhost:5174/`
 before changing a single pixel. A `000` means the server is gone; restart it and
 re-measure rather than chasing the phantom.
 
+**A 200 is not enough.** A dev server can stay up while its module graph goes
+stale, so it answers happily with code from an hour ago and a new screen renders
+as the old Placeholder. Check the served module, not just the port:
+`curl -s http://localhost:5174/src/routes.ts | grep -c <NewScreen>`. If that
+disagrees with the file on disk, the server is stale. Restarting is not enough
+either: `npm run dev` quietly binds 5175 when 5174 is taken and the stale server
+keeps answering, so kill whatever holds the port first
+(`Get-NetTCPConnection -LocalPort 5174 -State Listen`) and check the restart
+says 5174.
+
 ---
 
 ## Rule 4, push after each screen
