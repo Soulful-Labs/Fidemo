@@ -102,3 +102,46 @@ export const PAUSED_STUDY = {
   activeSince: 'July 10, 2026, 02:30 PM',
   image: '/img/goals.jpg',
 }
+
+/**
+ * The study the Manage frames are drawn around (1627:95956, 1627:96085).
+ * Its Manage Study review is the Create flow's four steps read back.
+ */
+export const MANAGED_STUDY = {
+  id: 'st-pay',
+  breadcrumb: 'Mobile App Usability Testing',
+  type: 'diary' as StudyType,
+  title: 'How do you make your digital payments mostly?',
+  duration: '1 hour',
+  industry: 'Finance',
+  status: 'Recruiting',
+  completed: '20', completedOf: '/30',
+  qualified: '35', qualifiedOf: '/60 applied',
+  daysRemaining: '36',
+  progress: '66%',
+  description: 'Share about your ways of digital spending and payment methods you use in your daily life.',
+  shareLink: 'https://focusinsite.com/study/S123456/business-finance-operation-analysis/',
+  activeSince: 'July 10, 2026, 02:30 PM',
+  image: '/img/card.jpg',
+  /** Manage Study, as the frame reads the four Create steps back. */
+  review: {
+    studyTime: '1 hour',
+    estimatedAudience: '1K',
+    audience: [
+      { value: '10', icon: 'people' },
+      { value: 'Worldwide', icon: 'pin' },
+      { label: 'Gender', value: 'All' },
+      { label: 'Education', value: 'High school graduate' },
+      { label: 'Age', value: '18-22, 31-40' },
+      { label: 'Age', value: '18-22, 31-40' },
+      { label: 'Work Functions', value: 'Consultation' },
+      { label: 'Roles', value: 'Physician, General Doctor, Nutritionist, Therapist, Medical Practitioner' },
+      { label: 'Industry', value: 'Healthcare, Pharma' },
+      { label: 'Organization Size', value: 'Self employed, 1-10, 10-50' },
+    ] as { label?: string; value: string; icon?: string }[],
+    screener: { label: 'Screening', value: '8 inputs' },
+    /** The one row the study type changes: a survey reads "Survey Form: 10 inputs". */
+    studyRow: { label: 'Diary Study Form', value: '5 questions, 5 days logs' },
+    incentive: { label: 'Incentive', value: '$700' },
+  },
+}
