@@ -12,6 +12,7 @@ import Audience from './screens/create/Audience'
 import Screener from './screens/create/Screener'
 import StudySetup from './screens/create/StudySetup'
 import Publish from './screens/create/Publish'
+import Published from './screens/create/Published'
 import Dashboard from './screens/dashboard/Dashboard'
 
 /**
@@ -64,7 +65,7 @@ const routes: ScreenRoute[] = [
   { path: '/studies/create/screener', label: 'Create, Screener', node: '1622:81771', section: 'Create', kind: 'page', element: createElement(Screener) },
   { path: '/studies/create/study', label: 'Create, Study setup', node: '1518:91922 (survey), 1518:92729 (video), 1518:93678 (in-person), 1518:94580 (diary)', section: 'Create', kind: 'page', element: createElement(StudySetup) },
   { path: '/studies/create/publish', label: 'Create, Payment & Publish', node: '1518:92247 / 1622:84446 / 86775 / 87629 (one screen)', section: 'Create', kind: 'page', element: createElement(Publish) },
-  page('/studies/create/published', 'Create, Published', '1518:92376', 'Create'),
+  { path: '/studies/create/published', label: 'Create, Published', node: '1518:92376', section: 'Create', kind: 'page', element: createElement(Published) },
 
   // ----- Manage, one flow for every type (see CLAUDE.md) -----
   page('/studies/:id', 'Study Overview', '1627:95956', 'Manage'),
