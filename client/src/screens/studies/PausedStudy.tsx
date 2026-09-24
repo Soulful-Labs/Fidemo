@@ -1,23 +1,9 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
-import StudyTypeTag from '../../components/client/StudyTypeTag'
 import Button from '../../components/ui/Button'
-import Tabs from '../../components/ui/Tabs'
-import Tag from '../../components/ui/Tag'
-import { Clock, Copy, LinkIcon, MoreVertical } from '../../components/ui/icons'
+import { Copy } from '../../components/ui/icons'
+import { StudyFrame } from '../../components/client/StudyFrame'
 import { PAUSED_STUDY } from '../../mock/studies'
-
-/** The four figures under the title on the study header (1704:143783). */
-function HeadStat({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-text-regular text-text-subtitle">{label}</span>
-      <span className="text-title-s text-text-title">
-        {value}{suffix && <span className="text-text-regular text-text-subtitle"> {suffix}</span>}
-      </span>
-    </div>
-  )
-}
 
 /** The Overview tiles, in the warm tint the frame draws them in. */
 function OverviewTile({ label, value, suffix, ring }: { label: string; value: string; suffix?: string; ring?: number }) {
@@ -52,8 +38,7 @@ export default function PausedStudy() {
 
   return (
     <AppShell crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
-      <div className="min-h-[881px] rounded-lg bg-bg-0 p-4">
-      <div className="flex flex-col gap-3">
+      <StudyFrame study={s} active="overview" muted bodyMinH="min-h-[528px]" banner={
         <div className="flex items-center justify-between gap-6 rounded-lg border-1 border-[#ffd1c7] bg-[#fff0ed] px-4 py-4">
           <div className="flex flex-col gap-1">
             <p className="text-body-medium text-text-title">You have paused this study to recruit new participants further.</p>
@@ -64,55 +49,7 @@ export default function PausedStudy() {
             <Button size="none" className="h-9 px-3" onClick={() => navigate(`/studies/${id}`)}>Resume Study</Button>
           </div>
         </div>
-
-        <section className="rounded-lg bg-bgAlt-1 p-4">
-          <div className="flex items-start gap-6">
-            <span className="h-[182px] w-[240px] shrink-0 overflow-hidden rounded-md bg-bg-2">
-              <img src={s.image} alt="" className="h-full w-full object-cover" />
-            </span>
-            <div className="flex min-w-0 flex-1 flex-col gap-3">
-              <div className="flex items-start justify-between gap-4">
-                <StudyTypeTag type={s.type} className="h-8" />
-                <div className="flex items-center gap-2">
-                  <Tag tone="neutral">{s.status}</Tag>
-                  <button type="button" aria-label="Copy study link"
-                    className="flex h-btn w-btn items-center justify-center rounded-full border-1 border-stroke-input text-text-subtitle hover:text-text-title">
-                    <LinkIcon className="h-4 w-4" />
-                  </button>
-                  <button type="button" aria-label="Study options"
-                    className="flex h-btn w-btn items-center justify-center rounded-full border-1 border-stroke-input text-text-subtitle hover:text-text-title">
-                    <MoreVertical className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              <h1 className="text-title-l text-text-title">{s.title}</h1>
-              <div className="flex items-center gap-2">
-                <Tag tone="neutral" icon={<Clock className="h-4 w-4" />}>{s.duration}</Tag>
-                <Tag tone="neutral">{s.industry}</Tag>
-              </div>
-
-              <div className="grid grid-cols-[repeat(4,158px)] gap-6">
-                <HeadStat label="Completed" value={s.completed} suffix={s.completedOf} />
-                <HeadStat label="Qualified" value={s.qualified} suffix={s.qualifiedOf} />
-                <HeadStat label="Days Remaining" value={s.daysRemaining} />
-                <HeadStat label="Progress" value={s.progress} />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="min-h-[520px]">
-          <Tabs className="h-[45px] rounded-t-lg bg-bg-1 px-4" value="overview"
-            items={[
-              { key: 'overview', label: 'Overview' },
-              { key: 'manage', label: 'Manage Study', muted: true },
-              { key: 'matched', label: 'Matched', muted: true },
-              { key: 'recruited', label: 'Recruited', muted: true },
-              { key: 'results', label: 'Results', muted: true },
-              { key: 'pay', label: 'Pay', muted: true },
-            ]} />
-
+      }>
           <div className="flex flex-col gap-6 px-4 pt-4">
             <div className="grid grid-cols-4 gap-2">
               <OverviewTile label="Progress" value={s.progress} ring={66} />
@@ -144,9 +81,7 @@ export default function PausedStudy() {
               <p className="text-body-regular text-text-title">{s.activeSince}</p>
             </div>
           </div>
-        </section>
-      </div>
-      </div>
+      </StudyFrame>
     </AppShell>
   )
 }

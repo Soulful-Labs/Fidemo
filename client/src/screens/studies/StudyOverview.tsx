@@ -2,7 +2,8 @@ import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import { StudyFrame } from '../../components/client/StudyFrame'
 import { Copy } from '../../components/ui/icons'
-import { MANAGED_STUDY } from '../../mock/studies'
+import { useParams } from 'react-router-dom'
+import { MANAGED_STUDY, MANAGED_SURVEY } from '../../mock/studies'
 
 /** The Overview tiles, in the warm tint the frame draws them in. */
 function OverviewTile({ label, value, suffix, ring }: { label: string; value: string; suffix?: string; ring?: number }) {
@@ -30,7 +31,8 @@ function OverviewTile({ label, value, suffix, ring }: { label: string; value: st
  * Manage Study, holds what the study is; this one holds how it is going.
  */
 export default function StudyOverview() {
-  const s = MANAGED_STUDY
+  const { id } = useParams()
+  const s = id === MANAGED_SURVEY.id ? MANAGED_SURVEY : MANAGED_STUDY
 
   return (
     <AppShell crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>

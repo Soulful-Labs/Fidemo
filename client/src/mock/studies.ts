@@ -145,3 +145,27 @@ export const MANAGED_STUDY = {
     incentive: { label: 'Incentive', value: '$700' },
   },
 }
+
+/**
+ * The same two Manage frames drawn for a survey (1645:131436, 1645:131565).
+ * Proving the collapse: same structure, different seed, and one row - the
+ * study summary - that the type changes.
+ */
+export const MANAGED_SURVEY: typeof MANAGED_STUDY = {
+  ...MANAGED_STUDY,
+  id: 'st-social',
+  breadcrumb: 'GLP-1 Care Plans, Oncologist View',
+  type: 'survey' as StudyType,
+  title: 'Social media posts designing apps',
+  duration: '30 minutes',
+  industry: 'Consumer',
+  description: 'How do you design social media posts and what tools do you use for it',
+  image: '/img/canva.jpg',
+  review: {
+    ...MANAGED_STUDY.review,
+    studyTime: '30 minutes',
+    audience: MANAGED_STUDY.review.audience.map((a) =>
+      (a.label === 'Roles' ? { ...a, value: 'Social Media Influencer, Creator, Digital Marketer, Graphic Designer' } : a)),
+    studyRow: { label: 'Survey Form', value: '10 inputs' },
+  },
+}
