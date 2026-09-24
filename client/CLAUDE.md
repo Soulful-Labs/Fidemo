@@ -45,6 +45,15 @@ button heights that `className` could never override.
 
 ---
 
+## Rule 4, push after each screen
+
+Commit and push as soon as a screen matches, not only at the end of the turn.
+A session limit has interrupted two turns already; a push per screen means
+finished work is never lost and the state of the branch always shows exactly
+how far the turn got.
+
+---
+
 ## Stack
 
 Vite, React 19, TypeScript, Tailwind v4, React Router 7. No other UI libraries. `npm run dev` serves on **5174** so both apps can run side by side.
