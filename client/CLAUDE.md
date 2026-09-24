@@ -184,6 +184,25 @@ rendered.** `1518:92891`, Video Call Setup - Platform Managed, and `1518:93673`,
 Study Setup & Pricing — the latter is a 2642px reference board holding three
 pasted bitmaps and no text, not a screen.
 
+### Create step 5, Payment and Publish
+
+**The four Payment and Publish frames are one screen.** Survey (1518:92247),
+video (1622:84446) and diary (1622:86775) are pixel identical — 0 differing
+pixels between them. In-person (1622:87629) differs in 4,093 pixels, all inside
+the top-bar button box at rows 16-53, cols 1313-1423: Publish Study is drawn
+enabled there and disabled on the other three. Same label, size and position.
+It is built once, as a state.
+
+Published (1518:92376) ends the flow: the top bar keeps the step chips and drops
+both buttons, and Track and manage studies goes to the Studies list.
+
+**The two panels over step 4 and 5, and what opens them.** Add an override
+(1518:93557) is opened by **Add Override** on the Date Overrides card, which
+sits under Weekly Hours in the availability composer. Payment Breakdown
+(1627:95310) is opened by **View Breakdown** on the Payment Summary card on
+Payment and Publish, and is the step-4 Costing Summary and Payment sections
+lifted into a panel.
+
 ### Dashboard — section 826:85653
 
 Only one dashboard state is drawn. `826:86322` (and the `826:85659` inside it) is
