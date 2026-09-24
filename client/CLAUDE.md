@@ -256,6 +256,35 @@ no-studies screen against. The dashboard and the Studies cards view draw the sam
 | — | Payment Breakdown | 1627:95310 | panel |
 | — | Country Location, Age, Education, Genders, Profile Tiers, Question menu ×2 | 1622:82163–82169 | popover |
 
+### The Manage shell
+
+Every Manage screen sits in `StudyFrame`: the study header (240x182 thumbnail,
+type tag, status, title, duration and industry chips, and the four figures
+Completed / Qualified / Days Remaining / Progress) on a `bgAlt-1` card, then a
+bordered `stroke-1` content card whose top is the six-tab strip — Overview,
+Manage Study, Matched, Recruited, Results, Pay — 45px, `bg-1`, with a
+`neutral-500` hairline and a 1px `cta-primary` underline on the active tab.
+Every tab after the active one is drawn `text-disabled` while a study is paused
+(1704:143783) and live otherwise. The paused study is the same frame with a
+banner passed in and `muted`.
+
+**The collapse holds at this level of detail, measured.** Study Overview and
+Manage Study for diary (1627:95956, 1627:96085) and survey (1645:131436,
+1645:131565) differ in 3.49% and 3.26% of pixels, and every differing band is
+seeded content — a different study name, description, thumbnail and Roles chip —
+plus the one summary row the type changes ("Diary Study Form: 5 questions, 5
+days logs" vs "Survey Form: 10 inputs"). The same two components, given a survey
+seed, match the survey frames at 1.14% and 1.92%.
+
+**Overview and Manage Study are two jobs, not two views.** Overview is how the
+study is running: progress tiles, description, share link, active since. Manage
+Study is what the study is: the four Create steps read back as cards, each with
+an Edit that returns to that step.
+
+**One contradiction.** The Manage header and the Create About card draw Diary as
+a book with a pencil; only the Studies cards frame (1518:90966) draws it as
+bars. `StudyTypeTag` takes an `icon` override so each keeps its frame's glyph.
+
 ### Manage study — one flow, sections 1627:95955 / 98349 / 100939 / 103596 / 107079 / 1645:131435
 | Route | Screen | Node | Kind |
 |---|---|---|---|
