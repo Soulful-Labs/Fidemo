@@ -34,6 +34,7 @@ export const Clock = icon(<><circle cx="12" cy="12" r="9" {...stroke} /><path d=
 export const Check = icon(<path d="m5 13 4.5 4.5L19 7" {...stroke} />)
 export const CheckCircle = icon(<><circle cx="12" cy="12" r="9" {...stroke} /><path d="m8.5 12.5 2.5 2.5 4.5-5" {...stroke} /></>)
 export const Info = icon(<><circle cx="12" cy="12" r="9" {...stroke} /><path d="M12 11v5.5M12 7.8v.4" {...stroke} /></>)
+export const StarFilled = icon(<path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.7l5.9-.9L12 3.5Z" fill="currentColor" />)
 export const Download = icon(<><path d="M12 4v12m0 0-4-4m4 4 4-4" {...stroke} /><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" {...stroke} /></>)
 export const MapPin = icon(<><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z" {...stroke} /><circle cx="12" cy="10" r="2.5" {...stroke} /></>)
 export const Eye = icon(<><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" {...stroke} /><circle cx="12" cy="12" r="3" {...stroke} /></>)

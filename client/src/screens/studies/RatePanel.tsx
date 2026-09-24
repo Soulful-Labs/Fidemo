@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import SidePanel from '../../components/ui/SidePanel'
 import Button from '../../components/ui/Button'
-import { Star } from '../../components/ui/icons'
-import { cn } from '../../lib/cn'
+import { Star, StarFilled } from '../../components/ui/icons'
 
 /** The three things a client rates a respondent on. */
 const DIMENSIONS = ['Expertise', 'Reliability', 'Communication']
@@ -15,7 +14,9 @@ function Stars({ label, value, onPick }: { label: string; value: number; onPick:
       <div className="flex gap-2">
         {[1, 2, 3, 4, 5].map((n) => (
           <button key={n} type="button" aria-label={`${label} ${n} of 5`} onClick={() => onPick(n)}>
-            <Star className={cn('h-6 w-6', n <= value ? 'fill-brand-primary text-brand-primary' : 'text-text-disabled')} />
+            {n <= value
+              ? <StarFilled className="h-6 w-6 text-brand-primary" />
+              : <Star className="h-6 w-6 text-text-disabled" />}
           </button>
         ))}
       </div>

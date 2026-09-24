@@ -5,6 +5,8 @@ import Button from '../../components/ui/Button'
 import Select from '../../components/ui/Select'
 import Tabs from '../../components/ui/Tabs'
 import RespondentCard from '../../components/client/RespondentCard'
+import type { Respondent } from '../../components/client/RespondentCard'
+import RespondentPanel from '../dashboard/RespondentPanel'
 import { StudyFrame } from '../../components/client/StudyFrame'
 import { ChevronRight } from '../../components/ui/icons'
 import { RECOMMENDED } from '../../mock/dashboard'
@@ -19,6 +21,8 @@ export default function MatchedTab() {
   const { id } = useParams()
   const s = managedStudy(id)
   const [state, setState] = useState<'matched' | 'invited'>('matched')
+  /** Respondent Profile Details (1627:98130) is the Dashboard's panel, reused. */
+  const [profile, setProfile] = useState<Respondent | null>(null)
 
   return (
     <AppShell crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
@@ -45,7 +49,7 @@ export default function MatchedTab() {
                 state === 'matched' ? (
                   <>
                     <Button variant="secondary" size="none" className="h-11 flex-1">Invite To Study</Button>
-                    <Button variant="tertiary" size="none" className="h-11 flex-1"
+                    <Button variant="tertiary" size="none" className="h-11 flex-1" onClick={() => setProfile(r)}
                       rightIcon={<ChevronRight className="h-4 w-4" />}>View Profile</Button>
                   </>
                 ) : (
@@ -56,6 +60,7 @@ export default function MatchedTab() {
           </div>
         </div>
       </StudyFrame>
+      <RespondentPanel open={!!profile} respondent={profile} onClose={() => setProfile(null)} />
     </AppShell>
   )
 }

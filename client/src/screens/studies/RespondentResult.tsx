@@ -50,7 +50,9 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
   const session = s.type !== 'survey' && s.type !== 'diary'
   /** The recruited state is judged on the screener alone; the completed one has a result. */
   const done = params.get('state') !== 'recruited'
-  const running = params.get('session') === 'running'
+  /** booked -> running -> finished, the three states the frames draw the slot in. */
+  const slot = (params.get('session') ?? 'booked') as 'booked' | 'running' | 'finished'
+  const running = slot !== 'booked'
   /** A session study is only rated once its slot has been sat. */
   const rated = session ? running : done
   const crumbTab = done ? 'Results' : 'Recruited'
@@ -110,7 +112,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
               {tab === 'result' && session && (
                 <div className="flex flex-1 flex-col gap-3 px-4 pb-4 pt-5">
                   {running
-                    ? <SessionCard state="running" />
+                    ? <SessionCard state={slot === 'finished' ? 'done' : 'running'} />
                     : (
                       <div className="grid grid-cols-2 gap-3">
                         <SessionCard state="booked" />

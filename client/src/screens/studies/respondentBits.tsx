@@ -121,19 +121,22 @@ export function PinCard({ variant }: { variant: 'activity' | 'session' }) {
 
 /** The booked session, in the three states the frames draw it in. */
 export function SessionCard({ state }: { state: 'booked' | 'running' | 'done' }) {
+  /** Once it is over the frame greys the slot out and leaves a Completed chip. */
+  const meta = state === 'done' ? 'text-text-subtitle' : 'text-text-title'
+  const glyph = state === 'done' ? 'text-text-body' : 'text-brand-primary'
   return (
     <div className={cn('flex justify-between gap-4 rounded-lg bg-yellow-30 p-4', state === 'booked' && 'flex-col')}>
       <div className="flex flex-col gap-2">
         <p className="text-body-large text-text-title">{SESSION.title}</p>
-        <p className="flex h-5 items-center gap-2 text-text-regular text-text-title">
-          <Calendar className="h-4 w-4 text-brand-primary" />{SESSION.date}
+        <p className={cn('flex h-5 items-center gap-2 text-text-regular', meta)}>
+          <Calendar className={cn('h-4 w-4', glyph)} />{SESSION.date}
         </p>
-        <p className="flex h-5 items-center gap-2 text-text-regular text-text-title">
-          <Clock className="h-4 w-4 text-brand-primary" />{SESSION.time}
+        <p className={cn('flex h-5 items-center gap-2 text-text-regular', meta)}>
+          <Clock className={cn('h-4 w-4', glyph)} />{SESSION.time}
         </p>
         {state !== 'booked' && (
-          <p className="flex h-5 items-center gap-2 text-text-regular text-text-title">
-            <MapPin className="h-4 w-4 text-brand-primary" />{SESSION.address}
+          <p className={cn('flex h-5 items-center gap-2 text-text-regular', meta)}>
+            <MapPin className={cn('h-4 w-4', glyph)} />{SESSION.address}
           </p>
         )}
         {state === 'booked' && <Button size="none" className="mt-2 h-12 w-full">{SESSION.cta}</Button>}
