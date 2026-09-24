@@ -33,6 +33,11 @@ export interface CreateDraft {
   frequency: string
   studyDuration: string
   minimumRequired: string
+  buffer: string
+  notice: string
+  seats: string
+  days: string[]
+  sessions: { date: string; time: string }[]
 }
 
 export type QuestionKind =
@@ -99,6 +104,12 @@ const INITIAL: CreateDraft = {
   questions: SEED_QUESTIONS,
   incentive: 700, autoPay: true, surveyQuestions: null, surveyOpen: false,
   durationUnit: 'Day', frequency: 'Every 2 days', studyDuration: '5 days', minimumRequired: '4 days',
+  buffer: '15 minutes', notice: '10                    Minutes', seats: '10 seats',
+  days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+  sessions: [
+    { date: 'Aug 20, Friday', time: '12:00 PM - 12:40 PM' },
+    { date: 'Aug 21, Friday', time: '12:00 PM - 12:40 PM' },
+  ],
 }
 
 interface Ctx { draft: CreateDraft; set: <K extends keyof CreateDraft>(k: K, v: CreateDraft[K]) => void }

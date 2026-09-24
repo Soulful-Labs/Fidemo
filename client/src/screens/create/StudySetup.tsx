@@ -7,6 +7,7 @@ import Select from '../../components/ui/Select'
 import { Section } from './CreateBits'
 import { CostingSummary, IncentivePayments, Payment, SettingsCard } from './StudyBits'
 import SurveyComposer from './SurveyComposer'
+import AvailabilityComposer from './AvailabilityComposer'
 
 const TARGET = (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
@@ -115,13 +116,33 @@ function DiarySettings() {
   )
 }
 
+
+/** Video Call Settings (1518:92729 individual, 1518:93335 group). */
+function VideoSettings({ group, open }: { group: boolean; open: boolean }) {
+  const { set } = useDraft()
+  return (
+    <Section icon={TARGET}
+      title={group ? 'Focus Group Video Call Settings' : 'Video Call Settings'}
+      sub={group ? 'Setup scheduler for group video call for the participants' : 'Setup scheduler for individual 1:1 video call for the participants'}
+      headPad="pb-4" pad="py-4">
+      <SettingsCard
+        title={group ? 'Set Availability for Group sessions' : 'Set Availability'}
+        sub="Set your availability to allow participants to book sessions with you and let you conduct your individual video calls with them at your convenient timings">
+        <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" disabled={open}
+          onClick={() => set('surveyOpen', true)}>Set Timing Availability</Button>
+      </SettingsCard>
+    </Section>
+  )
+}
+
 /**
  * The settings section for whichever type the draft chose on step 1. `?type=`
  * overrides it so each variant can be opened and compared on its own.
  */
-function TypeSettings({ type }: { type: string }) {
+function TypeSettings({ type, group, open }: { type: string; group: boolean; open: boolean }) {
   if (type === 'survey') return <SurveySettings />
   if (type === 'diary') return <DiarySettings />
+  if (type === 'video_call') return <VideoSettings group={group} open={open} />
   return null
 }
 
@@ -134,7 +155,8 @@ export default function StudySetup() {
   const { draft, set } = useDraft()
   const [params] = useSearchParams()
   const type = params.get('type') ?? draft.type
-  const open = (draft.surveyOpen || params.get('state') === 'building') && (type === 'survey' || type === 'diary')
+  const group = params.get('group') === '1' || (type === 'video_call' ? draft.groupVideo : draft.groupInPerson)
+  const open = (draft.surveyOpen || params.get('state') === 'building') && type !== 'in_person'
 
   return (
     <CreateShell step="study" action={
@@ -143,10 +165,12 @@ export default function StudySetup() {
         <Button size="row" disabled>Proceed to Publish</Button>
       </>
     }>
-      <div className={`rounded-lg bg-bg-0 px-6 pt-[9px] ${type === 'diary' ? 'min-h-[1707px]' : 'min-h-[1302px]'}`}>
+      <div className={`rounded-lg bg-bg-0 px-6 pt-[9px] ${type === 'diary' ? 'min-h-[1707px]' : type === 'video_call' ? (open ? 'min-h-[1408px]' : 'min-h-[1374px]') : 'min-h-[1302px]'}`}>
         {open ? (
           <div className="flex items-start gap-6 pb-6">
-            {type === 'diary' ? (
+            {type === 'video_call' ? (
+              <AvailabilityComposer group={group} onBack={() => set('surveyOpen', false)} onSubmit={() => set('surveyOpen', false)} />
+            ) : type === 'diary' ? (
               <SurveyComposer title="Create Diary Form" submit="Submit Diary Form" dayGroup="DAY 1"
                 lead="Setup your form inputs form for users with AI or manually" kind="Multi-line input" seed={2}
                 onSubmit={() => { set('surveyQuestions', SEED_SURVEY); set('surveyOpen', false) }}
@@ -157,7 +181,7 @@ export default function StudySetup() {
                 onBack={() => set('surveyOpen', false)} />
             )}
             <div className="flex w-[488px] shrink-0 flex-col">
-              <TypeSettings type={type} />
+              <TypeSettings type={type} group={group} open={open} />
               <IncentivePayments />
               <CostingSummary />
               <Payment />
@@ -165,7 +189,7 @@ export default function StudySetup() {
           </div>
         ) : (
           <div className="mx-auto flex w-[600px] flex-col">
-            <TypeSettings type={type} />
+            <TypeSettings type={type} group={group} open={open} />
             <IncentivePayments />
             <CostingSummary />
             <Payment />
