@@ -22,7 +22,7 @@ export default function MatchedTab() {
 
   return (
     <AppShell crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
-      <StudyFrame study={s} active="matched" minH="min-h-[1315px]" bodyMinH="min-h-[1065px]">
+      <StudyFrame study={s} active="matched" minH="min-h-[1307px]" bodyMinH="min-h-[1057px]">
         <div className="flex flex-col px-4 pt-4">
           <h2 className="text-title-s leading-[22px] text-text-title">Matched Respondents</h2>
           <p className="pt-2 text-text-regular text-text-subtitle">

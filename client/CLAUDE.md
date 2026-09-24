@@ -295,6 +295,43 @@ an Edit that returns to that step.
 a book with a pencil; only the Studies cards frame (1518:90966) draws it as
 bars. `StudyTypeTag` takes an `icon` override so each keeps its frame's glyph.
 
+### The recruiting tabs
+
+**Matched and Invited are one tab, not two screens.** 1627:96237 and 1627:96329
+share the heading, the description, the three filters and the same nine cards;
+only each card's action row changes — `Invite To Study` + `View Profile` become
+one disabled `Invitation Sent!`. They are built as a segmented switch and the
+route map keeps both node ids on `/studies/:id/matched`.
+
+**Recruited has three flavours, and the type chooses between them**, not a
+query or a second screen: a survey or diary lists applications (Name / Role /
+Status / Score, Status and Tier filters, a pager); an individual session study
+adds a `Scheduled | Applications` switch whose first table is Name / Role /
+Score / Session Time with `Join Now` on the imminent slot; a group session study
+switches `Sessions | Applications` and lists the sessions as cards with a seats
+chip, `View Participants` and an overlapped avatar stack. The two session
+frames are drawn on their own studies — In-Person on "Share about your sleep
+cycle" and Group Video Call on "Fitness tracker apps experience" — so
+`mock/studies.ts` seeds both and `managedStudy(id)` resolves them.
+
+**Cards and rows are different components, deliberately.** Matched and Invited
+reuse `RespondentCard`; Recruited is a table. Nothing forces one component to
+do both.
+
+**Table geometry is per table, not global.** These two tables use **18px** cell
+padding, not the 22 the Studies list uses, and their columns are measured
+percentages: applications 16.1 / 32.1 / 14.3 / 37.5, scheduled 14.3 / 28.6 / 17
+/ 40.1, with the Session Time cell dropping to 8px on the right so `Join Now`
+sits where the frame puts it.
+
+**The frames' left nav is pinned to a 1024 viewport.** Every Manage frame draws
+the account card with its avatar at y 895 whatever the artboard height — 1176,
+1272 or 1401. The app puts it at the bottom of a sidebar that fills the page, so
+on any frame taller than about 1024 the card lands lower than the frame draws
+it, costing roughly 1,800 differing pixels (0.1%). This is the frame being a
+1024 screenshot pasted onto a long artboard, not a layout error, and it is left
+alone.
+
 ### Manage study — one flow, sections 1627:95955 / 98349 / 100939 / 103596 / 107079 / 1645:131435
 | Route | Screen | Node | Kind |
 |---|---|---|---|
