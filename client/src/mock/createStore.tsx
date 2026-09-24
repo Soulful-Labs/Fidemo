@@ -38,6 +38,8 @@ export interface CreateDraft {
   seats: string
   days: string[]
   sessions: { date: string; time: string }[]
+  overrides: { date: string; hours: string }[]
+  unavailableAllDay: boolean
 }
 
 export type QuestionKind =
@@ -110,6 +112,11 @@ const INITIAL: CreateDraft = {
     { date: 'Aug 20, Friday', time: '12:00 PM - 12:40 PM' },
     { date: 'Aug 21, Friday', time: '12:00 PM - 12:40 PM' },
   ],
+  overrides: [
+    { date: 'Aug 20, Friday', hours: '12:00 AM - 12:00 AM' },
+    { date: 'Aug 25, Monday', hours: 'Unavailable' },
+  ],
+  unavailableAllDay: false,
 }
 
 interface Ctx { draft: CreateDraft; set: <K extends keyof CreateDraft>(k: K, v: CreateDraft[K]) => void }

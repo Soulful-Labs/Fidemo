@@ -149,21 +149,24 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
       </div>
     </Card>
   ) : (
-    <Card title="Weekly Hours" action={onOverride && (
-      <Button variant="tertiary" size="none" className="h-[38px] px-4" leftIcon={<Plus className="h-4 w-4" />}
-        onClick={onOverride}>Add an override</Button>
-    )}>
+    <Card title="Weekly Hours">
       {DAYS.map((d) => (
         <div key={d} className="flex items-center gap-3 border-b-1 border-stroke-1 pb-3 last:border-b-0 last:pb-0">
           <Toggle checked={draft.days.includes(d)} label={d}
             onChange={(v) => set('days', v ? [...draft.days, d] : draft.days.filter((x) => x !== d))} />
           <span className="w-[86px] text-text-regular text-text-title">{d}</span>
-          <Time value="12:00 AM" />
-          <span className="text-text-regular text-text-subtitle">TO</span>
-          <Time value="12:00 AM" />
-          <button type="button" aria-label={`Remove ${d}`} className="text-text-subtitle hover:text-text-title">
-            <Close className="h-4 w-4" />
-          </button>
+          {draft.days.includes(d) ? (
+            <>
+              <Time value="12:00 AM" />
+              <span className="text-text-regular text-text-subtitle">TO</span>
+              <Time value="12:00 AM" />
+              <button type="button" aria-label={`Remove ${d}`} className="text-text-subtitle hover:text-text-title">
+                <Close className="h-4 w-4" />
+              </button>
+            </>
+          ) : (
+            <span className="flex h-[38px] items-center rounded-sm bg-bg-2 px-4 text-text-regular text-text-body">Unavailable</span>
+          )}
           <span className="flex-1" />
           <IconBtn label={`Add hours to ${d}`}><Plus className="h-5 w-5" /></IconBtn>
           <IconBtn label={`Copy ${d}`}><Copy className="h-4 w-4" /></IconBtn>
@@ -191,6 +194,28 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
       <div className="flex flex-col gap-4 p-4">
         {group ? <>{limits}{addresses}</> : <>{addresses}{limits}</>}
         {hours}
+        {!group && (
+          <Card title="Date Overrides" action={
+            <Button variant="secondary" size="none" className="h-[38px] px-4" leftIcon={<Plus className="h-4 w-4" />}
+              onClick={onOverride}>Add Override</Button>
+          }>
+            <p className="-mt-2 text-text-regular text-text-subtitle">
+              Add dates when your availability changes from your daily hours.
+            </p>
+            {draft.overrides.map((o) => (
+              <div key={o.date} className="flex items-center justify-between gap-3 rounded-sm border-1 border-stroke-input bg-bg px-4 py-3">
+                <span className="flex flex-col gap-0.5">
+                  <span className="text-body-medium text-text-title">{o.date}</span>
+                  <span className="text-text-regular text-text-subtitle">{o.hours}</span>
+                </span>
+                <span className="flex items-center gap-2">
+                  <IconBtn label="Edit override"><Edit className="h-4 w-4" /></IconBtn>
+                  <IconBtn label="Delete override"><Trash className="h-4 w-4" /></IconBtn>
+                </span>
+              </div>
+            ))}
+          </Card>
+        )}
       </div>
     </div>
   )

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import { ChevronRight, Edit } from '../../components/ui/icons'
@@ -8,6 +9,7 @@ import { Section } from './CreateBits'
 import { CostingSummary, IncentivePayments, Payment, SettingsCard } from './StudyBits'
 import SurveyComposer from './SurveyComposer'
 import AvailabilityComposer from './AvailabilityComposer'
+import OverridePanel from './OverridePanel'
 
 const TARGET = (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
@@ -187,6 +189,7 @@ function TypeSettings({ type, group, open }: { type: string; group: boolean; ope
  */
 export default function StudySetup() {
   const { draft, set } = useDraft()
+  const [override, setOverride] = useState(false)
   const [params] = useSearchParams()
   const type = params.get('type') ?? draft.type
   const group = params.get('group') === '1' || (type === 'video_call' ? draft.groupVideo : draft.groupInPerson)
@@ -205,6 +208,7 @@ export default function StudySetup() {
             {type === 'video_call' || type === 'in_person' ? (
               <AvailabilityComposer group={group} address={type === 'in_person'}
                 title={type === 'in_person' && !group ? 'Set Address & Availability' : 'Set Availability'}
+                onOverride={() => setOverride(true)}
                 onBack={() => set('surveyOpen', false)} onSubmit={() => set('surveyOpen', false)} />
             ) : type === 'diary' ? (
               <SurveyComposer title="Create Diary Form" submit="Submit Diary Form" dayGroup="DAY 1"
@@ -232,6 +236,8 @@ export default function StudySetup() {
           </div>
         )}
       </div>
+
+      <OverridePanel open={override || params.get('panel') === 'override'} onClose={() => setOverride(false)} />
     </CreateShell>
   )
 }
