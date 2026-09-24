@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom'
 import { MANAGED_STUDY, MANAGED_SURVEY } from '../../mock/studies'
 
 /** The Overview tiles, in the warm tint the frame draws them in. */
-function OverviewTile({ label, value, suffix, ring }: { label: string; value: string; suffix?: string; ring?: number }) {
+export function OverviewTile({ label, value, suffix, ring }: { label: string; value: string; suffix?: string; ring?: number }) {
   return (
     <div className="flex items-center justify-between gap-3 rounded-md bg-yellow-30 px-4 py-4">
       <div className="flex flex-col">

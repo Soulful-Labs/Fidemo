@@ -5,40 +5,11 @@ import Button from '../../components/ui/Button'
 import Select from '../../components/ui/Select'
 import Tabs from '../../components/ui/Tabs'
 import Pagination from '../../components/client/Pagination'
-import TierChip from '../../components/client/TierChip'
 import { StudyFrame } from '../../components/client/StudyFrame'
-import { Calendar, ChevronRight, Clock, SortIcon, VideoIcon } from '../../components/ui/icons'
-import { cn } from '../../lib/cn'
+import { ScoreCell, StatusPill, Th } from '../../components/client/RespondentTable'
+import { Calendar, ChevronRight, Clock, VideoIcon } from '../../components/ui/icons'
 import { APPLICATIONS, GROUP_SESSIONS, SCHEDULED } from '../../mock/recruiting'
 import { managedStudy } from '../../mock/studies'
-
-const STATUS_TONE = {
-  Applied: 'bg-yellow-30 text-brand-primary',
-  Qualified: 'bg-green-50 text-brand-secondary',
-  Disqualified: 'bg-[#ffeade] text-[#d97706]',
-}
-
-/** A sortable column heading. */
-function Th({ label, sortable, className }: { label: string; sortable?: boolean; className?: string }) {
-  return (
-    <th className={cn('h-row px-[18px] text-left text-text-regular font-normal text-text-subtitle', className)}>
-      <span className="inline-flex items-center gap-1.5">
-        {label}
-        {sortable && <SortIcon className="h-4 w-4 text-text-body" />}
-      </span>
-    </th>
-  )
-}
-
-/** The score and tier a respondent row ends with. */
-function Score({ score, tier }: { score: number; tier: 'silver' | 'gold' | 'platinum' }) {
-  return (
-    <span className="flex items-center gap-2">
-      <span className="text-text-regular text-text-title">{score}</span>
-      <TierChip tier={tier} />
-    </span>
-  )
-}
 
 /**
  * Recruited (1627:96535). The study type changes what this tab is: a survey
@@ -120,7 +91,7 @@ export default function RecruitedTab() {
                         <tr key={i} className="border-b-1 border-stroke-input last:border-b-0">
                           <td className="h-[60px] px-[18px] text-text-regular text-text-title">{r.name}</td>
                           <td className="h-[60px] px-[18px] text-text-regular text-text-title">{r.role}</td>
-                          <td className="h-[60px] px-[18px]"><Score score={r.score} tier={r.tier} /></td>
+                          <td className="h-[60px] px-[18px]"><ScoreCell score={r.score} tier={r.tier} /></td>
                           <td className="h-[60px] px-[18px] pr-2">
                             <span className="flex items-center justify-between gap-4">
                               <span className="flex items-center gap-2 text-text-regular text-text-title">
@@ -138,11 +109,9 @@ export default function RecruitedTab() {
                           <td className="h-row px-[18px] text-text-regular text-text-title">{r.name}</td>
                           <td className="h-row px-[18px] text-text-regular text-text-title">{r.role}</td>
                           <td className="h-row px-[18px]">
-                            <span className={cn('inline-flex h-7 items-center rounded-full px-[14px] text-text-regular', STATUS_TONE[r.status])}>
-                              {r.status}
-                            </span>
+                            <StatusPill status={r.status} />
                           </td>
-                          <td className="h-row px-[18px]"><Score score={r.score} tier={r.tier} /></td>
+                          <td className="h-row px-[18px]"><ScoreCell score={r.score} tier={r.tier} /></td>
                         </tr>
                       ))}
                   </tbody>
