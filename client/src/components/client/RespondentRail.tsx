@@ -6,7 +6,7 @@ import { RATE_PROMPT, RESPONDENT } from '../../mock/respondent'
 /** A section of the rail, under the hairline that separates it from the one above. */
 function Block({ title, children }: { title?: string; children: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-3 border-t-1 border-stroke-1 px-4 py-4">
+    <section className="flex flex-col gap-2 border-t-1 border-stroke-1 px-4 py-4">
       {title && <h3 className="text-text-regular text-text-subtitle">{title}</h3>}
       {children}
     </section>
@@ -39,7 +39,7 @@ export function RatePrompt({ wide, onRate }: { wide?: boolean; onRate?: () => vo
 export default function RespondentRail({ rate, onRate }: { rate?: boolean; onRate?: () => void }) {
   const r = RESPONDENT
   return (
-    <aside className="flex h-fit w-[304px] shrink-0 flex-col overflow-hidden rounded-lg border-1 border-stroke-input bg-bg-0">
+    <aside className="flex h-fit w-[304px] shrink-0 self-start flex-col overflow-hidden rounded-lg border-1 border-stroke-input bg-bg-0">
       {rate && <RatePrompt onRate={onRate} />}
 
       <div className="flex flex-col gap-2 px-4 pb-4 pt-4">
@@ -61,7 +61,7 @@ export default function RespondentRail({ rate, onRate }: { rate?: boolean; onRat
           <TierChip tier={r.tier} />
         </p>
         <h3 className="pt-1 text-text-regular text-text-subtitle">Performance Ratings</h3>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           {r.ratings.map((x) => {
             const [bar, text] = x.tone.split(' ')
             return (
@@ -82,7 +82,7 @@ export default function RespondentRail({ rate, onRate }: { rate?: boolean; onRat
       </Block>
 
       <Block title="About">
-        <dl className="flex flex-col gap-3">
+        <dl className="flex flex-col gap-2">
           {r.about.map((a) => (
             <div key={a.label} className="flex items-center justify-between gap-3">
               <dt className="text-text-regular text-text-subtitle">{a.label}</dt>
@@ -93,7 +93,7 @@ export default function RespondentRail({ rate, onRate }: { rate?: boolean; onRat
       </Block>
 
       <Block title="Verified">
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col gap-2">
           {r.verified.map((v) => (
             <li key={v} className="inline-flex items-center gap-2 text-text-regular text-text-title">
               <VerifiedMark className="h-5 w-5 text-brand-secondary" />{v}
@@ -103,7 +103,7 @@ export default function RespondentRail({ rate, onRate }: { rate?: boolean; onRat
       </Block>
 
       <Block title="Metrics">
-        <dl className="flex flex-col gap-3">
+        <dl className="flex flex-col gap-2">
           {r.metrics.map((m) => (
             <div key={m.label} className="flex items-center justify-between gap-3">
               <dt className="text-text-regular text-text-subtitle">{m.label}</dt>

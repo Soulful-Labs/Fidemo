@@ -51,6 +51,8 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
   /** The recruited state is judged on the screener alone; the completed one has a result. */
   const done = params.get('state') !== 'recruited'
   const running = params.get('session') === 'running'
+  /** A session study is only rated once its slot has been sat. */
+  const rated = session ? running : done
   const crumbTab = done ? 'Results' : 'Recruited'
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
@@ -69,12 +71,13 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
       { label: crumbTab, to: `/studies/${s.id}/${done ? 'results' : 'recruited'}` },
       { label: session ? RESPONDENT.name : RESPONDENT.rowName },
     ]}>
-      <div className="min-h-[1286px] rounded-lg bg-bg-0 p-4">
+      <div className={cn('rounded-lg bg-bg-0 p-4', session ? 'min-h-[1173px]' : 'min-h-[1286px]')}>
         <div className="flex flex-col gap-3">
           <StudyStrip s={s} />
 
           <div className="flex gap-6">
-            <section className="min-h-[1129px] flex-1 overflow-hidden rounded-lg border-1 border-stroke-input">
+            <section className={cn('flex flex-1 flex-col overflow-hidden rounded-lg border-1 border-stroke-input',
+                session ? (running ? 'min-h-[1028px]' : 'min-h-[945px]') : 'min-h-[1129px]')}>
               <div className="flex h-11 items-center gap-8 border-b-1 border-stroke-1 bg-bg-1 px-4">
                 {tabs.map((t) => (
                   <button key={t.key} type="button" onClick={() => nav(to(t.key))}
@@ -105,7 +108,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
               ))}
 
               {tab === 'result' && session && (
-                <div className="flex flex-col gap-3 px-4 pb-4 pt-4">
+                <div className="flex flex-1 flex-col gap-3 px-4 pb-4 pt-5">
                   {running
                     ? <SessionCard state="running" />
                     : (
@@ -114,13 +117,13 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                         <PinCard variant="session" />
                       </div>
                     )}
-                  <NotesCard download={running} />
+                  <NotesCard download={running} className="flex-1" />
                   {running && <PinCard variant="activity" />}
                 </div>
               )}
 
-              {tab !== 'activity' && (
-                <div className="mt-[11px] flex h-[81px] items-center justify-between gap-4 bg-bgAlt-1 px-4">
+              {tab !== 'activity' && (session ? running : true) && (
+                <div className={cn('flex items-center justify-between gap-4 bg-bgAlt-1 px-4', session ? 'h-[73px]' : 'mt-[11px] h-[81px]')}>
                   {!done && (
                     <>
                       <p className="flex flex-col text-text-regular">
@@ -161,7 +164,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
               )}
             </section>
 
-            <RespondentRail rate={done} onRate={() => setRate(true)} />
+            <RespondentRail rate={rated} onRate={() => setRate(true)} />
           </div>
         </div>
       </div>

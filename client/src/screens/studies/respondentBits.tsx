@@ -104,7 +104,7 @@ export function DayBar({ label }: { label: string }) {
 export function PinCard({ variant }: { variant: 'activity' | 'session' }) {
   const wide = variant === 'activity'
   return (
-    <div className={cn('rounded-lg p-4', wide ? 'flex items-center justify-between gap-4 bg-bg-1' : 'flex flex-col gap-3 bg-bgAlt-1')}>
+    <div className={cn('rounded-lg bg-bg-1 p-4', wide ? 'flex items-center justify-between gap-4' : 'flex flex-col gap-3')}>
       <div className="flex flex-col gap-1">
         <p className="text-body-large text-text-title">{VERIFICATION_PIN.title}</p>
         <p className={cn('text-text-regular text-text-subtitle', !wide && 'max-w-[344px]')}>
@@ -122,9 +122,9 @@ export function PinCard({ variant }: { variant: 'activity' | 'session' }) {
 /** The booked session, in the three states the frames draw it in. */
 export function SessionCard({ state }: { state: 'booked' | 'running' | 'done' }) {
   return (
-    <div className={cn('flex justify-between gap-4 rounded-lg bg-yellow-30 p-4', state === 'done' && 'opacity-90')}>
+    <div className={cn('flex justify-between gap-4 rounded-lg bg-yellow-30 p-4', state === 'booked' && 'flex-col')}>
       <div className="flex flex-col gap-2">
-        <p className="text-title-s leading-[22px] text-text-title">{SESSION.title}</p>
+        <p className="text-body-large text-text-title">{SESSION.title}</p>
         <p className="flex h-5 items-center gap-2 text-text-regular text-text-title">
           <Calendar className="h-4 w-4 text-brand-primary" />{SESSION.date}
         </p>
@@ -136,7 +136,7 @@ export function SessionCard({ state }: { state: 'booked' | 'running' | 'done' })
             <MapPin className="h-4 w-4 text-brand-primary" />{SESSION.address}
           </p>
         )}
-        {state === 'booked' && <Button size="none" className="mt-2 h-12 w-[344px]">{SESSION.cta}</Button>}
+        {state === 'booked' && <Button size="none" className="mt-2 h-12 w-full">{SESSION.cta}</Button>}
       </div>
       {state === 'running' && (
         <div className="flex flex-col items-end gap-3">
@@ -154,10 +154,10 @@ export function SessionCard({ state }: { state: 'booked' | 'running' | 'done' })
 }
 
 /** The notes the client types during a session. */
-export function NotesCard({ download }: { download?: boolean }) {
+export function NotesCard({ download, className }: { download?: boolean; className?: string }) {
   const marks = ['B', 'I', 'U', 'S', 'H1', 'H2', 'H3', 'H4']
   return (
-    <div className="flex flex-col rounded-lg border-1 border-stroke-input">
+    <div className={cn('flex flex-col rounded-lg border-1 border-stroke-input', className)}>
       <div className="flex h-12 items-center justify-between gap-3 rounded-t-lg bg-bg-1 px-4">
         <span className="text-text-large text-text-title">
           {NOTES.title} <span className="text-text-regular text-text-subtitle">&bull; {NOTES.saved}</span>
