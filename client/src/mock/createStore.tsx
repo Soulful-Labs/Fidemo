@@ -29,6 +29,10 @@ export interface CreateDraft {
   autoPay: boolean
   surveyQuestions: Question[] | null
   surveyOpen: boolean
+  durationUnit: string
+  frequency: string
+  studyDuration: string
+  minimumRequired: string
 }
 
 export type QuestionKind =
@@ -94,6 +98,7 @@ const INITIAL: CreateDraft = {
   condition: 'na', tiers: '',
   questions: SEED_QUESTIONS,
   incentive: 700, autoPay: true, surveyQuestions: null, surveyOpen: false,
+  durationUnit: 'Day', frequency: 'Every 2 days', studyDuration: '5 days', minimumRequired: '4 days',
 }
 
 interface Ctx { draft: CreateDraft; set: <K extends keyof CreateDraft>(k: K, v: CreateDraft[K]) => void }

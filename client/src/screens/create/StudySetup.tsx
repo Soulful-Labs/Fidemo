@@ -3,6 +3,7 @@ import Button from '../../components/ui/Button'
 import { ChevronRight, Edit } from '../../components/ui/icons'
 import { blankQuestion, useDraft } from '../../mock/createStore'
 import CreateShell from './CreateShell'
+import Select from '../../components/ui/Select'
 import { Section } from './CreateBits'
 import { CostingSummary, IncentivePayments, Payment, SettingsCard } from './StudyBits'
 import SurveyComposer from './SurveyComposer'
@@ -49,12 +50,78 @@ function SurveySettings() {
   )
 }
 
+
+/** The four diary settings the frame fills, as a 2x2 of selects. */
+const DIARY_FIELDS: { key: 'durationUnit' | 'frequency' | 'studyDuration' | 'minimumRequired'; label: string; note?: string }[] = [
+  { key: 'durationUnit', label: 'Duration Unit' },
+  { key: 'frequency', label: 'Frequency' },
+  { key: 'studyDuration', label: 'Study Duration', note: 'Total number of entries you need' },
+  { key: 'minimumRequired', label: 'Minimum Required', note: 'To qualify for reward' },
+]
+
+/** Diary Study Settings (1518:94580): the schedule, then the study form. */
+function DiarySettings() {
+  const { draft, set } = useDraft()
+  const [params] = useSearchParams()
+  const made = params.get('state') === 'created'
+  return (
+    <Section icon={TARGET} title="Diary Study Settings" sub="Setup your Diary study for the participants" headPad="pb-4" pad="py-4">
+      <div className="flex flex-col gap-3.5 rounded-lg bg-yellow-30 p-4">
+        <span className="flex flex-col gap-0.5">
+          <span className="text-body-medium text-text-title">Diary Study Setup</span>
+          <span className="text-text-regular text-text-subtitle">
+            It start the counting of duration with set frequency from the time users logs(enters) their first entry
+          </span>
+        </span>
+
+        <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+          {DIARY_FIELDS.map((f) => (
+            <label key={f.key} className="flex flex-col gap-1">
+              <span className="text-text-regular text-text-subtitle">{f.label}</span>
+              <Select value={draft[f.key]} className="w-full" />
+              {f.note && <span className="text-text-regular text-text-subtitle">{f.note}</span>}
+            </label>
+          ))}
+        </div>
+
+        <span className="border-t-1 border-[#f2e3cc]" />
+
+        <span className="flex flex-col gap-0.5">
+          <span className="text-body-medium text-text-title">Create Study Form</span>
+          {!made && (
+            <span className="text-text-regular text-text-subtitle">
+              Make the input form for diary questions on every selected duration unit
+            </span>
+          )}
+        </span>
+
+        {made ? (
+          <>
+            <button type="button" onClick={() => set('surveyOpen', true)}
+              className="flex h-[38px] items-center justify-between gap-3 rounded-sm border-1 border-stroke-input bg-bg px-4 text-text-regular text-text-title">
+              5 questions, 5 days logs
+              <ChevronRight className="h-4 w-4 text-text-subtitle" />
+            </button>
+            <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" leftIcon={<Edit className="h-5 w-5" />}
+              onClick={() => set('surveyOpen', true)}>Update Diary Questionnaire</Button>
+          </>
+        ) : (
+          <Button size="none" className="h-12 w-full text-body-medium"
+            disabled={draft.surveyOpen || params.get('state') === 'building'}
+            onClick={() => set('surveyOpen', true)}>Create Survey Questionnaire</Button>
+        )}
+      </div>
+    </Section>
+  )
+}
+
 /**
  * The settings section for whichever type the draft chose on step 1. `?type=`
  * overrides it so each variant can be opened and compared on its own.
  */
 function TypeSettings({ type }: { type: string }) {
   if (type === 'survey') return <SurveySettings />
+  if (type === 'diary') return <DiarySettings />
   return null
 }
 
@@ -67,7 +134,7 @@ export default function StudySetup() {
   const { draft, set } = useDraft()
   const [params] = useSearchParams()
   const type = params.get('type') ?? draft.type
-  const open = (draft.surveyOpen || params.get('state') === 'building') && type === 'survey'
+  const open = (draft.surveyOpen || params.get('state') === 'building') && (type === 'survey' || type === 'diary')
 
   return (
     <CreateShell step="study" action={
@@ -76,12 +143,19 @@ export default function StudySetup() {
         <Button size="row" disabled>Proceed to Publish</Button>
       </>
     }>
-      <div className="min-h-[1302px] rounded-lg bg-bg-0 px-6 pt-[9px]">
+      <div className={`rounded-lg bg-bg-0 px-6 pt-[9px] ${type === 'diary' ? 'min-h-[1707px]' : 'min-h-[1302px]'}`}>
         {open ? (
           <div className="flex items-start gap-6 pb-6">
-            <SurveyComposer
-              onSubmit={() => { set('surveyQuestions', SEED_SURVEY); set('surveyOpen', false) }}
-              onBack={() => set('surveyOpen', false)} />
+            {type === 'diary' ? (
+              <SurveyComposer title="Create Diary Form" submit="Submit Diary Form" dayGroup="DAY 1"
+                lead="Setup your form inputs form for users with AI or manually" kind="Multi-line input" seed={2}
+                onSubmit={() => { set('surveyQuestions', SEED_SURVEY); set('surveyOpen', false) }}
+                onBack={() => set('surveyOpen', false)} />
+            ) : (
+              <SurveyComposer
+                onSubmit={() => { set('surveyQuestions', SEED_SURVEY); set('surveyOpen', false) }}
+                onBack={() => set('surveyOpen', false)} />
+            )}
             <div className="flex w-[488px] shrink-0 flex-col">
               <TypeSettings type={type} />
               <IncentivePayments />

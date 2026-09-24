@@ -47,8 +47,16 @@ function Pick({ value, tone, className }: { value: string; tone?: string; classN
  * the study settings. Its option marks are Qualify and Disqualify, not the
  * screener's Correct and Incorrect.
  */
-export default function SurveyComposer({ onSubmit, onBack }: { onSubmit: () => void; onBack: () => void }) {
-  const [questions, setQuestions] = useState<SQ[]>([NEW(1)])
+export default function SurveyComposer({
+  onSubmit, onBack, title = 'Create Survey', submit = 'Submit Survey',
+  lead = 'Setup your survey inputs form here for users.', dayGroup, kind = 'Single-select', seed = 1,
+}: {
+  onSubmit: () => void; onBack: () => void
+  title?: string; submit?: string; lead?: string; dayGroup?: string; kind?: string; seed?: number
+}) {
+  const [questions, setQuestions] = useState<SQ[]>(
+    Array.from({ length: seed }, (_, i) => ({ ...NEW(i + 1), label: dayGroup ? `Q${i + 1}` : `SQ ${i + 1}`, kind })),
+  )
   const write = (next: SQ) => setQuestions((qs) => qs.map((q) => (q.id === next.id ? next : q)))
 
   return (
@@ -58,14 +66,14 @@ export default function SurveyComposer({ onSubmit, onBack }: { onSubmit: () => v
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border-1 border-stroke-input bg-bg text-text-subtitle">
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <span className="text-title-s text-text-title">Create Survey</span>
+        <span className="text-title-s text-text-title">{title}</span>
         <span className="flex-1" />
         <span className="text-text-regular text-text-subtitle">Auto-saved</span>
-        <Button size="row" onClick={onSubmit}>Submit Survey</Button>
+        <Button size="row" onClick={onSubmit}>{submit}</Button>
       </div>
 
       <div className="flex flex-col gap-4 p-4">
-        <p className="text-text-regular text-text-title">Setup your survey inputs form here for users.</p>
+        <p className="text-text-regular text-text-title">{lead}</p>
 
         <div className="flex flex-col gap-3 rounded-md bg-bg-1 p-3">
           <p className="text-text-regular text-text-body">
@@ -77,6 +85,10 @@ export default function SurveyComposer({ onSubmit, onBack }: { onSubmit: () => v
           </div>
         </div>
 
+        <div className={cn('flex flex-col gap-4', dayGroup && 'rounded-md bg-bg-1 p-3')}>
+        {dayGroup && (
+          <p className="rounded-sm bg-bg-2 py-2 text-center text-text-regular text-text-title">{dayGroup}</p>
+        )}
         {questions.map((q) => (
           <div key={q.id} className="flex gap-4">
             {GRIP}
@@ -91,7 +103,11 @@ export default function SurveyComposer({ onSubmit, onBack }: { onSubmit: () => v
                 </button>
               </div>
               <Box value={q.text} placeholder="Enter question text..." onChange={(v) => write({ ...q, text: v })} />
-              <div className="flex flex-col gap-2.5">
+              {q.kind === 'Multi-line input' && (
+                <input readOnly placeholder="Participants will enter a long text response"
+                  className="h-[38px] w-full rounded-sm border-1 border-stroke-input bg-bg-1 px-4 text-text-regular italic text-text-title placeholder:italic placeholder:text-text-body" />
+              )}
+              <div className={cn('flex flex-col gap-2.5', q.kind !== 'Single-select' && 'hidden')}>
                 {q.options.map((o) => (
                   <div key={o.id} className="flex items-center gap-2.5 pl-2.5">
                     {GRIP}
@@ -111,9 +127,10 @@ export default function SurveyComposer({ onSubmit, onBack }: { onSubmit: () => v
             </div>
           </div>
         ))}
+        </div>
 
         <Button variant="tertiary" size="row" className="w-full" leftIcon={<Plus className="h-5 w-5" />}
-          onClick={() => setQuestions((qs) => [...qs, NEW(qs.length + 1)])}>Add Question</Button>
+          onClick={() => setQuestions((qs) => [...qs, { ...NEW(qs.length + 1), label: dayGroup ? `Q${qs.length + 1}` : `SQ ${qs.length + 1}`, kind }])}>Add Question</Button>
       </div>
     </div>
   )
