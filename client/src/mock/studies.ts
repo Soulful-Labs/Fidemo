@@ -169,3 +169,35 @@ export const MANAGED_SURVEY: typeof MANAGED_STUDY = {
     studyRow: { label: 'Survey Form', value: '10 inputs' },
   },
 }
+
+/**
+ * The session flavours of the Manage screens. The Recruited frames for
+ * In-Person (1627:101612) and Group Video Call (1627:104269) are drawn on
+ * these two studies, and the tab reads the booked state off `type`.
+ */
+export const MANAGED_INPERSON: typeof MANAGED_STUDY = {
+  ...MANAGED_STUDY,
+  id: 'st-sleep',
+  breadcrumb: 'Sleep Cycle Interviews',
+  type: 'in_person' as StudyType,
+  title: 'Share about your sleep cycle',
+  industry: 'Healthcare',
+  description: 'Share about your sleep cycle, how you track it and what changes it through the week.',
+  image: '/img/sleep.jpg',
+  review: { ...MANAGED_STUDY.review, studyRow: { label: 'In-Person', value: '2 addresses, available 5 days/week, custom timings, 2 days overrides' } },
+}
+
+export const MANAGED_GROUP: typeof MANAGED_STUDY = {
+  ...MANAGED_INPERSON,
+  id: 'st-fitness',
+  breadcrumb: 'Fitness Tracker Group Sessions',
+  type: 'group_video_call' as StudyType,
+  title: 'Fitness tracker apps experience',
+  description: 'Talk through the fitness tracker apps you use and what keeps you coming back to them.',
+  image: '/img/runner.jpg',
+}
+
+/** Every study the Manage screens can be opened on, by route id. */
+export const MANAGED = [MANAGED_STUDY, MANAGED_SURVEY, MANAGED_INPERSON, MANAGED_GROUP]
+
+export const managedStudy = (id?: string) => MANAGED.find((s) => s.id === id) ?? MANAGED_STUDY

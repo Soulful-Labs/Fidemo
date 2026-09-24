@@ -8,7 +8,7 @@ import RespondentCard from '../../components/client/RespondentCard'
 import { StudyFrame } from '../../components/client/StudyFrame'
 import { ChevronRight } from '../../components/ui/icons'
 import { RECOMMENDED } from '../../mock/dashboard'
-import { MANAGED_STUDY, MANAGED_SURVEY } from '../../mock/studies'
+import { managedStudy } from '../../mock/studies'
 
 /**
  * Matched (1627:96237) and Invited (1627:96329) are one tab with a segmented
@@ -17,7 +17,7 @@ import { MANAGED_STUDY, MANAGED_SURVEY } from '../../mock/studies'
  */
 export default function MatchedTab() {
   const { id } = useParams()
-  const s = id === MANAGED_SURVEY.id ? MANAGED_SURVEY : MANAGED_STUDY
+  const s = managedStudy(id)
   const [state, setState] = useState<'matched' | 'invited'>('matched')
 
   return (

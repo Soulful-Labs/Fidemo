@@ -58,6 +58,5 @@ export interface GroupSession {
 
 export const GROUP_SESSIONS: GroupSession[] = [
   { title: 'Session 1', day: 'Aug 20, Friday', time: '12:00 PM - 12:40 PM', seats: '4 / 10 Seats', participants: ['J', 'R', 'T', 'U', 'M', 'O'] },
-  { title: 'Session 2', day: 'Aug 21, Saturday', time: '12:00 PM - 12:40 PM', seats: '6 / 10 Seats', participants: ['A', 'L', 'K', 'S', 'P', 'E'] },
-  { title: 'Session 3', day: 'Aug 22, Sunday', time: '12:00 PM - 12:40 PM', seats: '2 / 10 Seats', participants: ['N', 'D'] },
+  { title: 'Session 2', day: 'Aug 21, Saturday', time: '1:00 PM - 1:40 PM', seats: '6 / 10 Seats', participants: ['Y', 'Q', 'E', 'L', 'F', 'A'] },
 ]
