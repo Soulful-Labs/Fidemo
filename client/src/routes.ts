@@ -8,6 +8,7 @@ import StudiesList from './screens/studies/StudiesList'
 import PausedStudy from './screens/studies/PausedStudy'
 import StudyOverview from './screens/studies/StudyOverview'
 import ManageStudy from './screens/studies/ManageStudy'
+import MatchedTab from './screens/studies/MatchedTab'
 import AudienceNoMatch from './screens/create/AudienceNoMatch'
 import About from './screens/create/About'
 import Audience from './screens/create/Audience'
@@ -72,8 +73,7 @@ const routes: ScreenRoute[] = [
   // ----- Manage, one flow for every type (see CLAUDE.md) -----
   { path: '/studies/:id', label: 'Study Overview', node: '1627:95956', section: 'Manage', kind: 'page', element: createElement(StudyOverview) },
   { path: '/studies/:id/manage', label: 'Manage Study', node: '1627:96085', section: 'Manage', kind: 'page', element: createElement(ManageStudy) },
-  page('/studies/:id/matched', 'Matched Respondents', '1627:96237', 'Manage'),
-  page('/studies/:id/invited', 'Invited Respondents', '1627:96329', 'Manage'),
+  { path: '/studies/:id/matched', label: 'Matched Respondents', node: '1627:96237 (matched), 1627:96329 (invited)', section: 'Manage', kind: 'page', element: createElement(MatchedTab) },
   page('/studies/:id/recruited', 'Recruited Respondents', '1627:96535', 'Manage'),
   page('/studies/:id/results', 'Results', '1627:96628', 'Manage'),
   page('/studies/:id/pay', 'Pay while ongoing', '1627:96779', 'Manage'),
