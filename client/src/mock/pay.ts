@@ -67,9 +67,9 @@ export const BILL = {
     cta: 'Pay $350',
   },
   notes: [
-    '3% merchant processing fee applies when using a credit card. Learn about payment options',
-    'You are only charged for participants that complete your research.',
-  ],
+    { text: '3% merchant processing fee applies when using a credit card. ', link: 'Learn about payment options' },
+    { text: 'You are only charged for participants that complete your research.' },
+  ] as { text: string; link?: string }[],
 }
 
 /** Download Sessions Results (1627:110569 in-person, 1627:107040 video). */

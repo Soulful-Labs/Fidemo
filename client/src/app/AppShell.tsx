@@ -62,8 +62,10 @@ export function SideNav() {
  * carrying the breadcrumb, the bell and Create Study, and the page area.
  */
 export default function AppShell({
-  crumbs = [], action, children, bare,
-}: { crumbs?: Crumb[]; action?: ReactNode; children: ReactNode; bare?: boolean }) {
+  crumbs = [], action, children, bare, hideCreate,
+}: { crumbs?: Crumb[]; action?: ReactNode; children: ReactNode; bare?: boolean;
+  /** Bill Payment (1627:96956) keeps the bell and drops Create Study. */
+  hideCreate?: boolean }) {
   const [notifications, setNotifications] = useState(false)
   const [rows, setRows] = useState(NOTIFICATIONS)
   const unread = rows.filter((n) => n.unread).length
@@ -91,9 +93,11 @@ export default function AppShell({
                   <BellIcon className="h-5 w-5" />
                   {unread > 0 && <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-cta-primary" />}
                 </button>
-                <NavLink to="/studies/create/about">
-                  <Button size="row" leftIcon={<Plus className="h-4 w-4" />}>Create Study</Button>
-                </NavLink>
+                {!hideCreate && (
+                  <NavLink to="/studies/create/about">
+                    <Button size="row" leftIcon={<Plus className="h-4 w-4" />}>Create Study</Button>
+                  </NavLink>
+                )}
               </>
             )}
           </div>
