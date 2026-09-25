@@ -46,7 +46,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
   const nav = useNavigate()
   const [params] = useSearchParams()
   const s = managedStudy(id)
-  const [rate, setRate] = useState(params.get('rate') === '1')
+  const [rate, setRate] = useState(params.get('rate') === '1' || params.get('rate') === 'rated')
   const [noShow, setNoShow] = useState<'one' | 'all' | null>((params.get('noshow') as 'one' | 'all') ?? null)
 
   const session = s.type !== 'survey' && s.type !== 'diary'
@@ -173,7 +173,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
         </div>
       </div>
 
-      <RatePanel open={rate} onClose={() => setRate(false)} study={s} />
+      <RatePanel open={rate} onClose={() => setRate(false)} study={s} rated={params.get('rate') === 'rated'} />
       <NoShowModal open={!!noShow} scope={noShow ?? 'one'} onClose={() => setNoShow(null)} />
     </AppShell>
   )

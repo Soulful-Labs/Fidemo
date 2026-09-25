@@ -30,44 +30,70 @@ function Stars({ label, value, onPick }: { label: string; value: number; onPick:
  * frame shows no score, no weighting and no effect on the Trust Score.
  */
 export default function RatePanel({
-  open, onClose, study,
-}: { open: boolean; onClose: () => void; study: { breadcrumb: string } }) {
+  open, onClose, study, rated,
+}: { open: boolean; onClose: () => void; study: { breadcrumb: string }; rated?: boolean }) {
   const [scores, setScores] = useState<Record<string, number>>({ Expertise: 4 })
+  const given: Record<string, number> = { Expertise: 5, Reliability: 5, Communication: 4 }
 
   return (
     <SidePanel open={open} onClose={onClose} headerClassName="h-[56px]"
       bodyClassName="flex flex-col gap-3 p-4"
       title={
         <h2 className="text-title-s text-text-subtitle">
-          <span className="text-text-title">Rate Ferry L.</span> for {study.breadcrumb}
+          <span className="text-text-title">Rate {rated ? 'John M' : 'Ferry L.'}</span> for {study.breadcrumb}
         </h2>
       }
-      footer={
+      footer={rated ? undefined : (
         <div className="flex gap-3 [&_button]:h-12 [&_button]:flex-1 [&_button]:text-body-medium">
           <Button onClick={onClose}>Submit</Button>
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
         </div>
-      }>
+      )}>
       <div className="flex items-center gap-3 pb-1">
         <span className="flex h-10 w-10 items-center justify-center rounded-md bg-bg-2 text-body-medium text-text-subtitle">F</span>
         <span className="flex flex-col">
-          <span className="text-text-regular text-text-subtitle">Ferry L.</span>
+          <span className="text-text-regular text-text-subtitle">{rated ? 'John M' : 'Ferry L.'}</span>
           <span className="text-body-medium text-text-title">Physiology Therapist, Orthopedic</span>
         </span>
       </div>
-      <p className="text-body-regular text-text-body">Rate Ferry for this study</p>
+      {rated ? (
+        <div className="flex flex-col rounded-lg bg-bg-1 px-4">
+          <p className="py-4 text-body-regular text-text-body">You have rated on Aug 24, 20206</p>
+          {DIMENSIONS.map((d) => (
+            <div key={d} className="flex flex-col gap-2 border-t-1 border-bgAlt-2 py-3">
+              <p className="text-body-medium text-text-title">{d}</p>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  n <= given[d]
+                    ? <StarFilled key={n} className="h-6 w-6 text-brand-primary" />
+                    : <Star key={n} className="h-6 w-6 text-text-disabled" />
+                ))}
+              </div>
+            </div>
+          ))}
+          <div className="flex flex-col gap-1 border-t-1 border-bgAlt-2 py-4">
+            <p className="text-body-medium text-text-title">Review</p>
+            <p className="text-body-regular text-text-title">Was an really insightful session with John! would highly recommend her.</p>
+          </div>
+        </div>
+      ) : (
+        <>
+          <p className="text-body-regular text-text-body">Rate Ferry for this study</p>
+          {DIMENSIONS.map((d) => (
+            <Stars key={d} label={d} value={scores[d] ?? 0} onPick={(n) => setScores((s) => ({ ...s, [d]: n }))} />
+          ))}
+        </>
+      )}
 
-      {DIMENSIONS.map((d) => (
-        <Stars key={d} label={d} value={scores[d] ?? 0} onPick={(n) => setScores((s) => ({ ...s, [d]: n }))} />
-      ))}
-
-      <div className="flex flex-col gap-3 rounded-lg bg-bg-1 p-4">
-        <p className="text-body-medium text-text-title">
-          Review <span className="text-text-regular text-text-subtitle">(optional)</span>
-        </p>
-        <textarea rows={3} placeholder="Describe your experience with Ferry here.."
-          className="w-full resize-none rounded-sm border-1 border-stroke-input bg-bg-0 px-3 py-3 text-body-regular text-text-title placeholder:text-text-body focus:outline-none" />
-      </div>
+      {!rated && (
+        <div className="flex flex-col gap-3 rounded-lg bg-bg-1 p-4">
+          <p className="text-body-medium text-text-title">
+            Review <span className="text-text-regular text-text-subtitle">(optional)</span>
+          </p>
+          <textarea rows={3} placeholder="Describe your experience with Ferry here.."
+            className="w-full resize-none rounded-sm border-1 border-stroke-input bg-bg-0 px-3 py-3 text-body-regular text-text-title placeholder:text-text-body focus:outline-none" />
+        </div>
+      )}
     </SidePanel>
   )
 }
