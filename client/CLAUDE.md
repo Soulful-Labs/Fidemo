@@ -391,6 +391,61 @@ survey study on a diary frame. The build keeps one card width (824, the
 recruited frame), names the row from Results and the profile from the rail, and
 leaves the rest as the frames have it.
 
+### The money screens and the end states
+
+**Two of the three Pay frames are one tab; the third is a different screen.**
+1627:96779 and 1627:97128 differ only in five things — the due label gains a
+date, the amount, the Total Cost figure, the "As on today" line disappears and
+a Net payable cost row appears — and the balance button turns from disabled to
+payable. 1627:96956 is not a Pay state at all: 112,993 pixels differ from
+1627:96779. It drops the study tabs, drops Create Study from the top bar, and
+is routed separately as `/studies/:id/payment`.
+
+**What the client is doing.** The Pay tab is a statement, not an approval: it
+reads Payment Due, Deposit Paid and Total Cost, itemises the billing and lists
+the transactions already settled. Nothing on it approves a respondent's
+earnings — there is no per-respondent row, no approve control and no payout
+list. The only action is Pay Balance, drawn unpayable while the study is
+recruiting and payable once it is marked completed, and it opens Bill Payment,
+which is a card checkout against the invoice: the deposit is netted off and the
+client pays the remainder. `AppShell` gained `hideCreate` for that top bar.
+
+**The no-show modals.** 1697:63643, Mark [individual] as No-show, is the 460px
+dialog behind `Mark No-show` on a session respondent's Study Result bar. It
+names the person four times and warns in red that the respondent will not be
+paid. 1697:63580, Mark all as No-show, is the same dialog for a whole session
+and is **switched off in the file**: `get_metadata` gives the title bar, the
+heading "Didn’t everyone attend?" and the geometry, but names both body texts
+"Error", so their content cannot be read and is left unfilled. Both are session
+types only; a survey or diary has no session to miss. **No frame draws the
+trigger for the "all" variant.**
+
+**Download Sessions Results is one panel with one type-dependent word.**
+1627:110569 and 1627:107040 differ in 1,534 pixels: each session yields "Notes"
+on the in-person group frame and "Recordings + Transcript" on the group video
+call frame. Group types only. **No frame draws its trigger either**, so both it
+and the Mark-all modal are reachable in the build through a query parameter
+until one turns up.
+
+### The Completed Study Flow section is states, not screens
+
+`1697:61093` holds twelve frames and **every one of them is a screen already
+built, drawn with a completed study**. The sizes match frame for frame: Study
+Overview 960, Manage Study 1401, Results 1575, the three respondent screens
+1365, Pay - Due as completed 1097. Study Overview differs from its ongoing twin
+(1627:95956) in 2.83% of pixels, and every differing band is the seed — a
+different study name, thumbnail, description and share link — plus the status
+tag reading **Completed** instead of Recruiting. Its Pay while ongoing frame
+(1697:55119) is switched off, which fits: a completed study has nothing ongoing
+to draw.
+
+Two things in it are worth a turn of their own. `1746:95917` **RATED** is a
+genuinely new state, the Rate panel read back after submitting: the stars
+given, the review, no footer. It is built as `RatePanel rated`. And the two
+`Ongoing Study options` popovers in the section are 200x92 and 160x191, both
+different from the four already built for the Studies list, so a completed
+study's row menu is shorter.
+
 ### Manage study — one flow, sections 1627:95955 / 98349 / 100939 / 103596 / 107079 / 1645:131435
 | Route | Screen | Node | Kind |
 |---|---|---|---|
