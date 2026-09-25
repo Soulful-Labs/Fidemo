@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import RespondentCard from '../../components/client/RespondentCard'
@@ -87,6 +87,7 @@ function Criteria({ created }: { created?: boolean }) {
  */
 export default function PanelDetail({ featured }: { featured?: boolean }) {
   const nav = useNavigate()
+  const { panelId = 'p1' } = useParams()
   const [params, setParams] = useSearchParams()
   const d = featured ? PANEL_DETAIL.featured : PANEL_DETAIL.mine
   const tab = params.get('tab') ?? 'members'
@@ -107,7 +108,7 @@ export default function PanelDetail({ featured }: { featured?: boolean }) {
               {!featured && (
                 <>
                   <Button variant="tertiary" size="row" onClick={() => nav('/studies/create/about')}>Launch Study</Button>
-                  <button type="button" aria-label="Panel options" onClick={() => nav(`/pool/panels/${params.get('id') ?? 'p1'}/edit`)}
+                  <button type="button" aria-label="Panel options" onClick={() => nav(`/pool/panels/${panelId}/edit`)}
                     className="flex h-[38px] w-[38px] items-center justify-center rounded-sm border-1 border-stroke-input text-text-subtitle hover:text-text-title">
                     <MoreVertical className="h-4 w-4" />
                   </button>
