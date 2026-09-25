@@ -81,11 +81,13 @@ export default function Account() {
   return (
     <AppShell hideCreate crumbs={[{ label: 'Account' }]}>
       <div className="min-h-[941px] rounded-lg bg-bg-0 p-4">
-        <div className="flex gap-[78px]">
-          <nav className="h-fit w-[197px] shrink-0 rounded-lg border-1 border-stroke-input p-2">
+        {/* 1663:104607: the sub-nav is 200 wide with 9px of padding and 38px
+            items 4px apart, and the 600px column starts 8px lower than it. */}
+        <div className="flex gap-[76px]">
+          <nav className="flex h-fit w-[200px] shrink-0 flex-col gap-1 rounded-lg border-1 border-stroke-input p-[9px]">
             {NAV.map((n) => (
               <button key={n.key} type="button" onClick={() => go(n.key)}
-                className={cn('flex h-[42px] w-full items-center gap-3 rounded-sm px-3 text-body-regular',
+                className={cn('flex h-[38px] w-full items-center gap-3 rounded-sm px-3 text-body-regular',
                   n.key === tab ? 'bg-yellow-30 text-brand-primary' : 'text-text-title hover:bg-bg-1')}>
                 {n.key === 'reviews' ? <Star className="h-5 w-5" />
                   : n.key === 'certificate' ? <VerifiedMark className="h-5 w-5" />
@@ -97,7 +99,7 @@ export default function Account() {
             ))}
           </nav>
 
-          <div className="w-[600px]">
+          <div className="w-[600px] pt-2">
             {tab === 'profile' && (
               <>
                 {/* The signed-in account fills these, and Save Changes writes
