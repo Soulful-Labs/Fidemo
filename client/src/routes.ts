@@ -18,6 +18,8 @@ import PanelDetail from './screens/pool/PanelDetail'
 import CreatePanel from './screens/pool/CreatePanel'
 import Payments from './screens/payments/Payments'
 import NotificationsPage from './screens/NotificationsPage'
+import Help from './screens/help/Help'
+import TicketChat from './screens/help/TicketChat'
 import RespondentResult from './screens/studies/RespondentResult'
 import AudienceNoMatch from './screens/create/AudienceNoMatch'
 import About from './screens/create/About'
@@ -113,11 +115,10 @@ const routes: ScreenRoute[] = [
 
   // ----- Notifications (1663:104076) -----
   { path: '/notifications', label: 'Notifications', node: '1663:104077', section: 'Notifications', kind: 'page', element: createElement(NotificationsPage) },
+  { path: '/help', label: 'Help', node: '1663:104191 (faqs), 1663:104228 (tickets)', section: 'Help', kind: 'page', element: createElement(Help) },
+  { path: '/help/tickets/:id', label: 'Ticket Chat', node: '1663:104436 (open), 1663:104484 (solved)', section: 'Help', kind: 'page', element: createElement(TicketChat) },
 
   // ----- Help (1663:104190) -----
-  page('/help', 'Help', '1663:104191', 'Help'),
-  page('/help/tickets', 'Support Tickets', '1663:104228', 'Help'),
-  page('/help/tickets/:id', 'Ticket Chat', '1663:104436', 'Help'),
 
   // ----- Account (1663:104599) -----
   page('/account', 'Profile', '1663:104600', 'Account'),
