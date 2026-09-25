@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
@@ -5,6 +6,7 @@ import Select from '../../components/ui/Select'
 import Toggle from '../../components/ui/Toggle'
 import { ChevronLeft, Close, Info, UsersIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
+import { DiscardModal } from './PoolModals'
 import { CRITERIA, FORECAST, FORECAST_BARS, POOL_FILTERS } from '../../mock/pool'
 
 /** The live forecast beside the form; the tiers are bars here, not cards. */
@@ -97,13 +99,14 @@ function Picked({ label, placeholder, chips }: { label: string; placeholder: str
 export default function CreatePanel({ edit }: { edit?: boolean }) {
   const [params, setParams] = useSearchParams()
   const step2 = params.get('step') === '2'
+  const [discard, setDiscard] = useState(params.get('modal') === 'discard')
   const go = (v: string) => { const n = new URLSearchParams(params); n.set('step', v); setParams(n) }
 
   return (
     <AppShell hideCreate crumbs={[{ label: 'Pool', to: '/pool?view=panels' }, { label: edit ? 'Edit Micro-panel' : 'Create Micro-panel' }]}
       action={
         <span className="flex items-center gap-3">
-          <Button variant="tertiary" size="row">Cancel</Button>
+          <Button variant="tertiary" size="row" onClick={() => setDiscard(true)}>Cancel</Button>
           <Button size="row" onClick={() => go(step2 ? '1' : '2')}>{step2 ? 'Create Panel' : 'Proceed'}</Button>
         </span>
       }>
@@ -184,6 +187,7 @@ export default function CreatePanel({ edit }: { edit?: boolean }) {
           <Forecast approx={step2} />
         </div>
       </div>
+      <DiscardModal open={discard} onClose={() => setDiscard(false)} />
     </AppShell>
   )
 }

@@ -6,6 +6,7 @@ import Tabs from '../../components/ui/Tabs'
 import RespondentCard from '../../components/client/RespondentCard'
 import RespondentPanel from '../dashboard/RespondentPanel'
 import { InvitePanel, ReviewsPanel, SavePanel } from './PoolPanels'
+import { DeleteModal, SentModal } from './PoolModals'
 import FilterRail, { PanelTile } from './poolBits'
 import { Close, Plus, Search } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
@@ -99,7 +100,7 @@ export default function Pool() {
 
             <div className="grid grid-cols-3 gap-3 pt-4">
               {(featured ? FEATURED_PANELS : MY_PANELS).map((c) => (
-                <PanelTile key={c.id} c={c} to={`/pool/${featured ? 'featured' : 'panels'}/${c.id}`} />
+                <PanelTile key={c.id} c={c} to={`/pool/${featured ? 'featured' : 'panels'}/${c.id}`} onDelete={() => setPanel('delete')} />
               ))}
             </div>
           </>
@@ -109,7 +110,9 @@ export default function Pool() {
       <RespondentPanel open={panel === 'profile'} respondent={{ ...POOL_PEOPLE[0], professionVerified: true }}
         onClose={() => setPanel('')} onReviews={() => setPanel('reviews')} />
       <ReviewsPanel open={panel === 'reviews'} onClose={() => setPanel('')} onBack={() => setPanel('profile')} />
-      <InvitePanel open={panel === 'invite'} onClose={() => setPanel('')} />
+      <InvitePanel open={panel === 'invite'} onClose={() => setPanel('')} onSent={() => setPanel('sent')} />
+      <SentModal open={panel === 'sent'} onClose={() => setPanel('')} />
+      <DeleteModal open={panel === 'delete'} onClose={() => setPanel('')} />
       <SavePanel open={panel === 'save'} onClose={() => setPanel('')} />
     </AppShell>
   )

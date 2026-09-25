@@ -18,7 +18,7 @@ export function AddToPanel() {
 }
 
 /** A micro-panel tile: mine list their roles, featured ones their description. */
-export function PanelTile({ c, to }: { c: PanelCard; to: string }) {
+export function PanelTile({ c, to, onDelete }: { c: PanelCard; to: string; onDelete?: () => void }) {
   return (
     <NavLink to={to} className="flex flex-col rounded-lg border-1 border-stroke-input p-4 hover:bg-bg-1">
       <span className="flex items-start justify-between gap-3">
@@ -27,9 +27,11 @@ export function PanelTile({ c, to }: { c: PanelCard; to: string }) {
           <span className="text-text-regular text-text-subtitle">{c.domain}</span>
         </span>
         {c.roles && (
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-1 border-stroke-input text-text-subtitle">
+          <button type="button" aria-label="Panel options"
+            onClick={(e) => { e.preventDefault(); onDelete?.() }}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-1 border-stroke-input text-text-subtitle hover:text-text-title">
             <MoreVertical className="h-4 w-4" />
-          </span>
+          </button>
         )}
       </span>
       {c.roles && (

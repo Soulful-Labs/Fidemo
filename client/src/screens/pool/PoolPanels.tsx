@@ -82,14 +82,14 @@ export function ReviewsPanel({ open, onClose, onBack }: { open: boolean; onClose
 }
 
 /** Invite To Study (1645:163182): pick which live study the invitation is for. */
-export function InvitePanel({ open, onClose, name = 'Roma' }: { open: boolean; onClose: () => void; name?: string }) {
+export function InvitePanel({ open, onClose, name = 'Roma', onSent }: { open: boolean; onClose: () => void; name?: string; onSent?: () => void }) {
   return (
     <SidePanel open={open} onClose={onClose} title={`Invite ${name} To Study`} headerClassName="h-14"
       bodyClassName="flex flex-col gap-3 p-4"
       footer={
         <div className="flex gap-3 [&_button]:h-12 [&_button]:flex-1 [&_button]:text-body-medium">
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={onClose}>Send Invite</Button>
+          <Button onClick={() => (onSent ?? onClose)()}>Send Invite</Button>
         </div>
       }>
       <div className="flex flex-col gap-1">

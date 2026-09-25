@@ -3,7 +3,9 @@ import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import RespondentCard from '../../components/client/RespondentCard'
 import TierChip from '../../components/client/TierChip'
+import { useState } from 'react'
 import { AddToPanel } from './poolBits'
+import { SentModal } from './PoolModals'
 import { Calendar, Info, MoreVertical, UsersIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { CRITERIA, FORECAST, PANEL_DETAIL, POOL_PEOPLE } from '../../mock/pool'
@@ -87,6 +89,7 @@ export default function PanelDetail({ featured }: { featured?: boolean }) {
   const [params, setParams] = useSearchParams()
   const d = featured ? PANEL_DETAIL.featured : PANEL_DETAIL.mine
   const tab = params.get('tab') ?? 'members'
+  const [sent, setSent] = useState(params.get('modal') === 'sent')
   const set = (k: string) => { const n = new URLSearchParams(params); n.set('tab', k); setParams(n) }
   const tabs = featured
     ? [{ key: 'members', label: 'Members' }, { key: 'details', label: 'Panel Details' }]
@@ -99,7 +102,7 @@ export default function PanelDetail({ featured }: { featured?: boolean }) {
           <div className="flex items-start justify-between gap-4">
             <h1 className="text-title-l text-text-title">{d.title}</h1>
             <span className="flex items-center gap-3">
-              <Button variant="secondary" size="row">Invite All To Study</Button>
+              <Button variant="secondary" size="row" onClick={() => setSent(true)}>Invite All To Study</Button>
               {!featured && (
                 <>
                   <Button variant="tertiary" size="row">Launch Study</Button>
@@ -159,6 +162,8 @@ export default function PanelDetail({ featured }: { featured?: boolean }) {
           )}
         </div>
       </div>
+      <SentModal open={sent} onClose={() => setSent(false)}
+        panel={{ members: '35', title: 'Expert Oncologists Nationwide' }} />
     </AppShell>
   )
 }
