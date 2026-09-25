@@ -45,6 +45,16 @@ button heights that `className` could never override.
 
 ---
 
+## Rule 6, a node id is a starting point, not a fact
+
+**Node ids in this file are not stable.** `1627:103111` became `1769:93628`
+between two turns, same frame, same content, different id. Every id from the
+original inventory is where to start looking, not proof of what is there. If an
+id returns nothing, or returns something the brief did not describe, call
+`get_metadata` on the enclosing section and find the frame by name before
+concluding the screen is gone or that the brief is wrong. Report the new id
+when one moves.
+
 ## Hidden frames
 
 **Frames switched off in the file are common, and a node id is not proof a screen
