@@ -7,6 +7,8 @@ import { cn } from '../../lib/cn'
 import { BILLING, BILLING_TOTAL } from '../../mock/pay'
 import { ADD_CARD, INVOICE, MAKE_PAYMENT, PAID_MODAL, REMOVE_CARD } from '../../mock/payments'
 import { useToast } from '../../components/ui/Toast'
+import { useState } from 'react'
+import { useWorkspace } from '../../mock/workspace'
 
 /** The card brand mark, as the payment rows draw it. */
 export function CardMark({ brand = 'Mastercard' }: { brand?: string }) {
@@ -155,21 +157,41 @@ export function MakePaymentPanel({
 
 /** Add New Card (1663:103923), raised by Add New Method. */
 export function AddCardPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { addCard } = useWorkspace()
+  const toast = useToast()
+  const [values, setValues] = useState<Record<string, string>>({})
+  const set = (k: string, v: string) => setValues((cur) => ({ ...cur, [k]: v }))
+
+  const save = () => {
+    const number = (values['Card Number'] ?? '').replace(/\D/g, '')
+    if (number.length < 12) { toast('Please enter a full card number'); return }
+    const expiry = values['Expiry Date'] ?? ''
+    if (!/^\d{2}\s*\/\s*\d{2,4}$/.test(expiry)) { toast('Expiry should be MM / YYYY'); return }
+    addCard({
+      brand: number.startsWith('4') ? 'VISA' : 'Mastercard',
+      last4: number.slice(-4),
+      expires: `Expires ${expiry.replace(/\s/g, '').replace('/', '/').slice(0, 5)}`,
+    })
+    setValues({})
+    toast('Card added')
+    onClose()
+  }
+
   return (
     <SidePanel open={open} onClose={onClose} title="Add New Card" headerClassName="h-14"
       className="h-fit" bodyClassName="grid grid-cols-2 gap-x-4 gap-y-3 px-4 pb-4 pt-4"
       footer={
         <div className="flex gap-3 [&_button]:h-12 [&_button]:flex-1 [&_button]:text-body-medium">
           <Button variant="tertiary" onClick={onClose}>Cancel</Button>
-          <Button onClick={onClose}>Save</Button>
+          <Button onClick={save}>Save</Button>
         </div>
       }>
       {ADD_CARD.fields.map((f) => (
         <label key={f.label} className={cn('flex flex-col gap-2', f.wide && 'col-span-2')}>
           <span className="text-text-regular text-text-subtitle">{f.label}</span>
-          <span className="flex h-12 items-center rounded-sm border-1 border-stroke-input px-4 text-body-regular text-text-body">
-            {f.placeholder}
-          </span>
+          <input value={values[f.label] ?? ''} onChange={(e) => set(f.label, e.target.value)}
+            placeholder={f.placeholder}
+            className="flex h-12 items-center rounded-sm border-1 border-stroke-input px-4 text-body-regular text-text-title outline-none placeholder:text-text-body" />
         </label>
       ))}
       <p className="col-span-2 pt-1 text-text-regular text-text-subtitle">{ADD_CARD.note}</p>
@@ -192,13 +214,17 @@ export function PaidModal({ open, onClose }: { open: boolean; onClose: () => voi
 }
 
 /** Remove **** 4242 Card? (1779:104288). */
-export function RemoveCardModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function RemoveCardModal({ open, onClose, onConfirm, last4 }: {
+  open: boolean; onClose: () => void; onConfirm?: () => void; last4?: string
+}) {
   return (
-    <Modal open={open} onClose={onClose} wide title={REMOVE_CARD.title} body={REMOVE_CARD.body}
+    <Modal open={open} onClose={onClose} wide
+      title={last4 ? REMOVE_CARD.title.replace('4242', last4) : REMOVE_CARD.title}
+      body={REMOVE_CARD.body}
       footer={
         <>
           <Button variant="tertiary" className="flex-1" onClick={onClose}>Cancel</Button>
-          <Button variant="danger" className="flex-1" onClick={onClose}>Remove</Button>
+          <Button variant="danger" className="flex-1" onClick={onConfirm ?? onClose}>Remove</Button>
         </>
       } />
   )

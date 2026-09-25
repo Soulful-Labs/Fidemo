@@ -3,10 +3,10 @@ import type { ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import Button from '../components/ui/Button'
 import NotificationsPanel from '../screens/dashboard/NotificationsPanel'
-import { NOTIFICATIONS } from '../mock/dashboard'
 import { BellIcon, ChevronRight, DashboardIcon, HelpIcon, PaymentsIcon, Plus, PoolIcon, StudiesIcon } from '../components/ui/icons'
 import { cn } from '../lib/cn'
 import { useSession } from '../mock/session'
+import { useWorkspace } from '../mock/workspace'
 
 /** The left navigation, in the order drawn on every 1440 frame. */
 const NAV = [
@@ -72,7 +72,7 @@ export default function AppShell({
   /** Bill Payment (1627:96956) keeps the bell and drops Create Study. */
   hideCreate?: boolean }) {
   const [notifications, setNotifications] = useState(false)
-  const [rows, setRows] = useState(NOTIFICATIONS)
+  const { notifications: rows, markNotificationsRead } = useWorkspace()
   const unread = rows.filter((n) => n.unread).length
   if (bare) return <div className="min-h-screen bg-yellow-20">{children}</div>
 
@@ -113,7 +113,7 @@ export default function AppShell({
       </div>
 
       <NotificationsPanel open={notifications} rows={rows} onClose={() => setNotifications(false)}
-        onMarkAllRead={() => setRows((r) => r.map((n) => ({ ...n, unread: false })))}
+        onMarkAllRead={markNotificationsRead}
         onAction={() => setNotifications(false)} />
     </div>
   )

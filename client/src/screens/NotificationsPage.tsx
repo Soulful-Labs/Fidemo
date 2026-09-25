@@ -1,10 +1,8 @@
-import { useState } from 'react'
 import AppShell from '../app/AppShell'
 import Button from '../components/ui/Button'
 import Tag from '../components/ui/Tag'
 import { NotificationItem } from './dashboard/NotificationsPanel'
-import { NOTIFICATIONS } from '../mock/dashboard'
-import { useSeeded } from '../mock/seeded'
+import { useWorkspace } from '../mock/workspace'
 
 /**
  * Notifications (1663:104077). The same rows as the 600px panel the bell
@@ -12,8 +10,7 @@ import { useSeeded } from '../mock/seeded'
  * the row component is imported rather than drawn twice.
  */
 export default function NotificationsPage() {
-  const seeded = useSeeded(NOTIFICATIONS)
-  const [rows, setRows] = useState(seeded)
+  const { notifications: rows, markNotificationsRead, markNotificationRead } = useWorkspace()
   const unread = rows.filter((n) => n.unread).length
 
   return (
@@ -26,7 +23,7 @@ export default function NotificationsPage() {
               {unread > 0 && <Tag tone="grey" className="h-7 px-2.5">{unread}</Tag>}
             </span>
             <Button variant="ghost" className="h-6 px-0 text-text-regular text-text-subtitle"
-              onClick={() => setRows((r) => r.map((n) => ({ ...n, unread: false })))}>
+              onClick={markNotificationsRead}>
               Mark all as read
             </Button>
           </div>
@@ -39,7 +36,7 @@ export default function NotificationsPage() {
                 </p>
               </div>
             )}
-            {rows.map((n) => <NotificationItem key={n.id} n={n} onAction={() => undefined} />)}
+            {rows.map((n) => <NotificationItem key={n.id} n={n} onAction={() => markNotificationRead(n.id)} />)}
           </ul>
         </div>
       </div>
