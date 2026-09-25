@@ -7,6 +7,7 @@ import type { Question, QuestionKind } from '../../mock/createStore'
 import CreateShell from './CreateShell'
 import ScreenerPreview from './ScreenerPreview'
 import { useToast } from '../../components/ui/Toast'
+import { useState } from 'react'
 
 const SPARKLE = (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
@@ -53,14 +54,31 @@ function Box({ value, placeholder, onChange, className, muted }: {
   )
 }
 
-/** A small select with the frame's own chevron, used for types and marks. */
-function Pick({ value, tone, className }: { value: string; tone?: string; className?: string }) {
+/**
+ * A small select with the frame's own chevron, used for types and marks.
+ * It opens its options when the caller gives it some.
+ */
+function Pick({ value, tone, className, options, onPick }: {
+  value: string; tone?: string; className?: string; options?: string[]; onPick?: (v: string) => void
+}) {
+  const [open, setOpen] = useState(false)
   return (
-    <button type="button" className={cn('flex h-[38px] shrink-0 items-center justify-between gap-2 rounded-sm border-1 border-stroke-input bg-bg px-4 text-text-regular',
+    <span className="relative flex shrink-0">
+    <button type="button" onClick={() => options && setOpen((o) => !o)}
+      className={cn('flex h-[38px] shrink-0 items-center justify-between gap-2 rounded-sm border-1 border-stroke-input bg-bg px-4 text-text-regular',
       tone ?? 'text-text-title', className)}>
       <span className="truncate">{value}</span>
       <ChevronDown className="h-4 w-4 shrink-0 text-text-subtitle" />
     </button>
+    {open && options && (
+      <span className="absolute left-0 top-full z-30 mt-1 flex min-w-full max-h-56 flex-col overflow-y-auto rounded-sm border-1 border-stroke-input bg-bg-0 py-1 shadow-lg">
+        {options.map((o) => (
+          <button key={o} type="button" onClick={() => { onPick?.(o); setOpen(false) }}
+            className="whitespace-nowrap px-3 py-2 text-left text-text-regular text-text-title hover:bg-bg-1">{o}</button>
+        ))}
+      </span>
+    )}
+    </span>
   )
 }
 
@@ -100,14 +118,15 @@ function Options({ q, onAdd, onRemove, onText, removable }: {
 }
 
 /** The grid a Mattrix question is answered on. */
-function Matrix({ q }: { q: Question }) {
+function Matrix({ q, write }: { q: Question; write: (next: Question) => void }) {
   return (
     <div className="flex flex-col gap-2.5 rounded-md bg-bg-1 p-3">
       <div className="flex items-center gap-2.5">
         <span className="w-[72px] shrink-0" />
         <Box value="1" className="w-[72px] bg-bg" />
         <Box placeholder="Enter column item..." className="flex-1" />
-        <button type="button" aria-label="Add column" className="text-text-subtitle"><Plus className="h-5 w-5" /></button>
+        <button type="button" aria-label="Add column" onClick={() => write({ ...q, columns: [...(q.columns ?? []), ''] })}
+          className="text-text-subtitle hover:text-text-title"><Plus className="h-5 w-5" /></button>
       </div>
       {(q.rows ?? []).map((r, i) => (
         <div key={i} className="flex items-center gap-2.5">
@@ -117,8 +136,10 @@ function Matrix({ q }: { q: Question }) {
               <span className="h-4 w-4 rounded-full border-1.5 border-neutral-1000" />
             </span>
           ))}
-          <button type="button" aria-label="Add row" className="text-text-subtitle"><Plus className="h-5 w-5" /></button>
-          <button type="button" aria-label="Delete row" className="text-text-subtitle"><Trash className="h-5 w-5" /></button>
+          <button type="button" aria-label="Add row" onClick={() => write({ ...q, rows: [...(q.rows ?? []), ''] })}
+            className="text-text-subtitle hover:text-text-title"><Plus className="h-5 w-5" /></button>
+          <button type="button" aria-label="Delete row" onClick={() => write({ ...q, rows: (q.rows ?? []).filter((_, k) => k !== i) })}
+            className="text-text-subtitle hover:text-text-title"><Trash className="h-5 w-5" /></button>
         </div>
       ))}
     </div>
@@ -211,7 +232,7 @@ function QuestionBlock({ q, index }: { q: Question; index: number }) {
           </div>
         )}
 
-        {q.kind === 'Mattrix' && <Matrix q={q} />}
+        {q.kind === 'Mattrix' && <Matrix q={q} write={write} />}
       </div>
     </div>
   )

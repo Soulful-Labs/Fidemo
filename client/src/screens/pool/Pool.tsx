@@ -9,9 +9,9 @@ import { InvitePanel, ReviewsPanel, SavePanel } from './PoolPanels'
 import { DeleteModal, SentModal } from './PoolModals'
 import FilterRail, { PanelTile } from './poolBits'
 import { Close, Plus, Search } from '../../components/ui/icons'
-import { useToast } from '../../components/ui/Toast'
 import { cn } from '../../lib/cn'
-import { FEATURED_CATEGORIES, FEATURED_PANELS, MY_PANELS, POOL_CHIPS, POOL_PEOPLE, POOL_RESULTS, POOL_SEARCH } from '../../mock/pool'
+import { FEATURED_CATEGORIES, FEATURED_PANELS, MY_PANELS, POOL_DEFAULT_FILTERS, POOL_PEOPLE, POOL_SEARCH, POOL_TOTAL } from '../../mock/pool'
+import { matchesPool, poolChips } from '../../lib/poolFilter'
 import { useSeeded } from '../../mock/seeded'
 
 /**
@@ -22,14 +22,25 @@ import { useSeeded } from '../../mock/seeded'
  */
 export default function Pool() {
   const nav = useNavigate()
-  const toast = useToast()
   const [params, setParams] = useSearchParams()
   const panels = params.get('view') === 'panels'
   const featured = params.get('sub') === 'featured'
   /** Featured panels are public; a client's own panels are theirs. */
   const mine = useSeeded(MY_PANELS)
-  const panelCards = featured ? FEATURED_PANELS : mine
   const [filters, setFilters] = useState(params.get('filters') !== 'hidden')
+  /** The rail, the search box and the chips above the grid are one state. */
+  const [f, setF] = useState({ ...POOL_DEFAULT_FILTERS })
+  const [query, setQuery] = useState('')
+  const [panelSearch, setPanelSearch] = useState('')
+  const [category, setCategory] = useState('All')
+  const panelCards = (featured ? FEATURED_PANELS : mine)
+    .filter((c) => category === 'All' || c.domain === category)
+    .filter((c) => {
+      const q = panelSearch.trim().toLowerCase()
+      return !q || `${c.title} ${c.domain} ${c.roles ?? ''} ${c.description ?? ''}`.toLowerCase().includes(q)
+    })
+  const people = POOL_PEOPLE.filter((p) => matchesPool(p, f))
+  const chips = poolChips(f)
   /** The four 600px panels the pool cards open. */
   const [panel, setPanel] = useState(params.get('panel') ?? '')
   const set = (k: string, v: string) => { const n = new URLSearchParams(params); n.set(k, v); setParams(n) }
@@ -50,31 +61,51 @@ export default function Pool() {
 
         {!panels && (
           <>
-            <div className="mt-4 flex h-[62px] items-center justify-between gap-4 rounded-lg border-1 border-stroke-input bg-bg-1 px-4">
-              <span className="text-body-regular text-text-body">{POOL_SEARCH}</span>
-              <Button variant="secondary" size="none" className="h-10 px-4" onClick={() => toast('Filters applied')}
+            <form className="mt-4 flex h-[62px] items-center justify-between gap-4 rounded-lg border-1 border-stroke-input bg-bg-1 px-4"
+              onSubmit={(e) => { e.preventDefault(); setF({ ...f, query }); }}>
+              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={POOL_SEARCH}
+                className="min-w-0 flex-1 bg-transparent text-body-regular text-text-title outline-none placeholder:text-text-body" />
+              <Button type="submit" variant="secondary" size="none" className="h-10 px-4"
                 leftIcon={<Search className="h-4 w-4" />}>
                 <span className="text-body-medium">Find and Filter</span>
               </Button>
-            </div>
+            </form>
 
             <div className="flex gap-[34px] pt-[22px]">
-              {filters && <FilterRail />}
+              {filters && <FilterRail value={f} onChange={setF} />}
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-3">
-                  <span className="text-body-medium text-text-title">{POOL_RESULTS}</span>
-                  {POOL_CHIPS.map((c) => (
-                    <span key={c} className="inline-flex h-7 items-center gap-1.5 rounded-full border-1 border-stroke-input px-2.5 text-text-regular text-text-title">
-                      {c}<Close className="h-3.5 w-3.5 text-text-subtitle" />
+                  <span className="text-body-medium text-text-title">
+                    {people.length} of {POOL_TOTAL} results
+                  </span>
+                  {/* Every chip here is a filter that is on, and its cross takes it off. */}
+                  {chips.map((c) => (
+                    <span key={c.key} className="inline-flex h-7 items-center gap-1.5 rounded-full border-1 border-stroke-input px-2.5 text-text-regular text-text-title">
+                      {c.label}
+                      <button type="button" aria-label={`Remove ${c.label}`} onClick={() => setF(c.remove(f))}
+                        className="text-text-subtitle hover:text-text-title">
+                        <Close className="h-3.5 w-3.5" />
+                      </button>
                     </span>
                   ))}
                 </div>
-                <button type="button" onClick={() => setFilters((f) => !f)}
-                  className="mt-3 inline-flex items-center gap-2 text-text-regular text-text-subtitle hover:text-text-title">
-                  <Close className="h-4 w-4" />Clear All
-                </button>
+                <div className="mt-3 flex items-center gap-4">
+                  <button type="button" onClick={() => { setF({ ...POOL_DEFAULT_FILTERS }); setQuery('') }}
+                    className="inline-flex items-center gap-2 text-text-regular text-text-subtitle hover:text-text-title">
+                    <Close className="h-4 w-4" />Clear All
+                  </button>
+                  <button type="button" onClick={() => setFilters((v) => !v)}
+                    className="text-text-regular text-text-subtitle hover:text-text-title">
+                    {filters ? 'Hide filters' : 'Show filters'}
+                  </button>
+                </div>
+                {people.length === 0 && (
+                  <p className="py-16 text-center text-body-regular text-text-subtitle">
+                    Nobody in the pool matches every filter. Take one off to widen it.
+                  </p>
+                )}
                 <div className={cn('grid gap-3 pt-4', filters ? 'grid-cols-2' : 'grid-cols-3')}>
-                  {POOL_PEOPLE.map((p) => (
+                  {people.map((p) => (
                     <RespondentCard key={p.id} respondent={{ ...p, professionVerified: true }} saveable className="px-4 pb-2 pt-4"
                       onView={() => setPanel('profile')}
                       actions={<Button variant="tertiary" size="none" className="h-11 flex-1"
@@ -92,17 +123,21 @@ export default function Pool() {
               <Tabs value={featured ? 'featured' : 'mine'} onChange={(k) => set('sub', k)} className="flex-1"
                 items={[{ key: 'mine', label: 'My Panels' }, { key: 'featured', label: 'Featured Public Panels' }]} />
               <span className="flex h-10 w-[240px] shrink-0 items-center gap-2 rounded-full border-1 border-stroke-input px-4 text-body-regular text-text-body">
-                <Search className="h-4 w-4" />Search your panels
+                <Search className="h-4 w-4 shrink-0" />
+                <input value={panelSearch} onChange={(e) => setPanelSearch(e.target.value)}
+                  placeholder="Search your panels"
+                  className="min-w-0 flex-1 bg-transparent text-body-regular text-text-title outline-none placeholder:text-text-body" />
               </span>
             </div>
 
             {featured && (
               <div className="flex flex-wrap gap-2 pt-4">
-                {FEATURED_CATEGORIES.map((c, i) => (
-                  <span key={c} className={cn('inline-flex h-8 items-center rounded-full px-3 text-text-regular',
-                    i === 0 ? 'bg-bg-1 text-text-title' : 'border-1 border-stroke-input text-text-subtitle')}>
+                {FEATURED_CATEGORIES.map((c) => (
+                  <button key={c} type="button" onClick={() => setCategory(c)} aria-pressed={c === category}
+                    className={cn('inline-flex h-8 items-center rounded-full px-3 text-text-regular',
+                      c === category ? 'bg-bg-1 text-text-title' : 'border-1 border-stroke-input text-text-subtitle hover:text-text-title')}>
                     {c}
-                  </span>
+                  </button>
                 ))}
               </div>
             )}
@@ -111,7 +146,9 @@ export default function Pool() {
               {panelCards.length === 0 && (
                 <div className="col-span-3 flex flex-col items-center gap-3 py-16 text-center">
                   <p className="text-body-medium text-text-title">
-                    {featured ? 'No featured panels yet.' : 'You have not built a micro-panel yet.'}
+                    {panelSearch.trim() || category !== 'All'
+                      ? 'No panels match that.'
+                      : featured ? 'No featured panels yet.' : 'You have not built a micro-panel yet.'}
                   </p>
                   <p className="text-text-regular text-text-subtitle">
                     {featured

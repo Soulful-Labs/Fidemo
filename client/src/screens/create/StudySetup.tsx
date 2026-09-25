@@ -4,12 +4,12 @@ import Button from '../../components/ui/Button'
 import { ChevronRight, Edit } from '../../components/ui/icons'
 import { blankQuestion, useDraft } from '../../mock/createStore'
 import CreateShell from './CreateShell'
-import Select from '../../components/ui/Select'
 import { Section } from './CreateBits'
 import { CostingSummary, IncentivePayments, Payment, SettingsCard } from './StudyBits'
 import SurveyComposer from './SurveyComposer'
 import AvailabilityComposer from './AvailabilityComposer'
 import OverridePanel from './OverridePanel'
+import Picker from '../../components/ui/Picker'
 
 const TARGET = (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
@@ -62,6 +62,14 @@ const DIARY_FIELDS: { key: 'durationUnit' | 'frequency' | 'studyDuration' | 'min
   { key: 'minimumRequired', label: 'Minimum Required', note: 'To qualify for reward' },
 ]
 
+/** What each diary field offers. */
+const DIARY_OPTIONS: Record<string, string[]> = {
+  durationUnit: ['Hour', 'Day', 'Week'],
+  frequency: ['Every day', 'Every 2 days', 'Every 3 days', 'Weekly'],
+  studyDuration: ['3 days', '5 days', '7 days', '14 days'],
+  minimumRequired: ['2 days', '3 days', '4 days', '5 days'],
+}
+
 /** Diary Study Settings (1518:94580): the schedule, then the study form. */
 function DiarySettings() {
   const { draft, set } = useDraft()
@@ -81,7 +89,8 @@ function DiarySettings() {
           {DIARY_FIELDS.map((f) => (
             <label key={f.key} className="flex flex-col gap-1">
               <span className="text-text-regular text-text-subtitle">{f.label}</span>
-              <Select value={draft[f.key]} className="w-full" />
+              <Picker value={draft[f.key]} className="w-full" options={DIARY_OPTIONS[f.key]}
+                onPick={(v) => set(f.key, v)} />
               {f.note && <span className="text-text-regular text-text-subtitle">{f.note}</span>}
             </label>
           ))}

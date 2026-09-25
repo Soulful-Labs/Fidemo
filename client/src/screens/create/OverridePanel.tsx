@@ -1,4 +1,5 @@
 import Button from '../../components/ui/Button'
+import { useState } from 'react'
 import SidePanel from '../../components/ui/SidePanel'
 import Toggle from '../../components/ui/Toggle'
 import { Calendar, Close, Plus } from '../../components/ui/icons'
@@ -18,6 +19,7 @@ function Time({ value }: { value: string }) {
  * weekly ones.
  */
 export default function OverridePanel({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [rows, setRows] = useState<number[]>([0, 1])
   const { draft, set } = useDraft()
 
   return (
@@ -44,17 +46,18 @@ export default function OverridePanel({ open, onClose }: { open: boolean; onClos
 
       <div className="flex flex-col gap-3">
         <p className="text-body-medium text-text-title">Which hours are you available?</p>
-        {[0, 1].map((i) => (
+        {rows.map((_, i) => (
           <div key={i} className="flex items-center gap-3">
             <Time value="12:00 AM" />
             <span className="text-text-regular text-text-subtitle">TO</span>
             <Time value="12:00 AM" />
-            <button type="button" aria-label="Remove hours" className="text-text-subtitle hover:text-text-title">
+            <button type="button" aria-label="Remove hours" onClick={() => setRows((r) => (r.length > 1 ? r.filter((_, k) => k !== i) : r))}
+              className="text-text-subtitle hover:text-text-title">
               <Close className="h-4 w-4" />
             </button>
             <span className="flex-1" />
             {i === 0 && (
-              <button type="button" aria-label="Add hours"
+              <button type="button" aria-label="Add hours" onClick={() => setRows((r) => [...r, r.length])}
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-1 border-stroke-input bg-bg text-text-subtitle hover:text-text-title">
                 <Plus className="h-5 w-5" />
               </button>

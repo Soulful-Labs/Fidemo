@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
-import Select from '../../components/ui/Select'
 import { Close, Info, PoolIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import CreateShell from './CreateShell'
 import { useToast } from '../../components/ui/Toast'
+import Picker from '../../components/ui/Picker'
 
 /** A form section heading: small green icon, title, and the line under it. */
 function Section({ icon, title, sub, children }: { icon: React.ReactNode; title: string; sub: string; children: React.ReactNode }) {
@@ -58,6 +58,8 @@ export default function AudienceNoMatch() {
   const toast = useToast()
   const nav = useNavigate()
   const [condition, setCondition] = useState('na')
+  const [recent, setRecent] = useState('6 months')
+  const [trust, setTrust] = useState('Select trust score')
 
   return (
     <CreateShell step="audience" action={
@@ -133,7 +135,12 @@ export default function AudienceNoMatch() {
                     <span className="flex flex-col gap-1">
                       <span className="text-body-regular text-text-title">{o.label}</span>
                       {o.sub && <span className="text-text-regular text-text-subtitle">{o.sub}</span>}
-                      {o.key === 'recent' && <span className="pt-1"><Select value="6 months" className="w-[150px]" /></span>}
+                      {o.key === 'recent' && (
+                        <span className="pt-1 inline-block">
+                          <Picker value={recent} className="w-[150px]"
+                            options={['3 months', '6 months', '12 months']} onPick={setRecent} />
+                        </span>
+                      )}
                     </span>
                   </label>
                 ))}
@@ -141,7 +148,8 @@ export default function AudienceNoMatch() {
               <Field label="Profile Tiers" placeholder="Select tiers..." />
               <div className="flex flex-col gap-1.5">
                 <span className="text-text-regular text-text-subtitle">Trust Score</span>
-                <Select value="Select trust score" />
+                <Picker value={trust} options={['Any', '90 & above', '80 & above', '70 & above']}
+                  onPick={setTrust} />
               </div>
             </div>
           </Section>

@@ -64,8 +64,16 @@ function DirectHelp({ wide, onAsk }: { wide?: boolean; onAsk: () => void }) {
 export default function Help() {
   const [params, setParams] = useSearchParams()
   const tickets = params.get('tab') === 'tickets'
+  const [search, setSearch] = useState('')
+  const [sort, setSort] = useState('Newest first')
   /** A new account has raised none. */
-  const rows = useSeeded(TICKETS)
+  const seeded = useSeeded(TICKETS)
+  /** The search box and the sort both act on this list. */
+  const found = seeded.filter((t) => {
+    const q = search.trim().toLowerCase()
+    return !q || `${t.subject} ${t.id} ${t.last}`.toLowerCase().includes(q)
+  })
+  const rows = sort === 'Oldest first' ? [...found].reverse() : found
   const [openFaq, setOpenFaq] = useState(0)
   const [panel, setPanel] = useState(params.get('panel') ?? '')
   const set = (k: string) => { const n = new URLSearchParams(params); n.set('tab', k); setParams(n) }
@@ -96,9 +104,13 @@ export default function Help() {
             <h2 className="pt-6 text-title-s leading-[25px] text-text-title">Tickets List</h2>
             <div className="flex items-center gap-4 pt-4">
               <span className="flex h-12 flex-1 items-center gap-3 rounded-sm border-1 border-stroke-input px-4 text-body-regular text-text-body">
-                <Search className="h-5 w-5" />Search by name or ticket number
+                <Search className="h-5 w-5 shrink-0" />
+                <input value={search} onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search by name or ticket number"
+                  className="min-w-0 flex-1 bg-transparent text-body-regular text-text-title outline-none placeholder:text-text-body" />
               </span>
-              <Select value="Sort by: Newest first" className="w-[240px]" />
+              <Select value={`Sort by: ${sort}`} className="w-[240px]"
+                onClick={() => setSort((v) => (v === 'Newest first' ? 'Oldest first' : 'Newest first'))} />
             </div>
 
             <div className="mt-6 overflow-hidden rounded-lg border-1 border-stroke-input">

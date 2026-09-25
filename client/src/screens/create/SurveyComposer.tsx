@@ -33,9 +33,9 @@ function Box({ value, placeholder, onChange, className }: {
   )
 }
 
-function Pick({ value, tone, className }: { value: string; tone?: string; className?: string }) {
+function Pick({ value, tone, className, onClick }: { value: string; tone?: string; className?: string; onClick?: () => void }) {
   return (
-    <button type="button" className={cn('flex h-[38px] shrink-0 items-center justify-between gap-2 rounded-sm border-1 border-stroke-input bg-bg px-3 text-text-regular',
+    <button type="button" onClick={onClick} className={cn('flex h-[38px] shrink-0 items-center justify-between gap-2 rounded-sm border-1 border-stroke-input bg-bg px-3 text-text-regular',
       tone ?? 'text-text-title', className)}>
       <span className="truncate">{value}</span>
       <ChevronDown className="h-4 w-4 shrink-0 text-text-subtitle" />
@@ -99,8 +99,8 @@ export default function SurveyComposer({
                 <span className="flex h-[38px] items-center rounded-full bg-bg-1 px-4 text-text-regular text-text-title">{q.label}</span>
                 <span className="flex-1" />
                 <Pick value={q.kind} className="w-[164px]" />
-                <button type="button" aria-label="Question options"
-                  className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-sm border-1 border-stroke-input bg-bg text-text-subtitle">
+                <button type="button" aria-label="Question options" onClick={() => toast('Duplicate, move and delete land with the question menu')}
+                  className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-sm border-1 border-stroke-input bg-bg text-text-subtitle hover:text-text-title">
                   <MoreVertical className="h-5 w-5" />
                 </button>
               </div>

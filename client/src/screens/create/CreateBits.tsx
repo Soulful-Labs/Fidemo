@@ -69,3 +69,12 @@ export function TierBar({ label, value, colour }: { label: string; value: number
     </div>
   )
 }
+
+/** What each picker in this step offers. */
+export const AUDIENCE_OPTIONS = {
+  countries: ['United States of America', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'India', 'Japan'],
+  gender: ['All Genders', 'Male', 'Female', 'Other'],
+  education: ['High school graduate', "Graduate or Bachelor's", "Master's degree", 'Doctorate'],
+  ageRanges: ['18–20', '21–29', '30–39', '40–49', '50–59', '60+'],
+  tiers: ['Any tier', 'Silver and above', 'Gold and above', 'Platinum only'],
+}

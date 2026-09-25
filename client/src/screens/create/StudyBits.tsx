@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import Toggle from '../../components/ui/Toggle'
 import { useDraft } from '../../mock/createStore'
 import { Section } from './CreateBits'
+import { useToast } from '../../components/ui/Toast'
 
 const DOLLAR = (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
@@ -97,12 +98,14 @@ export function CostingSummary({ className }: { className?: string } = {}) {
 
 /** Payment, the same on every study type. */
 export function Payment({ className }: { className?: string } = {}) {
+  const toast = useToast()
   return (
     <Section icon={RECEIPT} title="Payment" sub="" headPad="pb-2" titleLead="leading-[22px]" className={className}>
       <div className="flex flex-col gap-3">
         <p className="text-text-regular text-text-title">
           This payment will contribute towards your total project cost.{' '}
-          <button type="button" className="text-text-title underline">See how costs are calculated.</button>
+          <button type="button" onClick={() => toast('Platform fee, recruiting, incentives and moderation, per participant delivered')}
+            className="text-text-title underline">See how costs are calculated.</button>
         </p>
         <div className="flex flex-col rounded-md bg-bg-1 px-3 py-3">
           <Row label="Recruitment deposit" note="25% of cost" value="$350" />

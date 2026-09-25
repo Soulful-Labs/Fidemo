@@ -2,12 +2,12 @@ import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
-import Select from '../../components/ui/Select'
 import Toggle from '../../components/ui/Toggle'
 import { ChevronLeft, Close, Info, UsersIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { DiscardModal } from './PoolModals'
-import { CRITERIA, FORECAST, FORECAST_BARS, POOL_FILTERS } from '../../mock/pool'
+import { CRITERIA, FORECAST, FORECAST_BARS, POOL_FILTERS, POOL_OPTIONS } from '../../mock/pool'
+import Picker from '../../components/ui/Picker'
 
 /** The live forecast beside the form; the tiers are bars here, not cards. */
 function Forecast({ approx }: { approx?: boolean }) {
@@ -55,35 +55,47 @@ function Forecast({ approx }: { approx?: boolean }) {
 }
 
 /** A radio row of the eligibility criteria, four across. */
-function Row({ label, options, value }: { label: string; options: string[]; value: string }) {
+function Row({ label, options, value, onPick }: {
+  label: string; options: string[]; value: string; onPick: (v: string) => void
+}) {
   return (
     <div className="flex flex-col gap-3 border-b-1 border-stroke-1 pb-4 pt-4">
       <span className="text-text-regular text-text-subtitle">{label}</span>
       <div className="grid grid-cols-4">
         {options.map((o) => (
-          <label key={o} className="flex items-center gap-3 text-text-regular text-text-title">
+          <button key={o} type="button" onClick={() => onPick(o)} aria-pressed={o === value}
+            className="flex items-center gap-3 text-left text-text-regular text-text-title">
             <span className={cn('flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-1',
               o === value ? 'border-cta-primary' : 'border-cta-tertiaryStroke')}>
               {o === value && <span className="h-2.5 w-2.5 rounded-full bg-cta-primary" />}
             </span>
             {o}
-          </label>
+          </button>
         ))}
       </div>
     </div>
   )
 }
 
-/** A select with its chosen chips under it. */
-function Picked({ label, placeholder, chips }: { label: string; placeholder: string; chips: string[] }) {
+/** A picker with its chosen chips under it; each chip's cross removes it. */
+function Picked({ label, placeholder, options, chips, onChange }: {
+  label: string; placeholder: string; options: string[]; chips: string[]
+  onChange: (next: string[]) => void
+}) {
   return (
     <div className="flex flex-col gap-2 border-b-1 border-stroke-1 pb-4 pt-4">
       <span className="text-text-regular text-text-subtitle">{label}</span>
-      <Select value={placeholder} className="text-body-regular text-text-body" />
+      <Picker multiple picked={chips} options={options} value={placeholder}
+        className="text-body-regular text-text-body"
+        onPick={(v) => onChange(chips.includes(v) ? chips.filter((x) => x !== v) : [...chips, v])} />
       <span className="flex flex-wrap gap-2 pt-1">
         {chips.map((c) => (
           <span key={c} className="inline-flex h-7 items-center gap-1.5 rounded-sm bg-bgAlt-2 px-2 text-text-regular text-text-title">
-            {c}<Close className="h-3.5 w-3.5 text-text-subtitle" />
+            {c}
+            <button type="button" aria-label={`Remove ${c}`} onClick={() => onChange(chips.filter((x) => x !== c))}
+              className="text-text-subtitle hover:text-text-title">
+              <Close className="h-3.5 w-3.5" />
+            </button>
           </span>
         ))}
       </span>
@@ -100,6 +112,14 @@ export default function CreatePanel({ edit }: { edit?: boolean }) {
   const [params, setParams] = useSearchParams()
   const step2 = params.get('step') === '2'
   const [discard, setDiscard] = useState(params.get('modal') === 'discard')
+  /** The eligibility criteria, which were drawn but never settable. */
+  const [score, setScore] = useState('80 & above')
+  const [gender, setGender] = useState('All')
+  const [location, setLocation] = useState(['New York, US'])
+  const [ages, setAges] = useState(['18–20', '21–30'])
+  const [language, setLanguage] = useState(['English'])
+  const [lastActive, setLastActive] = useState('Any')
+  const [education, setEducation] = useState("Graduate or Bachelor's")
   const go = (v: string) => { const n = new URLSearchParams(params); n.set('step', v); setParams(n) }
 
   return (
@@ -155,7 +175,8 @@ export default function CreatePanel({ edit }: { edit?: boolean }) {
               </label>
               <label className="flex flex-col gap-2 pt-4">
                 <span className="text-text-regular text-text-subtitle">Level of Education</span>
-                <Select value="Graduate or Bachelor's" />
+                <Picker value={education} onPick={setEducation}
+                  options={['High school graduate', "Graduate or Bachelor's", "Master's degree", 'Doctorate']} />
               </label>
 
               <div className="flex items-center justify-between gap-4 pt-4">
@@ -177,12 +198,15 @@ export default function CreatePanel({ edit }: { edit?: boolean }) {
 
               <h2 className="pt-5 text-title-s leading-[22px] text-text-title">Eligibility criteria</h2>
               <p className="pt-1 text-text-regular text-text-subtitle">Add filters to define your eligible cohort. The forecast updates live</p>
-              <Row label="Minimum Profile Score" options={POOL_FILTERS.score} value="80 & above" />
-              <Row label="GENDER" options={POOL_FILTERS.gender} value="All" />
-              <Picked label="Location" placeholder="Select city, country" chips={['New York, US']} />
-              <Picked label="Age Range" placeholder="2 range selected  •  Select age range…" chips={['18–20', '21–30']} />
-              <Picked label="Language" placeholder="Select languages" chips={['English']} />
-              <Row label="Last Active" options={POOL_FILTERS.lastActive} value="Any" />
+              <Row label="Minimum Profile Score" options={POOL_FILTERS.score} value={score} onPick={setScore} />
+              <Row label="GENDER" options={POOL_FILTERS.gender} value={gender} onPick={setGender} />
+              <Picked label="Location" placeholder="Select city, country" options={POOL_OPTIONS.location}
+                chips={location} onChange={setLocation} />
+              <Picked label="Age Range" placeholder={`${ages.length} range selected  •  Select age range…`}
+                options={['18–20', '21–30', '31–40', '41–50', '51+']} chips={ages} onChange={setAges} />
+              <Picked label="Language" placeholder="Select languages" options={POOL_OPTIONS.language}
+                chips={language} onChange={setLanguage} />
+              <Row label="Last Active" options={POOL_FILTERS.lastActive} value={lastActive} onPick={setLastActive} />
             </div>
           )}
           <Forecast approx={step2} />

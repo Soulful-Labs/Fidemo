@@ -1,9 +1,9 @@
 import Button from '../../components/ui/Button'
-import Select from '../../components/ui/Select'
 import Toggle from '../../components/ui/Toggle'
 import { ChevronLeft, Close, Copy, Edit, MoreVertical, Plus, Trash } from '../../components/ui/icons'
 import { useDraft } from '../../mock/createStore'
 import { useToast } from '../../components/ui/Toast'
+import Picker from '../../components/ui/Picker'
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
@@ -35,9 +35,9 @@ function Time({ value }: { value: string }) {
   )
 }
 
-function IconBtn({ label, children }: { label: string; children: React.ReactNode }) {
+function IconBtn({ label, children, onClick }: { label: string; children: React.ReactNode; onClick?: () => void }) {
   return (
-    <button type="button" aria-label={label}
+    <button type="button" aria-label={label} onClick={onClick}
       className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-sm border-1 border-stroke-input bg-bg text-text-subtitle hover:text-text-title">
       {children}
     </button>
@@ -72,11 +72,15 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
         <div className="grid grid-cols-2 gap-x-6 gap-y-1">
           <label className="flex flex-col gap-1">
             <span className="text-text-regular text-text-subtitle">Buffer between meetings</span>
-            <Select value={draft.buffer} className="w-full" />
+            <Picker value={draft.buffer} className="w-full"
+              options={['No buffer', '5 minutes', '10 minutes', '15 minutes', '30 minutes']}
+              onPick={(v) => set('buffer', v)} />
           </label>
           <label className="flex flex-col gap-1">
             <span className="text-text-regular text-text-subtitle">Minimum notice duration</span>
-            <Select value={draft.notice} className="w-full" />
+            <Picker value={draft.notice} className="w-full"
+              options={['10                    Minutes', '30 Minutes', '1 Hour', '1 Day']}
+              onPick={(v) => set('notice', v)} />
           </label>
           <span className="text-text-regular text-text-subtitle">
             {address ? 'It is a duration added between consecutive scheduled meetings.' : 'It is a duration gap added between consecutive scheduled meetings.'}
@@ -162,7 +166,9 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
               <Time value="12:00 AM" />
               <span className="text-text-regular text-text-subtitle">TO</span>
               <Time value="12:00 AM" />
-              <button type="button" aria-label={`Remove ${d}`} className="text-text-subtitle hover:text-text-title">
+              <button type="button" aria-label={`Remove ${d}`}
+                onClick={() => set('days', draft.days.filter((x) => x !== d))}
+                className="text-text-subtitle hover:text-text-title">
                 <Close className="h-4 w-4" />
               </button>
             </>
@@ -170,8 +176,8 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
             <span className="flex h-[38px] items-center rounded-sm bg-bg-2 px-4 text-text-regular text-text-body">Unavailable</span>
           )}
           <span className="flex-1" />
-          <IconBtn label={`Add hours to ${d}`}><Plus className="h-5 w-5" /></IconBtn>
-          <IconBtn label={`Copy ${d}`}><Copy className="h-4 w-4" /></IconBtn>
+          <IconBtn label={`Add hours to ${d}`} onClick={() => toast(`A second window added to ${d}`)}><Plus className="h-5 w-5" /></IconBtn>
+          <IconBtn label={`Copy ${d}`} onClick={() => set('days', [...new Set([...draft.days, ...DAYS])])}><Copy className="h-4 w-4" /></IconBtn>
         </div>
       ))}
     </Card>

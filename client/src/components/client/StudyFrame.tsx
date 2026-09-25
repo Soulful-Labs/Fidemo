@@ -7,6 +7,8 @@ import { cn } from '../../lib/cn'
 import { useToast } from '../ui/Toast'
 import type { Study } from '../../mock/db'
 import { counts, progressPct, statusTag } from '../../lib/derive'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 /**
  * Every screen under this shell reads its study from the store and its
@@ -39,6 +41,8 @@ export function HeadStat({ label, value, suffix }: { label: string; value: strin
  */
 export function StudyHeader({ study }: { study: Study }) {
   const toast = useToast()
+  const nav = useNavigate()
+  const [menu, setMenu] = useState(false)
   const c = counts(study)
   const status = statusTag(study)
   return (
@@ -65,10 +69,22 @@ export function StudyHeader({ study }: { study: Study }) {
                 className="flex h-btn w-btn items-center justify-center rounded-full border-1 border-stroke-input text-text-subtitle hover:text-text-title">
                 <LinkIcon className="h-4 w-4" />
               </button>
-              <button type="button" aria-label="Study options"
-                className="flex h-btn w-btn items-center justify-center rounded-full border-1 border-stroke-input text-text-subtitle hover:text-text-title">
-                <MoreVertical className="h-4 w-4" />
-              </button>
+              <span className="relative flex">
+                <button type="button" aria-label="Study options" onClick={() => setMenu((m) => !m)}
+                  className="flex h-btn w-btn items-center justify-center rounded-full border-1 border-stroke-input text-text-subtitle hover:text-text-title">
+                  <MoreVertical className="h-4 w-4" />
+                </button>
+                {menu && (
+                  <span className="absolute right-0 top-full z-30 mt-1 flex w-[200px] flex-col rounded-sm border-1 border-stroke-input bg-bg-0 py-1 shadow-lg">
+                    <button type="button" onClick={() => { setMenu(false); nav(`/studies/${study.id}/manage`) }}
+                      className="px-3 py-2 text-left text-text-regular text-text-title hover:bg-bg-1">Edit study</button>
+                    <button type="button" onClick={() => { setMenu(false); nav(`/studies/${study.id}/pay`) }}
+                      className="px-3 py-2 text-left text-text-regular text-text-title hover:bg-bg-1">View billing</button>
+                    <button type="button" onClick={() => { setMenu(false); nav('/studies') }}
+                      className="px-3 py-2 text-left text-text-regular text-text-title hover:bg-bg-1">Back to all studies</button>
+                  </span>
+                )}
+              </span>
             </div>
           </div>
 

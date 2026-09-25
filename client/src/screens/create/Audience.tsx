@@ -1,11 +1,12 @@
 import Button from '../../components/ui/Button'
-import Select from '../../components/ui/Select'
 import { Info, PoolIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { useDraft } from '../../mock/createStore'
 import CreateShell from './CreateShell'
 import { Chip, Field, Section, TextBox, TierBar } from './CreateBits'
 import { useToast } from '../../components/ui/Toast'
+import Picker from '../../components/ui/Picker'
+import { AUDIENCE_OPTIONS } from './CreateBits'
 
 const SPARKLE = (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
@@ -99,7 +100,10 @@ export default function Audience() {
 
                 <div className="flex flex-col gap-2">
                   <Field label="Country">
-                    <Select value={`${draft.countries.length} countries selected  •  Choose country...`} />
+                    <Picker multiple picked={draft.countries} options={AUDIENCE_OPTIONS.countries}
+                      value={`${draft.countries.length} countries selected  •  Choose country...`}
+                      onPick={(v) => set('countries', draft.countries.includes(v)
+                        ? draft.countries.filter((x) => x !== v) : [...draft.countries, v])} />
                   </Field>
                   <div className="flex flex-wrap items-center gap-2">
                     {draft.countries.map((c) => (
@@ -110,12 +114,19 @@ export default function Audience() {
                   </div>
                 </div>
 
-                <Field label="Gender"><Select value={draft.gender} /></Field>
-                <Field label="Level of Education"><Select value={draft.education} /></Field>
+                <Field label="Gender">
+                  <Picker value={draft.gender} options={AUDIENCE_OPTIONS.gender} onPick={(v) => set('gender', v)} />
+                </Field>
+                <Field label="Level of Education">
+                  <Picker value={draft.education} options={AUDIENCE_OPTIONS.education} onPick={(v) => set('education', v)} />
+                </Field>
 
                 <div className="flex flex-col gap-2">
                   <Field label="Age Range">
-                    <Select value={`${draft.ageRanges.length} range selected  •  Select age range...`} />
+                    <Picker multiple picked={draft.ageRanges} options={AUDIENCE_OPTIONS.ageRanges}
+                      value={`${draft.ageRanges.length} range selected  •  Select age range...`}
+                      onPick={(v) => set('ageRanges', draft.ageRanges.includes(v)
+                        ? draft.ageRanges.filter((x) => x !== v) : [...draft.ageRanges, v])} />
                   </Field>
                   <div className="flex flex-wrap items-center gap-2">
                     {draft.ageRanges.map((a) => (

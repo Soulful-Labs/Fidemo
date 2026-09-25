@@ -8,6 +8,28 @@ export interface PoolPerson {
   role: string
   score: number
   tier: Tier
+  /** What the filter rail narrows on. */
+  domain: string
+  gender: 'Male' | 'Female' | 'Other'
+  location: string
+  language: string
+  lastActiveWeeks: number
+}
+
+/** Attributes per pool member, so the rail has something real to filter. */
+const ATTRS: Record<string, Pick<PoolPerson, 'domain' | 'gender' | 'location' | 'language' | 'lastActiveWeeks'>> = {
+  'tom-h': { domain: 'Fitness & Nutrition', gender: 'Male', location: 'New York, US', language: 'English', lastActiveWeeks: 1 },
+  'sofia-p': { domain: 'Healthcare', gender: 'Female', location: 'New York, US', language: 'English', lastActiveWeeks: 2 },
+  'yara-m': { domain: 'Healthcare', gender: 'Female', location: 'Boston, US', language: 'English', lastActiveWeeks: 3 },
+  'daniel-l': { domain: 'Pharma', gender: 'Male', location: 'New York, US', language: 'Spanish', lastActiveWeeks: 5 },
+  'alice-f': { domain: 'Fitness & Nutrition', gender: 'Female', location: 'Chicago, US', language: 'English', lastActiveWeeks: 2 },
+  'clara-j': { domain: 'Fitness & Nutrition', gender: 'Female', location: 'New York, US', language: 'English', lastActiveWeeks: 1 },
+  'xander-b': { domain: 'Healthcare', gender: 'Male', location: 'New York, US', language: 'English', lastActiveWeeks: 4 },
+  'zach-k': { domain: 'Fitness & Nutrition', gender: 'Male', location: 'Austin, US', language: 'English', lastActiveWeeks: 8 },
+  'brian-d': { domain: 'Healthcare', gender: 'Male', location: 'New York, US', language: 'English', lastActiveWeeks: 6 },
+  'victor-s': { domain: 'Fitness & Nutrition', gender: 'Male', location: 'Miami, US', language: 'Spanish', lastActiveWeeks: 10 },
+  'uma-r': { domain: 'Healthcare', gender: 'Female', location: 'Boston, US', language: 'Hindi', lastActiveWeeks: 14 },
+  'wendy-t': { domain: 'Pharma', gender: 'Female', location: 'Chicago, US', language: 'English', lastActiveWeeks: 20 },
 }
 
 /**
@@ -22,11 +44,11 @@ const POOL_IDS = [
 
 export const POOL_PEOPLE: PoolPerson[] = POOL_IDS
   .map((id) => PEOPLE.find((p) => p.id === id)!)
-  .map((p) => ({ id: p.id, name: p.name, role: p.role, score: scoreOf(p), tier: tierOf(p) }))
+  .map((p) => ({ id: p.id, name: p.name, role: p.role, score: scoreOf(p), tier: tierOf(p), ...ATTRS[p.id]! }))
 
 export const POOL_SEARCH = 'Describe your required audience to search and filter or search by name, role, score, tiers, industry, etc.'
-export const POOL_RESULTS = '208 of 260 results'
-export const POOL_CHIPS = ['Physician', 'Healthcare', 'Pharma', 'Fitness & Nutrition', 'New York, US', 'English']
+/** The pool the rail filters. The frame writes 260 behind its twelve cards. */
+export const POOL_TOTAL = POOL_PEOPLE.length
 
 /** The filter rail, in the order the frame stacks it. */
 export const POOL_FILTERS = {
@@ -34,11 +56,42 @@ export const POOL_FILTERS = {
   score: ['Any', '90 & above', '80 & above', '70 & above'],
   gender: ['All', 'Male', 'Female', 'Other'],
   lastActive: ['Any', '2 weeks', '1 month', '3 months'],
-  roles: { label: 'ROLES', placeholder: 'Select roles', chips: ['Physician'] },
-  domain: { label: 'DOMAIN', placeholder: 'Select domains', chips: ['Healthcare', 'Pharma', 'Fitness & Nutrition'] },
-  location: { label: 'LOCATION', placeholder: 'Select city, country', chips: ['New York, US'] },
-  language: { label: 'LANGUAGE', placeholder: 'Select languages', chips: ['English'] },
+  roles: { label: 'ROLES', placeholder: 'Select roles' },
+  domain: { label: 'DOMAIN', placeholder: 'Select domains' },
+  location: { label: 'LOCATION', placeholder: 'Select city, country' },
+  language: { label: 'LANGUAGE', placeholder: 'Select languages' },
 }
+
+/** What each picker offers, taken from the pool itself so nothing is dead. */
+export const POOL_OPTIONS = {
+  roles: [...new Set(POOL_PEOPLE.map((p) => p.role.split(',')[0]!.trim()))].sort(),
+  domain: [...new Set(POOL_PEOPLE.map((p) => p.domain))].sort(),
+  location: [...new Set(POOL_PEOPLE.map((p) => p.location))].sort(),
+  language: [...new Set(POOL_PEOPLE.map((p) => p.language))].sort(),
+}
+
+/**
+ * The pool opens with nothing filtered.
+ *
+ * The frame draws six chips already on — Physician, Healthcare, Pharma,
+ * Fitness & Nutrition, New York US, English — narrowing 260 to 208, with no
+ * way to take any of them off and nothing saying why they are there. Now that
+ * the rail works, starting filtered would hide most of the pool behind
+ * filters nobody chose. Flagged for the designer.
+ */
+export const POOL_DEFAULT_FILTERS = {
+  tiers: [] as string[],
+  score: 'Any',
+  gender: 'All',
+  lastActive: 'Any',
+  roles: [] as string[],
+  domain: [] as string[],
+  location: [] as string[],
+  language: [] as string[],
+  query: '',
+}
+
+export type PoolFilters = typeof POOL_DEFAULT_FILTERS
 
 /** A micro-panel card. Mine carry roles and a kebab; featured carry a description. */
 export interface PanelCard {
