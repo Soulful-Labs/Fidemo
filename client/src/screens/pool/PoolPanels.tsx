@@ -5,6 +5,7 @@ import { Avatar } from '../../components/client/RespondentCard'
 import { Check, ChevronLeft, DiaryBookIcon, Star, StarFilled } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { INVITE_STUDIES, REVIEWS, SAVE_TARGETS } from '../../mock/pool'
+import { useToast } from '../../components/ui/Toast'
 
 /** The person a Pool panel is about, under its title bar. */
 function Person({ tight }: { tight?: boolean }) {
@@ -40,13 +41,14 @@ function Stars({ n, size = 'h-5 w-5' }: { n: number; size?: string }) {
  * wrote about the respondent, and what the respondent wrote back.
  */
 export function ReviewsPanel({ open, onClose, onBack }: { open: boolean; onClose: () => void; onBack?: () => void }) {
+  const toast = useToast()
   return (
     <SidePanel open={open} onClose={onClose} title="Profile of Ferry L." headerClassName="h-14"
       bodyClassName="flex flex-col p-0"
       footer={
         <div className="flex gap-3 [&_button]:h-12 [&_button]:flex-1 [&_button]:text-body-medium">
-          <Button>Invite To Study</Button>
-          <Button variant="secondary">Save To Micropanel</Button>
+          <Button onClick={() => toast('Invitation sent')}>Invite To Study</Button>
+          <Button variant="secondary" onClick={() => toast('Saved to micro-panel')}>Save To Micropanel</Button>
         </div>
       }>
       <Person />

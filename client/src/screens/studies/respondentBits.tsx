@@ -3,6 +3,7 @@ import { Calendar, CheckCircle, Clock, Copy, Download, Eye, MapPin } from '../..
 import { cn } from '../../lib/cn'
 import type { Answer, QA } from '../../mock/respondent'
 import { ACTIVITY, NOTES, SESSION, VERIFICATION_PIN } from '../../mock/respondent'
+import { useToast } from '../../components/ui/Toast'
 
 /** The scale answer: a column per star, the chosen cell filled. */
 function Matrix({ a }: { a: Extract<Answer, { kind: 'matrix' }> }) {
@@ -36,6 +37,7 @@ function Matrix({ a }: { a: Extract<Answer, { kind: 'matrix' }> }) {
 
 /** One answer, in whichever of the five shapes the screener collected it. */
 function Ans({ a }: { a: Answer }) {
+  const toast = useToast()
   if (a.kind === 'text') return <p className="text-text-regular leading-5 text-text-title">{a.value}</p>
   if (a.kind === 'bullets') {
     return (
@@ -63,7 +65,7 @@ function Ans({ a }: { a: Answer }) {
           <span className="truncate text-text-regular text-text-title">{a.name}</span>
           <span className="text-text-regular text-text-subtitle">{a.size}</span>
         </span>
-        <button type="button" aria-label="Preview"
+        <button type="button" aria-label="Preview" onClick={() => toast('Opening the file')}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border-1 border-stroke-input text-text-subtitle hover:text-text-title">
           <Eye className="h-5 w-5" />
         </button>
@@ -121,6 +123,7 @@ export function PinCard({ variant }: { variant: 'activity' | 'session' }) {
 
 /** The booked session, in the three states the frames draw it in. */
 export function SessionCard({ state }: { state: 'booked' | 'running' | 'done' }) {
+  const toast = useToast()
   /** Once it is over the frame greys the slot out and leaves a Completed chip. */
   const meta = state === 'done' ? 'text-text-subtitle' : 'text-text-title'
   const glyph = state === 'done' ? 'text-text-body' : 'text-brand-primary'
@@ -139,11 +142,11 @@ export function SessionCard({ state }: { state: 'booked' | 'running' | 'done' })
             <MapPin className={cn('h-4 w-4', glyph)} />{SESSION.address}
           </p>
         )}
-        {state === 'booked' && <Button size="none" className="mt-2 h-12 w-full">{SESSION.cta}</Button>}
+        {state === 'booked' && <Button size="none" className="mt-2 h-12 w-full" onClick={() => toast('Interview started')}>{SESSION.cta}</Button>}
       </div>
       {state === 'running' && (
         <div className="flex flex-col items-end gap-3">
-          <Button size="none" className="h-12 w-[110px]">Finish</Button>
+          <Button size="none" className="h-12 w-[110px]" onClick={() => toast('Interview finished')}>Finish</Button>
           <span className="flex h-12 items-center gap-2 rounded-sm border-1 border-stroke-input bg-bg-0 px-4 text-title-s text-text-title">
             <Clock className="h-5 w-5 text-text-subtitle" />{SESSION.running}
           </span>
@@ -158,6 +161,7 @@ export function SessionCard({ state }: { state: 'booked' | 'running' | 'done' })
 
 /** The notes the client types during a session. */
 export function NotesCard({ download, className }: { download?: boolean; className?: string }) {
+  const toast = useToast()
   const marks = ['B', 'I', 'U', 'S', 'H1', 'H2', 'H3', 'H4']
   return (
     <div className={cn('flex flex-col rounded-lg border-1 border-stroke-input', className)}>
@@ -166,7 +170,7 @@ export function NotesCard({ download, className }: { download?: boolean; classNa
           {NOTES.title} <span className="text-text-regular text-text-subtitle">&bull; {NOTES.saved}</span>
         </span>
         {download && (
-          <button type="button" aria-label="Download notes" className="text-text-subtitle hover:text-text-title">
+          <button type="button" aria-label="Download notes" onClick={() => toast('Notes downloaded')} className="text-text-subtitle hover:text-text-title">
             <Download className="h-5 w-5" />
           </button>
         )}

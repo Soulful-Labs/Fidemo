@@ -6,6 +6,7 @@ import { Clock, Info, PaymentsIcon, PoolIcon, StudiesIcon, SurveyIcon } from '..
 import { useDraft } from '../../mock/createStore'
 import CreateShell from './CreateShell'
 import BreakdownPanel from './BreakdownPanel'
+import { useToast } from '../../components/ui/Toast'
 
 const FORM = (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
@@ -58,6 +59,7 @@ function CardField({ label, placeholder, className }: { label: string; placehold
  * screen; `?state=ready` draws it enabled.
  */
 export default function Publish() {
+  const toast = useToast()
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const { draft } = useDraft()
@@ -152,7 +154,7 @@ export default function Publish() {
 
           <Checkbox checked={false} label="Save this card" />
 
-          <Button variant="secondary" size="none" className="h-12 w-full text-body-medium">Add Card to Publish</Button>
+          <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" onClick={() => toast('Card added')}>Add Card to Publish</Button>
 
           <ul className="flex list-disc flex-col gap-1 pl-4 text-text-regular text-text-subtitle marker:text-text-body">
             <li>

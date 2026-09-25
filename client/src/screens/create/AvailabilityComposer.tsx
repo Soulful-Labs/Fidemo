@@ -3,6 +3,7 @@ import Select from '../../components/ui/Select'
 import Toggle from '../../components/ui/Toggle'
 import { ChevronLeft, Close, Copy, Edit, MoreVertical, Plus, Trash } from '../../components/ui/icons'
 import { useDraft } from '../../mock/createStore'
+import { useToast } from '../../components/ui/Toast'
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
@@ -52,6 +53,7 @@ function IconBtn({ label, children }: { label: string; children: React.ReactNode
 export default function AvailabilityComposer({ group, address, title = 'Set Availability', onOverride, onBack, onSubmit }: {
   group: boolean; address?: boolean; title?: string; onOverride?: () => void; onBack: () => void; onSubmit: () => void
 }) {
+  const toast = useToast()
   const { draft, set } = useDraft()
 
   const limits = (
@@ -89,7 +91,7 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
 
   const addresses = address ? (
     <Card title="Address" action={
-      <Button variant="secondary" size="none" className="h-[38px] px-4" leftIcon={<Plus className="h-4 w-4" />}>Add Address</Button>
+      <Button variant="secondary" size="none" className="h-[38px] px-4" leftIcon={<Plus className="h-4 w-4" />} onClick={() => toast('Address added')}>Add Address</Button>
     }>
       <p className="-mt-1 text-text-regular text-text-subtitle">
         Add your commercial addresses for participants to book in-person interviews at.
@@ -143,7 +145,7 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
           <span className="text-text-regular text-text-subtitle">40 mins duration will be considered for session as set initially</span>
         </span>
         <span className="flex items-center gap-2">
-          <Button size="none" className="h-[38px] px-4">Add</Button>
+          <Button size="none" className="h-[38px] px-4" onClick={() => toast('Override added')}>Add</Button>
           <IconBtn label="Cancel"><Close className="h-4 w-4" /></IconBtn>
         </span>
       </div>

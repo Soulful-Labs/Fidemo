@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Button from '../../components/ui/Button'
 import { ChevronDown, ChevronLeft, MoreVertical, Plus, Upload } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
+import { useToast } from '../../components/ui/Toast'
 
 const SPARKLE = (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
@@ -54,6 +55,7 @@ export default function SurveyComposer({
   onSubmit: () => void; onBack: () => void
   title?: string; submit?: string; lead?: string; dayGroup?: string; kind?: string; seed?: number
 }) {
+  const toast = useToast()
   const [questions, setQuestions] = useState<SQ[]>(
     Array.from({ length: seed }, (_, i) => ({ ...NEW(i + 1), label: dayGroup ? `Q${i + 1}` : `SQ ${i + 1}`, kind })),
   )
@@ -80,8 +82,8 @@ export default function SurveyComposer({
             Enter survey context/questions or upload file to let our AI-assitant generate questions
           </p>
           <div className="flex items-center justify-between gap-3">
-            <Button variant="tertiary" size="row" leftIcon={<Upload className="h-4 w-4" />}>Upload File</Button>
-            <Button size="row" leftIcon={SPARKLE}>Generate</Button>
+            <Button variant="tertiary" size="row" leftIcon={<Upload className="h-4 w-4" />} onClick={() => toast('File uploaded')}>Upload File</Button>
+            <Button size="row" leftIcon={SPARKLE} onClick={() => toast('Questions generated')}>Generate</Button>
           </div>
         </div>
 

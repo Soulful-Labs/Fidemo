@@ -5,6 +5,7 @@ import { Avatar } from '../../components/client/RespondentCard'
 import type { Respondent } from '../../components/client/RespondentCard'
 import { ChevronRight, Info, VerifiedMark } from '../../components/ui/icons'
 import { PROFILE } from '../../mock/dashboard'
+import { useToast } from '../../components/ui/Toast'
 
 /** One card of the panel body: a heading and its rows. */
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
@@ -39,6 +40,7 @@ export default function RespondentPanel({
 }: { open: boolean; onClose: () => void; respondent: Respondent | null
   /** The Pool frames title it "Profile of …" and wire Reviews to a second page. */
   onReviews?: () => void; title?: string }) {
+  const toast = useToast()
   if (!respondent) return null
   const d = PROFILE
 
@@ -46,8 +48,8 @@ export default function RespondentPanel({
     <SidePanel open={open} onClose={onClose} title={title ?? respondent.name} headerClassName="h-[50px]" bodyClassName="flex flex-col gap-3 p-4"
       footer={
         <div className="flex gap-3 [&_button]:h-12 [&_button]:flex-1 [&_button]:text-body-medium">
-          <Button>Invite To Study</Button>
-          <Button variant="secondary">Save To Micropanel</Button>
+          <Button onClick={() => toast('Invitation sent')}>Invite To Study</Button>
+          <Button variant="secondary" onClick={() => toast('Saved to micro-panel')}>Save To Micropanel</Button>
         </div>
       }>
       <div className="flex items-start gap-3 px-1 pb-[11px]">

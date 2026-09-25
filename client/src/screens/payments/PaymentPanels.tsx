@@ -6,6 +6,7 @@ import { Check, ChevronDown, ChevronRight, DiaryBookIcon, Download, Info, LinkIc
 import { cn } from '../../lib/cn'
 import { BILLING, BILLING_TOTAL } from '../../mock/pay'
 import { ADD_CARD, INVOICE, MAKE_PAYMENT, PAID_MODAL, REMOVE_CARD } from '../../mock/payments'
+import { useToast } from '../../components/ui/Toast'
 
 /** The card brand mark, as the payment rows draw it. */
 export function CardMark({ brand = 'Mastercard' }: { brand?: string }) {
@@ -33,18 +34,19 @@ export function CardMark({ brand = 'Mastercard' }: { brand?: string }) {
 export function InvoiceDetailsPanel({
   open, onClose, paid, onPay,
 }: { open: boolean; onClose: () => void; paid?: boolean; onPay?: () => void }) {
+  const toast = useToast()
   return (
     <SidePanel open={open} onClose={onClose} title={INVOICE.title} headerClassName="h-14"
       className="h-fit max-h-full" bodyClassName="flex flex-col gap-3 px-4 pb-4 pt-4"
       footer={paid
-        ? <Button variant="tertiary" fullWidth className="h-12 text-body-medium" leftIcon={<Download className="h-4 w-4" />}>Download</Button>
+        ? <Button variant="tertiary" fullWidth className="h-12 text-body-medium" onClick={() => toast('Invoice downloaded')} leftIcon={<Download className="h-4 w-4" />}>Download</Button>
         : <Button fullWidth className="h-12 text-body-medium" onClick={onPay}>Make Payment</Button>}>
       <p className="text-body-medium text-text-title">{INVOICE.number}</p>
 
       <div className="flex flex-col gap-2 rounded-lg border-1 border-stroke-input p-4">
         <span className="flex items-center justify-between gap-3">
           <StudyTypeTag type="diary" icon={<DiaryBookIcon className="h-4 w-4" />} />
-          <button type="button" className="inline-flex items-center gap-2 rounded-full border-1 border-stroke-input px-3 py-1.5 text-text-regular text-text-title">
+          <button type="button" onClick={() => toast('Opening the study')} className="inline-flex items-center gap-2 rounded-full border-1 border-stroke-input px-3 py-1.5 text-text-regular text-text-title">
             <LinkIcon className="h-4 w-4 text-text-subtitle" />View Study
           </button>
         </span>
@@ -119,6 +121,7 @@ export function InvoiceDetailsPanel({
 export function MakePaymentPanel({
   open, onClose, onPaid, onInvoice,
 }: { open: boolean; onClose: () => void; onPaid?: () => void; onInvoice?: () => void }) {
+  const toast = useToast()
   return (
     <SidePanel open={open} onClose={onClose} title={MAKE_PAYMENT.toPay === '' ? '' : 'Make Payment'}
       headerClassName="h-14" className="h-fit" bodyClassName="flex flex-col gap-3 px-4 pb-4 pt-4"
@@ -144,7 +147,7 @@ export function MakePaymentPanel({
             <CardMark />Mastercard <span className="text-text-body">&bull;</span> <span className="pl-4">4242</span>
           </span>
         </span>
-        <Button variant="tertiary" size="row">{MAKE_PAYMENT.change}</Button>
+        <Button variant="tertiary" size="row" onClick={() => toast('Choose another card')}>{MAKE_PAYMENT.change}</Button>
       </div>
     </SidePanel>
   )

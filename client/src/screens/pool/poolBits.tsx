@@ -5,13 +5,15 @@ import { Calendar, Close, GoldMark, MoreVertical, PlatinumMark, Plus, SilverMark
 import { cn } from '../../lib/cn'
 import { POOL_FILTERS } from '../../mock/pool'
 import type { PanelCard } from '../../mock/pool'
+import { useToast } from '../../components/ui/Toast'
 
 const MARK: Record<string, typeof GoldMark> = { Silver: SilverMark, Gold: GoldMark, Platinum: PlatinumMark }
 
 /** The add action the Eligible Matches tab swaps into the respondent card. */
 export function AddToPanel() {
+  const toast = useToast()
   return (
-    <Button variant="tertiary" size="none" className="h-11 w-full" leftIcon={<Plus className="h-4 w-4" />}>
+    <Button variant="tertiary" size="none" className="h-11 w-full" leftIcon={<Plus className="h-4 w-4" />} onClick={() => toast('Added to this panel')}>
       Add To This Panel
     </Button>
   )
@@ -89,6 +91,7 @@ function Picked({ label, placeholder, chips }: { label: string; placeholder: str
 
 /** The 245px filter rail beside the participants pool. */
 export default function FilterRail() {
+  const toast = useToast()
   const f = POOL_FILTERS
   return (
     <aside className="w-[245px] shrink-0">
@@ -96,7 +99,7 @@ export default function FilterRail() {
         <span className="inline-flex items-center gap-2 text-title-s leading-[22px] text-text-title">
           Filters <span className="text-text-subtitle">&#9707;</span>
         </span>
-        <button type="button" className="inline-flex items-center gap-1.5 text-text-medium text-text-subtitle hover:text-text-title">
+        <button type="button" onClick={() => toast('Filters reset')} className="inline-flex items-center gap-1.5 text-text-medium text-text-subtitle hover:text-text-title">
           &#8635; Reset
         </button>
       </div>

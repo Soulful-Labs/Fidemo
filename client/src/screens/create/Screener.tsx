@@ -6,6 +6,7 @@ import { blankQuestion, MARKS_FOR, useDraft } from '../../mock/createStore'
 import type { Question, QuestionKind } from '../../mock/createStore'
 import CreateShell from './CreateShell'
 import ScreenerPreview from './ScreenerPreview'
+import { useToast } from '../../components/ui/Toast'
 
 const SPARKLE = (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
@@ -204,6 +205,7 @@ function QuestionBlock({ q, index }: { q: Question; index: number }) {
  * per answer type, beside the participant preview.
  */
 export default function Screener() {
+  const toast = useToast()
   const { draft, set } = useDraft()
 
   return (
@@ -223,7 +225,7 @@ export default function Screener() {
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
                   <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
                   <path d="m10 8.5 6 3.5-6 3.5v-7Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                </svg>}>Preview</Button>
+                </svg>} onClick={() => toast('Preview opened')}>Preview</Button>
             </div>
           </div>
 
@@ -233,8 +235,8 @@ export default function Screener() {
               <p className="text-text-regular text-text-subtitle">Let our AI-assitant generate questions</p>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="secondary" size="row" leftIcon={SPARKLE}>Generate</Button>
-              <Button variant="tertiary" size="row" leftIcon={SPARKLE}>Regenerate All</Button>
+              <Button variant="secondary" size="row" leftIcon={SPARKLE} onClick={() => toast('Questions generated')}>Generate</Button>
+              <Button variant="tertiary" size="row" leftIcon={SPARKLE} onClick={() => toast('All questions regenerated')}>Regenerate All</Button>
               <span className="relative flex flex-1 items-center">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true" className="absolute left-4 text-text-body">
                   <path d="M4 20h4l10-10a2.8 2.8 0 0 0-4-4L4 16v4Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />

@@ -7,7 +7,7 @@ export default function Pagination({ page = 1, pages = [1, 2, 3, '…', 9, 10], 
 }) {
   return (
     <nav className="flex items-center gap-2 pt-3" aria-label="Pagination">
-      <button type="button" aria-label="Previous page"
+      <button type="button" aria-label="Previous page" onClick={() => onPage?.(Math.max(1, page - 1))}
         className="flex h-[38px] w-[38px] items-center justify-center rounded-sm border-1 border-stroke-input bg-bg text-text-subtitle hover:text-text-title">
         <ChevronLeft className="h-4 w-4" />
       </button>
@@ -22,7 +22,7 @@ export default function Pagination({ page = 1, pages = [1, 2, 3, '…', 9, 10], 
           <span key={i} className="flex h-[38px] w-6 items-center justify-center text-text-regular text-text-subtitle">{p}</span>
         )
       ))}
-      <button type="button" aria-label="Next page"
+      <button type="button" aria-label="Next page" onClick={() => onPage?.(page + 1)}
         className="flex h-[38px] w-[38px] items-center justify-center rounded-sm border-1 border-stroke-input bg-bg text-text-subtitle hover:text-text-title">
         <ChevronRight className="h-4 w-4" />
       </button>

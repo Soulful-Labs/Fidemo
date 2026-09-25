@@ -5,6 +5,7 @@ import { cn } from '../../lib/cn'
 import { useDraft } from '../../mock/createStore'
 import CreateShell from './CreateShell'
 import { Chip, Field, Section, TextBox, TierBar } from './CreateBits'
+import { useToast } from '../../components/ui/Toast'
 
 const SPARKLE = (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
@@ -70,6 +71,7 @@ function Radio({ on, onClick, label, sub }: { on: boolean; onClick: () => void; 
  * client/CLAUDE.md.
  */
 export default function Audience() {
+  const toast = useToast()
   const { draft, set } = useDraft()
 
   return (
@@ -83,7 +85,7 @@ export default function Audience() {
               </p>
               <p className="text-text-regular text-text-subtitle">Set target audience base with AI using study context</p>
             </div>
-            <Button variant="secondary" leftIcon={SPARKLE}>Fill with AI</Button>
+            <Button variant="secondary" leftIcon={SPARKLE} onClick={() => toast('Audience filled in')}>Fill with AI</Button>
           </div>
 
           <div className="flex flex-col">

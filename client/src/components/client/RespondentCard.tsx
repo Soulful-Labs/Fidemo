@@ -5,6 +5,7 @@ import TierChip from './TierChip'
 import { ChevronRight, Star, TrustMark, VerifiedMark } from '../ui/icons'
 import { cn } from '../../lib/cn'
 import type { Tier } from '../../lib/studyTypes'
+import { useToast } from '../ui/Toast'
 
 export interface Respondent {
   id: string
@@ -49,6 +50,7 @@ export function RespondentMeta({ r }: { r: Respondent }) {
 export default function RespondentCard({
   respondent, actions, onView, saveable, className,
 }: { respondent: Respondent; actions?: ReactNode; onView?: () => void; saveable?: boolean; className?: string }) {
+  const toast = useToast()
   return (
     <article className={cn('flex flex-col gap-3.5 rounded-lg bg-bg-1 p-3', className)}>
       <div className="flex items-center gap-2">
@@ -68,7 +70,7 @@ export default function RespondentCard({
           </Button>
         )}
         {saveable && (
-          <button type="button" aria-label="Save to micro-panel"
+          <button type="button" aria-label="Save to micro-panel" onClick={() => toast('Saved to micro-panel')}
             className="flex h-btn w-btn shrink-0 items-center justify-center rounded-sm border-1 border-cta-tertiaryStroke text-text-subtitle hover:text-text-title">
             <Star className="h-5 w-5" />
           </button>

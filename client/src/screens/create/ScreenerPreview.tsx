@@ -1,6 +1,7 @@
 import Tag from '../../components/ui/Tag'
 import Button from '../../components/ui/Button'
 import { Calendar, ChevronDown, ChevronRight, Clock, Close, MoneyMark, Star, SurveyIcon } from '../../components/ui/icons'
+import { useToast } from '../../components/ui/Toast'
 
 const FACTS: { label: string; value: string; extra?: string; Icon: typeof Clock; tint: string; tone?: string }[] = [
   { label: 'Reward', value: '$150', Icon: MoneyMark, tint: 'bg-yellow-30 text-brand-primary', tone: 'text-brand-secondary' },
@@ -14,6 +15,7 @@ const FACTS: { label: string; value: string; extra?: string; Icon: typeof Clock;
  * participant sees it. Static, seeded off the frame.
  */
 export default function ScreenerPreview() {
+  const toast = useToast()
   return (
     <aside className="sticky top-[88px] w-[488px] shrink-0 rounded-lg bg-bg-1 p-3">
       <div className="flex items-center justify-between gap-3 px-1 pb-3">
@@ -73,7 +75,7 @@ export default function ScreenerPreview() {
             ))}
           </div>
 
-          <Button size="none" className="h-12 w-full text-body-large">Apply</Button>
+          <Button size="none" className="h-12 w-full text-body-large" onClick={() => toast('Screener applied')}>Apply</Button>
         </div>
       </div>
     </aside>

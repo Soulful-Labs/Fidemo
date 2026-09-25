@@ -5,6 +5,7 @@ import Tag from '../ui/Tag'
 import { Clock, DiaryBookIcon, LinkIcon, MoreVertical } from '../ui/icons'
 import { cn } from '../../lib/cn'
 import type { StudyType } from '../../lib/studyTypes'
+import { useToast } from '../ui/Toast'
 
 export interface ManagedStudy {
   id: string
@@ -42,6 +43,7 @@ function HeadStat({ label, value, suffix }: { label: string; value: string; suff
  * title, duration and industry, and the four figures.
  */
 export function StudyHeader({ study }: { study: ManagedStudy }) {
+  const toast = useToast()
   return (
     <section className="rounded-lg bg-bgAlt-1 p-4">
       <div className="flex items-start gap-6">
@@ -56,7 +58,7 @@ export function StudyHeader({ study }: { study: ManagedStudy }) {
               icon={study.type === 'diary' ? <DiaryBookIcon className="h-4 w-4" /> : undefined} />
             <div className="flex items-center gap-2">
               <Tag tone="neutral">{study.status}</Tag>
-              <button type="button" aria-label="Copy study link"
+              <button type="button" aria-label="Copy study link" onClick={() => toast('Link copied')}
                 className="flex h-btn w-btn items-center justify-center rounded-full border-1 border-stroke-input text-text-subtitle hover:text-text-title">
                 <LinkIcon className="h-4 w-4" />
               </button>

@@ -3,6 +3,7 @@ import OnboardShell from './OnboardShell'
 import Button from '../../components/ui/Button'
 import { CheckCircle, ChevronDown, Eye, MessageIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
+import { useToast } from '../../components/ui/Toast'
 
 /** A labelled field, as every onboarding form draws it. */
 function Field({ label, placeholder, eye, check, select, short }: {
@@ -36,6 +37,7 @@ function Head({ title, sub, centred }: { title: string; sub: string; centred?: b
 
 /** Sign Up (1484:81319). */
 export function SignUp() {
+  const toast = useToast()
   const nav = useNavigate()
   return (
     <OnboardShell split>
@@ -54,7 +56,7 @@ export function SignUp() {
         Already have an account?&nbsp;<span className="text-body-medium">Log In</span>
       </NavLink>
       <p className="pt-4 text-center text-body-regular text-text-title">Are you a participant, looking to earn?</p>
-      <button type="button" className="mt-3 flex h-12 w-full items-center justify-center rounded-sm border-1 border-cta-tertiaryStroke text-body-medium text-text-title hover:bg-bg-1">
+      <button type="button" onClick={() => toast('The participant app is a separate build')} className="mt-3 flex h-12 w-full items-center justify-center rounded-sm border-1 border-cta-tertiaryStroke text-body-medium text-text-title hover:bg-bg-1">
         Sign up as a Participant
       </button>
     </OnboardShell>
@@ -92,6 +94,7 @@ function Seal({ size = 160, icon = 'mail' }: { size?: number; icon?: 'mail' | 'c
 
 /** Check Email (1484:81337). No code is asked for; the link is in the email. */
 export function CheckEmail() {
+  const toast = useToast()
   return (
     <OnboardShell split>
       <div className="flex flex-col items-center pt-[20px] text-center">
@@ -102,7 +105,7 @@ export function CheckEmail() {
           <span className="text-body-medium text-text-title">emailaddress@domain.com</span><br />
           to verify your account and get started
         </p>
-        <Button variant="secondary" fullWidth size="none" className="mt-6 h-12 text-body-medium">Open My Email</Button>
+        <Button variant="secondary" fullWidth size="none" className="mt-6 h-12 text-body-medium" onClick={() => toast('Demo build: no email is sent')}>Open My Email</Button>
         <p className="pt-3 text-text-regular text-text-body">
           Demo build: no email is sent. Use code 123456 wherever one is asked for.
         </p>

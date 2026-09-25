@@ -6,6 +6,7 @@ import Select from '../../components/ui/Select'
 import { Close, Info, PoolIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import CreateShell from './CreateShell'
+import { useToast } from '../../components/ui/Toast'
 
 /** A form section heading: small green icon, title, and the line under it. */
 function Section({ icon, title, sub, children }: { icon: React.ReactNode; title: string; sub: string; children: React.ReactNode }) {
@@ -54,6 +55,7 @@ function TierBar({ label, value, colour }: { label: string; value: number; colou
  * "No matching respondents?" prompt with Contact Us.
  */
 export default function AudienceNoMatch() {
+  const toast = useToast()
   const nav = useNavigate()
   const [condition, setCondition] = useState('na')
 
@@ -76,7 +78,7 @@ export default function AudienceNoMatch() {
               </p>
               <p className="text-text-regular text-text-subtitle">Set target audience base with AI using study context</p>
             </div>
-            <Button variant="secondary" leftIcon={<svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><path d="m12 3 1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3Zm7 10 .8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /></svg>}>Fill with AI</Button>
+            <Button variant="secondary" leftIcon={<svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><path d="m12 3 1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3Zm7 10 .8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /></svg>} onClick={() => toast('Audience filled in')}>Fill with AI</Button>
           </div>
 
           <div className="flex flex-col">
@@ -162,7 +164,7 @@ export default function AudienceNoMatch() {
               </div>
               <div className="flex flex-col items-end gap-2">
                 <span className="text-text-medium text-text-title">No matching respondents?</span>
-                <Button size="sm">Contact Us</Button>
+                <Button size="sm" onClick={() => toast('Support request opened')}>Contact Us</Button>
               </div>
             </div>
 
