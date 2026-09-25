@@ -56,6 +56,7 @@ export default function SurveyComposer({
   title?: string; submit?: string; lead?: string; dayGroup?: string; kind?: string; seed?: number
 }) {
   const toast = useToast()
+  const [file, setFile] = useState<string | null>(null)
   const [questions, setQuestions] = useState<SQ[]>(
     Array.from({ length: seed }, (_, i) => ({ ...NEW(i + 1), label: dayGroup ? `Q${i + 1}` : `SQ ${i + 1}`, kind })),
   )
@@ -100,7 +101,7 @@ export default function SurveyComposer({
             Enter survey context/questions or upload file to let our AI-assitant generate questions
           </p>
           <div className="flex items-center justify-between gap-3">
-            <Button variant="tertiary" size="row" leftIcon={<Upload className="h-4 w-4" />} onClick={() => toast('File uploaded')}>Upload File</Button>
+            <Button variant="tertiary" size="row" leftIcon={<Upload className="h-4 w-4" />} onClick={() => { setFile('questions.csv'); toast('questions.csv attached') }}>{file ?? 'Upload File'}</Button>
             <Button size="row" leftIcon={SPARKLE} onClick={generate}>Generate</Button>
           </div>
         </div>

@@ -37,8 +37,10 @@ function Gauge({ score }: { score: number }) {
  * View Profile opens. The frame fills it for Ferry L.
  */
 export default function RespondentPanel({
-  open, onClose, respondent, onReviews, title,
+  open, onClose, respondent, onReviews, onInvite, title,
 }: { open: boolean; onClose: () => void; respondent: Respondent | null
+  /** Invite To Study opens the invite panel where the caller has one. */
+  onInvite?: () => void
   /** The Pool frames title it "Profile of …" and wire Reviews to a second page. */
   onReviews?: () => void; title?: string }) {
   const { panels, addToPanel } = useWorkspace()
@@ -50,7 +52,7 @@ export default function RespondentPanel({
     <SidePanel open={open} onClose={onClose} title={title ?? respondent.name} headerClassName="h-[50px]" bodyClassName="flex flex-col gap-3 p-4"
       footer={
         <div className="flex gap-3 [&_button]:h-12 [&_button]:flex-1 [&_button]:text-body-medium">
-          <Button onClick={() => toast('Invitation sent')}>Invite To Study</Button>
+          <Button onClick={() => (onInvite ? onInvite() : toast('Invitation sent'))}>Invite To Study</Button>
           <Button variant="secondary" onClick={() => {
             const target = panels[0]
             if (!target) { toast('Build a micro-panel first, then save people into it'); return }

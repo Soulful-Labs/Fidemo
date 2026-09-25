@@ -1,4 +1,5 @@
 import Button from '../../components/ui/Button'
+import { useState } from 'react'
 import Toggle from '../../components/ui/Toggle'
 import { ChevronLeft, Close, Copy, Edit, MoreVertical, Plus, Trash } from '../../components/ui/icons'
 import { useDraft } from '../../mock/createStore'
@@ -53,6 +54,7 @@ function IconBtn({ label, children, onClick }: { label: string; children: React.
 export default function AvailabilityComposer({ group, address, title = 'Set Availability', onOverride, onBack, onSubmit }: {
   group: boolean; address?: boolean; title?: string; onOverride?: () => void; onBack: () => void; onSubmit: () => void
 }) {
+  const [extra, setExtra] = useState<string[]>([])
   const toast = useToast()
   const { draft, set } = useDraft()
 
@@ -95,11 +97,18 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
 
   const addresses = address ? (
     <Card title="Address" action={
-      <Button variant="secondary" size="none" className="h-[38px] px-4" leftIcon={<Plus className="h-4 w-4" />} onClick={() => toast('Address added')}>Add Address</Button>
+      <Button variant="secondary" size="none" className="h-[38px] px-4" leftIcon={<Plus className="h-4 w-4" />} onClick={() => { setExtra((a) => [...a, `Address ${a.length + 2}`]); toast('Address added') }}>Add Address</Button>
     }>
       <p className="-mt-1 text-text-regular text-text-subtitle">
         Add your commercial addresses for participants to book in-person interviews at.
       </p>
+      {extra.map((a) => (
+        <div key={a} className="flex items-start justify-between gap-3 rounded-sm bg-bg-2 px-4 py-3">
+          <span className="text-text-regular text-text-title">{a}</span>
+          <button type="button" aria-label={`Remove ${a}`} onClick={() => setExtra((x) => x.filter((y) => y !== a))}
+            className="text-text-subtitle hover:text-text-title"><Close className="h-4 w-4" /></button>
+        </div>
+      ))}
       <div className="flex items-start justify-between gap-3 rounded-sm bg-bg-2 px-4 py-3">
         <span className="flex flex-col gap-1">
           <span className="text-text-regular text-text-title">{group && '1.  '}Carolina, Texas, USA</span>
@@ -149,7 +158,8 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
           <span className="text-text-regular text-text-subtitle">40 mins duration will be considered for session as set initially</span>
         </span>
         <span className="flex items-center gap-2">
-          <Button size="none" className="h-[38px] px-4" onClick={() => toast('Override added')}>Add</Button>
+          <Button size="none" className="h-[38px] px-4"
+            onClick={() => { set('sessions', [...draft.sessions, { date: 'Aug 22, Sunday', time: '2:00 PM - 2:40 PM' }]); toast('Session added') }}>Add</Button>
           <IconBtn label="Cancel"><Close className="h-4 w-4" /></IconBtn>
         </span>
       </div>

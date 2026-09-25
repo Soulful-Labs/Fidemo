@@ -172,7 +172,8 @@ export default function Pool() {
       </div>
 
       <RespondentPanel open={panel === 'profile'} respondent={{ ...POOL_PEOPLE[0], professionVerified: true }}
-        onClose={() => setPanel('')} onReviews={() => setPanel('reviews')} />
+        onClose={() => setPanel('')} onReviews={() => setPanel('reviews')}
+        onInvite={() => setPanel('invite')} />
       <ReviewsPanel open={panel === 'reviews'} onClose={() => setPanel('')} onBack={() => setPanel('profile')} />
       <InvitePanel open={panel === 'invite'} onClose={() => setPanel('')} onSent={() => setPanel('sent')} />
       <SentModal open={panel === 'sent'} onClose={() => setPanel('')} />

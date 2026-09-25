@@ -80,7 +80,12 @@ export default function AudienceNoMatch() {
               </p>
               <p className="text-text-regular text-text-subtitle">Set target audience base with AI using study context</p>
             </div>
-            <Button variant="secondary" leftIcon={<svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><path d="m12 3 1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3Zm7 10 .8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /></svg>} onClick={() => toast('Audience filled in')}>Fill with AI</Button>
+            <Button variant="secondary" leftIcon={<svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><path d="m12 3 1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3Zm7 10 .8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /></svg>} onClick={() => {
+              setRecent('12 months')
+              setTrust('70 & above')
+              setCondition('na')
+              toast('Audience widened; every condition relaxed')
+            }}>Fill with AI</Button>
           </div>
 
           <div className="flex flex-col">
@@ -172,7 +177,7 @@ export default function AudienceNoMatch() {
               </div>
               <div className="flex flex-col items-end gap-2">
                 <span className="text-text-medium text-text-title">No matching respondents?</span>
-                <Button size="sm" onClick={() => toast('Support request opened')}>Contact Us</Button>
+                <Button size="sm" onClick={() => nav('/help?panel=ask')}>Contact Us</Button>
               </div>
             </div>
 
