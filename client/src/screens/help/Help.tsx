@@ -33,7 +33,7 @@ function DirectHelp({ wide, onAsk }: { wide?: boolean; onAsk: () => void }) {
           <MessageIcon className="h-6 w-6" />
         </span>
         <span className="flex min-w-0 flex-1 flex-col gap-2">
-          <span className="text-title-s leading-[22px] text-text-title">{DIRECT_HELP.title}</span>
+          <span className="text-title-s leading-[25px] text-text-title">{DIRECT_HELP.title}</span>
           <span className="text-text-regular text-text-subtitle">{DIRECT_HELP.body}</span>
           {/* Step 56's reply time. No frame draws one anywhere in Help. */}
           <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-text-regular text-brand-secondary">
