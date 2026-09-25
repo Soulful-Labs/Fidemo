@@ -5,6 +5,7 @@ import './index.css'
 import routes from './routes'
 import { CreateProvider } from './mock/createStore'
 import ToastHost from './components/ui/Toast'
+import { StudyProvider } from './mock/store'
 
 function Routed() {
   return useRoutes(routes)
@@ -13,11 +14,13 @@ function Routed() {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <CreateProvider>
-        <ToastHost>
-          <Routed />
-        </ToastHost>
-      </CreateProvider>
+      <StudyProvider>
+        <CreateProvider>
+          <ToastHost>
+            <Routed />
+          </ToastHost>
+        </CreateProvider>
+      </StudyProvider>
     </BrowserRouter>
   </StrictMode>,
 )

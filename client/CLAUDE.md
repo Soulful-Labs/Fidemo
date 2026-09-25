@@ -55,6 +55,34 @@ id returns nothing, or returns something the brief did not describe, call
 concluding the screen is gone or that the brief is wrong. Report the new id
 when one moves.
 
+## Rule 7, three documents, one order of precedence
+
+Stage two wires behaviour, and three documents govern it. They do not agree,
+so the order matters.
+
+- **The 58 step platform workflow** (`docs/Platform-Workflow-58-steps.html`,
+  with the internal team console in `docs/Internal-Team-Console.html`) governs
+  **behaviour**: what happens, in what order, and who does it.
+- **Figma** governs **appearance and every visible string**. If a frame has a
+  typo, the typo stays.
+- **The signed Trust and Rewards policy** (`docs/Trust-and-Rewards-Policy.html`)
+  governs **anything about scores, tiers, points, ratings and certificates**,
+  and outranks both on those subjects.
+
+Where they disagree about behaviour, the workflow wins. Where they disagree
+about appearance, Figma wins. **Flag every such case in the turn report and in
+`docs/Stage-Two-Conflicts.md`. Never decide silently.**
+
+The two that shape everything else: the workflow opens with "THIS IS A MANAGED
+PLATFORM. EVERY STUDY IS RUN BY THE FOCUS INSITE TEAM, AND THERE IS NO
+SELF-SERVE OPTION IN THIS BUILD", while Figma draws a self-serve Create Study
+flow ending in Publish Study; and the policy's sign-off says client ratings are
+"the three states already in the workflow: poor, good or excellent", while
+Figma draws five stars on three dimensions and the policy's own Trust Score
+table is denominated in five stars.
+
+---
+
 ## Hidden frames
 
 **Frames switched off in the file are common, and a node id is not proof a screen
