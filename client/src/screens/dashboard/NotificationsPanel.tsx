@@ -17,7 +17,7 @@ function Body({ n }: { n: NotificationRow }) {
   return <>{before}<span className="text-text-title">{n.emphasis}</span>{after}</>
 }
 
-function Row({ n, onAction }: { n: NotificationRow; onAction: (n: NotificationRow) => void }) {
+export function NotificationItem({ n, onAction }: { n: NotificationRow; onAction: (n: NotificationRow) => void }) {
   const Glyph = GLYPH[n.icon]
   return (
     <li className={cn('flex gap-3 border-b-1 border-stroke-1 px-3 pb-[13px] pt-3', n.unread ? 'bg-yellow-30' : 'bg-bg-0')}>
@@ -62,7 +62,7 @@ export default function NotificationsPanel({
         </Button>
       }>
       <ul className="flex flex-col">
-        {rows.map((n) => <Row key={n.id} n={n} onAction={onAction} />)}
+        {rows.map((n) => <NotificationItem key={n.id} n={n} onAction={onAction} />)}
       </ul>
     </SidePanel>
   )

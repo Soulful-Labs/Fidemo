@@ -17,6 +17,7 @@ import Pool from './screens/pool/Pool'
 import PanelDetail from './screens/pool/PanelDetail'
 import CreatePanel from './screens/pool/CreatePanel'
 import Payments from './screens/payments/Payments'
+import NotificationsPage from './screens/NotificationsPage'
 import RespondentResult from './screens/studies/RespondentResult'
 import AudienceNoMatch from './screens/create/AudienceNoMatch'
 import About from './screens/create/About'
@@ -111,7 +112,7 @@ const routes: ScreenRoute[] = [
   // ----- Payments (1663:103325) -----
 
   // ----- Notifications (1663:104076) -----
-  page('/notifications', 'Notifications', '1663:104077', 'Notifications'),
+  { path: '/notifications', label: 'Notifications', node: '1663:104077', section: 'Notifications', kind: 'page', element: createElement(NotificationsPage) },
 
   // ----- Help (1663:104190) -----
   page('/help', 'Help', '1663:104191', 'Help'),

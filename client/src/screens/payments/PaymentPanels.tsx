@@ -57,7 +57,7 @@ export function InvoiceDetailsPanel({
           <>
             <p className="text-body-large text-brand-secondary">{INVOICE.paidTitle}</p>
             <p className="flex items-center gap-2 text-body-medium text-text-title">
-              <CardMark />Mastercard <span className="text-text-body">&bull;</span> ✱✱✱✱ 4242
+              <CardMark />Mastercard <span className="text-text-body">&bull;</span> •••• 4242
             </p>
             <p className="text-text-regular text-text-subtitle">{INVOICE.paidAt}</p>
           </>
@@ -68,7 +68,7 @@ export function InvoiceDetailsPanel({
             <p className="flex flex-wrap items-center gap-2 text-text-regular text-text-title">
               {INVOICE.autoDebit}
               <span className="inline-flex h-8 items-center gap-2 rounded-full bg-bg-1 px-3 text-text-regular text-text-subtitle">
-                <CardMark />Mastercard <span className="text-text-body">&bull;</span> ✱✱✱✱ 4242
+                <CardMark />Mastercard <span className="text-text-body">&bull;</span> •••• 4242
               </span>
             </p>
           </>
@@ -191,7 +191,7 @@ export function PaidModal({ open, onClose }: { open: boolean; onClose: () => voi
 /** Remove **** 4242 Card? (1779:104288). */
 export function RemoveCardModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
-    <Modal open={open} onClose={onClose} compact wide title={REMOVE_CARD.title} body={REMOVE_CARD.body}
+    <Modal open={open} onClose={onClose} wide title={REMOVE_CARD.title} body={REMOVE_CARD.body}
       footer={
         <>
           <Button variant="tertiary" className="flex-1" onClick={onClose}>Cancel</Button>
