@@ -14,6 +14,7 @@ import { useStudies } from '../../mock/store'
 import { counts } from '../../lib/derive'
 import { studyTab } from '../../lib/lifecycle'
 import { CompletedMenu, DeleteStudyModal, DraftMenu, OngoingMenu, PauseStudyModal, StudyTypeMenu } from './StudyMenus'
+import { useToast } from '../../components/ui/Toast'
 
 export type StudiesTab = 'ongoing' | 'drafts' | 'completed'
 
@@ -69,7 +70,8 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
   const [sort, setSort] = useState<{ key: string; dir: 1 | -1 } | null>(null)
   const [pausing, setPausing] = useState<Study | null>(null)
   const [deleting, setDeleting] = useState<Study | null>(null)
-  const { studies } = useStudies()
+  const { studies, moveStudy } = useStudies()
+  const toast = useToast()
 
   /** Which tab a study is under is its state's business, never a separate list. */
   const rows = useMemo(() => {
@@ -186,9 +188,22 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
       </div>
 
       <PauseStudyModal open={pausing !== null} onClose={() => setPausing(null)}
-        onConfirm={() => { const s = pausing; setPausing(null); if (s) navigate(`/studies/${s.id}/paused`) }} />
+        onConfirm={() => {
+          const st = pausing
+          setPausing(null)
+          if (!st) return
+          /* Pausing is a real move now, so the row, the pill and the tabs follow. */
+          const res = moveStudy(st.id, 'paused')
+          if (res.ok) navigate(`/studies/${st.id}/paused`); else toast(res.why)
+        }} />
       <DeleteStudyModal open={deleting !== null} onClose={() => setDeleting(null)} name={deleting?.name ?? ''}
-        onConfirm={() => setDeleting(null)} />
+        onConfirm={() => {
+          const st = deleting
+          setDeleting(null)
+          if (!st) return
+          const res = moveStudy(st.id, 'cancelled')
+          toast(res.ok ? `${st.name} cancelled` : res.why)
+        }} />
     </AppShell>
   )
 }
