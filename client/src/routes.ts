@@ -21,6 +21,7 @@ import NotificationsPage from './screens/NotificationsPage'
 import Help from './screens/help/Help'
 import TicketChat from './screens/help/TicketChat'
 import Account from './screens/account/Account'
+import { CheckEmail, InReview, OrganizationDetails, PaymentMethod, SignIn, SignUp, Welcome } from './screens/onboarding/Onboarding'
 import RespondentResult from './screens/studies/RespondentResult'
 import AudienceNoMatch from './screens/create/AudienceNoMatch'
 import About from './screens/create/About'
@@ -56,14 +57,13 @@ const routes: ScreenRoute[] = [
   { path: '/', element: createElement(Navigate, { to: '/dashboard', replace: true }) },
 
   // ----- Onboarding (1484:81318) -----
-  page('/signup', 'Sign Up', '1484:81319', 'Onboarding'),
-  page('/check-email', 'Check Email', '1484:81337', 'Onboarding'),
-  page('/signin', 'Sign In', '1484:81364', 'Onboarding'),
-  page('/organization', 'Organization Details', '1484:81382', 'Onboarding'),
-  page('/pricing', 'Select Pricing Plan', '1484:81400', 'Onboarding'),
-  page('/payment-method', 'Payment Method', '1512:68177', 'Onboarding'),
-  page('/in-review', 'In Review', '1484:81502', 'Onboarding'),
-  page('/welcome', 'Welcome', '1484:81512', 'Onboarding'),
+  { path: '/signup', label: 'Sign Up', node: '1484:81319', section: 'Onboarding', kind: 'page', element: createElement(SignUp) },
+  { path: '/check-email', label: 'Check Email', node: '1484:81337', section: 'Onboarding', kind: 'page', element: createElement(CheckEmail) },
+  { path: '/signin', label: 'Sign In', node: '1484:81364', section: 'Onboarding', kind: 'page', element: createElement(SignIn) },
+  { path: '/organization', label: 'Organization Details', node: '1484:81382', section: 'Onboarding', kind: 'page', element: createElement(OrganizationDetails) },
+  { path: '/payment-method', label: 'Payment Method', node: '1512:68177', section: 'Onboarding', kind: 'page', element: createElement(PaymentMethod) },
+  { path: '/in-review', label: 'In Review', node: '1484:81502', section: 'Onboarding', kind: 'page', element: createElement(InReview) },
+  { path: '/welcome', label: 'Welcome', node: '1484:81512', section: 'Onboarding', kind: 'page', element: createElement(Welcome) },
 
   // ----- Dashboard (826:85653) -----
   { path: '/dashboard', label: 'Dashboard', node: '826:85021', section: 'Dashboard', kind: 'page', element: createElement(Dashboard) },
