@@ -5,6 +5,7 @@ import Button from '../../components/ui/Button'
 import RespondentRail, { RatePrompt } from '../../components/client/RespondentRail'
 import StudyTypeTag from '../../components/client/StudyTypeTag'
 import RatePanel from './RatePanel'
+import NoShowModal from './NoShowModal'
 import { ActivityList, DayBar, NotesCard, PinCard, QARow, SessionCard } from './respondentBits'
 import { CheckCircle, Clock, Close, DiaryBookIcon, NoteIcon, SurveyIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
@@ -46,6 +47,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
   const [params] = useSearchParams()
   const s = managedStudy(id)
   const [rate, setRate] = useState(params.get('rate') === '1')
+  const [noShow, setNoShow] = useState<'one' | 'all' | null>((params.get('noshow') as 'one' | 'all') ?? null)
 
   const session = s.type !== 'survey' && s.type !== 'diary'
   /** The recruited state is judged on the screener alone; the completed one has a result. */
@@ -157,7 +159,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                         <span className="text-text-regular text-text-title">Mark as completed for an additional confirmation</span>
                       </p>
                       <span className="flex items-center gap-3">
-                        <Button variant="tertiary" size="none" className="h-11 px-4" leftIcon={<Close className="h-4 w-4" />}>Mark No-show</Button>
+                        <Button variant="tertiary" size="none" className="h-11 px-4" onClick={() => setNoShow('one')} leftIcon={<Close className="h-4 w-4" />}>Mark No-show</Button>
                         <Button variant="secondary" size="none" className="h-11 px-4" leftIcon={<CheckCircle className="h-4 w-4" />}>Mark Completed</Button>
                       </span>
                     </>
@@ -172,6 +174,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
       </div>
 
       <RatePanel open={rate} onClose={() => setRate(false)} study={s} />
+      <NoShowModal open={!!noShow} scope={noShow ?? 'one'} onClose={() => setNoShow(null)} />
     </AppShell>
   )
 }

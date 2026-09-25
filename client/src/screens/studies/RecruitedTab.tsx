@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import Select from '../../components/ui/Select'
 import Tabs from '../../components/ui/Tabs'
 import Pagination from '../../components/client/Pagination'
 import { StudyFrame } from '../../components/client/StudyFrame'
+import DownloadSessionsPanel from './DownloadSessionsPanel'
 import { ScoreCell, StatusPill, Th } from '../../components/client/RespondentTable'
 import { Calendar, ChevronRight, Clock, VideoIcon } from '../../components/ui/icons'
 import { APPLICATIONS, GROUP_SESSIONS, SCHEDULED } from '../../mock/recruiting'
@@ -19,7 +20,9 @@ import { managedStudy } from '../../mock/studies'
  */
 export default function RecruitedTab() {
   const { id } = useParams()
+  const [params] = useSearchParams()
   const s = managedStudy(id)
+  const [downloads, setDownloads] = useState(params.get('panel') === 'downloads')
   const session = s.type !== 'survey' && s.type !== 'diary'
   const group = s.type === 'group_video_call' || s.type === 'in_person_group'
   const [state, setState] = useState<'booked' | 'applications'>('booked')
@@ -122,6 +125,8 @@ export default function RecruitedTab() {
           )}
         </div>
       </StudyFrame>
+      <DownloadSessionsPanel open={downloads} onClose={() => setDownloads(false)}
+        artefact={s.type === 'group_video_call' ? 'Recordings + Transcript' : 'Notes'} />
     </AppShell>
   )
 }
