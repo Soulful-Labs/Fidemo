@@ -594,6 +594,45 @@ red confirm.
 |---|---|---|---|
 | `/notifications` | Notifications | 1663:104077 | page |
 
+### Help, what it holds and what a ticket carries
+
+**The section holds 8 frames, and two are switched off**: `1663:104538`
+Question menu (165x92) and `1663:104539` Mark as solved? (460x285). The second
+is on the brief's build list, so it is built from what `get_metadata` gives —
+the check mark, the title and the geometry — with its body text left unfilled,
+because that node is named "Error" and its wording cannot be read.
+
+**Help and Support Tickets are one screen.** A 320px segmented toggle swaps the
+FAQ list for the tickets table. Beyond the tickets, Help holds **nine FAQs**
+under a "Search your queries" field, the first drawn open, and a **Need Direct
+Help?** card — narrow beside the FAQs, wide under the tickets — whose Contact
+Support raises Ask Support. There are no guides, articles, videos or phone
+routes drawn anywhere; the only route to a person is that one form.
+
+**A ticket carries** a subject, a one-line preview of the latest reply prefixed
+with who wrote it ("Ronny:" or "You:"), an unread dot, a status of **Open** or
+**Solved**, Last Activity, Created On and a number (FI-S562357). Inside, the
+thread opens with a **Ticket Info** card the client filled — Subject and
+Message, the message naming the study — then attachments, then replies. Each
+message carries a time (04:26 PM) under it, and the frame groups an attachment
+with the message above it under **one** timestamp, not two.
+
+**Ticket Chat is one screen in two states**, 0.40% apart: the status tag, and
+whether the composer is drawn. A **Solved** ticket has no composer — it cannot
+be replied to. Open shows attach, "Write a message..." and Send.
+
+**No reply time or response expectation is drawn.** No SLA, no "we reply
+within", no queue position, no business hours. The only thing said about timing
+is on the Sent successfully! dialog: "Our team and assistants will review and
+reach out to you shortly."
+
+**The respondent app's answer-first pattern does appear here.** The first reply
+in the thread is tagged **"FI-Smart Assitant here!"** (the frame's own spelling)
+on a warm bubble, and the success dialog says "Our team **and assistants**".
+Nothing on the frames shows FAQ or guide articles being quoted into a reply, a
+handover step, or an escalation control — the badge on the reply and that one
+word in the dialog are the whole of it.
+
 ### Help — section 1663:104190
 | Route | Screen | Node | Kind |
 |---|---|---|---|
