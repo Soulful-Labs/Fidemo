@@ -13,6 +13,7 @@ import RecruitedTab from './screens/studies/RecruitedTab'
 import ResultsTab from './screens/studies/ResultsTab'
 import PayTab from './screens/studies/PayTab'
 import BillPayment from './screens/studies/BillPayment'
+import Pool from './screens/pool/Pool'
 import RespondentResult from './screens/studies/RespondentResult'
 import AudienceNoMatch from './screens/create/AudienceNoMatch'
 import About from './screens/create/About'
@@ -94,8 +95,7 @@ const routes: ScreenRoute[] = [
   page('/studies/:id/respondent/:rid/activity', 'Activity of respondent', '1627:97901', 'Manage'),
   { path: '/studies/:id/paused', label: 'Paused study', node: '1704:143783', section: 'Manage', kind: 'page', element: createElement(PausedStudy) },
 
-  // ----- Pool (1645:161429) -----
-  page('/pool', 'Pool', '1645:161580', 'Pool'),
+  { path: '/pool', label: 'Pool of Participants', node: '1645:161430, 1777:98738, 1645:161580, 1645:162272', section: 'Pool', kind: 'page', element: createElement(Pool) },
   page('/pool/empty', 'Pool, empty', '1645:161430', 'Pool'),
   page('/pool/panels/:panelId/members', 'My Panel, Members', '1645:161734', 'Pool'),
   page('/pool/panels/:panelId/matched', 'My Panel, Matched', '1645:162050', 'Pool'),
