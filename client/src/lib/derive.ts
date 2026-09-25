@@ -253,3 +253,53 @@ export function pageLabels(total: number, page: number): (number | string)[] {
   if (page >= total - 3) return [1, 2, '…', total - 3, total - 2, total - 1, total]
   return [1, '…', page - 1, page, page + 1, '…', total]
 }
+
+// ------------------------------------------------------------- the invoices
+
+/**
+ * Step 53: "Invoice is generated. Built from the study record, so nothing is
+ * assembled from scratch." One invoice per completed study, pending while it
+ * still owes and completed once it does not. The Payments table used to hold
+ * five identical rows — same number, same study, same date, same amount —
+ * that totalled $3,750 under a $6,874 tile.
+ */
+export interface Invoice {
+  number: string
+  studyId: string
+  study: string
+  date: string
+  amount: number
+  paid: boolean
+}
+
+export function invoices(studies: Study[]): Invoice[] {
+  return studies
+    .filter((s) => s.state === 'completed')
+    .map((s, i) => {
+      const b = billing(s)
+      return {
+        number: `INV-10243${(66 + i).toString().padStart(2, '0')}`,
+        studyId: s.id,
+        study: s.title,
+        date: s.created,
+        amount: Math.max(0, b.net),
+        paid: b.net <= 0,
+      }
+    })
+}
+
+/** The three figures across the top of Payments. */
+export function paymentStats(studies: Study[]) {
+  const all = invoices(studies)
+  const pending = all.filter((i) => !i.paid)
+  const done = studies.filter((s) => s.state === 'completed')
+  const spent = done.reduce((n, s) => n + billing(s).total, 0)
+  return {
+    due: pending.reduce((n, i) => n + i.amount, 0),
+    dueStudies: pending.length,
+    spent,
+    spentStudies: done.length,
+    average: done.length === 0 ? 0 : Math.round(spent / done.length),
+    averageStudies: done.length,
+  }
+}

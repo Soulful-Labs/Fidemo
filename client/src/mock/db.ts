@@ -87,6 +87,20 @@ export const PEOPLE: Person[] = [
   person('r-james', 'James K.', 'Pediatrician', 9, [5, 5, 4, 5, 5, 5, 5, 4, 5, 5], { professionVerified: true }),
   person('r-ava', 'Ava R.', 'Dermatologist', 9, [5, 5, 5, 4, 5, 5, 4, 5, 5, 5], { professionVerified: true }),
   person('r-nina', 'Nina C.', 'Radiologist', 2, [3, 2, 2, 3, 2, 3, 2, 2, 3, 2]),
+
+  /* The Pool's own tiles (1645:161430). Same list, same scoring. */
+  person('tom-h', 'Tom H.', 'Chiropractor, Sports Medicine', 10, [5, 5, 5, 5, 5, 5, 5, 5, 5, 4], { professionVerified: true }),
+  person('sofia-p', 'Sofia P.', 'Occupational Therapist, Pediatric', 10, [5, 5, 5, 5, 5, 4, 5, 5, 4, 5], { professionVerified: true }),
+  person('yara-m', 'Yara M.', 'Rehabilitation Specialist, Cardiology', 9, [5, 5, 5, 4, 5, 5, 4, 5, 5, 5], { professionVerified: true }),
+  person('daniel-l', 'Daniel L.', 'Acupuncturist, Chronic Pain', 8, [5, 4, 5, 4, 5, 4, 5, 4, 5, 5], { professionVerified: true }),
+  person('alice-f', 'Alice F.', 'Exercise Physiologist, Fitness', 6, [4, 4, 5, 4, 4, 4, 5, 4, 4, 4], { professionVerified: true }),
+  person('clara-j', 'Clara J.', 'Pilates Instructor, Holistic Health', 9, [5, 5, 4, 5, 5, 5, 4, 5, 5, 5], { professionVerified: true }),
+  person('xander-b', 'Xander B.', 'Physiotherapist, Geriatrics', 10, [5, 5, 5, 5, 4, 5, 5, 5, 5, 5], { professionVerified: true }),
+  person('zach-k', 'Zach K.', 'Athletic Trainer, Injury Prevention', 5, [4, 4, 4, 4, 4, 4, 4, 4, 4, 4], { professionVerified: true }),
+  person('brian-d', 'Brian D.', 'Orthopedic Surgeon, Sports', 6, [4, 4, 5, 4, 4, 4, 5, 4, 4, 4], { professionVerified: true }),
+  person('victor-s', 'Victor S.', 'Massage Therapist, Wellness', 4, [4, 4, 4, 3, 4, 4, 4, 3, 4, 4], { professionVerified: true }),
+  person('uma-r', 'Uma R.', 'Physical Therapist, Neurology', 3, [3, 3, 3, 3, 3, 3, 3, 3, 3, 3], { professionVerified: true }),
+  person('wendy-t', 'Wendy T.', 'Kinesiologist, Rehabilitation', 3, [3, 3, 3, 3, 3, 3, 3, 3, 2, 3], { professionVerified: true }),
 ]
 
 export const personById = (id: string) => PEOPLE.find((p) => p.id === id)

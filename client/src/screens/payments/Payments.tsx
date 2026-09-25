@@ -6,7 +6,9 @@ import Tabs from '../../components/ui/Tabs'
 import { AddCardPanel, CardMark, InvoiceDetailsPanel, MakePaymentPanel, PaidModal, RemoveCardModal } from './PaymentPanels'
 import { DollarCircle, Download, Eye, InvoiceIcon, MoneyMark, Plus } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import { CARDS, INVOICES, PAYMENT_STATS } from '../../mock/payments'
+import { CARDS } from '../../mock/payments'
+import { invoices, paymentStats } from '../../lib/derive'
+import { useStudies } from '../../mock/store'
 import { useToast } from '../../components/ui/Toast'
 
 const GLYPH = [InvoiceIcon, MoneyMark, DollarCircle]
@@ -48,11 +50,22 @@ export default function Payments() {
   const [panel, setPanel] = useState(params.get('panel') ?? '')
   const set = (k: string) => { const n = new URLSearchParams(params); n.set('tab', k); setParams(n) }
 
+  const { studies } = useStudies()
+  const ps = paymentStats(studies)
+  const money = (n: number) => `$${n.toLocaleString('en-US')}`
+  /** Step 53: one invoice per completed study, pending until it is settled. */
+  const rows = invoices(studies).filter((i) => (done ? i.paid : !i.paid))
+  const stats = [
+    { label: 'Due Payments', value: money(ps.due), suffix: `of ${ps.dueStudies} studies`, tint: true },
+    { label: 'All Time Spent', value: money(ps.spent), suffix: `for ${ps.spentStudies} studies` },
+    { label: 'Average Study Cost', value: money(ps.average), suffix: `from ${ps.averageStudies} studies` },
+  ]
+
   return (
     <AppShell hideCreate crumbs={[{ label: 'Payments' }]}>
       <div className="min-h-[939px] rounded-lg bg-bg-0 p-4">
         <div className="grid grid-cols-3 gap-3">
-          {PAYMENT_STATS.map((s, i) => {
+          {stats.map((s, i) => {
             const Icon = GLYPH[i]
             return (
               <div key={s.label} className={cn('flex h-[93px] items-center gap-4 rounded-lg px-4',
@@ -88,12 +101,17 @@ export default function Payments() {
               </tr>
             </thead>
             <tbody>
-              {INVOICES.map((r, i) => (
-                <tr key={i} className="border-b-1 border-stroke-input last:border-b-0">
+              {rows.length === 0 && (
+                <tr><td colSpan={5} className="h-[70px] px-[16px] text-center text-text-regular text-text-subtitle">
+                  {done ? 'Nothing has been settled yet.' : 'Nothing is outstanding.'}
+                </td></tr>
+              )}
+              {rows.map((r) => (
+                <tr key={r.number} className="border-b-1 border-stroke-input last:border-b-0">
                   <td className="h-[70px] px-[16px] text-text-regular text-text-subtitle">{r.number}</td>
                   <td className="h-[70px] px-[16px] text-text-regular text-text-title">{r.study}</td>
                   <td className="h-[70px] px-[16px] text-text-regular text-text-title">{r.date}</td>
-                  <td className={cn('h-[70px] px-[16px] text-text-title', done ? 'text-body-medium' : 'text-body-regular')}>{r.amount}</td>
+                  <td className={cn('h-[70px] px-[16px] text-text-title', done ? 'text-body-medium' : 'text-body-regular')}>{money(r.amount)}</td>
                   <td className="h-[70px] px-[16px]">
                     <span className="flex items-center justify-end gap-3">
                       <button type="button" aria-label="Download invoice" onClick={() => toast('Invoice downloaded')}

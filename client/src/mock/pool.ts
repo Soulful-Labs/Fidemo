@@ -1,4 +1,5 @@
 import type { Tier } from '../lib/studyTypes'
+import { PEOPLE, scoreOf, tierOf } from './db'
 
 /** A respondent card in the Pool and in a panel's member list (1645:161430). */
 export interface PoolPerson {
@@ -9,20 +10,19 @@ export interface PoolPerson {
   tier: Tier
 }
 
-export const POOL_PEOPLE: PoolPerson[] = [
-  { id: 'tom-h', name: 'Tom H.', role: 'Chiropractor, Sports Medicine', score: 98, tier: 'platinum' },
-  { id: 'sofia-p', name: 'Sofia P.', role: 'Occupational Therapist, Pediatric', score: 94, tier: 'platinum' },
-  { id: 'yara-m', name: 'Yara M.', role: 'Rehabilitation Specialist, Cardiology', score: 92, tier: 'platinum' },
-  { id: 'daniel-l', name: 'Daniel L.', role: 'Acupuncturist, Chronic Pain', score: 89, tier: 'gold' },
-  { id: 'alice-f', name: 'Alice F.', role: 'Exercise Physiologist, Fitness', score: 84, tier: 'gold' },
-  { id: 'clara-j', name: 'Clara J.', role: 'Pilates Instructor, Holistic Health', score: 93, tier: 'platinum' },
-  { id: 'xander-b', name: 'Xander B.', role: 'Physiotherapist, Geriatrics', score: 95, tier: 'platinum' },
-  { id: 'zach-k', name: 'Zach K.', role: 'Athletic Trainer, Injury Prevention', score: 80, tier: 'gold' },
-  { id: 'brian-d', name: 'Brian D.', role: 'Orthopedic Surgeon, Sports', score: 84, tier: 'gold' },
-  { id: 'victor-s', name: 'Victor S.', role: 'Massage Therapist, Wellness', score: 79, tier: 'gold' },
-  { id: 'uma-r', name: 'Uma R.', role: 'Physical Therapist, Neurology', score: 69, tier: 'silver' },
-  { id: 'wendy-t', name: 'Wendy T.', role: 'Kinesiologist, Rehabilitation', score: 68, tier: 'silver' },
+/**
+ * The twelve the Pool frame draws, now taken from the one person list with
+ * the score and tier derived by the policy rather than printed beside it.
+ * Step 24 ranks by score and tier, which is the order they come back in.
+ */
+const POOL_IDS = [
+  'tom-h', 'sofia-p', 'yara-m', 'daniel-l', 'alice-f', 'clara-j',
+  'xander-b', 'zach-k', 'brian-d', 'victor-s', 'uma-r', 'wendy-t',
 ]
+
+export const POOL_PEOPLE: PoolPerson[] = POOL_IDS
+  .map((id) => PEOPLE.find((p) => p.id === id)!)
+  .map((p) => ({ id: p.id, name: p.name, role: p.role, score: scoreOf(p), tier: tierOf(p) }))
 
 export const POOL_SEARCH = 'Describe your required audience to search and filter or search by name, role, score, tiers, industry, etc.'
 export const POOL_RESULTS = '208 of 260 results'
