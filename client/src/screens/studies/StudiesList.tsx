@@ -111,7 +111,7 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
         {tab === 'completed' && <h1 className="pb-2 text-title-s text-text-title">My Studies</h1>}
 
         <div className="flex items-center justify-between gap-4 pb-6">
-          <Tabs variant="segmented" value={tab} items={TABS} />
+          <Tabs variant="segmented" className="w-[341px]" value={tab} items={TABS} />
           <div className="flex items-center gap-3">
             <div className="relative">
               <Select value="Study Type" className="w-[200px]" onClick={() => setTypeMenu((m) => !m)} />

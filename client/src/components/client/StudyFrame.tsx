@@ -15,13 +15,18 @@ import { counts, progressPct, statusTag } from '../../lib/derive'
  * printed 12, 8 and 3 for the same study. Both are now one count.
  */
 
-/** The four figures under the title on the study header (1627:95956). */
-function HeadStat({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
+/**
+ * The four figures under the title on the study header (1627:95956).
+ *
+ * Measured off 1777:96829: a 20px label box, a 2px gap, then a 31px box
+ * holding a 24px figure with a 16px suffix baseline-aligned inside it.
+ */
+export function HeadStat({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-0.5">
       <span className="text-text-regular text-text-subtitle">{label}</span>
-      <span className="text-title-s text-text-title">
-        {value}{suffix && <span className="text-text-regular text-text-subtitle"> {suffix}</span>}
+      <span className="flex items-baseline gap-1 text-title-l text-text-title">
+        {value}{suffix && <span className="text-body-regular text-text-subtitle">{suffix}</span>}
       </span>
     </div>
   )
@@ -42,8 +47,14 @@ export function StudyHeader({ study }: { study: Study }) {
         <span className="h-[182px] w-[240px] shrink-0 overflow-hidden rounded-md bg-bg-2">
           <img src={study.image} alt="" className="h-full w-full object-cover" />
         </span>
+        {/*
+          * 1777:96814: the content column is three rows at y 0, 50 and 129
+          * inside 182px. Row one is 38 tall with the type tag centred in it,
+          * row two is the 31px title and the 28px tag row 8px under it, and
+          * row three is the 53px figure block. Twelve between the rows.
+          */}
         <div className="flex min-w-0 flex-1 flex-col gap-3">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex h-[38px] items-center justify-between gap-4">
             {/* the Manage and Create frames draw Diary as a book; only the
                 Studies cards frame draws it as bars */}
             <StudyTypeTag type={study.type} className="h-8"
@@ -61,10 +72,12 @@ export function StudyHeader({ study }: { study: Study }) {
             </div>
           </div>
 
-          <h1 className="text-title-l text-text-title">{study.title}</h1>
-          <div className="flex items-center gap-2">
-            <Tag tone="neutral" icon={<Clock className="h-4 w-4" />}>{study.duration}</Tag>
-            <Tag tone="neutral">{study.industry}</Tag>
+          <div className="flex flex-col gap-2">
+            <h1 className="text-title-l text-text-title">{study.title}</h1>
+            <div className="flex items-center gap-2">
+              <Tag tone="neutral" icon={<Clock className="h-4 w-4" />}>{study.duration}</Tag>
+              <Tag tone="neutral">{study.industry}</Tag>
+            </div>
           </div>
 
           <div className="grid grid-cols-[repeat(4,158px)] gap-6">
@@ -94,20 +107,26 @@ export type StudyTab = (typeof STUDY_TABS)[number]['key']
 /**
  * The study tab bar. Every tab after Overview is drawn greyed while a study
  * is paused (1704:143783); on a running study they are all live.
+ *
+ * Measured off the Tabs instance (1627:96023): a 44px bar holding 40px tabs
+ * that sit flush against each other, each with 16px of its own padding and
+ * no gap between them, and 16px text 2px above the tab's centre so the
+ * underline has its room. It was drawn with a 24px gap and 4px of padding,
+ * which put every label in the wrong place.
  */
 export function StudyTabs({ id, active, muted }: { id: string; active: StudyTab; muted?: boolean }) {
   return (
-    <div className="flex h-[45px] items-end gap-6 rounded-t-lg border-b-1 border-neutral-500 bg-bg-1 px-4" role="tablist">
+    <div className="flex h-11 items-end rounded-t-lg border-b-1 border-neutral-500 bg-bg-1" role="tablist">
       {STUDY_TABS.map((t) => {
         const on = t.key === active
-        const grey = muted && !on
-        const inner = cn('-mb-px border-b-1 px-1 pb-2 text-body-regular transition-colors',
+        /* Sampled from both frames: an inactive tab is #9d9d9d (text-body)
+           whether the study is running or paused, so `muted` changes nothing
+           about how it looks and the tabs stay navigable. */
+        void muted
+        const inner = cn('-mb-px flex h-10 items-center border-b-1 px-4 pb-1 text-body-regular transition-colors',
           on ? 'border-cta-primary text-brand-primary'
-            : grey ? 'border-transparent text-text-disabled'
-              : 'border-transparent text-text-subtitle hover:text-text-title')
-        return grey
-          ? <span key={t.key} role="tab" aria-selected={false} aria-disabled className={inner}>{t.label}</span>
-          : <NavLink key={t.key} to={`/studies/${id}${t.path}`} role="tab" aria-selected={on} className={inner}>{t.label}</NavLink>
+            : 'border-transparent text-text-body hover:text-text-title')
+        return <NavLink key={t.key} to={`/studies/${id}${t.path}`} role="tab" aria-selected={on} className={inner}>{t.label}</NavLink>
       })}
     </div>
   )

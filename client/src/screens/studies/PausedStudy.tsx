@@ -10,11 +10,14 @@ import { counts, progressPct } from '../../lib/derive'
 /** The Overview tiles, in the warm tint the frame draws them in. */
 function OverviewTile({ label, value, suffix, ring }: { label: string; value: string; suffix?: string; ring?: number }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-md bg-yellow-30 px-4 py-4">
-      <div className="flex flex-col">
+    /* 1643:125424: a 77px tile, which is 12px of padding around the 53px
+       label-and-figure block, not the 16 it was drawn with. */
+    <div className="flex items-center justify-between gap-3 rounded-md bg-yellow-30 p-3">
+      {/* Same block as the Overview tile: 20px label, 2px gap, 31px figure. */}
+      <div className="flex flex-col gap-0.5">
         <span className="text-text-regular text-text-subtitle">{label}</span>
-        <span className="text-title-s text-text-title">
-          {value}{suffix && <span className="text-text-regular text-text-subtitle"> {suffix}</span>}
+        <span className="flex items-baseline gap-1 text-title-l text-text-title">
+          {value}{suffix && <span className="text-body-regular text-text-subtitle">{suffix}</span>}
         </span>
       </div>
       {ring != null && (

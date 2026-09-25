@@ -89,7 +89,7 @@ export default function Payments() {
         </div>
 
         <h2 className="pt-[22px] text-title-s leading-[22px] text-text-title">Invoices</h2>
-        <Tabs variant="segmented" className="mt-3 w-[343px] justify-between" value={done ? 'completed' : 'pending'}
+        <Tabs variant="segmented" className="mt-3 w-[338px]" value={done ? 'completed' : 'pending'}
           onChange={set} items={[{ key: 'pending', label: 'Pending' }, { key: 'completed', label: 'Completed' }]} />
 
         <div className="mt-3 overflow-hidden rounded-lg border-1 border-stroke-input">

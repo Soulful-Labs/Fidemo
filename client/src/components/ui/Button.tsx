@@ -30,9 +30,16 @@ const DISABLED = {
   danger: 'bg-bg-4 text-text-disabled',
   ghost: 'text-text-disabled',
 }
+/**
+ * Measured off the CTA Button component. The 38px button (1627:95960) puts
+ * its 20px icon 12px in, then 4px, then 14px text; the 48px one (1627:96076)
+ * puts a 20px icon 20px in, then 4px, then 16px text. Every size was drawn
+ * with 16px of padding and an 8px gap, which made each button wider than the
+ * frame and pushed whatever followed it along the row.
+ */
 const SIZES = {
   md: 'h-btn rounded-sm px-4 text-text-medium',
-  row: 'h-[38px] rounded-sm px-4 text-text-medium',
+  row: 'h-[38px] rounded-sm px-3 text-text-medium',
   sm: 'h-btn-sm rounded-sm px-3 text-text-medium',
   none: 'rounded-sm px-4 text-text-medium',
 }
@@ -45,7 +52,7 @@ export default function Button({
       type={type}
       disabled={disabled}
       className={cn(
-        'inline-flex items-center justify-center gap-2 whitespace-nowrap font-sans transition-colors',
+        'inline-flex items-center justify-center gap-1 whitespace-nowrap font-sans transition-colors',
         SIZES[size], disabled ? DISABLED[variant] : ENABLED[variant],
         fullWidth && 'w-full', disabled && 'cursor-not-allowed', className,
       )}

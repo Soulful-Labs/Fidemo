@@ -60,7 +60,9 @@ export default {
         'body-large': ['16px', { lineHeight: '1.4', letterSpacing: '-0.01em', fontWeight: '600' }],
         'title-s': ['18px', { lineHeight: '1.4', letterSpacing: '-0.02em', fontWeight: '500' }],
         'title-m': ['20px', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '500' }],
-        'title-l': ['24px', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '600' }],
+        // Measured off the frames: a 24px title sits in a 31px line box
+        // (1777:96823, 1777:96835), not a 24px one.
+        'title-l': ['24px', { lineHeight: '31px', letterSpacing: '-0.02em', fontWeight: '600' }],
       },
       // Desktop frame: 1440 wide, 240 nav, 72 top bar, 600 side panels, 460 modals.
       maxWidth: { frame: '1440px', page: '1200px', panel: '600px', modal: '460px' },

@@ -38,8 +38,8 @@ export default function Pool() {
     <AppShell hideCreate crumbs={[{ label: 'Pool of Participants' }]}>
       <div className={cn('rounded-lg bg-bg-0 p-4', panels ? 'min-h-[873px]' : filters ? 'min-h-[1437px]' : 'min-h-[985px]')}>
         <div className="flex items-center justify-between gap-4">
-          <Tabs variant="segmented" value={panels ? 'panels' : 'pool'}
-            onChange={(k) => set('view', k)} className="w-[343px] justify-between"
+          <Tabs variant="segmented" className="w-[342px]" value={panels ? 'panels' : 'pool'}
+            onChange={(k) => set('view', k)}
             items={[{ key: 'pool', label: 'Participants Pool' }, { key: 'panels', label: 'Micro-Panels' }]} />
           <Button variant={panels ? 'primary' : 'tertiary'} size="none" className="h-12 px-4"
             onClick={() => nav('/pool/panels/new')}

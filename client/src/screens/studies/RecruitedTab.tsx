@@ -68,7 +68,7 @@ export default function RecruitedTab() {
 
           <div className="flex items-center justify-between gap-4 pt-[22px]">
             {session ? (
-              <Tabs variant="segmented" value={state} onChange={(k) => setState(k as 'booked' | 'applications')}
+              <Tabs variant="segmented" className="w-[238px]" value={state} onChange={(k) => setState(k as 'booked' | 'applications')}
                 items={[{ key: 'booked', label: group ? 'Sessions' : 'Scheduled' }, { key: 'applications', label: 'Applications' }]} />
             ) : <span />}
             <div className="flex items-center gap-3">

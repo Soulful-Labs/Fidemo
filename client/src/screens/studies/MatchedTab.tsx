@@ -51,7 +51,7 @@ export default function MatchedTab() {
           </p>
 
           <div className="flex items-center justify-between gap-4 pt-4">
-            <Tabs variant="segmented" value={state} onChange={(k) => setState(k as 'matched' | 'invited')}
+            <Tabs variant="segmented" className="w-[238px]" value={state} onChange={(k) => setState(k as 'matched' | 'invited')}
               items={[{ key: 'matched', label: 'Matched' }, { key: 'invited', label: 'Invited' }]} />
             <div className="flex items-center gap-3">
               <Select value="Sort: Score" className="w-[180px]" onClick={() => toast('Ranked by score and tier, as the matching does')} />
