@@ -4,6 +4,8 @@ import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import Tabs from '../../components/ui/Tabs'
 import RespondentCard from '../../components/client/RespondentCard'
+import RespondentPanel from '../dashboard/RespondentPanel'
+import { InvitePanel, ReviewsPanel, SavePanel } from './PoolPanels'
 import FilterRail, { PanelTile } from './poolBits'
 import { Close, Plus, Search } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
@@ -20,6 +22,8 @@ export default function Pool() {
   const panels = params.get('view') === 'panels'
   const featured = params.get('sub') === 'featured'
   const [filters, setFilters] = useState(params.get('filters') !== 'hidden')
+  /** The four 600px panels the pool cards open. */
+  const [panel, setPanel] = useState(params.get('panel') ?? '')
   const set = (k: string, v: string) => { const n = new URLSearchParams(params); n.set(k, v); setParams(n) }
 
   return (
@@ -62,7 +66,9 @@ export default function Pool() {
                 <div className={cn('grid gap-3 pt-4', filters ? 'grid-cols-2' : 'grid-cols-3')}>
                   {POOL_PEOPLE.map((p) => (
                     <RespondentCard key={p.id} respondent={{ ...p, professionVerified: true }} saveable className="gap-2.5 px-4 pb-2 pt-4"
-                      actions={<Button variant="tertiary" size="none" className="h-11 flex-1">Invite To Study</Button>} />
+                      onView={() => setPanel('profile')}
+                      actions={<Button variant="tertiary" size="none" className="h-11 flex-1"
+                        onClick={() => setPanel('invite')}>Invite To Study</Button>} />
                   ))}
                 </div>
               </div>
@@ -99,6 +105,12 @@ export default function Pool() {
           </>
         )}
       </div>
+
+      <RespondentPanel open={panel === 'profile'} respondent={{ ...POOL_PEOPLE[0], professionVerified: true }}
+        onClose={() => setPanel('')} onReviews={() => setPanel('reviews')} />
+      <ReviewsPanel open={panel === 'reviews'} onClose={() => setPanel('')} onBack={() => setPanel('profile')} />
+      <InvitePanel open={panel === 'invite'} onClose={() => setPanel('')} />
+      <SavePanel open={panel === 'save'} onClose={() => setPanel('')} />
     </AppShell>
   )
 }

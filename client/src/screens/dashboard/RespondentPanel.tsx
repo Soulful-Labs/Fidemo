@@ -35,13 +35,15 @@ function Gauge({ score }: { score: number }) {
  * View Profile opens. The frame fills it for Ferry L.
  */
 export default function RespondentPanel({
-  open, onClose, respondent,
-}: { open: boolean; onClose: () => void; respondent: Respondent | null }) {
+  open, onClose, respondent, onReviews, title,
+}: { open: boolean; onClose: () => void; respondent: Respondent | null
+  /** The Pool frames title it "Profile of …" and wire Reviews to a second page. */
+  onReviews?: () => void; title?: string }) {
   if (!respondent) return null
   const d = PROFILE
 
   return (
-    <SidePanel open={open} onClose={onClose} title={respondent.name} headerClassName="h-[50px]" bodyClassName="flex flex-col gap-3 p-4"
+    <SidePanel open={open} onClose={onClose} title={title ?? respondent.name} headerClassName="h-[50px]" bodyClassName="flex flex-col gap-3 p-4"
       footer={
         <div className="flex gap-3 [&_button]:h-12 [&_button]:flex-1 [&_button]:text-body-medium">
           <Button>Invite To Study</Button>
@@ -60,7 +62,7 @@ export default function RespondentPanel({
         <div className="flex w-[278px] shrink-0 flex-col items-center gap-4 rounded-lg bg-bgAlt-1 p-4">
           <div className="flex w-full items-center justify-between">
             <span className="text-text-regular text-text-subtitle">Trust Score</span>
-            <button type="button" className="inline-flex items-center gap-1 text-text-medium text-text-title hover:text-brand-primary">
+            <button type="button" onClick={onReviews} className="inline-flex items-center gap-1 text-text-medium text-text-title hover:text-brand-primary">
               Reviews <ChevronRight className="h-4 w-4" />
             </button>
           </div>
