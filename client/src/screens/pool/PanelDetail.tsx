@@ -107,9 +107,10 @@ export default function PanelDetail({ featured }: { featured?: boolean }) {
               {!featured && (
                 <>
                   <Button variant="tertiary" size="row" onClick={() => nav('/studies/create/about')}>Launch Study</Button>
-                  <span className="flex h-[38px] w-[38px] items-center justify-center rounded-sm border-1 border-stroke-input text-text-subtitle">
+                  <button type="button" aria-label="Panel options" onClick={() => nav(`/pool/panels/${params.get('id') ?? 'p1'}/edit`)}
+                    className="flex h-[38px] w-[38px] items-center justify-center rounded-sm border-1 border-stroke-input text-text-subtitle hover:text-text-title">
                     <MoreVertical className="h-4 w-4" />
-                  </span>
+                  </button>
                 </>
               )}
             </span>

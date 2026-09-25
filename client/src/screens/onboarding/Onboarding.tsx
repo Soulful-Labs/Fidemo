@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import OnboardShell from './OnboardShell'
 import Button from '../../components/ui/Button'
@@ -94,7 +95,7 @@ function Seal({ size = 160, icon = 'mail' }: { size?: number; icon?: 'mail' | 'c
 
 /** Check Email (1484:81337). No code is asked for; the link is in the email. */
 export function CheckEmail() {
-  const toast = useToast()
+  const nav = useNavigate()
   return (
     <OnboardShell split>
       <div className="flex flex-col items-center pt-[20px] text-center">
@@ -105,7 +106,7 @@ export function CheckEmail() {
           <span className="text-body-medium text-text-title">emailaddress@domain.com</span><br />
           to verify your account and get started
         </p>
-        <Button variant="secondary" fullWidth size="none" className="mt-6 h-12 text-body-medium" onClick={() => toast('Demo build: no email is sent')}>Open My Email</Button>
+        <Button variant="secondary" fullWidth size="none" className="mt-6 h-12 text-body-medium" onClick={() => nav('/organization')}>Open My Email</Button>
         <p className="pt-3 text-text-regular text-text-body">
           Demo build: no email is sent. Use code 123456 wherever one is asked for.
         </p>
@@ -156,6 +157,12 @@ export function PaymentMethod() {
 
 /** In Review (1484:81502). */
 export function InReview() {
+  const nav = useNavigate()
+  /** No backend approves the account, so the demo advances after a beat. */
+  useEffect(() => {
+    const t = setTimeout(() => nav('/welcome'), 5000)
+    return () => clearTimeout(t)
+  }, [nav])
   return (
     <OnboardShell>
       <div className="flex flex-col items-center pt-[254px] text-center">
