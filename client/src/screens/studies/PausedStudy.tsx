@@ -4,7 +4,7 @@ import Button from '../../components/ui/Button'
 import { Copy } from '../../components/ui/icons'
 import { StudyFrame } from '../../components/client/StudyFrame'
 import { useToast } from '../../components/ui/Toast'
-import { useStudy } from '../../mock/store'
+import { useStudies, useStudy } from '../../mock/store'
 import { counts, progressPct } from '../../lib/derive'
 
 /** The Overview tiles, in the warm tint the frame draws them in. */
@@ -41,6 +41,7 @@ export default function PausedStudy() {
   const navigate = useNavigate()
   const { id = 'st-goal' } = useParams()
   const s = useStudy(id)
+  const { moveStudy } = useStudies()
   const c = counts(s)
   const pct = progressPct(s)
 
@@ -53,8 +54,15 @@ export default function PausedStudy() {
             <p className="text-text-regular text-text-subtitle">This study is paused now to get new participations. You can resume it back or mark completed.</p>
           </div>
           <div className="flex shrink-0 items-center gap-3">
-            <Button variant="secondary" size="none" className="h-9 px-3" onClick={() => toast('Marked completed')}>Mark as completed</Button>
-            <Button size="none" className="h-9 px-3" onClick={() => navigate(`/studies/${id}`)}>Resume Study</Button>
+            <Button variant="secondary" size="none" className="h-9 px-3" onClick={() => {
+              const res = moveStudy(s.id, 'completed')
+              if (res.ok) { toast('Study marked completed'); navigate(`/studies/${s.id}`) } else toast(res.why)
+            }}>Mark as completed</Button>
+            <Button size="none" className="h-9 px-3" onClick={() => {
+              const res = moveStudy(s.id, 'recruiting')
+              if (res.ok) toast('Study resumed'); else toast(res.why)
+              navigate(`/studies/${s.id}`)
+            }}>Resume Study</Button>
           </div>
         </div>
       }>

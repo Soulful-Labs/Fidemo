@@ -9,6 +9,7 @@ import { ADD_CARD, INVOICE, MAKE_PAYMENT, PAID_MODAL, REMOVE_CARD } from '../../
 import { useToast } from '../../components/ui/Toast'
 import { useState } from 'react'
 import { useWorkspace } from '../../mock/workspace'
+import { useNavigate } from 'react-router-dom'
 
 /** The card brand mark, as the payment rows draw it. */
 export function CardMark({ brand = 'Mastercard' }: { brand?: string }) {
@@ -34,8 +35,9 @@ export function CardMark({ brand = 'Mastercard' }: { brand?: string }) {
  * footer from Make Payment into Download.
  */
 export function InvoiceDetailsPanel({
-  open, onClose, paid, onPay,
-}: { open: boolean; onClose: () => void; paid?: boolean; onPay?: () => void }) {
+  open, onClose, paid, onPay, studyId,
+}: { open: boolean; onClose: () => void; paid?: boolean; onPay?: () => void; studyId?: string }) {
+  const nav = useNavigate()
   const toast = useToast()
   return (
     <SidePanel open={open} onClose={onClose} title={INVOICE.title} headerClassName="h-14"
@@ -48,7 +50,8 @@ export function InvoiceDetailsPanel({
       <div className="flex flex-col gap-2 rounded-lg border-1 border-stroke-input p-4">
         <span className="flex items-center justify-between gap-3">
           <StudyTypeTag type="diary" icon={<DiaryBookIcon className="h-4 w-4" />} />
-          <button type="button" onClick={() => toast('Opening the study')} className="inline-flex items-center gap-2 rounded-full border-1 border-stroke-input px-3 py-1.5 text-text-regular text-text-title">
+          <button type="button" onClick={() => nav(studyId ? `/studies/${studyId}` : '/studies')}
+            className="inline-flex items-center gap-2 rounded-full border-1 border-stroke-input px-3 py-1.5 text-text-regular text-text-title">
             <LinkIcon className="h-4 w-4 text-text-subtitle" />View Study
           </button>
         </span>
@@ -124,6 +127,9 @@ export function MakePaymentPanel({
   open, onClose, onPaid, onInvoice,
 }: { open: boolean; onClose: () => void; onPaid?: () => void; onInvoice?: () => void }) {
   const toast = useToast()
+  const { cards } = useWorkspace()
+  const [pick, setPick] = useState(0)
+  const card = cards[pick % Math.max(1, cards.length)]
   return (
     <SidePanel open={open} onClose={onClose} title={MAKE_PAYMENT.toPay === '' ? '' : 'Make Payment'}
       headerClassName="h-14" className="h-fit" bodyClassName="flex flex-col gap-3 px-4 pb-4 pt-4"
@@ -146,10 +152,14 @@ export function MakePaymentPanel({
         <span className="flex flex-col gap-2">
           <span className="text-text-regular text-text-title">{MAKE_PAYMENT.from}</span>
           <span className="inline-flex h-8 items-center gap-3 rounded-full bg-bgAlt-1 px-3 text-text-regular text-text-subtitle">
-            <CardMark />Mastercard <span className="text-text-body">&bull;</span> <span className="pl-4">4242</span>
+            <CardMark brand={card?.brand} />{card?.brand ?? 'Mastercard'} <span className="text-text-body">&bull;</span>
+            <span className="pl-4">{card?.last4 ?? '4242'}</span>
           </span>
         </span>
-        <Button variant="tertiary" size="row" onClick={() => toast('Choose another card')}>{MAKE_PAYMENT.change}</Button>
+        <Button variant="tertiary" size="row" onClick={() => {
+          if (cards.length < 2) { toast('Add a second card to switch between them'); return }
+          setPick((i) => (i + 1) % cards.length)
+        }}>{MAKE_PAYMENT.change}</Button>
       </div>
     </SidePanel>
   )

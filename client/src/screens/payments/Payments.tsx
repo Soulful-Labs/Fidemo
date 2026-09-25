@@ -156,7 +156,8 @@ export default function Payments() {
       </div>
 
       <InvoiceDetailsPanel open={panel === 'topay' || panel === 'paid'} paid={panel === 'paid'}
-        onClose={() => setPanel('')} onPay={() => setPanel('make')} />
+        onClose={() => setPanel('')} onPay={() => setPanel('make')}
+        studyId={rows.find((r) => r.number === paying)?.studyId} />
       <MakePaymentPanel open={panel === 'make'} onClose={() => setPanel('')}
         onPaid={() => { if (paying) payInvoice(paying); setPaying(null); setPanel('done') }}
         onInvoice={() => setPanel('topay')} />
