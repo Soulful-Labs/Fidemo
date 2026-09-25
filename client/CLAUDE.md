@@ -171,6 +171,47 @@ Roughly **90 unique screens**, not 216: 126 frames are the same screen drawn onc
 
 `page` = full 1440 screen, `panel` = 600px side panel, `modal` = 460px dialog, `popover` = small menu anchored to a control. Node ids are the Figma frames; where a screen is drawn once per type, the diary section's node is given.
 
+### Onboarding, the flow and the plan that is not in it
+
+**`1484:81400` Select Pricing Plan exists but is switched off**, and it is not
+a child of the Onboarding section at all — it is a loose 1440x820 frame on the
+canvas. Its text nodes are named "Tagline", "Caption", "Title" and "Text", so
+**not one of its strings is readable**. Its structure is three plan cards of
+340x419 with the middle one hidden, i.e. **two visible plans**, each with a
+price, a period, a description, a CTA and five ticked features (four more
+hidden). It is not built.
+
+**The section itself holds 11 frames.** Beyond the brief's list: a second
+**Check Email** (1794:80317), **Set New Password** (1794:80515), **Password has
+been updated!** (1794:80698, 460x423) and a **Genders** popover (1704:80364,
+572x208) — a password-reset branch nobody has asked for yet.
+
+**The order, and what each step gates.** Sign Up (name, work email, password,
+terms) → Check Email → Organization Details (role, company, VAT, website,
+industry, location) → Payment Method (card, expiry, CVV, name, billing
+address, zip) → In Review → Welcome. Sign In is the side door, with Forgot
+Password leading to the reset branch. **Nothing is gated by a plan**, and
+**there is no verification-code step anywhere**: Check Email asks the client to
+click a link in an email and offers only "Open My Email". The demo note under
+that button is the one string in this build that is not from a frame.
+
+**Two layouts, neither inside the app shell.** Sign Up, Sign In and Check Email
+put a 704px showcase panel — floating figure cards, a study card, a connector
+line and a testimonial from "Luke M, VP of Figma" — beside a 458px form with
+48px inputs. Organization Details, Payment Method, In Review and Welcome
+centre a 460px column; **Organization Details keeps 48px inputs while Payment
+Method drops to 38px**, measured, not assumed. Welcome is the only page on a
+green ground.
+
+**In Review says the team reviews, and agrees with the workflow.** The copy is
+"Submitted to review!" / "Our team will just review your account credentials
+quickly and confirm through email within few hours!" So a client account is
+approved by people at Focus Insite before the account opens, exactly as the
+workflow says — this is the one place in the whole client build where the
+frames and the workflow agree about staff being in the loop. **Welcome leads to
+the Dashboard**: "You are now verified and ready to start your research studies
+now!" and a single "Let's Get Started!".
+
 ### Onboarding — section 1484:81318
 | Route | Screen | Node | Kind |
 |---|---|---|---|
