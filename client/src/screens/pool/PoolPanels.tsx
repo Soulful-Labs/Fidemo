@@ -52,11 +52,11 @@ export function ReviewsPanel({ open, onClose, onBack }: { open: boolean; onClose
       <Person />
       <div className="mx-4 flex flex-col rounded-lg border-1 border-stroke-input">
         <button type="button" onClick={onBack}
-          className="flex items-center gap-4 border-b-1 border-stroke-1 px-4 py-[14px] text-title-s leading-[22px] text-text-title">
+          className="flex items-center gap-4 border-b-1 border-stroke-1 px-4 py-4 text-title-s leading-[22px] text-text-title">
           <ChevronLeft className="h-5 w-5 text-text-subtitle" />Reviews
         </button>
         {REVIEWS.map((r) => (
-          <div key={r.study} className="flex flex-col gap-1.5 border-b-1 border-stroke-1 px-4 py-3 last:border-b-0">
+          <div key={r.study} className="flex flex-col gap-2 border-b-1 border-stroke-1 px-4 py-4 last:border-b-0">
             <p className="text-body-medium text-text-title">{r.study}</p>
             <p className="flex items-center gap-2">
               <Stars n={r.stars} />

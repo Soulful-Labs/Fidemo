@@ -467,6 +467,55 @@ study's row menu is shorter.
 | — | Mark [individual] as No-show | 1697:63643 | modal |
 | — | Completed study flow | 1697:54314–56276 | page |
 
+### Pool, what collapsed and what it lets a client do
+
+**The section holds 24 top-level frames, not the 13 the inventory listed.**
+The extras are `1777:98738` Pool - Filters Hidden, a second Invite To Study
+(`1779:104093`), two Sent modals (`1777:99979`, `1779:104132`), Discard the
+micro-panel? (`1777:100042`) and Delete Micro-Panels? (`1779:101116`). Two more
+lessons for Rule 6: a frame's **name** is not a fact either — `1645:162132` is
+called "My Panel - Matched" and draws the **Panel Details** tab — and Create
+and Edit Micro-panel differ in **0.31%** of pixels, so they are one screen.
+
+**Pool is one screen in four states.** A segmented toggle picks Participants
+Pool or Micro-Panels; the pool side shows or hides its 245px filter rail
+(1645:161430 / 1777:98738), the panels side switches My Panels
+(1645:161580) and Featured Public Panels (1645:162272), which adds a category
+chip row. Create Micro-panel is drawn primary on the panels side and tertiary
+on the pool side.
+
+**A micro-panel is a saved list the client builds and then recruits from.**
+Create Micro-panel is a targeting form — name, domain, role, education,
+experience, an NPI-verified toggle, then profile score, gender, location, age,
+language and last-active — with a forecast that updates beside it (~1.5K
+eligible members, tier split, average score, recommended incentive, time to
+fill, rebook rate). Proceed shows the criteria read back and **Create Panel**
+makes it. Afterwards the panel has three tabs: **Members**, **Eligible
+Matches** (respondents the criteria match, each with `Add To This Panel`) and
+**Panel Details** (the criteria and the forecast). From its header the client
+can **Invite All To Study** or **Launch Study**.
+
+**My Panel and Featured Panel are the same screen.** A featured panel adds a
+description line and a fifth figure (Last Updated), and drops Eligible
+Matches, Launch Study and the kebab — a client can invite from a featured
+panel but cannot edit its membership.
+
+**Respondent Profile Details is the panel already built.** The Pool frame
+(1645:162885, repeated at 1645:163223) is the Dashboard/Manage panel with the
+title "Profile of Ferry L."; its `Reviews ›` link opens **Reviews**
+(1645:163046), a second page of the same panel listing, per study, the stars
+and text the client left **and** the rating the respondent left the client
+back ("To client: Google Labs ★ 5.0 …").
+
+**What this section says the client can do, for the scope question.** These
+frames give the client, unaided: search the whole participant pool by natural
+language and by nine filters; see each respondent's profile score, tier,
+verification, full profile and review history; invite any individual to a live
+study; build and edit their own micro-panels from live criteria with a
+forecast; save respondents into them; invite a whole panel at once; and launch
+a study from a panel. Nothing in the section routes a request through Focus
+Insite staff, and nothing marks micro-panels as a later phase.
+
 ### Pool — section 1645:161429
 | Route | Screen | Node | Kind |
 |---|---|---|---|
