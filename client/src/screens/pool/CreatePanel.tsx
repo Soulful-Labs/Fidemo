@@ -114,7 +114,8 @@ export default function CreatePanel({ edit }: { edit?: boolean }) {
         <div className="flex gap-12">
           {step2 ? (
             <div className="min-w-0 flex-1">
-              <Button variant="secondary" size="none" className="h-10 px-4" leftIcon={<ChevronLeft className="h-4 w-4" />}>
+              <Button variant="secondary" size="none" className="h-10 px-4" onClick={() => go('1')}
+                leftIcon={<ChevronLeft className="h-4 w-4" />}>
                 <span className="text-body-medium">Edit Filters Crietria</span>
               </Button>
               <h2 className="pt-[18px] text-title-s leading-[22px] text-text-title">Your Micro-panel Forecast</h2>

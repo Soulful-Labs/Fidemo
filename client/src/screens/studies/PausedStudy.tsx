@@ -4,6 +4,7 @@ import Button from '../../components/ui/Button'
 import { Copy } from '../../components/ui/icons'
 import { StudyFrame } from '../../components/client/StudyFrame'
 import { PAUSED_STUDY } from '../../mock/studies'
+import { useToast } from '../../components/ui/Toast'
 
 /** The Overview tiles, in the warm tint the frame draws them in. */
 function OverviewTile({ label, value, suffix, ring }: { label: string; value: string; suffix?: string; ring?: number }) {
@@ -32,6 +33,7 @@ function OverviewTile({ label, value, suffix, ring }: { label: string; value: st
  * Overview are drawn greyed while a study is paused.
  */
 export default function PausedStudy() {
+  const toast = useToast()
   const navigate = useNavigate()
   const { id = PAUSED_STUDY.id } = useParams()
   const s = PAUSED_STUDY
@@ -45,7 +47,7 @@ export default function PausedStudy() {
             <p className="text-text-regular text-text-subtitle">This study is paused now to get new participations. You can resume it back or mark completed.</p>
           </div>
           <div className="flex shrink-0 items-center gap-3">
-            <Button variant="secondary" size="none" className="h-9 px-3">Mark as completed</Button>
+            <Button variant="secondary" size="none" className="h-9 px-3" onClick={() => toast('Marked completed')}>Mark as completed</Button>
             <Button size="none" className="h-9 px-3" onClick={() => navigate(`/studies/${id}`)}>Resume Study</Button>
           </div>
         </div>

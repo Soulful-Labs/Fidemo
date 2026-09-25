@@ -9,6 +9,7 @@ import { OverviewTile } from './StudyOverview'
 import { ChevronRight, Download, Star } from '../../components/ui/icons'
 import { CERTIFICATE, RESULT_ROWS, RESULT_STATS, SUMMARIES } from '../../mock/results'
 import { managedStudy } from '../../mock/studies'
+import { useToast } from '../../components/ui/Toast'
 
 /** The sealed stamp the certificate card is drawn with. */
 function Seal() {
@@ -32,6 +33,7 @@ function Seal() {
  * against each, and the study verification certificate.
  */
 export default function ResultsTab() {
+  const toast = useToast()
   const { id } = useParams()
   const nav = useNavigate()
   const s = managedStudy(id)
@@ -47,7 +49,7 @@ export default function ResultsTab() {
                 <p className="text-title-s leading-[22px] text-text-title">{SUMMARIES.title}</p>
                 <p className="text-text-regular text-text-subtitle">{SUMMARIES.body}</p>
               </div>
-              <Button variant="secondary" size="none" className="h-12 px-6"
+              <Button variant="secondary" size="none" className="h-12 px-6" onClick={() => toast('Summaries downloaded')}
                 leftIcon={<Download className="h-4 w-4" />} rightIcon={<ChevronRight className="h-4 w-4" />}>
                 {SUMMARIES.cta}
               </Button>
@@ -80,7 +82,7 @@ export default function ResultsTab() {
                       <td className="h-[70px] px-[18px]"><ScoreCell score={r.score} tier={r.tier} /></td>
                       <td className="h-[70px] px-[18px]">
                         {r.rated
-                          ? <Button variant="tertiary" size="none" className="h-[38px] px-4">Rated</Button>
+                          ? <Button variant="tertiary" size="none" className="h-[38px] px-4" onClick={() => toast('Already rated')}>Rated</Button>
                           : (
                             <Button size="none" className="h-[38px] px-4" leftIcon={<Star className="h-4 w-4" />}
                               onClick={() => nav(`/studies/${s.id}/respondent/${r.id}?rate=1`)}>
@@ -106,7 +108,7 @@ export default function ResultsTab() {
                 <p className="text-text-regular text-text-subtitle">{CERTIFICATE.meta}</p>
               </div>
             </div>
-            <Button variant="secondary" size="none" className="h-12 px-4" leftIcon={<Download className="h-4 w-4" />}>
+            <Button variant="secondary" size="none" className="h-12 px-4" onClick={() => toast('Certificate downloaded')} leftIcon={<Download className="h-4 w-4" />}>
               {CERTIFICATE.cta}
             </Button>
           </div>

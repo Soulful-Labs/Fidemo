@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import { ChevronRight, Edit } from '../../components/ui/icons'
 import { blankQuestion, useDraft } from '../../mock/createStore'
@@ -188,6 +188,7 @@ function TypeSettings({ type, group, open }: { type: string; group: boolean; ope
  * questionnaire still to make, made, and the composer open beside it.
  */
 export default function StudySetup() {
+  const nav = useNavigate()
   const { draft, set } = useDraft()
   const [override, setOverride] = useState(false)
   const [params] = useSearchParams()
@@ -198,8 +199,8 @@ export default function StudySetup() {
   return (
     <CreateShell step="study" action={
       <>
-        <Button variant="tertiary" size="row">Save Draft &amp; Exit</Button>
-        <Button size="row" disabled>Proceed to Publish</Button>
+        <Button variant="tertiary" size="row" onClick={() => nav('/studies/drafts')}>Save Draft &amp; Exit</Button>
+        <Button size="row" disabled onClick={() => nav('/studies/create/publish')}>Proceed to Publish</Button>
       </>
     }>
       <div className={`rounded-lg bg-bg-0 px-6 pt-[9px] ${type === 'diary' ? 'min-h-[1707px]' : type === 'video_call' ? (open ? 'min-h-[1408px]' : 'min-h-[1374px]') : type === 'in_person' ? (open ? (group ? 'min-h-[1408px]' : 'min-h-[1579px]') : 'min-h-[1374px]') : 'min-h-[1302px]'}`}>

@@ -7,6 +7,7 @@ import { cn } from '../../lib/cn'
 import { BILLING, BILLING_TOTAL, PAY_STATE, TRANSACTIONS } from '../../mock/pay'
 import type { BillingRow } from '../../mock/pay'
 import { managedStudy } from '../../mock/studies'
+import { useToast } from '../../components/ui/Toast'
 
 /** A figure beside the payment due tile. */
 function Figure({ label, value }: { label: string; value: string }) {
@@ -41,6 +42,7 @@ function Row({ r, last }: { r: BillingRow; last?: boolean }) {
  * date and whether a net payable row is drawn.
  */
 export default function PayTab() {
+  const toast = useToast()
   const { id } = useParams()
   const nav = useNavigate()
   const [params] = useSearchParams()
@@ -111,7 +113,7 @@ export default function PayTab() {
                     </span>
                     <span className="flex flex-col items-end gap-2">
                       <span className="text-text-regular leading-5 text-text-title">{t.amount}</span>
-                      <Button variant="tertiary" size="none" className="h-[38px] px-4"
+                      <Button variant="tertiary" size="none" className="h-[38px] px-4" onClick={() => toast('Receipt downloaded')}
                         leftIcon={<Download className="h-4 w-4" />}>Receipt</Button>
                     </span>
                   </div>

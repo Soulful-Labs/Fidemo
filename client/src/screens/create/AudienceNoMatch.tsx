@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
 import Select from '../../components/ui/Select'
@@ -53,13 +54,14 @@ function TierBar({ label, value, colour }: { label: string; value: number; colou
  * "No matching respondents?" prompt with Contact Us.
  */
 export default function AudienceNoMatch() {
+  const nav = useNavigate()
   const [condition, setCondition] = useState('na')
 
   return (
     <CreateShell step="audience" action={
       <>
-        <Button variant="tertiary" size="row">Save Draft &amp; Exit</Button>
-        <Button size="row" disabled>Publish Study</Button>
+        <Button variant="tertiary" size="row" onClick={() => nav('/studies/drafts')}>Save Draft &amp; Exit</Button>
+        <Button size="row" disabled onClick={() => nav('/studies/create/published')}>Publish Study</Button>
       </>
     }>
       <div className="flex items-start gap-12 rounded-lg bg-bg-0 p-6">

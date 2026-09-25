@@ -94,23 +94,14 @@ const routes: ScreenRoute[] = [
   { path: '/studies/:id/respondent/:rid', label: 'Respondent result, screener', node: '1627:97305', section: 'Manage', kind: 'page', element: createElement(RespondentResult, { tab: 'screener' }) },
   { path: '/studies/:id/respondent/:rid/result', label: 'Respondent result, study result', node: '1627:97609, 1627:102694 + 102902 (session)', section: 'Manage', kind: 'page', element: createElement(RespondentResult, { tab: 'result' }) },
   { path: '/studies/:id/respondent/:rid/activity', label: 'Activity of respondent', node: '1627:97901', section: 'Manage', kind: 'page', element: createElement(RespondentResult, { tab: 'activity' }) },
-  page('/studies/:id/results', 'Results', '1627:96628', 'Manage'),
-  page('/studies/:id/pay', 'Pay while ongoing', '1627:96779', 'Manage'),
-  page('/studies/:id/pay/due', 'Pay, due as completed', '1627:97128', 'Manage'),
-  page('/studies/:id/payment', 'Payment', '1627:96956', 'Manage'),
-  page('/studies/:id/respondent/:rid', 'Respondent result', '1627:97305', 'Manage'),
-  page('/studies/:id/respondent/:rid/activity', 'Activity of respondent', '1627:97901', 'Manage'),
   { path: '/studies/:id/paused', label: 'Paused study', node: '1704:143783', section: 'Manage', kind: 'page', element: createElement(PausedStudy) },
 
   { path: '/pool', label: 'Pool of Participants', node: '1645:161430, 1777:98738, 1645:161580, 1645:162272', section: 'Pool', kind: 'page', element: createElement(Pool) },
-  page('/pool/empty', 'Pool, empty', '1645:161430', 'Pool'),
   { path: '/pool/panels/:panelId', label: 'My Panel', node: '1645:161734, 1645:162050, 1645:162132', section: 'Pool', kind: 'page', element: createElement(PanelDetail) },
   { path: '/pool/featured/:panelId', label: 'Featured Panel', node: '1645:161816, 1645:161904', section: 'Pool', kind: 'page', element: createElement(PanelDetail, { featured: true }) },
   { path: '/pool/panels/new', label: 'Create Micro-panel', node: '1645:162404, 1645:162784', section: 'Pool', kind: 'page', element: createElement(CreatePanel) },
   { path: '/pool/panels/:panelId/edit', label: 'Edit Micro-panel', node: '1645:162594', section: 'Pool', kind: 'page', element: createElement(CreatePanel, { edit: true }) },
   { path: '/payments', label: 'Payments', node: '1663:103326 (pending), 1663:103525 (completed)', section: 'Payments', kind: 'page', element: createElement(Payments) },
-  page('/pool/featured/:panelId', 'Featured Panel, Details', '1645:161904', 'Pool'),
-  page('/pool/featured/:panelId/members', 'Featured Panel, Members', '1645:161816', 'Pool'),
 
   // ----- Payments (1663:103325) -----
 

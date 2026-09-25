@@ -7,11 +7,13 @@ import { AddCardPanel, CardMark, InvoiceDetailsPanel, MakePaymentPanel, PaidModa
 import { DollarCircle, Download, Eye, InvoiceIcon, MoneyMark, Plus } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { CARDS, INVOICES, PAYMENT_STATS } from '../../mock/payments'
+import { useToast } from '../../components/ui/Toast'
 
 const GLYPH = [InvoiceIcon, MoneyMark, DollarCircle]
 
 /** A saved card, with its default state and a remove link. */
 function CardTile({ c, onRemove }: { c: typeof CARDS[number]; onRemove: () => void }) {
+  const toast = useToast()
   return (
     <div className="flex flex-col gap-3 rounded-lg bg-bg-1 p-4">
       <span className="flex items-center gap-3">
@@ -26,7 +28,7 @@ function CardTile({ c, onRemove }: { c: typeof CARDS[number]; onRemove: () => vo
       <span className="flex items-center gap-3">
         {c.isDefault
           ? <span className="flex h-9 items-center rounded-sm bg-bg-2 px-3 text-text-regular text-text-disabled">Default</span>
-          : <Button variant="tertiary" size="none" className="h-9 px-3">Set As Default</Button>}
+          : <Button variant="tertiary" size="none" className="h-9 px-3" onClick={() => toast('Default card changed')}>Set As Default</Button>}
         <button type="button" onClick={onRemove}
           className="px-2 text-text-regular text-text-title hover:text-brand-primary">Remove</button>
       </span>
@@ -40,6 +42,7 @@ function CardTile({ c, onRemove }: { c: typeof CARDS[number]; onRemove: () => vo
  * cards below it. The third frame in the section is switched off.
  */
 export default function Payments() {
+  const toast = useToast()
   const [params, setParams] = useSearchParams()
   const done = params.get('tab') === 'completed'
   const [panel, setPanel] = useState(params.get('panel') ?? '')
@@ -93,7 +96,7 @@ export default function Payments() {
                   <td className={cn('h-[70px] px-[16px] text-text-title', done ? 'text-body-medium' : 'text-body-regular')}>{r.amount}</td>
                   <td className="h-[70px] px-[16px]">
                     <span className="flex items-center justify-end gap-3">
-                      <button type="button" aria-label="Download invoice"
+                      <button type="button" aria-label="Download invoice" onClick={() => toast('Invoice downloaded')}
                         className="flex h-9 w-9 items-center justify-center rounded-sm border-1 border-stroke-input text-text-subtitle hover:text-text-title">
                         <Download className="h-[18px] w-[18px]" />
                       </button>

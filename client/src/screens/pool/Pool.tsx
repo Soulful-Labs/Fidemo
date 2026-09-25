@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import Tabs from '../../components/ui/Tabs'
@@ -9,6 +9,7 @@ import { InvitePanel, ReviewsPanel, SavePanel } from './PoolPanels'
 import { DeleteModal, SentModal } from './PoolModals'
 import FilterRail, { PanelTile } from './poolBits'
 import { Close, Plus, Search } from '../../components/ui/icons'
+import { useToast } from '../../components/ui/Toast'
 import { cn } from '../../lib/cn'
 import { FEATURED_CATEGORIES, FEATURED_PANELS, MY_PANELS, POOL_CHIPS, POOL_PEOPLE, POOL_RESULTS, POOL_SEARCH } from '../../mock/pool'
 
@@ -19,6 +20,8 @@ import { FEATURED_CATEGORIES, FEATURED_PANELS, MY_PANELS, POOL_CHIPS, POOL_PEOPL
  * one more state of its own.
  */
 export default function Pool() {
+  const nav = useNavigate()
+  const toast = useToast()
   const [params, setParams] = useSearchParams()
   const panels = params.get('view') === 'panels'
   const featured = params.get('sub') === 'featured'
@@ -35,6 +38,7 @@ export default function Pool() {
             onChange={(k) => set('view', k)} className="w-[343px] justify-between"
             items={[{ key: 'pool', label: 'Participants Pool' }, { key: 'panels', label: 'Micro-Panels' }]} />
           <Button variant={panels ? 'primary' : 'tertiary'} size="none" className="h-12 px-4"
+            onClick={() => nav('/pool/panels/new')}
             leftIcon={<Plus className="h-5 w-5" />}>
             <span className="text-body-medium">Create Micro-panel</span>
           </Button>
@@ -44,7 +48,8 @@ export default function Pool() {
           <>
             <div className="mt-4 flex h-[62px] items-center justify-between gap-4 rounded-lg border-1 border-stroke-input bg-bg-1 px-4">
               <span className="text-body-regular text-text-body">{POOL_SEARCH}</span>
-              <Button variant="secondary" size="none" className="h-10 px-4" leftIcon={<Search className="h-4 w-4" />}>
+              <Button variant="secondary" size="none" className="h-10 px-4" onClick={() => toast('Filters applied')}
+                leftIcon={<Search className="h-4 w-4" />}>
                 <span className="text-body-medium">Find and Filter</span>
               </Button>
             </div>

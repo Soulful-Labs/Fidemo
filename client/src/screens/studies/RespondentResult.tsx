@@ -11,6 +11,7 @@ import { CheckCircle, Clock, Close, DiaryBookIcon, NoteIcon, SurveyIcon } from '
 import { cn } from '../../lib/cn'
 import { DIARY_DAYS, RESPONDENT, SCREENER_ANSWERS } from '../../mock/respondent'
 import { managedStudy } from '../../mock/studies'
+import { useToast } from '../../components/ui/Toast'
 
 type Tab = 'screener' | 'result' | 'activity'
 
@@ -42,6 +43,7 @@ function StudyStrip({ s }: { s: ReturnType<typeof managedStudy> }) {
  * (1627:102694, 1627:102902). Everything else about the screen is shared.
  */
 export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
+  const toast = useToast()
   const { id } = useParams()
   const nav = useNavigate()
   const [params] = useSearchParams()
@@ -136,8 +138,8 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                       </p>
                       <span className="flex items-center gap-3">
                         <Button variant="ghost" size="none" className="h-12 w-[154px] bg-[#fee9e7] text-[#e33a38] hover:text-[#e33a38]"
-                          leftIcon={<Close className="h-4 w-4" />}>Disqualify</Button>
-                        <Button size="none" className="h-12 w-[154px]" leftIcon={<CheckCircle className="h-4 w-4" />}>Qualify</Button>
+                          onClick={() => toast('Respondent disqualified')} leftIcon={<Close className="h-4 w-4" />}>Disqualify</Button>
+                        <Button size="none" className="h-12 w-[154px]" onClick={() => toast('Respondent qualified')} leftIcon={<CheckCircle className="h-4 w-4" />}>Qualify</Button>
                       </span>
                     </>
                   )}
@@ -160,7 +162,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                       </p>
                       <span className="flex items-center gap-3">
                         <Button variant="tertiary" size="none" className="h-11 px-4" onClick={() => setNoShow('one')} leftIcon={<Close className="h-4 w-4" />}>Mark No-show</Button>
-                        <Button variant="secondary" size="none" className="h-11 px-4" leftIcon={<CheckCircle className="h-4 w-4" />}>Mark Completed</Button>
+                        <Button variant="secondary" size="none" className="h-11 px-4" onClick={() => toast('Marked completed')} leftIcon={<CheckCircle className="h-4 w-4" />}>Mark Completed</Button>
                       </span>
                     </>
                   )}

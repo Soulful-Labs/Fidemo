@@ -7,6 +7,7 @@ import { cn } from '../../lib/cn'
 import { BILL, BILLING, BILLING_TOTAL } from '../../mock/pay'
 import type { BillingRow } from '../../mock/pay'
 import { managedStudy } from '../../mock/studies'
+import { useToast } from '../../components/ui/Toast'
 
 /** One invoice line, on the white card this screen draws it in. */
 function Line({ r, last }: { r: BillingRow; last?: boolean }) {
@@ -54,6 +55,7 @@ function Fig({ label, value, suffix }: { label: string; value: string; suffix?: 
  * Study from the top bar, and pairs the invoice with a card form.
  */
 export default function BillPayment() {
+  const toast = useToast()
   const { id } = useParams()
   const s = managedStudy(id)
   const c = BILL.card
@@ -128,7 +130,7 @@ export default function BillPayment() {
                 <Field label="Zip Code" value={c.zip} className="w-[259px]" />
               </div>
             </div>
-            <Button size="none" className="mt-[15px] h-12 w-full"><span className="text-body-medium">{c.cta}</span></Button>
+            <Button size="none" className="mt-[15px] h-12 w-full" onClick={() => toast(`${c.cta} sent`)}><span className="text-body-medium">{c.cta}</span></Button>
             <ul className="flex flex-col pt-4">
               {BILL.notes.map((n) => (
                 <li key={n.text} className="flex gap-2 text-text-regular leading-5 text-text-subtitle">

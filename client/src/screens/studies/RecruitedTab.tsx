@@ -11,6 +11,7 @@ import { ScoreCell, StatusPill, Th } from '../../components/client/RespondentTab
 import { Calendar, ChevronRight, Clock, VideoIcon } from '../../components/ui/icons'
 import { APPLICATIONS, GROUP_SESSIONS, SCHEDULED } from '../../mock/recruiting'
 import { managedStudy } from '../../mock/studies'
+import { useToast } from '../../components/ui/Toast'
 
 /**
  * Recruited (1627:96535). The study type changes what this tab is: a survey
@@ -19,6 +20,7 @@ import { managedStudy } from '../../mock/studies'
  * sessions themselves (1627:104269).
  */
 export default function RecruitedTab() {
+  const toast = useToast()
   const { id } = useParams()
   const [params] = useSearchParams()
   const s = managedStudy(id)
@@ -65,7 +67,7 @@ export default function RecruitedTab() {
                     </span>
                   </div>
                   <div className="flex flex-col items-end justify-between gap-6">
-                    <Button variant="secondary" size="none" className="h-[38px] px-4"
+                    <Button variant="secondary" size="none" className="h-[38px] px-4" onClick={() => toast('Participants list is stage two')}
                       rightIcon={<ChevronRight className="h-4 w-4" />}>View Participants</Button>
                     <span className="flex -space-x-1.5">
                       {g.participants.map((a, i) => (
@@ -101,7 +103,7 @@ export default function RecruitedTab() {
                                 {r.day} <span className="text-text-body">&bull;</span> {r.time}
                               </span>
                               {r.joinable && (
-                                <Button size="none" className="h-[38px] px-4" leftIcon={<VideoIcon className="h-4 w-4" />}>Join Now</Button>
+                                <Button size="none" className="h-[38px] px-4" onClick={() => toast('Joining the call')} leftIcon={<VideoIcon className="h-4 w-4" />}>Join Now</Button>
                               )}
                             </span>
                           </td>

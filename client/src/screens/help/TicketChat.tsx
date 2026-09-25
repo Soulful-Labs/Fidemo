@@ -7,6 +7,7 @@ import { MarkSolvedModal } from './HelpPanels'
 import { ChevronLeft, Info, LinkIcon, Star } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { THREAD } from '../../mock/help'
+import { useToast } from '../../components/ui/Toast'
 
 /** A bubble and the time under it, left for support and right for the client. */
 function Bubble({ mine, children, at, after }: {
@@ -29,6 +30,7 @@ function Bubble({ mine, children, at, after }: {
  * whether the composer is drawn at all. A solved ticket cannot be replied to.
  */
 export default function TicketChat() {
+  const toast = useToast()
   const nav = useNavigate()
   const [params] = useSearchParams()
   const solved = params.get('state') === 'solved'
@@ -97,14 +99,14 @@ export default function TicketChat() {
 
           {!solved && (
             <div className="flex h-20 shrink-0 items-center gap-4 border-t-1 border-stroke-1 px-4">
-              <button type="button" aria-label="Attach a file"
+              <button type="button" aria-label="Attach a file" onClick={() => toast('Attachment added')}
                 className="flex h-12 w-12 shrink-0 items-center justify-center rounded-sm border-1 border-stroke-input text-text-subtitle hover:text-text-title">
                 <LinkIcon className="h-5 w-5" />
               </button>
               <span className="flex h-12 flex-1 items-center rounded-sm border-1 border-stroke-input px-4 text-body-regular text-text-body">
                 {t.composer}
               </span>
-              <Button size="none" className="h-12 w-[103px]" leftIcon={<Star className="h-4 w-4" />}>
+              <Button size="none" className="h-12 w-[103px]" onClick={() => toast('Message sent')} leftIcon={<Star className="h-4 w-4" />}>
                 <span className="text-body-medium">Send</span>
               </Button>
             </div>

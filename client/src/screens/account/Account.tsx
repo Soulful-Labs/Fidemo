@@ -8,6 +8,7 @@ import { ChangePasswordModal, DeactivateModal, LogoutModal, OutcomeModal } from 
 import { Check, CheckCircle, ChevronDown, ChevronRight, Star, StarFilled, Trash, UsersIcon, VerifiedMark } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { CERTIFICATE, CLIENT_RATING, CLIENT_REVIEWS, EMAIL_PREFS, PROFILE_FIELDS } from '../../mock/account'
+import { useToast } from '../../components/ui/Toast'
 
 const NAV = [
   { key: 'profile', label: 'Profile' },
@@ -52,6 +53,7 @@ function Stars({ n }: { n: number }) {
  * the fifth item and raises a dialog rather than changing the column.
  */
 export default function Account() {
+  const toast = useToast()
   const [params, setParams] = useSearchParams()
   const tab = params.get('tab') ?? 'profile'
   const [modal, setModal] = useState(params.get('modal') ?? '')
@@ -88,7 +90,7 @@ export default function Account() {
                     {b.fields.map((f) => <Field key={f.label} {...f} />)}
                   </div>
                 ))}
-                <Button fullWidth className="mt-8 h-12 text-body-medium">Save Changes</Button>
+                <Button fullWidth className="mt-8 h-12 text-body-medium" onClick={() => toast('Saved')}>Save Changes</Button>
               </>
             )}
 

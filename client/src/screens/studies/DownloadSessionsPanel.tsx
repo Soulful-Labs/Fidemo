@@ -2,6 +2,7 @@ import SidePanel from '../../components/ui/SidePanel'
 import Button from '../../components/ui/Button'
 import { Download } from '../../components/ui/icons'
 import { SESSION_FILES } from '../../mock/pay'
+import { useToast } from '../../components/ui/Toast'
 
 /**
  * Download Sessions Results (1627:110569 in-person group, 1627:107040 group
@@ -11,6 +12,7 @@ import { SESSION_FILES } from '../../mock/pay'
 export default function DownloadSessionsPanel({
   open, onClose, artefact = 'Notes',
 }: { open: boolean; onClose: () => void; artefact?: string }) {
+  const toast = useToast()
   return (
     <SidePanel open={open} onClose={onClose} title="Download Sessions Results"
       headerClassName="h-14 border-b-1 border-bgAlt-2" bodyClassName="flex flex-col gap-[15px] p-4"
@@ -25,7 +27,7 @@ export default function DownloadSessionsPanel({
               {s.participants} <span className="px-1">&bull;</span> {artefact}
             </span>
           </span>
-          <Button size="none" className="h-[38px] px-4" leftIcon={<Download className="h-4 w-4" />}>
+          <Button size="none" className="h-[38px] px-4" onClick={() => toast('Session files downloaded')} leftIcon={<Download className="h-4 w-4" />}>
             Download Files
           </Button>
         </div>

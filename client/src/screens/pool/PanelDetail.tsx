@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import RespondentCard from '../../components/client/RespondentCard'
@@ -86,6 +86,7 @@ function Criteria({ created }: { created?: boolean }) {
  * drops Eligible Matches, Launch Study and the kebab.
  */
 export default function PanelDetail({ featured }: { featured?: boolean }) {
+  const nav = useNavigate()
   const [params, setParams] = useSearchParams()
   const d = featured ? PANEL_DETAIL.featured : PANEL_DETAIL.mine
   const tab = params.get('tab') ?? 'members'
@@ -105,7 +106,7 @@ export default function PanelDetail({ featured }: { featured?: boolean }) {
               <Button variant="secondary" size="row" onClick={() => setSent(true)}>Invite All To Study</Button>
               {!featured && (
                 <>
-                  <Button variant="tertiary" size="row">Launch Study</Button>
+                  <Button variant="tertiary" size="row" onClick={() => nav('/studies/create/about')}>Launch Study</Button>
                   <span className="flex h-[38px] w-[38px] items-center justify-center rounded-sm border-1 border-stroke-input text-text-subtitle">
                     <MoreVertical className="h-4 w-4" />
                   </span>
@@ -155,7 +156,7 @@ export default function PanelDetail({ featured }: { featured?: boolean }) {
                   className="gap-2.5 px-4 pb-2 pt-4"
                   saveable={tab === 'members'}
                   actions={tab === 'members'
-                    ? <Button variant="tertiary" size="none" className="h-11 flex-1">Invite To Study</Button>
+                    ? <Button variant="tertiary" size="none" className="h-11 flex-1" onClick={() => setSent(true)}>Invite To Study</Button>
                     : <AddToPanel />} />
               ))}
             </div>
