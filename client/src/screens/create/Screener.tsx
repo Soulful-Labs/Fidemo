@@ -25,6 +25,23 @@ const GRIP = (
   </span>
 )
 
+/** Workflow step 28: "The three questions that decide eligibility are asked first." */
+export const PRESCREENER_QUESTIONS = 3
+
+/**
+ * The band that separates the two stages. No Figma frame draws it — the
+ * Screener step is one flat list of questions — so it is built from the
+ * step's own divider and label rules and flagged for the designer.
+ */
+function StageBand({ label, help }: { label: string; help: string }) {
+  return (
+    <div className="flex flex-col gap-0.5 border-t-1 border-stroke-2 pb-3 pl-7 pt-4 first:border-t-0 first:pt-0">
+      <p className="text-text-large uppercase tracking-[0.04em] text-text-subtitle">{label}</p>
+      <p className="text-text-regular text-text-subtitle">{help}</p>
+    </div>
+  )
+}
+
 /** The 38px boxes every row of this step is built from. */
 function Box({ value, placeholder, onChange, className, muted }: {
   value?: string; placeholder?: string; onChange?: (v: string) => void; className?: string; muted?: boolean
@@ -247,7 +264,16 @@ export default function Screener() {
           </div>
 
           <div className="flex flex-col pl-1 pt-[18px]">
-            {draft.questions.map((q, i) => <QuestionBlock key={q.id} q={q} index={i} />)}
+            {draft.questions.map((q, i) => (
+              <div key={q.id}>
+                {/* Workflow step 28, which no frame draws: the three questions
+                    that decide eligibility are asked first, and only those who
+                    pass see the full screener. */}
+                {i === 0 && <StageBand label="Eligibility pre-screener" help="The three questions that decide who may continue. Answers are pre-set, so nothing is reviewed by hand." />}
+                {i === PRESCREENER_QUESTIONS && <StageBand label="Full screener" help="Only participants who pass the pre-screener are asked these. A borderline answer is held for review rather than rejected." />}
+                <QuestionBlock q={q} index={i} />
+              </div>
+            ))}
           </div>
 
           <div className="pl-7">

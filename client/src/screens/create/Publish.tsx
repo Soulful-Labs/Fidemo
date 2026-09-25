@@ -7,6 +7,7 @@ import { useDraft } from '../../mock/createStore'
 import CreateShell from './CreateShell'
 import BreakdownPanel from './BreakdownPanel'
 import { useToast } from '../../components/ui/Toast'
+import { useStudies } from '../../mock/store'
 
 const FORM = (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
@@ -63,14 +64,35 @@ export default function Publish() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const { draft } = useDraft()
+  const { submitStudy } = useStudies()
   const [breakdown, setBreakdown] = useState(false)
   const ready = params.get('state') === 'ready'
+
+  /**
+   * Workflow steps 7 and 11, which the frame already agrees with: Publish
+   * Study submits, it does not go live. The Published frame says so in its
+   * own words, "Your study has been summited for review!". The study is
+   * created `in_review` and the team takes it to recruiting.
+   */
+  const publish = () => {
+    submitStudy({
+      title: draft.title || 'Untitled study',
+      description: draft.description,
+      type: draft.type === 'video_call' && draft.groupVideo ? 'group_video_call'
+        : draft.type === 'in_person' && draft.groupInPerson ? 'in_person_group'
+        : draft.type,
+      required: Number(draft.participants) || 0,
+      incentive: draft.incentive,
+      duration: `${draft.duration} mins`,
+    })
+    navigate('/studies/create/published')
+  }
 
   return (
     <CreateShell step="publish" action={
       <>
         <Button variant="tertiary" size="row" onClick={() => navigate('/studies/drafts')}>Save Draft &amp; Exit</Button>
-        <Button size="row" disabled={!ready} onClick={() => navigate('/studies/create/published')}>Publish Study</Button>
+        <Button size="row" disabled={!ready} onClick={publish}>Publish Study</Button>
       </>
     }>
       <div className="flex items-start gap-12 rounded-lg bg-bg-0 p-6">

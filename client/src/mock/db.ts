@@ -226,7 +226,7 @@ function participants(counts: {
   return out
 }
 
-const RATES = { platformFee: 100, recruitingPer: 20, incentivePer: 100, moderationPer: 10 }
+export const RATES = { platformFee: 100, recruitingPer: 20, incentivePer: 100, moderationPer: 10 }
 
 /**
  * The six studies the Studies frames draw, now carrying their people. The

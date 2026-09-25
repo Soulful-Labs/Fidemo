@@ -8,7 +8,7 @@ import Tag from '../../components/ui/Tag'
 import { AskSupportPanel, SentSuccessModal } from './HelpPanels'
 import { ChevronDown, ChevronRight, MessageIcon, Search } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import { DIRECT_HELP, FAQS, TICKETS } from '../../mock/help'
+import { DIRECT_HELP, REPLY_TIMES, FAQS, TICKETS } from '../../mock/help'
 
 /** One question, open or closed. The frame draws the first one open. */
 function Faq({ q, a, open, onToggle }: { q: string; a?: string; open?: boolean; onToggle: () => void }) {
@@ -34,6 +34,10 @@ function DirectHelp({ wide, onAsk }: { wide?: boolean; onAsk: () => void }) {
         <span className="flex min-w-0 flex-1 flex-col gap-2">
           <span className="text-title-s leading-[22px] text-text-title">{DIRECT_HELP.title}</span>
           <span className="text-text-regular text-text-subtitle">{DIRECT_HELP.body}</span>
+          {/* Step 56's reply time. No frame draws one anywhere in Help. */}
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-text-regular text-brand-secondary">
+            {REPLY_TIMES.short}
+          </span>
         </span>
         <Button size="row" onClick={onAsk}>{DIRECT_HELP.cta}</Button>
       </div>
@@ -43,6 +47,8 @@ function DirectHelp({ wide, onAsk }: { wide?: boolean; onAsk: () => void }) {
     <aside className="h-fit w-[304px] shrink-0 rounded-lg bg-bgAlt-1 p-4">
       <p className="text-title-s leading-[25px] text-text-title">{DIRECT_HELP.title}</p>
       <p className="pt-2 text-text-regular leading-5 text-text-subtitle">{DIRECT_HELP.body}</p>
+      <p className="pt-2 text-text-regular leading-5 text-brand-secondary">{REPLY_TIMES.client}</p>
+      <p className="text-text-regular leading-5 text-text-subtitle">{REPLY_TIMES.money}</p>
       <Button size="row" className="mt-4" onClick={onAsk}>{DIRECT_HELP.cta}</Button>
     </aside>
   )

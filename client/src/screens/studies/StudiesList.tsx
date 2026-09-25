@@ -148,7 +148,18 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
                   <tr key={s.id} className="border-b-1 border-stroke-input last:border-b-0 hover:bg-bg-1">
                     {COLUMNS[tab].map((c) => (
                       <td key={c.key} className="h-row px-[22px] align-middle text-body-regular text-text-title">
-                        {c.key === 'name' && <button type="button" onClick={() => open(s)} className="text-left hover:text-brand-primary">{s.name}</button>}
+                        {c.key === 'name' && (
+                          <span className="flex items-center gap-2">
+                            <button type="button" onClick={() => open(s)} className="text-left hover:text-brand-primary">{s.name}</button>
+                            {/* No frame draws this pill: the Drafts table has no status
+                                column, and a study waiting on the team is not a draft. */}
+                            {s.state === 'in_review' && (
+                              <span className="inline-flex h-7 shrink-0 items-center rounded-full bg-yellow-30 px-[14px] text-text-regular text-brand-primary">
+                                In Review
+                              </span>
+                            )}
+                          </span>
+                        )}
                         {c.key === 'type' && <StudyTypeTag type={s.type} />}
                         {c.key === 'created' && <span className="whitespace-nowrap text-text-subtitle">{s.created}</span>}
                         {c.key === 'required' && String(s.required)}

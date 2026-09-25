@@ -11,8 +11,9 @@ import { CheckCircle, Clock, DollarCircle, ShieldIcon, UsersIcon } from '../../c
 import { DASHBOARD_STUDY_IDS, GREETING, RECOMMENDED } from '../../mock/dashboard'
 import RespondentPanel from './RespondentPanel'
 import { useStudies } from '../../mock/store'
-import { dashboardStats } from '../../lib/derive'
+import { billing, dashboardStats, rankedPool, unpaidStudies } from '../../lib/derive'
 import { studyTab } from '../../lib/lifecycle'
+import { scoreOf, tierOf } from '../../mock/db'
 
 const TILE_ICON = [Clock, CheckCircle, UsersIcon, ShieldIcon, DollarCircle]
 
@@ -48,7 +49,19 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
     .filter((s): s is NonNullable<typeof s> => Boolean(s))
     .concat(live.filter((s) => !DASHBOARD_STUDY_IDS.includes(s.id)))
     .slice(0, 3)
+  /** Step 53: "The client's screen shows a red alert on login while incentives are unpaid." */
+  const unpaid = empty ? [] : unpaidStudies(all)
+  const owed = unpaid.reduce((n, st) => n + billing(st).net, 0)
   const d = dashboardStats(empty ? [] : all)
+  /**
+   * Step 24: the pool ranked by score and tier. The frame's own nine cards,
+   * with their scores and tiers derived from the policy rather than printed.
+   */
+  const pool = rankedPool()
+  const recommended = RECOMMENDED.map((r) => {
+    const p = pool.find((x) => x.id === r.id)
+    return p ? { ...r, score: scoreOf(p), tier: tierOf(p) } : r
+  })
   const stats = [
     { label: 'Ongoing Studies', value: String(d.ongoing), tint: 'yellow' as const },
     { label: 'Completed Studies', value: String(d.completed), tint: 'yellow' as const },
@@ -64,6 +77,21 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
           <h1 className="text-title-l leading-[31px] text-text-title">{GREETING.title}</h1>
           <p className="text-body-regular text-text-subtitle">{GREETING.sub}</p>
         </div>
+
+        {unpaid.length > 0 && (
+          /* No frame draws this banner. Workflow step 53 requires it. */
+          <button type="button" onClick={() => navigate(`/studies/${unpaid[0].id}/pay`)}
+            className="mt-6 flex w-full items-center gap-3 rounded-md border-1 border-[#ffd1c7] bg-[#fff0ed] px-4 py-3 text-left">
+            <span className="flex h-2 w-2 shrink-0 rounded-full bg-[#e33a38]" />
+            <span className="flex-1 text-body-medium text-text-title">
+              ${owed.toLocaleString('en-US')} of participant incentives is unpaid
+              <span className="text-text-regular text-text-subtitle">
+                {' '}across {unpaid.length} completed {unpaid.length === 1 ? 'study' : 'studies'}
+              </span>
+            </span>
+            <span className="text-body-medium text-[#e33a38]">Settle now</span>
+          </button>
+        )}
 
         <div className="grid grid-cols-5 gap-3 pt-6">
           {stats.map((t, i) => {
@@ -92,7 +120,7 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
             <Blank line="Recommendations appear once your first study is live." cta="Browse the pool" onClick={() => navigate('/pool')} />
           ) : (
           <div className="grid grid-cols-3 gap-3 pt-2">
-            {RECOMMENDED.map((r) => (
+            {recommended.map((r) => (
               <RespondentCard key={r.id} respondent={r} saveable onView={() => setProfile(r)} />
             ))}
           </div>

@@ -51,7 +51,12 @@ export function AskSupportPanel({
 /** Sent successfully! (1663:104580), raised by Submit. */
 export function SentSuccessModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
-    <Modal open={open} onClose={onClose} title={SENT_MODAL.title} body={SENT_MODAL.body}
+    <Modal open={open} onClose={onClose} title={SENT_MODAL.title}
+      body={<>
+        {SENT_MODAL.body}
+        {/* Step 56's reply time, which the frame does not carry. */}
+        <span className="block pt-2 text-text-subtitle">{SENT_MODAL.replyTime}</span>
+      </>}
       footer={<Button fullWidth onClick={onClose}>Done</Button>}>
       <SuccessMark />
     </Modal>

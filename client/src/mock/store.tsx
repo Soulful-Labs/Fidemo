@@ -1,10 +1,18 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { RespondentState, StudyState } from '../lib/lifecycle'
 import { canMoveRespondent, canMoveStudy } from '../lib/lifecycle'
 import type { RatingState } from '../lib/policy'
-import type { Study } from './db'
-import { ALL_STUDIES } from './db'
+import type { Study, StudyReview } from './db'
+import { ALL_STUDIES, RATES } from './db'
+
+/**
+ * The one place the demo's fake delays live, so they can be changed or
+ * removed. Workflow step 7 says the team reviews a submitted study before it
+ * goes live and the Published frame promises "within 24 hours"; there is no
+ * team here, so it advances after this instead.
+ */
+export const TEAM_REVIEW_MS = 8000
 
 /**
  * The one place a state changes. Every screen reads its state from here and
@@ -31,6 +39,11 @@ interface Ctx {
   /** Step 46: the client confirms the payout list before anything leaves the account. */
   approvePayouts: (studyId: string, personIds: string[]) => Result
   setRepeatRule: (studyId: string, rule: Study['repeatRule']) => Result
+  /** Workflow step 5 and 7: the client submits a study, the team takes it live. */
+  submitStudy: (draft: {
+    title: string; description: string; type: Study['type']; required: number
+    incentive: number; duration: string; image?: string; review?: StudyReview
+  }) => string
 }
 
 const StoreCtx = createContext<Ctx | null>(null)
@@ -43,6 +56,41 @@ export function StudyProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const study = useCallback((id?: string) => studies.find((s) => s.id === id), [studies])
+
+  const submitStudy = useCallback<Ctx['submitStudy']>((draft) => {
+    const id = `st-new-${Date.now().toString(36)}`
+    const now = new Date()
+    const fmt = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ (\d{4})$/, ', $1')
+    setStudies((all) => [{
+      id,
+      name: draft.title || 'Untitled study',
+      title: draft.title || 'Untitled study',
+      breadcrumb: draft.title || 'Untitled study',
+      type: draft.type,
+      state: 'in_review',
+      industry: '', duration: draft.duration, description: draft.description,
+      image: draft.image, created: fmt, createdIso: now.toISOString().slice(0, 10),
+      daysRemaining: 0, required: draft.required, repeatRule: 'prefer_fresh',
+      rates: { ...RATES, incentivePer: draft.incentive },
+      participants: [], review: draft.review,
+    }, ...all])
+    return id
+  }, [])
+
+  /**
+   * Nothing here approves a study, so an in-review study goes live on a
+   * timer. The delay is `TEAM_REVIEW_MS`, in one place, and this is the only
+   * transition the demo makes on its own.
+   */
+  useEffect(() => {
+    const waiting = studies.filter((s) => s.state === 'in_review')
+    if (waiting.length === 0) return
+    const t = setTimeout(() => {
+      setStudies((all) => all.map((s) => (s.state === 'in_review'
+        ? { ...s, state: 'recruiting', approvedAt: new Date().toISOString() } : s)))
+    }, TEAM_REVIEW_MS)
+    return () => clearTimeout(t)
+  }, [studies])
 
   const moveStudy = useCallback<Ctx['moveStudy']>((id, to) => {
     const s = studies.find((x) => x.id === id)
@@ -118,8 +166,8 @@ export function StudyProvider({ children }: { children: ReactNode }) {
   }, [patch, studies])
 
   const value = useMemo<Ctx>(() => ({
-    studies, study, moveStudy, moveRespondent, rate, enterCode, approvePayouts, setRepeatRule,
-  }), [studies, study, moveStudy, moveRespondent, rate, enterCode, approvePayouts, setRepeatRule])
+    studies, study, moveStudy, moveRespondent, rate, enterCode, approvePayouts, setRepeatRule, submitStudy,
+  }), [studies, study, moveStudy, moveRespondent, rate, enterCode, approvePayouts, setRepeatRule, submitStudy])
 
   return <StoreCtx.Provider value={value}>{children}</StoreCtx.Provider>
 }

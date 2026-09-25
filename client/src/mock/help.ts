@@ -21,6 +21,20 @@ export const DIRECT_HELP = {
   cta: 'Contact Support',
 }
 
+/**
+ * Workflow step 56 and the internal console's Support screen. **No frame
+ * draws a reply time anywhere in this section** — no SLA, no queue position,
+ * no business hours — so these are added from the workflow and flagged.
+ *
+ * "A person replies within one working day for clients and two for
+ * participants. Anything about money, within one day."
+ */
+export const REPLY_TIMES = {
+  client: 'A person replies within one working day.',
+  money: 'Anything about money is answered within one day.',
+  short: 'Replies within one working day',
+}
+
 /** A row of the tickets list (1663:104228). */
 export interface Ticket {
   id: string
@@ -104,6 +118,8 @@ export const ASK_SUPPORT = {
 export const SENT_MODAL = {
   title: 'Sent successfully!',
   body: 'Our team and assistants will review and reach out to you shortly.',
+  /** Step 56's reply time, which the frame does not carry. */
+  replyTime: REPLY_TIMES.client,
 }
 
 /** Mark as solved? (1663:104539) is switched off; only its title is readable. */

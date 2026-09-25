@@ -139,6 +139,14 @@ export default function Audience() {
               <div className="flex flex-col gap-3.5">
                 <div className="flex flex-col gap-4 rounded-md border-1 border-stroke-input bg-bg p-4">
                   <Radio on={draft.condition === 'na'} onClick={() => set('condition', 'na')} label="N/A" />
+                  {/* The signed policy's guardrail, and workflow step 57, give a
+                      study three repeat rules: allow them, prefer fresh people,
+                      or exclude anyone who has taken part before. The frame draws
+                      the first and the third; the middle one is the policy's own
+                      wording, added here and flagged for the designer. */}
+                  <Radio on={draft.condition === 'fresh'} onClick={() => set('condition', 'fresh')}
+                    label="Prefer fresh people"
+                    sub="Repeat participants are still matched, but ranked below people new to your studies" />
                   <Radio on={draft.condition === 'never'} onClick={() => set('condition', 'never')}
                     label="Has never participated in any study with Soulful Labs (You) before"
                     sub="Turn this on to exclude people who have previously participated in your studies" />
