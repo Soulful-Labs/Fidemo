@@ -59,6 +59,24 @@ export default function SurveyComposer({
   const [questions, setQuestions] = useState<SQ[]>(
     Array.from({ length: seed }, (_, i) => ({ ...NEW(i + 1), label: dayGroup ? `Q${i + 1}` : `SQ ${i + 1}`, kind })),
   )
+  /** Adds survey questions rather than toasting; no model is wired here. */
+  const generate = () => {
+    const bank = [
+      'What did you set out to do when you opened the app?',
+      'Where did that take longer than you expected?',
+      'What would you change first?',
+    ]
+    setQuestions((qs) => [
+      ...qs,
+      ...bank.map((text, i) => ({
+        ...NEW(qs.length + i + 1),
+        label: dayGroup ? `Q${qs.length + i + 1}` : `SQ ${qs.length + i + 1}`,
+        kind,
+        text,
+      })),
+    ])
+    toast('Questions generated')
+  }
   const write = (next: SQ) => setQuestions((qs) => qs.map((q) => (q.id === next.id ? next : q)))
 
   return (
@@ -83,7 +101,7 @@ export default function SurveyComposer({
           </p>
           <div className="flex items-center justify-between gap-3">
             <Button variant="tertiary" size="row" leftIcon={<Upload className="h-4 w-4" />} onClick={() => toast('File uploaded')}>Upload File</Button>
-            <Button size="row" leftIcon={SPARKLE} onClick={() => toast('Questions generated')}>Generate</Button>
+            <Button size="row" leftIcon={SPARKLE} onClick={generate}>Generate</Button>
           </div>
         </div>
 

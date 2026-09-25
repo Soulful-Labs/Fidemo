@@ -243,6 +243,26 @@ function QuestionBlock({ q, index }: { q: Question; index: number }) {
  * per answer type, beside the participant preview.
  */
 export default function Screener() {
+  /**
+   * Generate adds screener questions, Regenerate All replaces the lot. No
+   * model here, so they come from a short bank rather than a toast.
+   */
+  const BANK = [
+    'Which of these best describes your current role?',
+    'How many years have you worked in this field?',
+    'How often do you use a product like this?',
+    'Which of these have you used in the last six months?',
+    'What is the size of the team you work in?',
+  ]
+  const generate = (all: boolean) => {
+    const start = all ? 0 : draft.questions.length
+    const made = BANK.slice(0, all ? BANK.length : 2).map((text, i) => ({
+      ...blankQuestion(`Q${start + i + 1}`),
+      text,
+    }))
+    set('questions', all ? made : [...draft.questions, ...made])
+    toast(all ? 'All questions regenerated' : 'Questions generated')
+  }
   const toast = useToast()
   const { draft, set } = useDraft()
 
@@ -273,8 +293,8 @@ export default function Screener() {
               <p className="text-text-regular text-text-subtitle">Let our AI-assitant generate questions</p>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="secondary" size="row" leftIcon={SPARKLE} onClick={() => toast('Questions generated')}>Generate</Button>
-              <Button variant="tertiary" size="row" leftIcon={SPARKLE} onClick={() => toast('All questions regenerated')}>Regenerate All</Button>
+              <Button variant="secondary" size="row" leftIcon={SPARKLE} onClick={() => generate(false)}>Generate</Button>
+              <Button variant="tertiary" size="row" leftIcon={SPARKLE} onClick={() => generate(true)}>Regenerate All</Button>
               <span className="relative flex flex-1 items-center">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true" className="absolute left-4 text-text-body">
                   <path d="M4 20h4l10-10a2.8 2.8 0 0 0-4-4L4 16v4Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />

@@ -72,6 +72,21 @@ function Radio({ on, onClick, label, sub }: { on: boolean; onClick: () => void; 
  * client/CLAUDE.md.
  */
 export default function Audience() {
+  /**
+   * Fill with AI writes a plausible audience into the step rather than
+   * toasting. There is no model here, so it fills from the study's own type
+   * and the options the pickers offer.
+   */
+  const fillWithAi = () => {
+    set('countries', ['United States of America', 'United Kingdom'])
+    set('gender', 'All Genders')
+    set('education', "Graduate or Bachelor's")
+    set('ageRanges', ['21–29', '30–39'])
+    set('roles', 'Physician, General Doctor, Nutritionist')
+    set('functions', 'Consultation')
+    set('industries', 'Healthcare, Pharma')
+    toast('Audience filled in')
+  }
   const toast = useToast()
   const { draft, set } = useDraft()
 
@@ -86,7 +101,7 @@ export default function Audience() {
               </p>
               <p className="text-text-regular text-text-subtitle">Set target audience base with AI using study context</p>
             </div>
-            <Button variant="secondary" leftIcon={SPARKLE} onClick={() => toast('Audience filled in')}>Fill with AI</Button>
+            <Button variant="secondary" leftIcon={SPARKLE} onClick={fillWithAi}>Fill with AI</Button>
           </div>
 
           <div className="flex flex-col">

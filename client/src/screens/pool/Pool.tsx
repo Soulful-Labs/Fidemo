@@ -34,6 +34,7 @@ export default function Pool() {
   const [panelSearch, setPanelSearch] = useState('')
   const [category, setCategory] = useState('All')
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [saving, setSaving] = useState<{ id: string; name: string } | null>(null)
   const panelCards = (featured ? FEATURED_PANELS : mine)
     .filter((c) => category === 'All' || c.domain === category)
     .filter((c) => {
@@ -107,7 +108,8 @@ export default function Pool() {
                 )}
                 <div className={cn('grid gap-3 pt-4', filters ? 'grid-cols-2' : 'grid-cols-3')}>
                   {people.map((p) => (
-                    <RespondentCard key={p.id} respondent={{ ...p, professionVerified: true }} saveable className="px-4 pb-2 pt-4"
+                    <RespondentCard key={p.id} respondent={{ ...p, professionVerified: true }} className="px-4 pb-2 pt-4"
+                      onSave={() => { setSaving({ id: p.id, name: p.name }); setPanel('save') }}
                       onView={() => setPanel('profile')}
                       actions={<Button variant="tertiary" size="none" className="h-11 flex-1"
                         onClick={() => setPanel('invite')}>Invite To Study</Button>} />
@@ -176,7 +178,8 @@ export default function Pool() {
       <SentModal open={panel === 'sent'} onClose={() => setPanel('')} />
       <DeleteModal open={deleting !== null} onClose={() => setDeleting(null)}
         onConfirm={() => { if (deleting) deletePanel(deleting); setDeleting(null) }} />
-      <SavePanel open={panel === 'save'} onClose={() => setPanel('')} />
+      <SavePanel open={panel === 'save'} onClose={() => setPanel('')}
+        personId={saving?.id} name={saving?.name} />
     </AppShell>
   )
 }

@@ -7,6 +7,7 @@ import { Check, ChevronLeft, DiaryBookIcon, Star, StarFilled } from '../../compo
 import { cn } from '../../lib/cn'
 import { INVITE_STUDIES, REVIEWS, SAVE_TARGETS } from '../../mock/pool'
 import { useToast } from '../../components/ui/Toast'
+import { useWorkspace } from '../../mock/workspace'
 
 /** The person a Pool panel is about, under its title bar. */
 function Person({ tight }: { tight?: boolean }) {
@@ -41,15 +42,23 @@ function Stars({ n, size = 'h-5 w-5' }: { n: number; size?: string }) {
  * reached from its "Reviews ›" link. Each entry is a study, what the client
  * wrote about the respondent, and what the respondent wrote back.
  */
-export function ReviewsPanel({ open, onClose, onBack }: { open: boolean; onClose: () => void; onBack?: () => void }) {
+export function ReviewsPanel({ open, onClose, onBack, respondent }: {
+  open: boolean; onClose: () => void; onBack?: () => void; respondent?: { id: string; name: string }
+}) {
   const toast = useToast()
+  const { panels, addToPanel } = useWorkspace()
   return (
     <SidePanel open={open} onClose={onClose} title="Profile of Ferry L." headerClassName="h-14"
       bodyClassName="flex flex-col p-0"
       footer={
         <div className="flex gap-3 [&_button]:h-12 [&_button]:flex-1 [&_button]:text-body-medium">
           <Button onClick={() => toast('Invitation sent')}>Invite To Study</Button>
-          <Button variant="secondary" onClick={() => toast('Saved to micro-panel')}>Save To Micropanel</Button>
+          <Button variant="secondary" onClick={() => {
+            const target = panels[0]
+            if (!target) { toast('Build a micro-panel first, then save people into it'); return }
+            const res = addToPanel(target.id, respondent?.id ?? '')
+            toast(res.ok ? `Saved to ${target.title}` : res.why!)
+          }}>Save To Micropanel</Button>
         </div>
       }>
       <Person />
@@ -127,22 +136,39 @@ export function InvitePanel({ open, onClose, name = 'Roma', onSent }: { open: bo
 }
 
 /** Save to micro-panel (1651:177206): pick the panel to save the respondent into. */
-export function SavePanel({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [target, setTarget] = useState(SAVE_TARGETS[0]!.id)
+export function SavePanel({ open, onClose, personId, name }: {
+  open: boolean; onClose: () => void; personId?: string; name?: string
+}) {
+  const { panels, addToPanel } = useWorkspace()
+  const toast = useToast()
+  /** The client's own panels, falling back to the frame's three when empty. */
+  const targets = panels.length > 0
+    ? panels.map((x) => ({ id: x.id, title: x.title, domain: x.domain, roles: x.roles ?? '' }))
+    : SAVE_TARGETS
+  const [target, setTarget] = useState(targets[0]?.id ?? '')
+
+  const save = () => {
+    if (!personId) { toast('Saved to micro-panel'); onClose(); return }
+    const res = addToPanel(target, personId)
+    toast(res.ok
+      ? `${name ?? 'They'} saved to ${targets.find((t) => t.id === target)?.title ?? 'the panel'}`
+      : res.why!)
+    if (res.ok) onClose()
+  }
   return (
     <SidePanel open={open} onClose={onClose} title="Save to micro-panel" headerClassName="h-14"
       bodyClassName="flex flex-col gap-3 p-4"
       footer={
         <div className="flex gap-3 [&_button]:h-12 [&_button]:flex-1 [&_button]:text-body-medium">
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={onClose}>Save</Button>
+          <Button onClick={save}>Save</Button>
         </div>
       }>
       <div className="flex flex-col gap-1">
         <p className="text-title-s leading-[22px] text-text-title">Select micro-panel to save in</p>
         <p className="text-text-regular text-text-subtitle">They won’t be notified for it</p>
       </div>
-      {SAVE_TARGETS.map((t) => (
+      {targets.map((t) => (
         <button key={t.id} type="button" onClick={() => setTarget(t.id)}
           className={cn('flex items-center gap-3 rounded-lg border-1 px-4 py-4 text-left',
           t.id === target ? 'border-cta-primary bg-yellow-30' : 'border-stroke-input hover:bg-bg-1')}>

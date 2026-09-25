@@ -48,8 +48,10 @@ export function RespondentMeta({ r }: { r: Respondent }) {
  * so they are passed in; the card itself never changes.
  */
 export default function RespondentCard({
-  respondent, actions, onView, saveable, className,
-}: { respondent: Respondent; actions?: ReactNode; onView?: () => void; saveable?: boolean; className?: string }) {
+  respondent, actions, onView, saveable, onSave, className,
+}: { respondent: Respondent; actions?: ReactNode; onView?: () => void; saveable?: boolean
+  /** The star saves them into a micro-panel; without it the card just confirms. */
+  onSave?: () => void; className?: string }) {
   const toast = useToast()
   return (
     <article className={cn('flex flex-col gap-3.5 rounded-lg bg-bg-1 p-3', className)}>
@@ -69,8 +71,8 @@ export default function RespondentCard({
             View Profile
           </Button>
         )}
-        {saveable && (
-          <button type="button" aria-label="Save to micro-panel" onClick={() => toast('Saved to micro-panel')}
+        {(saveable || onSave) && (
+          <button type="button" aria-label="Save to micro-panel" onClick={() => (onSave ? onSave() : toast('Saved to micro-panel'))}
             className="flex h-btn w-btn shrink-0 items-center justify-center rounded-sm border-1 border-cta-tertiaryStroke text-text-subtitle hover:text-text-title">
             <Star className="h-5 w-5" />
           </button>

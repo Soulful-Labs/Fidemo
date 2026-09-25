@@ -5,14 +5,24 @@ import { cn } from '../../lib/cn'
 import { ACCOUNT_DIALOGS, CHANGE_PASSWORD, DEACTIVATE } from '../../mock/account'
 import { useNavigate } from 'react-router-dom'
 import { useSession } from '../../mock/session'
+import { useState } from 'react'
+import { useToast } from '../../components/ui/Toast'
 
 /** A password box with its reveal eye, as both forms draw it. */
-function Secret({ label, placeholder }: { label: string; placeholder: string }) {
+function Secret({ label, placeholder, value, onChange }: {
+  label: string; placeholder: string; value?: string; onChange?: (v: string) => void
+}) {
+  const [reveal, setReveal] = useState(false)
   return (
     <label className="flex flex-col gap-2">
       <span className="text-text-regular text-text-subtitle">{label}</span>
-      <span className="flex h-12 items-center justify-between gap-3 rounded-sm border-1 border-stroke-input px-4 text-body-regular text-text-body">
-        {placeholder}<Eye className="h-5 w-5 text-text-subtitle" />
+      <span className="flex h-12 items-center justify-between gap-3 rounded-sm border-1 border-stroke-input px-4 text-body-regular">
+        <input value={value ?? ''} onChange={(e) => onChange?.(e.target.value)} placeholder={placeholder}
+          type={reveal ? 'text' : 'password'}
+          className="min-w-0 flex-1 bg-transparent text-body-regular text-text-title outline-none placeholder:text-text-body" />
+        <button type="button" aria-label={reveal ? 'Hide' : 'Show'} onClick={() => setReveal((r) => !r)}>
+          <Eye className={cn('h-5 w-5', reveal ? 'text-text-title' : 'text-text-subtitle')} />
+        </button>
       </span>
     </label>
   )
@@ -49,14 +59,30 @@ export function ChangePasswordModal({
   open, onClose, onDone,
 }: { open: boolean; onClose: () => void; onDone?: () => void }) {
   const c = CHANGE_PASSWORD
+  const { account, update } = useSession()
+  const toast = useToast()
+  const [current, setCurrent] = useState('')
+  const [next, setNext] = useState('')
+  const [confirm, setConfirm] = useState('')
+
+  /** The rule the frame prints under the field, enforced. */
+  const submit = () => {
+    if (account && current !== account.password) { toast('That is not your current password'); return }
+    if (next.length < 8) { toast('Use at least 8 characters'); return }
+    if (next !== confirm) { toast('The two new passwords do not match'); return }
+    update({ password: next })
+    setCurrent(''); setNext(''); setConfirm('')
+    onDone?.()
+  }
+
   return (
-    <FormDialog open={open} onClose={onClose} title={c.title} onSubmit={onDone}>
-      <Secret {...c.fields[0]} />
+    <FormDialog open={open} onClose={onClose} title={c.title} onSubmit={submit}>
+      <Secret {...c.fields[0]} value={current} onChange={setCurrent} />
       <div className="flex flex-col gap-2">
-        <Secret {...c.fields[1]} />
+        <Secret {...c.fields[1]} value={next} onChange={setNext} />
         <p className="text-text-regular text-text-title">{c.rule}</p>
       </div>
-      <Secret {...c.confirm} />
+      <Secret {...c.confirm} value={confirm} onChange={setConfirm} />
     </FormDialog>
   )
 }
@@ -65,14 +91,24 @@ export function ChangePasswordModal({
 export function DeactivateModal({
   open, onClose, onDone,
 }: { open: boolean; onClose: () => void; onDone?: () => void }) {
+  const { account } = useSession()
+  const toast = useToast()
+  const [password, setPassword] = useState('')
+
+  const submit = () => {
+    if (account && password !== account.password) { toast('That is not your password'); return }
+    setPassword('')
+    onDone?.()
+  }
+
   return (
-    <FormDialog open={open} onClose={onClose} title={DEACTIVATE.title} onSubmit={onDone}>
+    <FormDialog open={open} onClose={onClose} title={DEACTIVATE.title} onSubmit={submit}>
       <div className="flex flex-col gap-2 border-t-1 border-stroke-1 pt-4">
         <p className="text-text-large text-text-title underline">{DEACTIVATE.note}</p>
         <p className="text-text-regular leading-5 text-text-title">{DEACTIVATE.body}</p>
         <p className="pt-2 text-text-regular text-text-subtitle">{DEACTIVATE.ask}</p>
       </div>
-      <Secret {...DEACTIVATE.field} />
+      <Secret {...DEACTIVATE.field} value={password} onChange={setPassword} />
     </FormDialog>
   )
 }
