@@ -62,6 +62,8 @@ export default function Account() {
   const tab = params.get('tab') ?? 'profile'
   const { account, update } = useSession()
   const reviews = useSeeded(CLIENT_REVIEWS)
+  /** Which email notifications have been switched off. */
+  const [emailOff, setEmailOff] = useState<string[]>([])
   const [form, setForm] = useState({
     name: account?.name ?? '',
     email: account?.email ?? '',
@@ -200,7 +202,8 @@ export default function Account() {
                       <span className="text-body-regular text-text-title">{p.label}</span>
                       <span className="text-text-regular text-text-subtitle">{p.sub}</span>
                     </span>
-                    <Toggle checked onChange={() => undefined} />
+                    <Toggle checked={!emailOff.includes(p.label)}
+                      onChange={(v) => setEmailOff((o) => (v ? o.filter((x) => x !== p.label) : [...o, p.label]))} />
                   </div>
                 ))}
                 <p className="pt-6 text-title-s leading-[22px] text-text-subtitle">Manage Account</p>

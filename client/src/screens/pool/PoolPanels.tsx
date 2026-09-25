@@ -1,4 +1,5 @@
 import SidePanel from '../../components/ui/SidePanel'
+import { useState } from 'react'
 import Button from '../../components/ui/Button'
 import StudyTypeTag from '../../components/client/StudyTypeTag'
 import { Avatar } from '../../components/client/RespondentCard'
@@ -85,6 +86,8 @@ export function ReviewsPanel({ open, onClose, onBack }: { open: boolean; onClose
 
 /** Invite To Study (1645:163182): pick which live study the invitation is for. */
 export function InvitePanel({ open, onClose, name = 'Roma', onSent }: { open: boolean; onClose: () => void; name?: string; onSent?: () => void }) {
+  /** The frame draws the first study chosen; now it is a choice. */
+  const [study, setStudy] = useState(INVITE_STUDIES[0]!.id)
   return (
     <SidePanel open={open} onClose={onClose} title={`Invite ${name} To Study`} headerClassName="h-14"
       bodyClassName="flex flex-col gap-3 p-4"
@@ -98,9 +101,10 @@ export function InvitePanel({ open, onClose, name = 'Roma', onSent }: { open: bo
         <p className="text-title-s leading-[22px] text-text-title">Select active studies</p>
         <p className="text-text-regular text-text-subtitle">An invitation will be sent to apply for selected studies</p>
       </div>
-      {INVITE_STUDIES.map((s, i) => (
-        <div key={s.id} className={cn('flex items-center gap-3 rounded-lg border-1 p-3',
-          i === 0 ? 'border-cta-primary bg-yellow-30' : 'border-stroke-input')}>
+      {INVITE_STUDIES.map((s) => (
+        <button key={s.id} type="button" onClick={() => setStudy(s.id)}
+          className={cn('flex items-center gap-3 rounded-lg border-1 p-3 text-left',
+          s.id === study ? 'border-cta-primary bg-yellow-30' : 'border-stroke-input hover:bg-bg-1')}>
           <img src={s.image} alt="" className="h-[52px] w-[72px] shrink-0 rounded-md object-cover" />
           <span className="flex min-w-0 flex-1 flex-col gap-2">
             <span className="truncate text-body-medium text-text-title">{s.title}</span>
@@ -111,12 +115,12 @@ export function InvitePanel({ open, onClose, name = 'Roma', onSent }: { open: bo
               </span>
             </span>
           </span>
-          {i === 0 && (
+          {s.id === study && (
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cta-primary text-cta-primaryText">
               <Check className="h-4 w-4" />
             </span>
           )}
-        </div>
+        </button>
       ))}
     </SidePanel>
   )
@@ -124,6 +128,7 @@ export function InvitePanel({ open, onClose, name = 'Roma', onSent }: { open: bo
 
 /** Save to micro-panel (1651:177206): pick the panel to save the respondent into. */
 export function SavePanel({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [target, setTarget] = useState(SAVE_TARGETS[0]!.id)
   return (
     <SidePanel open={open} onClose={onClose} title="Save to micro-panel" headerClassName="h-14"
       bodyClassName="flex flex-col gap-3 p-4"
@@ -137,9 +142,10 @@ export function SavePanel({ open, onClose }: { open: boolean; onClose: () => voi
         <p className="text-title-s leading-[22px] text-text-title">Select micro-panel to save in</p>
         <p className="text-text-regular text-text-subtitle">They won’t be notified for it</p>
       </div>
-      {SAVE_TARGETS.map((t, i) => (
-        <div key={t.id} className={cn('flex items-center gap-3 rounded-lg border-1 px-4 py-4',
-          i === 0 ? 'border-cta-primary bg-yellow-30' : 'border-stroke-input')}>
+      {SAVE_TARGETS.map((t) => (
+        <button key={t.id} type="button" onClick={() => setTarget(t.id)}
+          className={cn('flex items-center gap-3 rounded-lg border-1 px-4 py-4 text-left',
+          t.id === target ? 'border-cta-primary bg-yellow-30' : 'border-stroke-input hover:bg-bg-1')}>
           <span className="flex min-w-0 flex-1 flex-col gap-2">
             <span className="text-title-s leading-[22px] text-text-title">{t.title}</span>
             <span className="flex min-w-0 items-center gap-2 text-text-regular text-text-subtitle">
@@ -147,12 +153,12 @@ export function SavePanel({ open, onClose }: { open: boolean; onClose: () => voi
               <span className="truncate">&#9878; {t.roles}</span>
             </span>
           </span>
-          {i === 0 && (
+          {t.id === target && (
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cta-primary text-cta-primaryText">
               <Check className="h-4 w-4" />
             </span>
           )}
-        </div>
+        </button>
       ))}
     </SidePanel>
   )

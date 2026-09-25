@@ -153,6 +153,12 @@ the loop.
   and the card brand marks.
 - **No stethoscope glyph** exists in the icon set, so the roles chip in Pool
   uses the nearest available mark.
+- **The Pool opens pre-filtered in the frame.** Six chips are already on —
+  Physician, Healthcare, Pharma, Fitness & Nutrition, New York US, English —
+  narrowing 260 people to 208, with nothing saying why and no way to take any
+  of them off. Now that the rail works, the build opens the pool unfiltered
+  and every chip removes itself. If the frame meant those to be a saved
+  default, it needs a control that says so.
 
 ---
 
