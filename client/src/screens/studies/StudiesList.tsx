@@ -9,8 +9,10 @@ import Tabs from '../../components/ui/Tabs'
 import { MoreVertical } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import type { StudyType } from '../../lib/studyTypes'
-import { COMPLETED, DRAFTS, ONGOING } from '../../mock/studies'
-import type { StudyRow } from '../../mock/studies'
+import type { Study } from '../../mock/db'
+import { useStudies } from '../../mock/store'
+import { counts } from '../../lib/derive'
+import { studyTab } from '../../lib/lifecycle'
 import { CompletedMenu, DeleteStudyModal, DraftMenu, OngoingMenu, PauseStudyModal, StudyTypeMenu } from './StudyMenus'
 
 export type StudiesTab = 'ongoing' | 'drafts' | 'completed'
@@ -22,7 +24,7 @@ const TABS = [
 ]
 
 /** Which columns each tab draws, and in which order. */
-const COLUMNS: Record<StudiesTab, { key: keyof StudyRow | 'menu'; header: string; sortable?: boolean; width?: string }[]> = {
+const COLUMNS: Record<StudiesTab, { key: string; header: string; sortable?: boolean; width?: string }[]> = {
   ongoing: [
     { key: 'name', header: 'Study Name', width: '36%' },
     { key: 'type', header: 'Type', width: '15.5%' },
@@ -48,8 +50,6 @@ const COLUMNS: Record<StudiesTab, { key: keyof StudyRow | 'menu'; header: string
   ],
 }
 
-const SOURCE: Record<StudiesTab, StudyRow[]> = { ongoing: ONGOING, drafts: DRAFTS, completed: COMPLETED }
-
 /** "30 Jul, 2026" sorts by its real date, not its text. */
 const asDate = (created: string) => new Date(created.replace(',', '')).getTime()
 
@@ -67,18 +67,29 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
   const [typeMenu, setTypeMenu] = useState(false)
   const [rowMenu, setRowMenu] = useState<string | null>(null)
   const [sort, setSort] = useState<{ key: string; dir: 1 | -1 } | null>(null)
-  const [pausing, setPausing] = useState<StudyRow | null>(null)
-  const [deleting, setDeleting] = useState<StudyRow | null>(null)
+  const [pausing, setPausing] = useState<Study | null>(null)
+  const [deleting, setDeleting] = useState<Study | null>(null)
+  const { studies } = useStudies()
 
+  /** Which tab a study is under is its state's business, never a separate list. */
   const rows = useMemo(() => {
-    const list = SOURCE[tab].filter((s) => types.length === 0 || types.includes(s.type))
+    const list = studies
+      .filter((s) => studyTab(s.state) === tab)
+      .filter((s) => types.length === 0 || types.includes(s.type))
     if (!sort) return list
+    const figure = (s: Study, key: string) => {
+      const c = counts(s)
+      if (key === 'required') return s.required
+      if (key === 'qualified') return c.everQualified
+      if (key === 'completed') return c.completed
+      return 0
+    }
     return [...list].sort((a, b) => {
-      const va = sort.key === 'created' ? asDate(a.created) : Number(a[sort.key as keyof StudyRow] ?? 0)
-      const vb = sort.key === 'created' ? asDate(b.created) : Number(b[sort.key as keyof StudyRow] ?? 0)
+      const va = sort.key === 'created' ? asDate(a.created) : figure(a, sort.key)
+      const vb = sort.key === 'created' ? asDate(b.created) : figure(b, sort.key)
       return (va - vb) * sort.dir
     })
-  }, [tab, types, sort])
+  }, [studies, tab, types, sort])
 
   const toggleSort = (key: string) =>
     setSort((s) => (s?.key === key ? (s.dir === 1 ? { key, dir: -1 } : null) : { key, dir: 1 }))
@@ -89,7 +100,7 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
     return [...rows].sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id))
   }, [rows])
 
-  const open = (s: StudyRow) => navigate(tab === 'ongoing' ? `/studies/${s.id}` : `/studies/${s.id}/manage`)
+  const open = (s: Study) => navigate(tab === 'ongoing' ? `/studies/${s.id}` : `/studies/${s.id}/manage`)
 
   return (
     <AppShell crumbs={[{ label: 'Studies' }]}>
@@ -112,12 +123,7 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
             {cards.map((s) => (
               <StudyCard key={s.id} onOpen={() => open(s)} onMenu={() => setRowMenu(s.id)}
                 menu={<RowMenu tab={tab} row={s} open={rowMenu === s.id} onClose={() => setRowMenu(null)} onPause={() => { setRowMenu(null); setPausing(s) }} onDelete={() => { setRowMenu(null); setDeleting(s) }} />}
-                study={{
-                  id: s.id, title: s.cardName ?? s.name, type: s.type, status: s.status, image: s.image,
-                  dates: s.dates ?? '', daysLeft: s.daysLeft ?? '', completedPct: s.completedPct ?? 0,
-                  segments: s.segments ?? [s.completedPct ?? 0, 0, 100 - (s.completedPct ?? 0)],
-                  required: s.required, breakdown: s.breakdown,
-                }} />
+                study={s} />
             ))}
           </div>
         ) : (
@@ -145,7 +151,9 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
                         {c.key === 'name' && <button type="button" onClick={() => open(s)} className="text-left hover:text-brand-primary">{s.name}</button>}
                         {c.key === 'type' && <StudyTypeTag type={s.type} />}
                         {c.key === 'created' && <span className="whitespace-nowrap text-text-subtitle">{s.created}</span>}
-                        {(c.key === 'required' || c.key === 'qualified' || c.key === 'completed') && String(s[c.key])}
+                        {c.key === 'required' && String(s.required)}
+                        {c.key === 'qualified' && String(counts(s).everQualified)}
+                        {c.key === 'completed' && String(counts(s).completed)}
                         {c.key === 'menu' && (
                           <span className="relative flex justify-end">
                             <button type="button" aria-label="Study options" onClick={() => setRowMenu(rowMenu === s.id ? null : s.id)}
@@ -189,7 +197,7 @@ function SortMark({ active, dir }: { active?: boolean; dir?: 1 | -1 }) {
 /** The right menu for a row or card, which differs per tab. */
 function RowMenu({
   tab, row, open, onClose, onPause, onDelete,
-}: { tab: StudiesTab; row: StudyRow; open: boolean; onClose: () => void; onPause: () => void; onDelete: () => void }) {
+}: { tab: StudiesTab; row: Study; open: boolean; onClose: () => void; onPause: () => void; onDelete: () => void }) {
   const copy = () => { void navigator.clipboard?.writeText(`https://focusinsite.com/study/${row.id}`).catch(() => undefined); onClose() }
   if (tab === 'drafts') return <DraftMenu open={open} onClose={onClose} onDelete={onDelete} />
   if (tab === 'completed') return <CompletedMenu open={open} onClose={onClose} onCopy={copy} />

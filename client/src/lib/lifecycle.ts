@@ -107,3 +107,37 @@ export const isPayable = (s: RespondentState) => s === 'completed' || s === 'rat
 /** Step 33: the incentive is charged once the shortlist is confirmed. */
 export const isCharged = (s: RespondentState) =>
   s === 'recruited' || s === 'scheduled' || s === 'completed' || s === 'rated' || s === 'no_show'
+
+// ------------------------------------------------------------------- labels
+
+/**
+ * What a frame calls each state. Figma governs the words, so these are the
+ * strings the status pill is drawn with. Two states have no frame at all —
+ * `in_review` and `cancelled` are behaviour the workflow requires and the
+ * designs never drew, and both are flagged in docs/Stage-Two-Conflicts.md.
+ * Figma's "Billing" pill is not here because billing is not a state: it is a
+ * completed study with a balance outstanding, derived in `statusTag`.
+ */
+export const STUDY_TAG: Record<StudyState, string> = {
+  draft: 'Draft',
+  in_review: 'In Review',
+  recruiting: 'Recruiting',
+  ongoing: 'Ongoing',
+  paused: 'Paused',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+}
+
+/** What a frame calls each respondent state. */
+export const RESPONDENT_TAG: Record<RespondentState, string> = {
+  matched: 'Matched',
+  invited: 'Invited',
+  applied: 'Applied',
+  qualified: 'Qualified',
+  disqualified: 'Disqualified',
+  recruited: 'Recruited',
+  scheduled: 'Scheduled',
+  completed: 'Completed',
+  no_show: 'No-show',
+  rated: 'Rated',
+}

@@ -6,8 +6,8 @@ import { Clock, DiaryBookIcon, Info, PaymentsIcon } from '../../components/ui/ic
 import { cn } from '../../lib/cn'
 import { BILL, BILLING, BILLING_TOTAL } from '../../mock/pay'
 import type { BillingRow } from '../../mock/pay'
-import { managedStudy } from '../../mock/studies'
 import { useToast } from '../../components/ui/Toast'
+import { useStudy } from '../../mock/store'
 
 /** One invoice line, on the white card this screen draws it in. */
 function Line({ r, last }: { r: BillingRow; last?: boolean }) {
@@ -57,7 +57,7 @@ function Fig({ label, value, suffix }: { label: string; value: string; suffix?: 
 export default function BillPayment() {
   const toast = useToast()
   const { id } = useParams()
-  const s = managedStudy(id)
+  const s = useStudy(id)
   const c = BILL.card
 
   return (

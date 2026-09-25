@@ -10,13 +10,14 @@ import { ActivityList, DayBar, NotesCard, PinCard, QARow, SessionCard } from './
 import { CheckCircle, Clock, Close, DiaryBookIcon, NoteIcon, SurveyIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { DIARY_DAYS, RESPONDENT, SCREENER_ANSWERS } from '../../mock/respondent'
-import { managedStudy } from '../../mock/studies'
 import { useToast } from '../../components/ui/Toast'
+import { useStudy } from '../../mock/store'
+import type { Study } from '../../mock/db'
 
 type Tab = 'screener' | 'result' | 'activity'
 
 /** The study, in the compact strip above a respondent's result. */
-function StudyStrip({ s }: { s: ReturnType<typeof managedStudy> }) {
+function StudyStrip({ s }: { s: Study }) {
   return (
     <div className="flex h-[102px] items-center gap-4 rounded-lg bg-bgAlt-1 p-4">
       <img src={s.image} alt="" className="h-[70px] w-[92px] shrink-0 rounded-md object-cover" />
@@ -47,7 +48,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
   const { id } = useParams()
   const nav = useNavigate()
   const [params] = useSearchParams()
-  const s = managedStudy(id)
+  const s = useStudy(id)
   const [rate, setRate] = useState(params.get('rate') === '1' || params.get('rate') === 'rated')
   const [noShow, setNoShow] = useState<'one' | 'all' | null>((params.get('noshow') as 'one' | 'all') ?? null)
 

@@ -8,8 +8,8 @@ import { StudyFrame } from '../../components/client/StudyFrame'
 import { OverviewTile } from './StudyOverview'
 import { ChevronRight, Download, Star } from '../../components/ui/icons'
 import { CERTIFICATE, RESULT_ROWS, RESULT_STATS, SUMMARIES } from '../../mock/results'
-import { managedStudy } from '../../mock/studies'
 import { useToast } from '../../components/ui/Toast'
+import { useStudy } from '../../mock/store'
 
 /** The sealed stamp the certificate card is drawn with. */
 function Seal() {
@@ -36,7 +36,7 @@ export default function ResultsTab() {
   const toast = useToast()
   const { id } = useParams()
   const nav = useNavigate()
-  const s = managedStudy(id)
+  const s = useStudy(id)
 
   return (
     <AppShell crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>

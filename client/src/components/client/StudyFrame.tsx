@@ -4,26 +4,16 @@ import StudyTypeTag from './StudyTypeTag'
 import Tag from '../ui/Tag'
 import { Clock, DiaryBookIcon, LinkIcon, MoreVertical } from '../ui/icons'
 import { cn } from '../../lib/cn'
-import type { StudyType } from '../../lib/studyTypes'
 import { useToast } from '../ui/Toast'
+import type { Study } from '../../mock/db'
+import { counts, progressPct, statusTag } from '../../lib/derive'
 
-export interface ManagedStudy {
-  id: string
-  breadcrumb: string
-  type: StudyType
-  title: string
-  duration: string
-  industry: string
-  status: string
-  completed: string; completedOf: string
-  qualified: string; qualifiedOf: string
-  daysRemaining: string
-  progress: string
-  description: string
-  shareLink: string
-  activeSince: string
-  image: string
-}
+/**
+ * Every screen under this shell reads its study from the store and its
+ * figures from `lib/derive`. The header used to carry its own strings —
+ * "20", "/30", "35", "/60 applied", "66%" — beside a Studies list that
+ * printed 12, 8 and 3 for the same study. Both are now one count.
+ */
 
 /** The four figures under the title on the study header (1627:95956). */
 function HeadStat({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
@@ -42,8 +32,10 @@ function HeadStat({ label, value, suffix }: { label: string; value: string; suff
  * card on the paused study at 1704:143783): thumbnail, type tag, status,
  * title, duration and industry, and the four figures.
  */
-export function StudyHeader({ study }: { study: ManagedStudy }) {
+export function StudyHeader({ study }: { study: Study }) {
   const toast = useToast()
+  const c = counts(study)
+  const status = statusTag(study)
   return (
     <section className="rounded-lg bg-bgAlt-1 p-4">
       <div className="flex items-start gap-6">
@@ -57,7 +49,7 @@ export function StudyHeader({ study }: { study: ManagedStudy }) {
             <StudyTypeTag type={study.type} className="h-8"
               icon={study.type === 'diary' ? <DiaryBookIcon className="h-4 w-4" /> : undefined} />
             <div className="flex items-center gap-2">
-              <Tag tone="neutral">{study.status}</Tag>
+              <Tag tone={status.tone}>{status.label}</Tag>
               <button type="button" aria-label="Copy study link" onClick={() => toast('Link copied')}
                 className="flex h-btn w-btn items-center justify-center rounded-full border-1 border-stroke-input text-text-subtitle hover:text-text-title">
                 <LinkIcon className="h-4 w-4" />
@@ -76,10 +68,10 @@ export function StudyHeader({ study }: { study: ManagedStudy }) {
           </div>
 
           <div className="grid grid-cols-[repeat(4,158px)] gap-6">
-            <HeadStat label="Completed" value={study.completed} suffix={study.completedOf} />
-            <HeadStat label="Qualified" value={study.qualified} suffix={study.qualifiedOf} />
-            <HeadStat label="Days Remaining" value={study.daysRemaining} />
-            <HeadStat label="Progress" value={study.progress} />
+            <HeadStat label="Completed" value={String(c.completed)} suffix={`/${study.required}`} />
+            <HeadStat label="Qualified" value={String(c.everQualified)} suffix={`/${c.everApplied} applied`} />
+            <HeadStat label="Days Remaining" value={String(study.daysRemaining)} />
+            <HeadStat label="Progress" value={`${progressPct(study)}%`} />
           </div>
         </div>
       </div>
@@ -123,7 +115,7 @@ export function StudyTabs({ id, active, muted }: { id: string; active: StudyTab;
 
 /** The page a Manage screen renders into: header, tabs, then its own body. */
 export function StudyFrame({ study, active, muted, banner, children, minH = 'min-h-[874px]', bodyMinH = 'min-h-[616px]' }: {
-  study: ManagedStudy; active: StudyTab; muted?: boolean
+  study: Study; active: StudyTab; muted?: boolean
   banner?: ReactNode; children: ReactNode; minH?: string; bodyMinH?: string
 }) {
   return (

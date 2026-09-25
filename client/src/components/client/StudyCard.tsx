@@ -4,37 +4,26 @@ import Tag from '../ui/Tag'
 import StudyTypeTag from './StudyTypeTag'
 import { Calendar, MoreVertical } from '../ui/icons'
 import { cn } from '../../lib/cn'
-import { STUDY_STATUS } from '../../lib/studyTypes'
-import type { StudyStatus, StudyType } from '../../lib/studyTypes'
+import type { Study } from '../../mock/db'
+import { counts, progressPct, segments, statusTag } from '../../lib/derive'
 
-export interface Study {
-  id: string
-  title: string
-  type: StudyType
-  status: StudyStatus
-  image?: string
-  dates: string
-  daysLeft: string
-  completedPct: number
-  /**
-   * The three bar segments as the frame draws them: completed, screening and
-   * remaining, in percent. The frame's bar is drawn rather than computed from
-   * the counts, so these come straight off the frame.
-   */
-  segments: [number, number, number]
-  required: number
-  /** Drawn under the bar on a diary study: completed, screening, remaining. */
-  breakdown?: { completed: number; screening: number; remaining: number }
-}
+/**
+ * The bar and the figures used to be drawn off the frame and sat beside
+ * counts that contradicted them. Both now come from the same participant
+ * list, so the bar, the percentage and the breakdown always agree.
+ */
 
 /**
  * The ongoing-study card on the Dashboard (826:85021). One card for every
  * study type; only the type tag and the thumbnail change.
  */
 export default function StudyCard({ study, onOpen, onMenu, menu, className }: { study: Study; onOpen?: () => void; onMenu?: () => void; menu?: ReactNode; className?: string }) {
-  const status = STUDY_STATUS[study.status]
+  const status = statusTag(study)
+  const c = counts(study)
+  const bar = segments(study)
+  const remaining = Math.max(0, study.required - c.completed - c.recruited - c.scheduled - c.qualified - c.applied)
   return (
-    <article className={cn('relative flex flex-col gap-3 rounded-lg bg-bgAlt-1 px-4 pb-5 pt-4', className)}>
+    <article className={cn('group relative flex flex-col gap-3 rounded-lg bg-bgAlt-1 px-4 pb-5 pt-4', className)}>
       <div className="flex items-center justify-between gap-2">
         <StudyTypeTag type={study.type} />
         <div className="flex items-center gap-2">
@@ -56,29 +45,30 @@ export default function StudyCard({ study, onOpen, onMenu, menu, className }: { 
           <span className="text-body-medium text-text-title">{study.title}</span>
           <span className="flex items-center gap-2 text-text-regular text-text-subtitle">
             <Calendar className="h-4 w-4" />
-            {study.dates}
+            {study.dates ?? ''}
             <span className="text-text-body">•</span>
-            {study.daysLeft}
+            {study.daysRemaining} days left
           </span>
         </span>
       </button>
 
       <div className="flex items-center justify-between text-text-regular">
-        <span className="text-text-title"><span className="text-body-medium">{study.completedPct}%</span> <span className="text-text-subtitle">completed</span></span>
+        <span className="text-text-title"><span className="text-body-medium">{progressPct(study)}%</span> <span className="text-text-subtitle">completed</span></span>
         <span className="text-text-title"><span className="text-body-medium">{study.required}</span> <span className="text-text-subtitle">required</span></span>
       </div>
       <Progress max={100} segments={[
-        { value: study.segments[0], tone: 'green' },
-        { value: study.segments[1], tone: 'yellow' },
-        { value: study.segments[2], tone: 'grey' },
+        { value: bar[0], tone: 'green' },
+        { value: bar[1], tone: 'yellow' },
+        { value: bar[2], tone: 'grey' },
       ]} />
-      {study.breakdown && (
-        <div className="absolute -bottom-8 left-2 right-2 flex items-center justify-between gap-3 rounded-sm bg-bg px-4 py-2.5 text-text-regular text-text-subtitle shadow-[0_2px_8px_rgba(32,30,25,0.08)]">
-          <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-brand-secondary" />Completed: <span className="text-text-title">{study.breakdown.completed}</span></span>
-          <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-cta-primary" />Screening: <span className="text-text-title">{study.breakdown.screening}</span></span>
-          <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-bg-4" />Remaining: <span className="text-text-title">{study.breakdown.remaining}</span></span>
-        </div>
-      )}
+      {/* The frame draws this row open on one card of three to show what it
+          is; it is the bar's tooltip, so it is on hover for every card and
+          the three figures are the same counts the bar is drawn from. */}
+      <div className="pointer-events-none absolute -bottom-8 left-2 right-2 flex items-center justify-between gap-3 rounded-sm bg-bg px-4 py-2.5 text-text-regular text-text-subtitle opacity-0 shadow-[0_2px_8px_rgba(32,30,25,0.08)] transition-opacity group-hover:opacity-100">
+        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-brand-secondary" />Completed: <span className="text-text-title">{c.completed}</span></span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-cta-primary" />Screening: <span className="text-text-title">{c.applied + c.qualified + c.recruited + c.scheduled}</span></span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-bg-4" />Remaining: <span className="text-text-title">{remaining}</span></span>
+      </div>
     </article>
   )
 }

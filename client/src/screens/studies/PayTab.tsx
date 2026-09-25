@@ -6,8 +6,8 @@ import { Download, Info, InvoiceIcon, MoneyMark } from '../../components/ui/icon
 import { cn } from '../../lib/cn'
 import { BILLING, BILLING_TOTAL, PAY_STATE, TRANSACTIONS } from '../../mock/pay'
 import type { BillingRow } from '../../mock/pay'
-import { managedStudy } from '../../mock/studies'
 import { useToast } from '../../components/ui/Toast'
+import { useStudy } from '../../mock/store'
 
 /** A figure beside the payment due tile. */
 function Figure({ label, value }: { label: string; value: string }) {
@@ -46,7 +46,7 @@ export default function PayTab() {
   const { id } = useParams()
   const nav = useNavigate()
   const [params] = useSearchParams()
-  const s = managedStudy(id)
+  const s = useStudy(id)
   const due = params.get('state') === 'due'
   const v = due ? PAY_STATE.due : PAY_STATE.ongoing
 

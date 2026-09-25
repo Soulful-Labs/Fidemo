@@ -1,6 +1,6 @@
 import type { Participation, Person, Study } from '../mock/db'
 import { PEOPLE, personById, scoreOf, tierOf } from '../mock/db'
-import { isCharged, isPayable, respondentTab } from './lifecycle'
+import { STUDY_TAG, isCharged, isPayable, respondentTab } from './lifecycle'
 import type { RespondentState } from './lifecycle'
 import type { Tier } from './studyTypes'
 
@@ -69,6 +69,24 @@ export function segments(study: Study): [number, number, number] {
   const done = Math.min(100, (c.completed / study.required) * 100)
   const screening = Math.min(100 - done, ((c.recruited + c.scheduled + c.qualified + c.applied) / study.required) * 100)
   return [Math.round(done), Math.round(screening), Math.max(0, 100 - Math.round(done) - Math.round(screening))]
+}
+
+/**
+ * The status pill. Figma draws Billing beside Recruiting and Completed as if
+ * it were a third state; it is not, it is a completed study that still owes
+ * money, so it is derived rather than stored.
+ */
+export function statusTag(study: Study): { label: string; tone: 'neutral' | 'green' | 'grey' | 'yellow' } {
+  if (study.state === 'completed') {
+    return billing(study).net > 0
+      ? { label: 'Billing', tone: 'neutral' }
+      : { label: 'Completed', tone: 'green' }
+  }
+  if (study.state === 'paused') return { label: STUDY_TAG.paused, tone: 'yellow' }
+  if (study.state === 'draft' || study.state === 'in_review' || study.state === 'cancelled') {
+    return { label: STUDY_TAG[study.state], tone: 'grey' }
+  }
+  return { label: STUDY_TAG[study.state], tone: 'neutral' }
 }
 
 // ------------------------------------------------------------------- people

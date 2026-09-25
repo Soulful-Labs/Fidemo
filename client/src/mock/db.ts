@@ -119,11 +119,12 @@ export interface Participation {
 
 export interface Study {
   id: string
-  /** Exactly as the frame writes it, including its capitalisation. */
+  /** Exactly as the Studies table writes it, including its capitalisation. */
   name: string
-  cardName?: string
+  /** What the study header and the cards write, which the frames set in sentence case. */
+  title: string
   /** The breadcrumb the Manage frames draw, which names a different study. */
-  breadcrumb?: string
+  breadcrumb: string
   type: StudyType
   state: StudyState
   industry: string
@@ -145,7 +146,41 @@ export interface Study {
   participants: Participation[]
   /** Set when the team takes it live, so `in_review` can be told from `recruiting`. */
   approvedAt?: string
+  /** Manage Study (1627:96085): the Create flow's four steps read back. */
+  review?: StudyReview
 }
+
+export interface StudyReview {
+  studyTime: string
+  estimatedAudience: string
+  audience: { label?: string; value: string; icon?: string }[]
+  screener: { label: string; value: string }
+  /** The one row the study type changes. */
+  studyRow: { label: string; value: string }
+  incentive: { label: string; value: string }
+}
+
+const AUDIENCE = [
+  { value: '10', icon: 'people' },
+  { value: 'Worldwide', icon: 'pin' },
+  { label: 'Gender', value: 'All' },
+  { label: 'Education', value: 'High school graduate' },
+  { label: 'Age', value: '18-22, 31-40' },
+  { label: 'Age', value: '18-22, 31-40' },
+  { label: 'Work Functions', value: 'Consultation' },
+  { label: 'Roles', value: 'Physician, General Doctor, Nutritionist, Therapist, Medical Practitioner' },
+  { label: 'Industry', value: 'Healthcare, Pharma' },
+  { label: 'Organization Size', value: 'Self employed, 1-10, 10-50' },
+]
+
+const review = (studyTime: string, studyRow: { label: string; value: string }, roles?: string): StudyReview => ({
+  studyTime,
+  estimatedAudience: '1K',
+  audience: roles ? AUDIENCE.map((a) => (a.label === 'Roles' ? { ...a, value: roles } : a)) : AUDIENCE,
+  screener: { label: 'Screening', value: '8 inputs' },
+  studyRow,
+  incentive: { label: 'Incentive', value: '$700' },
+})
 
 const slotsFor = (n: number) => {
   const times = ['10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM', '6:00 PM']
@@ -201,7 +236,8 @@ const RATES = { platformFee: 100, recruitingPer: 20, incentivePer: 100, moderati
  */
 export const STUDIES: Study[] = [
   {
-    id: 'st-goal', name: 'About goal-tracking methods', type: 'video_call', state: 'recruiting',
+    id: 'st-goal', name: 'About goal-tracking methods', title: 'About goal-tracking methods',
+    type: 'video_call', state: 'recruiting',
     breadcrumb: 'Business Finance Operations Study', industry: 'Business', duration: '1 hour',
     description: 'Discuss the effectiveness of the goal-setting tools in helping users achieve their fitness milestones.',
     image: '/img/goals.jpg', created: '30 Jul, 2026', createdIso: '2026-07-30', daysRemaining: 16,
@@ -209,10 +245,11 @@ export const STUDIES: Study[] = [
     shareLink: 'https://focusinsite.com/study/S123456/business-finance-operation-analysis/',
     required: 40, repeatRule: 'prefer_fresh', rates: RATES,
     participants: participants({ completed: 0, rated: 0, noShow: 0, recruited: 6, scheduled: 4, qualified: 10, disqualified: 5, applied: 15, invited: 8, matched: 9 }),
+    review: review('1 hour', { label: 'Video Call', value: '1:1 sessions, 5 days/week, custom timings' }),
   },
   {
     id: 'st-pay', name: 'How Do You Make Your Digital Payments Mostly?',
-    cardName: 'How do you make your digital payments mostly?', breadcrumb: 'Mobile App Usability Testing',
+    title: 'How do you make your digital payments mostly?', breadcrumb: 'Mobile App Usability Testing',
     type: 'diary', state: 'recruiting', industry: 'Finance', duration: '1 hour',
     description: 'Share about your ways of digital spending and payment methods you use in your daily life.',
     image: '/img/card.jpg', created: '25 Jul, 2026', createdIso: '2026-07-25', daysRemaining: 36,
@@ -220,9 +257,10 @@ export const STUDIES: Study[] = [
     shareLink: 'https://focusinsite.com/study/S123456/business-finance-operation-analysis/',
     required: 30, repeatRule: 'prefer_fresh', rates: RATES,
     participants: participants({ completed: 17, rated: 3, noShow: 2, recruited: 4, scheduled: 0, qualified: 9, disqualified: 6, applied: 19, invited: 7, matched: 9 }),
+    review: review('1 hour', { label: 'Diary Study Form', value: '5 questions, 5 days logs' }),
   },
   {
-    id: 'st-sleep', name: 'Share About Your Sleep Cycle', cardName: 'Share about your sleep cycle',
+    id: 'st-sleep', name: 'Share About Your Sleep Cycle', title: 'Share about your sleep cycle',
     breadcrumb: 'Sleep Cycle Interviews', type: 'in_person', state: 'completed', industry: 'Healthcare', duration: '1 hour',
     description: 'Share about your sleep cycle, how you track it and what changes it through the week.',
     image: '/img/sleep.jpg', created: '15 Jul, 2026', createdIso: '2026-07-15', daysRemaining: 0,
@@ -230,9 +268,10 @@ export const STUDIES: Study[] = [
     shareLink: 'https://focusinsite.com/study/S123456/business-finance-operation-analysis/',
     required: 60, repeatRule: 'allow', rates: RATES,
     participants: participants({ completed: 48, rated: 12, noShow: 3, recruited: 0, scheduled: 10, qualified: 4, disqualified: 8, applied: 0, invited: 0, matched: 0 }),
+    review: review('1 hour', { label: 'In-Person', value: '2 addresses, available 5 days/week, custom timings, 2 days overrides' }),
   },
   {
-    id: 'st-fitness', name: 'Fitness Tracker Apps Experience', cardName: 'Fitness tracker apps experience',
+    id: 'st-fitness', name: 'Fitness Tracker Apps Experience', title: 'Fitness tracker apps experience',
     breadcrumb: 'Fitness Tracker Group Sessions', type: 'group_video_call', state: 'ongoing', industry: 'Health', duration: '1 hour',
     description: 'Talk through the fitness tracker apps you use and what keeps you coming back to them.',
     image: '/img/runner.jpg', created: '20 Jul, 2026', createdIso: '2026-07-20', daysRemaining: 12,
@@ -240,18 +279,22 @@ export const STUDIES: Study[] = [
     shareLink: 'https://focusinsite.com/study/S123456/business-finance-operation-analysis/',
     required: 60, repeatRule: 'prefer_fresh', rates: RATES,
     participants: participants({ completed: 18, rated: 2, noShow: 4, recruited: 2, scheduled: 10, qualified: 6, disqualified: 7, applied: 12, invited: 6, matched: 9 }),
+    review: review('1 hour', { label: 'Group Video Call', value: '2 sessions, 10 seats, 40 minutes each' }),
   },
   {
-    id: 'st-travel', name: 'Travel preferences and experiences', type: 'in_person_group', state: 'completed',
+    id: 'st-travel', name: 'Travel preferences and experiences', title: 'Travel preferences and experiences',
+    breadcrumb: 'Travel Preferences Group Sessions', type: 'in_person_group', state: 'completed',
     industry: 'Travel', duration: '1 hour',
     description: 'Talk through how you plan and book travel, and what changes your mind at the last minute.',
     image: '/img/airport.jpg', created: '10 Jul, 2026', createdIso: '2026-07-10', daysRemaining: 0,
     dates: 'Jan 25 – Feb 24', approvedAt: '2026-07-11',
     required: 45, repeatRule: 'allow', rates: RATES,
     participants: participants({ completed: 34, rated: 6, noShow: 2, recruited: 0, scheduled: 0, qualified: 0, disqualified: 5, applied: 0, invited: 0, matched: 0 }),
+    review: review('1 hour', { label: 'In-Person Group', value: '2 addresses, 2 sessions, 10 seats' }),
   },
   {
-    id: 'st-social', name: 'Social media posts designing apps', breadcrumb: 'GLP-1 Care Plans, Oncologist View',
+    id: 'st-social', name: 'Social media posts designing apps', title: 'Social media posts designing apps',
+    breadcrumb: 'GLP-1 Care Plans, Oncologist View',
     type: 'survey', state: 'recruiting', industry: 'Consumer', duration: '30 minutes',
     description: 'How do you design social media posts and what tools do you use for it',
     image: '/img/canva.jpg', created: '10 Jul, 2026', createdIso: '2026-07-10', daysRemaining: 36,
@@ -259,6 +302,7 @@ export const STUDIES: Study[] = [
     shareLink: 'https://focusinsite.com/study/S123456/business-finance-operation-analysis/',
     required: 30, repeatRule: 'exclude', rates: RATES,
     participants: participants({ completed: 4, rated: 1, noShow: 1, recruited: 5, scheduled: 0, qualified: 8, disqualified: 4, applied: 14, invited: 7, matched: 9 }),
+    review: review('30 minutes', { label: 'Survey Form', value: '10 inputs' }, 'Social Media Influencer, Creator, Digital Marketer, Graphic Designer'),
   },
 ]
 
@@ -270,7 +314,8 @@ export const DRAFT_STUDIES: Study[] = [
   ['dr-4', 'Fitness Tracker Apps Experience', 'video_call', '20 Jul, 2026'],
   ['dr-5', 'Share About Your Sleep Cycle', 'in_person_group', '10 Jul, 2026'],
 ].map(([id, name, type, created]) => ({
-  id: id as string, name: name as string, type: type as StudyType, state: 'draft' as StudyState,
+  id: id as string, name: name as string, title: name as string, breadcrumb: name as string,
+  type: type as StudyType, state: 'draft' as StudyState,
   industry: '', duration: '', description: '', created: created as string,
   createdIso: '2026-07-01', daysRemaining: 0, required: 0, repeatRule: 'prefer_fresh' as RepeatRule,
   rates: RATES, participants: [],
@@ -284,7 +329,8 @@ export const ARCHIVE_STUDIES: Study[] = [
   ['cp-4', 'Fitness Tracker Apps Experience', 'video_call', 60, 60, '20 Jul, 2026'],
   ['cp-5', 'Share About Your Sleep Cycle', 'in_person_group', 50, 40, '10 Jul, 2026'],
 ].map(([id, name, type, required, completed, created]) => ({
-  id: id as string, name: name as string, type: type as StudyType, state: 'completed' as StudyState,
+  id: id as string, name: name as string, title: name as string, breadcrumb: name as string,
+  type: type as StudyType, state: 'completed' as StudyState,
   industry: '', duration: '1 hour', description: '', created: created as string,
   createdIso: '2026-07-01', daysRemaining: 0, required: required as number,
   repeatRule: 'allow' as RepeatRule, rates: RATES,

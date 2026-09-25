@@ -8,9 +8,11 @@ import type { Respondent } from '../../components/client/RespondentCard'
 import StatTile from '../../components/client/StatTile'
 import Button from '../../components/ui/Button'
 import { CheckCircle, Clock, DollarCircle, ShieldIcon, UsersIcon } from '../../components/ui/icons'
-import { DASHBOARD_STATS, DASHBOARD_STUDY_IDS, GREETING, RECOMMENDED } from '../../mock/dashboard'
-import { ONGOING } from '../../mock/studies'
+import { DASHBOARD_STUDY_IDS, GREETING, RECOMMENDED } from '../../mock/dashboard'
 import RespondentPanel from './RespondentPanel'
+import { useStudies } from '../../mock/store'
+import { dashboardStats } from '../../lib/derive'
+import { studyTab } from '../../lib/lifecycle'
 
 const TILE_ICON = [Clock, CheckCircle, UsersIcon, ShieldIcon, DollarCircle]
 
@@ -31,14 +33,29 @@ function Blank({ line, cta, onClick }: { line: string; cta: string; onClick: () 
 
 /**
  * Dashboard (826:85021): the greeting, five figures, the three ongoing
- * studies and the recommended respondents. Every figure is seeded off the
- * frame; nothing here is calculated.
+ * studies and the recommended respondents. Every figure is counted off the
+ * study list; the frame's own 4 / 72 / 1,786 / 91 / $124.8 were literals
+ * that no other screen agreed with.
  */
 export default function Dashboard({ empty = false }: { empty?: boolean }) {
   const navigate = useNavigate()
   const [profile, setProfile] = useState<Respondent | null>(null)
-  const studies = empty ? [] : DASHBOARD_STUDY_IDS.map((id) => ONGOING.find((s) => s.id === id)!).filter(Boolean)
-  const stats = empty ? DASHBOARD_STATS.map((t) => ({ ...t, value: t.label === 'Avg. Session Incentive' ? '$0' : '0' })) : DASHBOARD_STATS
+  const { studies: all } = useStudies()
+  const live = empty ? [] : all.filter((s) => studyTab(s.state) === 'ongoing')
+  /** The frame puts these three first; the rest follow in their own order. */
+  const studies = DASHBOARD_STUDY_IDS
+    .map((id) => live.find((s) => s.id === id))
+    .filter((s): s is NonNullable<typeof s> => Boolean(s))
+    .concat(live.filter((s) => !DASHBOARD_STUDY_IDS.includes(s.id)))
+    .slice(0, 3)
+  const d = dashboardStats(empty ? [] : all)
+  const stats = [
+    { label: 'Ongoing Studies', value: String(d.ongoing), tint: 'yellow' as const },
+    { label: 'Completed Studies', value: String(d.completed), tint: 'yellow' as const },
+    { label: 'Total Respondents Hired', value: d.hired.toLocaleString('en-US'), tint: 'green' as const },
+    { label: 'Avg. Trust Score', value: String(d.avgScore), tint: 'purple' as const },
+    { label: 'Avg. Session Incentive', value: `$${d.avgIncentive % 1 === 0 ? d.avgIncentive : d.avgIncentive.toFixed(1)}`, tint: 'blue' as const },
+  ]
 
   return (
     <AppShell crumbs={[{ label: 'Dashboard' }]}>
@@ -63,12 +80,7 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
           <div className="grid grid-cols-3 gap-3 pt-2">
             {studies.map((s) => (
               <StudyCard key={s.id} onOpen={() => navigate(`/studies/${s.id}`)} onMenu={() => navigate('/studies')}
-                study={{
-                  id: s.id, title: s.cardName ?? s.name, type: s.type, status: s.status, image: s.image,
-                  dates: s.dates ?? '', daysLeft: s.daysLeft ?? '', completedPct: s.completedPct ?? 0,
-                  segments: s.segments ?? [s.completedPct ?? 0, 0, 100 - (s.completedPct ?? 0)],
-                  required: s.required, breakdown: s.breakdown,
-                }} />
+                study={s} />
             ))}
           </div>
           )}

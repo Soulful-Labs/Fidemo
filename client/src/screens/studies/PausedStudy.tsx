@@ -3,8 +3,9 @@ import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import { Copy } from '../../components/ui/icons'
 import { StudyFrame } from '../../components/client/StudyFrame'
-import { PAUSED_STUDY } from '../../mock/studies'
 import { useToast } from '../../components/ui/Toast'
+import { useStudy } from '../../mock/store'
+import { counts, progressPct } from '../../lib/derive'
 
 /** The Overview tiles, in the warm tint the frame draws them in. */
 function OverviewTile({ label, value, suffix, ring }: { label: string; value: string; suffix?: string; ring?: number }) {
@@ -35,8 +36,10 @@ function OverviewTile({ label, value, suffix, ring }: { label: string; value: st
 export default function PausedStudy() {
   const toast = useToast()
   const navigate = useNavigate()
-  const { id = PAUSED_STUDY.id } = useParams()
-  const s = PAUSED_STUDY
+  const { id = 'st-goal' } = useParams()
+  const s = useStudy(id)
+  const c = counts(s)
+  const pct = progressPct(s)
 
   return (
     <AppShell crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
@@ -54,10 +57,10 @@ export default function PausedStudy() {
       }>
           <div className="flex flex-col gap-6 px-4 pt-4">
             <div className="grid grid-cols-4 gap-2">
-              <OverviewTile label="Progress" value={s.progress} ring={66} />
-              <OverviewTile label="Completed" value={s.completed} suffix={s.completedOf} />
-              <OverviewTile label="Qualified" value={s.qualified} suffix={s.qualifiedOf} />
-              <OverviewTile label="Days Remaining" value={s.daysRemaining} />
+              <OverviewTile label="Progress" value={`${pct}%`} ring={pct} />
+              <OverviewTile label="Completed" value={String(c.completed)} suffix={`/${s.required}`} />
+              <OverviewTile label="Qualified" value={String(c.everQualified)} suffix={`/${c.everApplied} applied`} />
+              <OverviewTile label="Days Remaining" value={String(s.daysRemaining)} />
             </div>
 
             <div className="flex flex-col gap-1">
@@ -72,7 +75,7 @@ export default function PausedStudy() {
                   {s.shareLink}
                 </span>
                 <Button variant="tertiary" className="px-5" leftIcon={<Copy className="h-4 w-4" />}
-                  onClick={() => void navigator.clipboard?.writeText(s.shareLink).catch(() => undefined)}>
+                  onClick={() => void navigator.clipboard?.writeText(s.shareLink ?? '').catch(() => undefined)}>
                   Copy
                 </Button>
               </div>

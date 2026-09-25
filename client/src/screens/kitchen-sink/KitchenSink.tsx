@@ -3,7 +3,7 @@ import AppShell from '../../app/AppShell'
 import RespondentCard from '../../components/client/RespondentCard'
 import type { Respondent } from '../../components/client/RespondentCard'
 import StudyCard from '../../components/client/StudyCard'
-import type { Study } from '../../components/client/StudyCard'
+import { STUDIES } from '../../mock/db'
 import StudyTypeTag from '../../components/client/StudyTypeTag'
 import TierChip from '../../components/client/TierChip'
 import StatTile from '../../components/client/StatTile'
@@ -29,11 +29,7 @@ import { CompletedMenu, DeleteStudyModal, DraftMenu, OngoingMenu, PauseStudyModa
 import Section, { Row } from './Section'
 
 const RESPONDENT: Respondent = { id: 'r1', name: 'Ferry L.', role: 'Physiology Therapist, Orthopedic', score: 95, tier: 'platinum', professionVerified: true }
-const STUDY: Study = {
-  id: 's1', title: 'How do you make your digital payments mostly?', type: 'diary', status: 'recruiting',
-  dates: 'Jan 25 – Feb 24', daysLeft: '16 days left', completedPct: 25, required: 12, segments: [25, 55, 20],
-  breakdown: { completed: 3, screening: 6, remaining: 3 },
-}
+const STUDY = STUDIES[1]
 const ROWS = [
   { id: '1', name: 'About goal-tracking methods', type: 'video_call' as StudyType, required: 40, qualified: 20, completed: 0, created: '30 Jul, 2026' },
   { id: '2', name: 'How Do You Make Your Digital Payments Mostly?', type: 'diary' as StudyType, required: 12, qualified: 8, completed: 3, created: '25 Jul, 2026' },

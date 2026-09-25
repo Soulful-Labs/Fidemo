@@ -10,8 +10,8 @@ import DownloadSessionsPanel from './DownloadSessionsPanel'
 import { ScoreCell, StatusPill, Th } from '../../components/client/RespondentTable'
 import { Calendar, ChevronRight, Clock, VideoIcon } from '../../components/ui/icons'
 import { APPLICATIONS, GROUP_SESSIONS, SCHEDULED } from '../../mock/recruiting'
-import { managedStudy } from '../../mock/studies'
 import { useToast } from '../../components/ui/Toast'
+import { useStudy } from '../../mock/store'
 
 /**
  * Recruited (1627:96535). The study type changes what this tab is: a survey
@@ -23,7 +23,7 @@ export default function RecruitedTab() {
   const toast = useToast()
   const { id } = useParams()
   const [params] = useSearchParams()
-  const s = managedStudy(id)
+  const s = useStudy(id)
   const [downloads, setDownloads] = useState(params.get('panel') === 'downloads')
   const session = s.type !== 'survey' && s.type !== 'diary'
   const group = s.type === 'group_video_call' || s.type === 'in_person_group'

@@ -4,7 +4,7 @@ import Button from '../../components/ui/Button'
 import { StudyFrame } from '../../components/client/StudyFrame'
 import { Edit, Info, PoolIcon, StudiesIcon } from '../../components/ui/icons'
 import { useParams } from 'react-router-dom'
-import { MANAGED_STUDY, MANAGED_SURVEY } from '../../mock/studies'
+import { useStudy } from '../../mock/store'
 
 const FORM = (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
@@ -75,8 +75,10 @@ function Read({ label, value }: { label: string; value: string }) {
 export default function ManageStudy() {
   const navigate = useNavigate()
   const { id } = useParams()
-  const s = id === MANAGED_SURVEY.id ? MANAGED_SURVEY : MANAGED_STUDY
+  const s = useStudy(id)
+  /** A draft has nothing to read back, so the tab is only reachable once it does. */
   const r = s.review
+  if (!r) return null
 
   return (
     <AppShell crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>

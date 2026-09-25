@@ -11,7 +11,7 @@ import { StudyFrame } from '../../components/client/StudyFrame'
 import { SentModal } from '../pool/PoolModals'
 import { ChevronRight } from '../../components/ui/icons'
 import { RECOMMENDED } from '../../mock/dashboard'
-import { managedStudy } from '../../mock/studies'
+import { useStudy } from '../../mock/store'
 
 /**
  * Matched (1627:96237) and Invited (1627:96329) are one tab with a segmented
@@ -20,7 +20,7 @@ import { managedStudy } from '../../mock/studies'
  */
 export default function MatchedTab() {
   const { id } = useParams()
-  const s = managedStudy(id)
+  const s = useStudy(id)
   const [state, setState] = useState<'matched' | 'invited'>('matched')
   /** Respondent Profile Details (1627:98130) is the Dashboard's panel, reused. */
   const [profile, setProfile] = useState<Respondent | null>(null)
