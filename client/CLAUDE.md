@@ -532,6 +532,53 @@ Insite staff, and nothing marks micro-panels as a later phase.
 | — | Invite To Study | 1645:163182 | panel |
 | — | Save to micro-panel | 1651:177206 | panel |
 
+### Payments and Notifications, what collapsed
+
+**The Payments section holds 11 frames, not the 6 inventoried.** The extras are
+a **third Payments frame that is switched off** (`1663:103724`), a Profile
+Tiers popover (`1666:128049`, 320x184), and two modals: `$350 paid
+successfully!` (`1779:104245`) and `Remove **** 4242 Card?` (`1779:104288`).
+
+**Payments is one page in two states, not three tabs.** 1663:103326 and
+1663:103525 differ in 1.62% of pixels: the segmented toggle switches Pending
+and Completed, the third column header changes from "Due Date (auto-debit)" to
+"Date", and `Pay Invoice` comes off each row leaving download and view. The
+saved cards sit on the **same page** under the table, so there is no separate
+methods tab; the hidden third frame may once have been one, but it cannot be
+read.
+
+**Invoice Details is one panel in two states.** 1664:127262 and 1663:103948
+differ in 8.33%, all in one block: unpaid draws a warm notice — the amount,
+"Due on Aug 10, 2026" and "If not paid manually, will be auto-debited from
+[Mastercard 4242]" — with **Make Payment** in the footer; paid draws a green
+receipt — "Paid $350 successfully!", the card, the timestamp — with
+**Download**. The study card, the invoice number, the breakdown and "Net Total
+Paid" are identical. (The paid frame names the study "Mobile App Usability
+Testing" where the unpaid one uses its title; the same seed slip as elsewhere.)
+
+**Make Payment is not the study checkout.** Bill Payment (1627:96956) is a full
+screen with a card form, reached from a study's Pay tab. Make Payment
+(1666:127878) is a 375px panel with **no form**: the amount, a link back to
+Invoice Details, the saved card already chosen with `Change method`, and
+`Pay $350`. It is raised from the Invoice Details panel, which the Payments
+table's eye and `Pay Invoice` open. Paying there raises the `$350 paid
+successfully!` modal.
+
+**The Notifications page is the panel's content in a page.** 1663:104077 draws
+the same rows as 1518:71845 — same icons, titles, bodies, ages and action
+buttons, same warm tint on the two unread ones — in a centred 600px column with
+the same heading, count chip and "Mark all as read". `NotificationsPanel`'s row
+is exported as `NotificationItem` and the page imports it; nothing is drawn
+twice. It matches at **0.41%**, the closest screen in the build.
+
+**The four Pool modals.** `Invitation has been sent!` is **one modal raised
+from two places**, not two states: a respondent's Invite To Study names the
+person (1777:99979), a panel's Invite All To Study names the panel and its
+member count (1779:104132). `Discard the micro-panel?` is drawn a size down
+from the other dialogs — a 20px title on 33px of padding, not 24 on 44 — so
+`Modal` gained `compact`; `Delete Micro-Panels?` is the standard dialog with a
+red confirm.
+
 ### Payments — section 1663:103325
 | Route | Screen | Node | Kind |
 |---|---|---|---|
