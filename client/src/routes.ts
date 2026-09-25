@@ -11,6 +11,7 @@ import ManageStudy from './screens/studies/ManageStudy'
 import MatchedTab from './screens/studies/MatchedTab'
 import RecruitedTab from './screens/studies/RecruitedTab'
 import ResultsTab from './screens/studies/ResultsTab'
+import PayTab from './screens/studies/PayTab'
 import RespondentResult from './screens/studies/RespondentResult'
 import AudienceNoMatch from './screens/create/AudienceNoMatch'
 import About from './screens/create/About'
@@ -79,6 +80,7 @@ const routes: ScreenRoute[] = [
   { path: '/studies/:id/matched', label: 'Matched Respondents', node: '1627:96237 (matched), 1627:96329 (invited)', section: 'Manage', kind: 'page', element: createElement(MatchedTab) },
   { path: '/studies/:id/recruited', label: 'Recruited Respondents', node: '1627:96535, 1627:101612 (session), 1627:104269 (group)', section: 'Manage', kind: 'page', element: createElement(RecruitedTab) },
   { path: '/studies/:id/results', label: 'Results', node: '1627:96628', section: 'Manage', kind: 'page', element: createElement(ResultsTab) },
+  { path: '/studies/:id/pay', label: 'Pay', node: '1627:96779 (ongoing), 1627:97128 (due)', section: 'Manage', kind: 'page', element: createElement(PayTab) },
   { path: '/studies/:id/respondent/:rid', label: 'Respondent result, screener', node: '1627:97305', section: 'Manage', kind: 'page', element: createElement(RespondentResult, { tab: 'screener' }) },
   { path: '/studies/:id/respondent/:rid/result', label: 'Respondent result, study result', node: '1627:97609, 1627:102694 + 102902 (session)', section: 'Manage', kind: 'page', element: createElement(RespondentResult, { tab: 'result' }) },
   { path: '/studies/:id/respondent/:rid/activity', label: 'Activity of respondent', node: '1627:97901', section: 'Manage', kind: 'page', element: createElement(RespondentResult, { tab: 'activity' }) },
