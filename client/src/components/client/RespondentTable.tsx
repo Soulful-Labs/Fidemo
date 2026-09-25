@@ -3,11 +3,24 @@ import { SortIcon } from '../ui/icons'
 import TierChip from './TierChip'
 import type { Tier } from '../../lib/studyTypes'
 
-/** The three application statuses the Recruited table draws (1627:96535). */
+/**
+ * The Recruited table draws three statuses (1627:96535), and they line up
+ * with workflow step 34's red, yellow and green: Applied is still under
+ * consideration, Qualified is through, Disqualified is not.
+ *
+ * The lifecycle has three more states that reach this table and no frame
+ * draws a pill for — Recruited, Scheduled and No-show — so they borrow the
+ * tone of the light they carry. Flagged in docs/Stage-Two-Conflicts.md.
+ */
 export const STATUS_TONE: Record<string, string> = {
   Applied: 'bg-yellow-30 text-brand-primary',
   Qualified: 'bg-green-50 text-brand-secondary',
   Disqualified: 'bg-[#ffeade] text-[#d97706]',
+  Recruited: 'bg-green-50 text-brand-secondary',
+  Scheduled: 'bg-green-50 text-brand-secondary',
+  Completed: 'bg-green-50 text-brand-secondary',
+  Rated: 'bg-green-50 text-brand-secondary',
+  'No-show': 'bg-[#ffeade] text-[#d97706]',
 }
 
 /**

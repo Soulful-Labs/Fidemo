@@ -10,8 +10,8 @@ import { Close } from '../../components/ui/icons'
  * turned back on rather than invented.
  */
 export default function NoShowModal({
-  open, onClose, scope = 'one', name = 'Jenna', full = 'Jenna T.',
-}: { open: boolean; onClose: () => void; scope?: 'one' | 'all'; name?: string; full?: string }) {
+  open, onClose, onConfirm, scope = 'one', name = 'Jenna', full = 'Jenna T.',
+}: { open: boolean; onClose: () => void; onConfirm?: () => void; scope?: 'one' | 'all'; name?: string; full?: string }) {
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
@@ -59,7 +59,7 @@ export default function NoShowModal({
         </div>
 
         <div className="flex h-20 items-center gap-4 px-4">
-          <Button variant="tertiary" size="none" className="h-12 w-[206px]" onClick={onClose}>
+          <Button variant="tertiary" size="none" className="h-12 w-[206px]" onClick={onConfirm ?? onClose}>
             <span className="text-body-medium text-[#e33a38]">Mark as No-Show</span>
           </Button>
           <Button size="none" className="h-12 w-[206px]" onClick={onClose}>

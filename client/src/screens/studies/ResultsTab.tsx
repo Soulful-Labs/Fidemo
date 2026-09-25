@@ -7,9 +7,11 @@ import { ScoreCell, Th } from '../../components/client/RespondentTable'
 import { StudyFrame } from '../../components/client/StudyFrame'
 import { OverviewTile } from './StudyOverview'
 import { ChevronRight, Download, Star } from '../../components/ui/icons'
-import { CERTIFICATE, RESULT_ROWS, RESULT_STATS, SUMMARIES } from '../../mock/results'
+import { CERTIFICATE, SUMMARIES } from '../../mock/results'
 import { useToast } from '../../components/ui/Toast'
 import { useStudy } from '../../mock/store'
+import { averageScore, counts, pageLabels, paginate, recruits } from '../../lib/derive'
+import { useState } from 'react'
 
 /** The sealed stamp the certificate card is drawn with. */
 function Seal() {
@@ -37,13 +39,26 @@ export default function ResultsTab() {
   const { id } = useParams()
   const nav = useNavigate()
   const s = useStudy(id)
+  const [tier, setTier] = useState('All')
+  const [page, setPage] = useState(1)
+  const c = counts(s)
+  /** Step 50: everyone who finished, which is the results the client receives. */
+  const rows = recruits(s, 'results')
+    .filter((r) => r.state !== 'no_show')
+    .filter((r) => tier === 'All' || r.tier === tier.toLowerCase())
+  const shown = paginate(rows, page)
+  const stats = [
+    { label: 'Completed', value: String(c.completed), suffix: `/${s.required} required` },
+    { label: 'Avg. Trust Score', value: String(averageScore(s)) },
+    { label: 'Rated By You', value: String(c.rated), suffix: `/${c.completed} completed` },
+  ]
 
   return (
     <AppShell crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
       <StudyFrame study={s} active="results" minH="min-h-[1481px]" bodyMinH="min-h-[1231px]">
         <div className="flex flex-col px-4 pt-4">
           <div className="grid grid-cols-[213px_213px_213px_1fr] gap-3">
-            {RESULT_STATS.map((t) => <OverviewTile key={t.label} {...t} />)}
+            {stats.map((t) => <OverviewTile key={t.label} {...t} />)}
             <div className="flex items-center justify-between gap-4 rounded-md bg-bgAlt-1 px-4 py-4">
               <div className="flex flex-col gap-1">
                 <p className="text-title-s leading-[22px] text-text-title">{SUMMARIES.title}</p>
@@ -58,7 +73,8 @@ export default function ResultsTab() {
 
           <div className="mt-6 flex h-[38px] items-center justify-between gap-4">
             <h2 className="text-title-s leading-[22px] text-text-title">Completed Study Respondents</h2>
-            <Select value="Tier: All" h="h-[38px]" className="w-[160px] text-text-regular" />
+            <Select value={`Tier: ${tier}`} h="h-[38px]" className="w-[160px] text-text-regular"
+              onClick={() => setTier((v) => (v === 'All' ? 'Platinum' : v === 'Platinum' ? 'Gold' : v === 'Gold' ? 'Silver' : 'All'))} />
           </div>
 
           <div className="pt-3">
@@ -74,18 +90,23 @@ export default function ResultsTab() {
                   </tr>
                 </thead>
                 <tbody>
-                  {RESULT_ROWS.map((r) => (
+                  {shown.rows.length === 0 && (
+                    <tr><td colSpan={5} className="h-[70px] px-[18px] text-center text-text-regular text-text-subtitle">
+                      Nobody has completed this study yet.
+                    </td></tr>
+                  )}
+                  {shown.rows.map((r) => (
                     <tr key={r.id} className="border-b-1 border-stroke-input last:border-b-0">
                       <td className="h-[70px] px-[18px] text-text-regular text-text-title">{r.name}</td>
                       <td className="h-[70px] px-[18px] text-text-regular text-text-title">{r.role}</td>
-                      <td className="h-[70px] px-[18px] text-text-regular text-text-title">{r.date}</td>
+                      <td className="h-[70px] px-[18px] text-text-regular text-text-title">{r.participation.completedAt}</td>
                       <td className="h-[70px] px-[18px]"><ScoreCell score={r.score} tier={r.tier} /></td>
                       <td className="h-[70px] px-[18px]">
-                        {r.rated
+                        {r.state === 'rated'
                           ? <Button variant="tertiary" size="none" className="h-[38px] px-4" onClick={() => toast('Already rated')}>Rated</Button>
                           : (
                             <Button size="none" className="h-[38px] px-4" leftIcon={<Star className="h-4 w-4" />}
-                              onClick={() => nav(`/studies/${s.id}/respondent/${r.id}?rate=1`)}>
+                              onClick={() => nav(`/studies/${s.id}/respondent/${r.id}/result?rate=1`)}>
                               Rate Now
                             </Button>
                           )}
@@ -95,7 +116,7 @@ export default function ResultsTab() {
                 </tbody>
               </table>
             </div>
-            <Pagination pages={[1, 2]} />
+            <Pagination page={shown.page} pages={pageLabels(shown.total, shown.page)} onPage={setPage} />
           </div>
 
           <div className="mt-[25px] flex items-start justify-between gap-4 rounded-lg bg-bgAlt-1 py-4 pl-[30px] pr-4">
@@ -103,7 +124,9 @@ export default function ResultsTab() {
               <Seal />
               <div className="flex flex-col gap-1">
                 <p className="text-label uppercase tracking-[0.04em] text-text-subtitle">{CERTIFICATE.label}</p>
-                <p className="text-title-s leading-[22px] text-text-title">{CERTIFICATE.title}</p>
+                <p className="text-title-s leading-[22px] text-text-title">
+                  {c.completed} of {c.completed} completions verified human
+                </p>
                 <p className="max-w-[834px] text-text-regular text-text-subtitle">{CERTIFICATE.body}</p>
                 <p className="text-text-regular text-text-subtitle">{CERTIFICATE.meta}</p>
               </div>

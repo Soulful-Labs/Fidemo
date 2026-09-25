@@ -230,3 +230,26 @@ export const rankedPool = (study?: Study) => {
   const ranked = [...PEOPLE].sort((a, b) => scoreOf(b) - scoreOf(a))
   return study ? applyRepeatRule(study, ranked) : ranked
 }
+
+// ------------------------------------------------------------- pagination
+
+/**
+ * The frames draw ten rows and a pager. The pager used to be decorative
+ * because the tables held exactly the rows the frame drew; now the list is
+ * as long as the study's people, so it has to be real.
+ */
+export const PAGE_SIZE = 10
+
+export function paginate<T>(rows: T[], page: number, size = PAGE_SIZE) {
+  const total = Math.max(1, Math.ceil(rows.length / size))
+  const current = Math.min(Math.max(1, page), total)
+  return { rows: rows.slice((current - 1) * size, current * size), page: current, total }
+}
+
+/** The pager's own labels: every page up to seven, then first, ellipsis, last. */
+export function pageLabels(total: number, page: number): (number | string)[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  if (page <= 4) return [1, 2, 3, 4, '…', total - 1, total]
+  if (page >= total - 3) return [1, 2, '…', total - 3, total - 2, total - 1, total]
+  return [1, '…', page - 1, page, page + 1, '…', total]
+}

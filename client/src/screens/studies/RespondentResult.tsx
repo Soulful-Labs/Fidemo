@@ -13,6 +13,8 @@ import { DIARY_DAYS, RESPONDENT, SCREENER_ANSWERS } from '../../mock/respondent'
 import { useToast } from '../../components/ui/Toast'
 import { useStudy } from '../../mock/store'
 import type { Study } from '../../mock/db'
+import { useStudies } from '../../mock/store'
+import { recruit, recruits } from '../../lib/derive'
 
 type Tab = 'screener' | 'result' | 'activity'
 
@@ -45,16 +47,22 @@ function StudyStrip({ s }: { s: Study }) {
  */
 export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
   const toast = useToast()
-  const { id } = useParams()
+  const { id, rid } = useParams()
   const nav = useNavigate()
   const [params] = useSearchParams()
   const s = useStudy(id)
+  const { moveRespondent } = useStudies()
   const [rate, setRate] = useState(params.get('rate') === '1' || params.get('rate') === 'rated')
   const [noShow, setNoShow] = useState<'one' | 'all' | null>((params.get('noshow') as 'one' | 'all') ?? null)
 
+  /** Whose result this is. Everything on the screen follows their state. */
+  const person = recruit(s, rid ?? '') ?? recruits(s, 'results')[0]
+  const state = person?.state
+
   const session = s.type !== 'survey' && s.type !== 'diary'
   /** The recruited state is judged on the screener alone; the completed one has a result. */
-  const done = params.get('state') !== 'recruited'
+  const done = params.get('state') === 'recruited' ? false
+    : state === 'completed' || state === 'rated' || state === 'no_show' || params.get('state') === null
   /** booked -> running -> finished, the three states the frames draw the slot in. */
   const slot = (params.get('session') ?? 'booked') as 'booked' | 'running' | 'finished'
   const running = slot !== 'booked'
@@ -139,8 +147,14 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                       </p>
                       <span className="flex items-center gap-3">
                         <Button variant="ghost" size="none" className="h-12 w-[154px] bg-[#fee9e7] text-[#e33a38] hover:text-[#e33a38]"
-                          onClick={() => toast('Respondent disqualified')} leftIcon={<Close className="h-4 w-4" />}>Disqualify</Button>
-                        <Button size="none" className="h-12 w-[154px]" onClick={() => toast('Respondent qualified')} leftIcon={<CheckCircle className="h-4 w-4" />}>Qualify</Button>
+                          onClick={() => {
+                            const res = moveRespondent(s.id, person.id, 'disqualified')
+                            toast(res.ok ? `${person.name} disqualified` : res.why)
+                          }} leftIcon={<Close className="h-4 w-4" />}>Disqualify</Button>
+                        <Button size="none" className="h-12 w-[154px]" onClick={() => {
+                          const res = moveRespondent(s.id, person.id, 'qualified')
+                          toast(res.ok ? `${person.name} qualified` : res.why)
+                        }} leftIcon={<CheckCircle className="h-4 w-4" />}>Qualify</Button>
                       </span>
                     </>
                   )}
@@ -163,7 +177,12 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                       </p>
                       <span className="flex items-center gap-3">
                         <Button variant="tertiary" size="none" className="h-11 px-4" onClick={() => setNoShow('one')} leftIcon={<Close className="h-4 w-4" />}>Mark No-show</Button>
-                        <Button variant="secondary" size="none" className="h-11 px-4" onClick={() => toast('Marked completed')} leftIcon={<CheckCircle className="h-4 w-4" />}>Mark Completed</Button>
+                        <Button variant="secondary" size="none" className="h-11 px-4" onClick={() => {
+                          /* Step 42: no code, no payment. The store refuses when
+                             either side has not entered it. */
+                          const res = moveRespondent(s.id, person.id, 'completed')
+                          toast(res.ok ? `${person.name} marked completed` : res.why)
+                        }} leftIcon={<CheckCircle className="h-4 w-4" />}>Mark Completed</Button>
                       </span>
                     </>
                   )}
@@ -176,8 +195,15 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
         </div>
       </div>
 
-      <RatePanel open={rate} onClose={() => setRate(false)} study={s} rated={params.get('rate') === 'rated'} />
-      <NoShowModal open={!!noShow} scope={noShow ?? 'one'} onClose={() => setNoShow(null)} />
+      <RatePanel open={rate} onClose={() => setRate(false)} study={s} personId={person?.id}
+        rated={params.get('rate') === 'rated'} />
+      <NoShowModal open={!!noShow} scope={noShow ?? 'one'} onClose={() => setNoShow(null)}
+        name={person?.name.split(' ')[0]} full={person?.name}
+        onConfirm={() => {
+          const res = moveRespondent(s.id, person.id, 'no_show')
+          toast(res.ok ? `${person.name} marked as a no-show` : res.why)
+          setNoShow(null)
+        }} />
     </AppShell>
   )
 }
