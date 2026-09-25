@@ -25,7 +25,7 @@ export default function Modal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-text-title/25 px-4" role="presentation" onClick={onClose}>
       <div role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}
         className={cn('flex w-modal flex-col rounded-lg bg-bg-0 text-center shadow-xl', className)}>
-        <div className={cn('flex flex-col gap-4', compact ? 'px-6 pb-[30px] pt-[33px]' : 'px-10 pb-[38px] pt-[44px]')}>
+        <div className={cn('flex flex-col gap-4', compact ? 'px-6 pb-[30px] pt-[33px]' : wide ? 'px-6 pb-[38px] pt-[44px]' : 'px-10 pb-[38px] pt-[44px]')}>
           {title && <h2 className={cn(compact ? 'text-title-m' : 'text-title-l', 'text-text-title')}>{title}</h2>}
           {body && <div className={cn('mx-auto text-body-regular text-text-subtitle', wide ? 'max-w-none' : 'max-w-[330px]')}>{body}</div>}
           {children}

@@ -20,6 +20,7 @@ import Payments from './screens/payments/Payments'
 import NotificationsPage from './screens/NotificationsPage'
 import Help from './screens/help/Help'
 import TicketChat from './screens/help/TicketChat'
+import Account from './screens/account/Account'
 import RespondentResult from './screens/studies/RespondentResult'
 import AudienceNoMatch from './screens/create/AudienceNoMatch'
 import About from './screens/create/About'
@@ -117,14 +118,11 @@ const routes: ScreenRoute[] = [
   { path: '/notifications', label: 'Notifications', node: '1663:104077', section: 'Notifications', kind: 'page', element: createElement(NotificationsPage) },
   { path: '/help', label: 'Help', node: '1663:104191 (faqs), 1663:104228 (tickets)', section: 'Help', kind: 'page', element: createElement(Help) },
   { path: '/help/tickets/:id', label: 'Ticket Chat', node: '1663:104436 (open), 1663:104484 (solved)', section: 'Help', kind: 'page', element: createElement(TicketChat) },
+  { path: '/account', label: 'Account', node: '1663:104600, 104635, 104813, 104876', section: 'Account', kind: 'page', element: createElement(Account) },
 
   // ----- Help (1663:104190) -----
 
   // ----- Account (1663:104599) -----
-  page('/account', 'Profile', '1663:104600', 'Account'),
-  page('/account/reviews', 'Rating & Reviews', '1663:104635', 'Account'),
-  page('/account/certificate', 'Certificate', '1663:104813', 'Account'),
-  page('/account/settings', 'Settings', '1663:104876', 'Account'),
 
   // ----- Dev -----
   { path: '/kitchen-sink', label: 'Kitchen Sink', element: createElement(KitchenSink) },
