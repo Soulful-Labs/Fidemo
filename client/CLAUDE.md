@@ -777,6 +777,31 @@ on its own; picking between them is a business rule, not a drawing.
 | — | Your account has been deactivated! | 1684:129405 | modal |
 | — | Alert: your account has active studies! | 1684:129433 | modal |
 
+### Stage two, how the behaviour is put together
+
+Four files, and every screen reads from them rather than holding its own
+numbers.
+
+| File | Holds |
+|---|---|
+| `lib/lifecycle.ts` | The two state machines and the legal moves. `StudyState` is draft, in_review, recruiting, ongoing, paused, completed, cancelled; `RespondentState` is matched, invited, applied, qualified, disqualified, recruited, scheduled, completed, no_show, rated. `studyTab` and `respondentTab` decide which tab a thing appears under, so it can never be in two. |
+| `lib/policy.ts` | The signed Trust and Rewards policy in code, and nothing that is not in it. The two things it leaves open are marked `OPEN`. |
+| `mock/db.ts` | **The one underlying list.** People, participations and studies. A person carries the two inputs to their score, never the score. |
+| `lib/derive.ts` | Every figure on every screen: counts, progress, segments, the billing card, the payout list, the dashboard tiles, the invoices, pagination. |
+| `mock/store.tsx` | The only place a state changes. Illegal moves are **refused with a reason**, never silently dropped. `TEAM_REVIEW_MS` is the single fake delay. |
+
+**If two screens disagree about a number, one of them is holding a literal.**
+That was true of the Studies list against the study header, of the card bars
+against their own counts, of the dashboard tiles against everything, and of
+the Payments table against its own total. All four are now counted.
+
+**Where the four sources collide, `docs/Stage-Two-Conflicts.md` is the
+record.** The biggest one: the signed policy closes client ratings at three
+states, poor / good / excellent, and Figma draws three dimensions of five
+stars. The policy outranks Figma on ratings, so the panel records three
+states. That is the only signed-off control in the build that was replaced
+rather than kept.
+
 ### Dev
 `/kitchen-sink` renders every repeating component on one page.
 
