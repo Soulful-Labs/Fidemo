@@ -9,6 +9,8 @@ import { SentModal } from './PoolModals'
 import { Calendar, Info, MoreVertical, UsersIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { CRITERIA, FORECAST, PANEL_DETAIL, POOL_PEOPLE } from '../../mock/pool'
+import { useWorkspace } from '../../mock/workspace'
+import { useToast } from '../../components/ui/Toast'
 
 /** The forecast card the Panel Details tab puts beside the criteria. */
 function Forecast() {
@@ -89,8 +91,22 @@ export default function PanelDetail({ featured }: { featured?: boolean }) {
   const nav = useNavigate()
   const { panelId = 'p1' } = useParams()
   const [params, setParams] = useSearchParams()
-  const d = featured ? PANEL_DETAIL.featured : PANEL_DETAIL.mine
-  const tab = params.get('tab') ?? 'members'
+  const tabKey = params.get('tab') ?? 'members'
+  const tab = tabKey
+  const { panels, addToPanel } = useWorkspace()
+  const toast = useToast()
+  /** A panel the client built shows its own name, roles and members. */
+  const own = featured ? undefined : panels.find((x) => x.id === panelId)
+  const base = featured ? PANEL_DETAIL.featured : PANEL_DETAIL.mine
+  const d = own
+    ? { ...base, title: own.title, domain: own.domain, roles: own.roles || base.roles,
+        stats: base.stats.map((st) => (st.label === 'Panel Members'
+          ? { ...st, value: String(own.memberIds.length) } : st)) }
+    : base
+  /** Members are the people in it; Eligible Matches are everyone else. */
+  const members = own ? POOL_PEOPLE.filter((x) => own.memberIds.includes(x.id)) : POOL_PEOPLE
+  const eligible = own ? POOL_PEOPLE.filter((x) => !own.memberIds.includes(x.id)) : POOL_PEOPLE
+  const shown = tabKey === 'members' ? members : eligible
   const [sent, setSent] = useState(params.get('modal') === 'sent')
   const set = (k: string) => { const n = new URLSearchParams(params); n.set('tab', k); setParams(n) }
   const tabs = featured
@@ -153,20 +169,30 @@ export default function PanelDetail({ featured }: { featured?: boolean }) {
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-3 px-4 pb-4 pt-4">
-              {POOL_PEOPLE.map((p) => (
+              {shown.length === 0 && (
+                <p className="col-span-3 py-12 text-center text-body-regular text-text-subtitle">
+                  {tab === 'members'
+                    ? 'Nobody is in this panel yet. Add them from Eligible Matches.'
+                    : 'Everyone who matches is already in this panel.'}
+                </p>
+              )}
+              {shown.map((p) => (
                 <RespondentCard key={p.id} respondent={{ ...p, professionVerified: true }}
                   className="px-4 pb-2 pt-4"
                   saveable={tab === 'members'}
                   actions={tab === 'members'
                     ? <Button variant="tertiary" size="none" className="h-11 flex-1" onClick={() => setSent(true)}>Invite To Study</Button>
-                    : <AddToPanel />} />
+                    : <AddToPanel onAdd={() => {
+                        const res = own ? addToPanel(own.id, p.id) : { ok: false, why: 'A featured panel cannot be edited' }
+                        toast(res.ok ? `${p.name} added to ${d.title}` : res.why!)
+                      }} />} />
               ))}
             </div>
           )}
         </div>
       </div>
       <SentModal open={sent} onClose={() => setSent(false)}
-        panel={{ members: '35', title: 'Expert Oncologists Nationwide' }} />
+        panel={{ members: String(members.length), title: d.title }} />
     </AppShell>
   )
 }

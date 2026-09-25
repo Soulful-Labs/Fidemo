@@ -34,15 +34,15 @@ export function DiscardModal({ open, onClose }: { open: boolean; onClose: () => 
 
 /** Delete Micro-Panels? (1779:101116): the destructive one, in red. */
 export function DeleteModal({
-  open, onClose, title = 'Leading Neurologists - USA',
-}: { open: boolean; onClose: () => void; title?: string }) {
+  open, onClose, onConfirm, title = 'Leading Neurologists - USA',
+}: { open: boolean; onClose: () => void; onConfirm?: () => void; title?: string }) {
   return (
     <Modal open={open} onClose={onClose} title="Delete Micro-Panels?"
       body={`“${title}” micro-panel will be permanently deleted with all its members and data. This cannot be undone.`}
       footer={
         <>
           <Button variant="tertiary" className="flex-1" onClick={onClose}>Cancel</Button>
-          <Button variant="danger" className="flex-1" onClick={onClose}>Delete</Button>
+          <Button variant="danger" className="flex-1" onClick={onConfirm ?? onClose}>Delete</Button>
         </>
       } />
   )

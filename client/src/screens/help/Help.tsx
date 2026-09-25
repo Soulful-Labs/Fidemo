@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink, useSearchParams } from 'react-router-dom'
+import { NavLink, useNavigate, useSearchParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import Tabs from '../../components/ui/Tabs'
@@ -8,8 +8,8 @@ import Tag from '../../components/ui/Tag'
 import { AskSupportPanel, SentSuccessModal } from './HelpPanels'
 import { ChevronDown, ChevronRight, MessageIcon, Search } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import { DIRECT_HELP, REPLY_TIMES, FAQS, TICKETS } from '../../mock/help'
-import { useSeeded } from '../../mock/seeded'
+import { DIRECT_HELP, REPLY_TIMES, FAQS } from '../../mock/help'
+import { useWorkspace } from '../../mock/workspace'
 
 /** One question, open or closed. The frame draws the first one open. */
 function Faq({ q, a, open, onToggle }: { q: string; a?: string; open?: boolean; onToggle: () => void }) {
@@ -67,7 +67,7 @@ export default function Help() {
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState('Newest first')
   /** A new account has raised none. */
-  const seeded = useSeeded(TICKETS)
+  const { tickets: seeded } = useWorkspace()
   /** The search box and the sort both act on this list. */
   const found = seeded.filter((t) => {
     const q = search.trim().toLowerCase()
@@ -76,6 +76,8 @@ export default function Help() {
   const rows = sort === 'Oldest first' ? [...found].reverse() : found
   const [openFaq, setOpenFaq] = useState(0)
   const [panel, setPanel] = useState(params.get('panel') ?? '')
+  const [raised, setRaised] = useState<string | null>(null)
+  const nav = useNavigate()
   const set = (k: string) => { const n = new URLSearchParams(params); n.set('tab', k); setParams(n) }
 
   return (
@@ -159,8 +161,10 @@ export default function Help() {
         )}
       </div>
 
-      <AskSupportPanel open={panel === 'ask'} onClose={() => setPanel('')} onSent={() => setPanel('sent')} />
-      <SentSuccessModal open={panel === 'sent'} onClose={() => setPanel('')} />
+      <AskSupportPanel open={panel === 'ask'} onClose={() => setPanel('')}
+        onSent={(id) => { setRaised(id); setPanel('sent') }} />
+      <SentSuccessModal open={panel === 'sent'} onClose={() => setPanel('')}
+        onOpenChat={raised ? () => { setPanel(''); nav(`/help/tickets/${raised}`) } : undefined} />
     </AppShell>
   )
 }

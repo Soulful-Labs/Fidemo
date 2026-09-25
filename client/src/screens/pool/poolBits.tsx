@@ -11,10 +11,11 @@ import { useToast } from '../../components/ui/Toast'
 const MARK: Record<string, typeof GoldMark> = { Silver: SilverMark, Gold: GoldMark, Platinum: PlatinumMark }
 
 /** The add action the Eligible Matches tab swaps into the respondent card. */
-export function AddToPanel() {
+export function AddToPanel({ onAdd }: { onAdd?: () => void }) {
   const toast = useToast()
   return (
-    <Button variant="tertiary" size="none" className="h-11 w-full" leftIcon={<Plus className="h-4 w-4" />} onClick={() => toast('Added to this panel')}>
+    <Button variant="tertiary" size="none" className="h-11 w-full" leftIcon={<Plus className="h-4 w-4" />}
+      onClick={() => (onAdd ? onAdd() : toast('Added to this panel'))}>
       Add To This Panel
     </Button>
   )

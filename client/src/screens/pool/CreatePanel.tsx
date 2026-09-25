@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import Toggle from '../../components/ui/Toggle'
@@ -8,6 +8,8 @@ import { cn } from '../../lib/cn'
 import { DiscardModal } from './PoolModals'
 import { CRITERIA, FORECAST, FORECAST_BARS, POOL_FILTERS, POOL_OPTIONS } from '../../mock/pool'
 import Picker from '../../components/ui/Picker'
+import { useWorkspace } from '../../mock/workspace'
+import { useToast } from '../../components/ui/Toast'
 
 /** The live forecast beside the form; the tiers are bars here, not cards. */
 function Forecast({ approx }: { approx?: boolean }) {
@@ -109,6 +111,7 @@ function Picked({ label, placeholder, options, chips, onChange }: {
  * in 0.31% of pixels: the title, the prefilled name and the top-bar label.
  */
 export default function CreatePanel({ edit }: { edit?: boolean }) {
+  const { panelId } = useParams()
   const [params, setParams] = useSearchParams()
   const step2 = params.get('step') === '2'
   const [discard, setDiscard] = useState(params.get('modal') === 'discard')
@@ -121,13 +124,44 @@ export default function CreatePanel({ edit }: { edit?: boolean }) {
   const [lastActive, setLastActive] = useState('Any')
   const [education, setEducation] = useState("Graduate or Bachelor's")
   const go = (v: string) => { const n = new URLSearchParams(params); n.set('step', v); setParams(n) }
+  const { createPanel, updatePanel, panels } = useWorkspace()
+  const nav = useNavigate()
+  const toast = useToast()
+  const existing = edit ? panels.find((p) => p.id === panelId) : undefined
+  const [name, setName] = useState(existing?.title ?? '')
+  const [domain, setDomain] = useState(existing?.domain ?? 'Healthcare')
+  const [roles, setRoles] = useState(existing?.roles ?? '')
+
+  /** Proceed shows the forecast; Create Panel on step two makes it. */
+  const submit = () => {
+    if (!step2) { go('2'); return }
+    if (!name.trim()) { toast('Give the micro-panel a name first'); go('1'); return }
+    const criteria = [
+      { label: 'Minimum Profile Score', value: score },
+      { label: 'Gender', value: gender },
+      { label: 'Location', value: location.join(', ') },
+      { label: 'Age Range', value: ages.join(', ') },
+      { label: 'Language', value: language.join(', ') },
+      { label: 'Last Active', value: lastActive },
+      { label: 'Level of Education', value: education },
+    ]
+    if (existing) {
+      updatePanel(existing.id, { title: name, domain, roles, criteria })
+      toast('Micro-panel updated')
+      nav(`/pool/panels/${existing.id}`)
+      return
+    }
+    const id = createPanel({ title: name, domain, roles, criteria })
+    toast('Micro-panel created')
+    nav(`/pool/panels/${id}`)
+  }
 
   return (
     <AppShell hideCreate crumbs={[{ label: 'Pool', to: '/pool?view=panels' }, { label: edit ? 'Edit Micro-panel' : 'Create Micro-panel' }]}
       action={
         <span className="flex items-center gap-3">
           <Button variant="tertiary" size="row" onClick={() => setDiscard(true)}>Cancel</Button>
-          <Button size="row" onClick={() => go(step2 ? '1' : '2')}>{step2 ? 'Create Panel' : 'Proceed'}</Button>
+          <Button size="row" onClick={submit}>{step2 ? (edit ? 'Save Panel' : 'Create Panel') : 'Proceed'}</Button>
         </span>
       }>
       <div className="min-h-[1316px] rounded-lg bg-bg-0 p-4">
@@ -161,17 +195,17 @@ export default function CreatePanel({ edit }: { edit?: boolean }) {
 
               <label className="flex flex-col gap-2 pt-4">
                 <span className="text-text-regular text-text-subtitle">Micro-panel Name</span>
-                <span className="flex h-12 items-center rounded-sm border-1 border-stroke-input px-4 text-body-regular text-text-body">
-                  {edit ? 'Leading Neurologists - USA' : 'Enter a panel name'}
-                </span>
+                <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter a panel name"
+                  className="flex h-12 items-center rounded-sm border-1 border-stroke-input px-4 text-body-regular text-text-title outline-none placeholder:text-text-body" />
               </label>
               <label className="flex flex-col gap-2 pt-4">
                 <span className="text-text-regular text-text-subtitle">Domain</span>
-                <span className="flex h-12 items-center rounded-sm border-1 border-stroke-input px-4 text-body-regular text-text-body">Select a domain</span>
+                <Picker value={domain} onPick={setDomain} options={POOL_OPTIONS.domain} />
               </label>
               <label className="flex flex-col gap-2 pt-4">
                 <span className="text-text-regular text-text-subtitle">Role</span>
-                <span className="flex h-12 items-center rounded-sm border-1 border-stroke-input px-4 text-body-regular text-text-body">Select roles</span>
+                <input value={roles} onChange={(e) => setRoles(e.target.value)} placeholder="Select roles"
+                  className="flex h-12 items-center rounded-sm border-1 border-stroke-input px-4 text-body-regular text-text-title outline-none placeholder:text-text-body" />
               </label>
               <label className="flex flex-col gap-2 pt-4">
                 <span className="text-text-regular text-text-subtitle">Level of Education</span>

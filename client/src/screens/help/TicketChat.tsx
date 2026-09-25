@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import Tag from '../../components/ui/Tag'
@@ -8,6 +8,7 @@ import { ChevronLeft, Info, LinkIcon, Star } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { THREAD } from '../../mock/help'
 import { useToast } from '../../components/ui/Toast'
+import { useWorkspace } from '../../mock/workspace'
 
 /** A bubble and the time under it, left for support and right for the client. */
 function Bubble({ mine, children, at, after }: {
@@ -30,9 +31,20 @@ function Bubble({ mine, children, at, after }: {
  * whether the composer is drawn at all. A solved ticket cannot be replied to.
  */
 export default function TicketChat() {
+  const { tickets, replyToTicket, solveTicket } = useWorkspace()
+  const [draft, setDraft] = useState('')
+  const [attached, setAttached] = useState(false)
   const toast = useToast()
   const nav = useNavigate()
   const [params] = useSearchParams()
+  const { id: ticketId } = useParams()
+  const record = tickets.find((x) => x.id === ticketId) ?? tickets[0]
+  const send = () => {
+    if (!draft.trim() || !record) return
+    replyToTicket(record.id, draft.trim(), attached ? 'Screenshot' : undefined)
+    setDraft('')
+    setAttached(false)
+  }
   const solved = params.get('state') === 'solved'
   const [ask, setAsk] = useState(params.get('modal') === 'solved')
   const t = THREAD
@@ -95,18 +107,29 @@ export default function TicketChat() {
             <Bubble mine at={t.answer.at}>
               <p className="text-text-regular leading-5 text-text-title">{t.answer.text}</p>
             </Bubble>
+
+            {/* What has actually been sent on this ticket. */}
+            {(record?.messages ?? []).filter((m) => m.from === 'client' && m.id.endsWith('-sent')).map((m) => (
+              <Bubble key={m.id} mine at={m.at}
+                after={m.attachment ? <span className="mt-1 h-[128px] w-[170px] rounded-md bg-[#20242c]" aria-label={m.attachment} /> : undefined}>
+                {m.lines.map((l, i) => (
+                  <p key={i} className="text-text-regular leading-5 text-text-title">{l}</p>
+                ))}
+              </Bubble>
+            ))}
           </div>
 
           {!solved && (
             <div className="flex h-20 shrink-0 items-center gap-4 border-t-1 border-stroke-1 px-4">
-              <button type="button" aria-label="Attach a file" onClick={() => toast('Attachment added')}
+              <button type="button" aria-label="Attach a file" onClick={() => { setAttached(true); toast('Attachment added to your next message') }}
                 className="flex h-12 w-12 shrink-0 items-center justify-center rounded-sm border-1 border-stroke-input text-text-subtitle hover:text-text-title">
                 <LinkIcon className="h-5 w-5" />
               </button>
-              <span className="flex h-12 flex-1 items-center rounded-sm border-1 border-stroke-input px-4 text-body-regular text-text-body">
-                {t.composer}
-              </span>
-              <Button size="none" className="h-12 w-[103px]" onClick={() => toast('Message sent')} leftIcon={<Star className="h-4 w-4" />}>
+              <input value={draft} onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') send() }}
+                placeholder={t.composer}
+                className="flex h-12 flex-1 items-center rounded-sm border-1 border-stroke-input px-4 text-body-regular text-text-title outline-none placeholder:text-text-body" />
+              <Button size="none" className="h-12 w-[103px]" onClick={send} leftIcon={<Star className="h-4 w-4" />}>
                 <span className="text-body-medium">Send</span>
               </Button>
             </div>
@@ -114,7 +137,8 @@ export default function TicketChat() {
         </section>
       </div>
 
-      <MarkSolvedModal open={ask} onClose={() => setAsk(false)} />
+      <MarkSolvedModal open={ask} onClose={() => setAsk(false)}
+        onConfirm={() => { if (record) solveTicket(record.id); setAsk(false); toast('Ticket marked solved') }} />
     </AppShell>
   )
 }

@@ -7,6 +7,7 @@ import { CreateProvider } from './mock/createStore'
 import ToastHost from './components/ui/Toast'
 import { StudyProvider } from './mock/store'
 import { SessionProvider } from './mock/session'
+import { WorkspaceProvider } from './mock/workspace'
 
 function Routed() {
   return useRoutes(routes)
@@ -16,13 +17,15 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <SessionProvider>
-        <StudyProvider>
+        <WorkspaceProvider>
+          <StudyProvider>
           <CreateProvider>
             <ToastHost>
               <Routed />
             </ToastHost>
           </CreateProvider>
-        </StudyProvider>
+          </StudyProvider>
+        </WorkspaceProvider>
       </SessionProvider>
     </BrowserRouter>
   </StrictMode>,

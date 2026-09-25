@@ -10,9 +10,9 @@ import { DeleteModal, SentModal } from './PoolModals'
 import FilterRail, { PanelTile } from './poolBits'
 import { Close, Plus, Search } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import { FEATURED_CATEGORIES, FEATURED_PANELS, MY_PANELS, POOL_DEFAULT_FILTERS, POOL_PEOPLE, POOL_SEARCH, POOL_TOTAL } from '../../mock/pool'
+import { FEATURED_CATEGORIES, FEATURED_PANELS, POOL_DEFAULT_FILTERS, POOL_PEOPLE, POOL_SEARCH, POOL_TOTAL } from '../../mock/pool'
 import { matchesPool, poolChips } from '../../lib/poolFilter'
-import { useSeeded } from '../../mock/seeded'
+import { useWorkspace } from '../../mock/workspace'
 
 /**
  * Pool of Participants (1645:161430 with filters, 1777:98738 without,
@@ -26,13 +26,14 @@ export default function Pool() {
   const panels = params.get('view') === 'panels'
   const featured = params.get('sub') === 'featured'
   /** Featured panels are public; a client's own panels are theirs. */
-  const mine = useSeeded(MY_PANELS)
+  const { panels: mine, deletePanel } = useWorkspace()
   const [filters, setFilters] = useState(params.get('filters') !== 'hidden')
   /** The rail, the search box and the chips above the grid are one state. */
   const [f, setF] = useState({ ...POOL_DEFAULT_FILTERS })
   const [query, setQuery] = useState('')
   const [panelSearch, setPanelSearch] = useState('')
   const [category, setCategory] = useState('All')
+  const [deleting, setDeleting] = useState<string | null>(null)
   const panelCards = (featured ? FEATURED_PANELS : mine)
     .filter((c) => category === 'All' || c.domain === category)
     .filter((c) => {
@@ -161,7 +162,7 @@ export default function Pool() {
                 </div>
               )}
               {panelCards.map((c) => (
-                <PanelTile key={c.id} c={c} to={`/pool/${featured ? 'featured' : 'panels'}/${c.id}`} onDelete={() => setPanel('delete')} />
+                <PanelTile key={c.id} c={c} to={`/pool/${featured ? 'featured' : 'panels'}/${c.id}`} onDelete={() => setDeleting(c.id)} />
               ))}
             </div>
           </>
@@ -173,7 +174,8 @@ export default function Pool() {
       <ReviewsPanel open={panel === 'reviews'} onClose={() => setPanel('')} onBack={() => setPanel('profile')} />
       <InvitePanel open={panel === 'invite'} onClose={() => setPanel('')} onSent={() => setPanel('sent')} />
       <SentModal open={panel === 'sent'} onClose={() => setPanel('')} />
-      <DeleteModal open={panel === 'delete'} onClose={() => setPanel('')} />
+      <DeleteModal open={deleting !== null} onClose={() => setDeleting(null)}
+        onConfirm={() => { if (deleting) deletePanel(deleting); setDeleting(null) }} />
       <SavePanel open={panel === 'save'} onClose={() => setPanel('')} />
     </AppShell>
   )
