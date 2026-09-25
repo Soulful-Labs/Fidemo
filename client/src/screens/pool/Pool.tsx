@@ -75,7 +75,7 @@ export default function Pool() {
                 </button>
                 <div className={cn('grid gap-3 pt-4', filters ? 'grid-cols-2' : 'grid-cols-3')}>
                   {POOL_PEOPLE.map((p) => (
-                    <RespondentCard key={p.id} respondent={{ ...p, professionVerified: true }} saveable className="gap-2.5 px-4 pb-2 pt-4"
+                    <RespondentCard key={p.id} respondent={{ ...p, professionVerified: true }} saveable className="px-4 pb-2 pt-4"
                       onView={() => setPanel('profile')}
                       actions={<Button variant="tertiary" size="none" className="h-11 flex-1"
                         onClick={() => setPanel('invite')}>Invite To Study</Button>} />

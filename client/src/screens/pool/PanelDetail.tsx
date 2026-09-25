@@ -155,7 +155,7 @@ export default function PanelDetail({ featured }: { featured?: boolean }) {
             <div className="grid grid-cols-3 gap-3 px-4 pb-4 pt-4">
               {POOL_PEOPLE.map((p) => (
                 <RespondentCard key={p.id} respondent={{ ...p, professionVerified: true }}
-                  className="gap-2.5 px-4 pb-2 pt-4"
+                  className="px-4 pb-2 pt-4"
                   saveable={tab === 'members'}
                   actions={tab === 'members'
                     ? <Button variant="tertiary" size="none" className="h-11 flex-1" onClick={() => setSent(true)}>Invite To Study</Button>

@@ -39,8 +39,8 @@ export function InvoiceDetailsPanel({
     <SidePanel open={open} onClose={onClose} title={INVOICE.title} headerClassName="h-14"
       className="h-fit max-h-full" bodyClassName="flex flex-col gap-3 px-4 pb-4 pt-4"
       footer={paid
-        ? <Button variant="tertiary" fullWidth className="h-12 text-body-medium" onClick={() => toast('Invoice downloaded')} leftIcon={<Download className="h-4 w-4" />}>Download</Button>
-        : <Button fullWidth className="h-12 text-body-medium" onClick={onPay}>Make Payment</Button>}>
+        ? <Button variant="tertiary" fullWidth size="none" className="h-12 text-body-medium" onClick={() => toast('Invoice downloaded')} leftIcon={<Download className="h-4 w-4" />}>Download</Button>
+        : <Button fullWidth size="none" className="h-12 text-body-medium" onClick={onPay}>Make Payment</Button>}>
       <p className="text-body-medium text-text-title">{INVOICE.number}</p>
 
       <div className="flex flex-col gap-2 rounded-lg border-1 border-stroke-input p-4">

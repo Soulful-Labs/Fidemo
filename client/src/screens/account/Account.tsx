@@ -119,7 +119,7 @@ export default function Account() {
                   <Field label="Industry" value={form.industry} select onChange={(v) => setForm({ ...form, industry: v })} />
                   <Field label="Location" value={form.location} onChange={(v) => setForm({ ...form, location: v })} />
                 </div>
-                <Button fullWidth className="mt-8 h-12 text-body-medium" onClick={() => {
+                <Button fullWidth size="none" className="mt-6 h-12 text-body-medium" onClick={() => {
                   update({ name: form.name, role: form.role, company: form.company,
                     vat: form.vat, industry: form.industry, location: form.location })
                   toast('Saved')
