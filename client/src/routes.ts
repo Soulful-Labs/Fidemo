@@ -16,6 +16,7 @@ import BillPayment from './screens/studies/BillPayment'
 import Pool from './screens/pool/Pool'
 import PanelDetail from './screens/pool/PanelDetail'
 import CreatePanel from './screens/pool/CreatePanel'
+import Payments from './screens/payments/Payments'
 import RespondentResult from './screens/studies/RespondentResult'
 import AudienceNoMatch from './screens/create/AudienceNoMatch'
 import About from './screens/create/About'
@@ -103,13 +104,11 @@ const routes: ScreenRoute[] = [
   { path: '/pool/featured/:panelId', label: 'Featured Panel', node: '1645:161816, 1645:161904', section: 'Pool', kind: 'page', element: createElement(PanelDetail, { featured: true }) },
   { path: '/pool/panels/new', label: 'Create Micro-panel', node: '1645:162404, 1645:162784', section: 'Pool', kind: 'page', element: createElement(CreatePanel) },
   { path: '/pool/panels/:panelId/edit', label: 'Edit Micro-panel', node: '1645:162594', section: 'Pool', kind: 'page', element: createElement(CreatePanel, { edit: true }) },
+  { path: '/payments', label: 'Payments', node: '1663:103326 (pending), 1663:103525 (completed)', section: 'Payments', kind: 'page', element: createElement(Payments) },
   page('/pool/featured/:panelId', 'Featured Panel, Details', '1645:161904', 'Pool'),
   page('/pool/featured/:panelId/members', 'Featured Panel, Members', '1645:161816', 'Pool'),
 
   // ----- Payments (1663:103325) -----
-  page('/payments', 'Payments', '1663:103326', 'Payments'),
-  page('/payments/history', 'Payments, history', '1663:103525', 'Payments'),
-  page('/payments/methods', 'Payments, methods', '1663:103724', 'Payments'),
 
   // ----- Notifications (1663:104076) -----
   page('/notifications', 'Notifications', '1663:104077', 'Notifications'),
