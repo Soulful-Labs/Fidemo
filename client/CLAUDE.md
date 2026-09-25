@@ -643,6 +643,57 @@ word in the dialog are the whole of it.
 | — | Mark as solved? | 1663:104539 | modal |
 | — | Sent successfully! | 1663:104580 | modal |
 
+### Account, and what the certificate claims
+
+**The only section whose frame list matched the inventory exactly.** Ten
+frames, none hidden, none extra — the first time Rule 6 has turned up nothing.
+All four pages are one screen with a 197px sub-navigation and a 600px column;
+**Logout is the fifth nav item and raises a dialog** rather than changing the
+column.
+
+**Rating & Reviews shows the client being rated, and the ratings they gave, on
+the same row.** The headline is the client's own aggregate — a star, **4.5**,
+"of 1,468 reviews". Under it, each entry is a study with a star rating, a date
+and a written review, then a second line: "**To participant:** Eliza D ★ 5.0
+…". So the top line of each row is the score attached to that study and the
+bottom line is what the client gave the participant back. It is the mirror of
+the Pool's Reviews panel, which labels the same second line "To client:".
+**The seeded bodies are the respondent-facing copy reused**: they read "It was
+great working with Luke…", i.e. someone praising a person, where on the
+client's own page they should be participants writing about the client. Kept
+as drawn.
+
+**The certificate is a business verification badge, not a trust score.** The
+banner reads "You are a verified business!" / "Since July 2026". The card is
+titled **"Human Layer Buyer Certificate"** — the respondent app's brand, not
+Focus Insite — carries **Cert. ID: HL-R-9F2A-3K7P**, and lists four claims:
+EIN Business verified, Domain ownership confirmed, Verified billing on file,
+Data handling agreement. Nothing else: no issue or expiry date beyond "Since
+July 2026", no download, no share link, no public check URL, no seal artwork,
+no signature, no issuing authority named.
+
+**For it to be real, four things would have to exist** that no frame or policy
+covers: a registry check that resolves an EIN to this company; a domain
+ownership proof tied to the work email's domain; a billing record the
+certificate can assert against; and a signed data handling agreement on file —
+plus an issuer, a validity period and a way for a third party to verify the
+ID. **The signed Trust and Rewards policy covers respondents only**, so none of
+these four claims has a policy behind it today. **And the Cert. ID on this
+screen is the same string the respondent panels use for Ferry L.**
+(HL-R-9F2A-3K7P), so as drawn a client and a respondent share one certificate
+number.
+
+**Which alert appears when.** Change Password → **Password has been updated!**
+Deactivate Account → the password form, and then one of two outcomes:
+**Your account has been deactivated!** ("You can login back to reactivate and
+access your account.") or **Your account has active studies!** ("Account can be
+deactivated only after completing all the studies.", one button, "Got It!").
+The Deactivate form states the rule itself — "Your account will be deactivated
+once all running studies gets ended" — so the alert is the same rule refused at
+submit. **No frame shows which of the two outcomes fires**, so the build wires
+Submit to the active-studies alert and leaves the deactivated dialog reachable
+on its own; picking between them is a business rule, not a drawing.
+
 ### Account — section 1663:104599
 | Route | Screen | Node | Kind |
 |---|---|---|---|
