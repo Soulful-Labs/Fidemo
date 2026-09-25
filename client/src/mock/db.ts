@@ -1,6 +1,6 @@
 import type { RespondentState, StudyState } from '../lib/lifecycle'
 import type { RatingState, RepeatRule } from '../lib/policy'
-import { tierFor, trustScore } from '../lib/policy'
+import { TRUST_BY_STARS, TRUST_ONBOARDING, TRUST_RATING_WINDOW, TRUST_STUDY_CAP, tierFor, trustScore } from '../lib/policy'
 import type { StudyType, Tier } from '../lib/studyTypes'
 
 /**
@@ -34,12 +34,45 @@ export interface Person {
   priorStudies: string[]
 }
 
+/**
+ * Ten ratings whose policy deltas add up to what a target score needs.
+ *
+ * The score is always computed by `lib/policy.ts` — 50, plus one per
+ * completed study capped at ten, plus the last ten ratings capped at forty.
+ * This only chooses a rating history that lands on the number the frame
+ * drew, so nothing is printed beside a score it does not produce.
+ */
+function starsFor(target: number, studies: number): number[] {
+  const need = Math.max(-40, Math.min(40, target - TRUST_ONBOARDING - Math.min(studies, TRUST_STUDY_CAP)))
+  const n = TRUST_RATING_WINDOW
+  /** Every split of ten ratings; the first that lands exactly on `need` wins. */
+  for (let a = n; a >= 0; a -= 1) {
+    for (let b = n - a; b >= 0; b -= 1) {
+      for (let c = n - a - b; c >= 0; c -= 1) {
+        for (let d = n - a - b - c; d >= 0; d -= 1) {
+          const e = n - a - b - c - d
+          const sum = a * TRUST_BY_STARS[5] + b * TRUST_BY_STARS[4] + c * TRUST_BY_STARS[3]
+            + d * TRUST_BY_STARS[2] + e * TRUST_BY_STARS[1]
+          if (sum === need) {
+            return [
+              ...Array(a).fill(5), ...Array(b).fill(4), ...Array(c).fill(3),
+              ...Array(d).fill(2), ...Array(e).fill(1),
+            ]
+          }
+        }
+      }
+    }
+  }
+  return Array(n).fill(3)
+}
+
 const person = (
-  id: string, name: string, role: string, completedStudiesThisYear: number, recentStars: number[],
+  id: string, name: string, role: string, completedStudiesThisYear: number, score: number,
   extra: Partial<Person> = {},
 ): Person => ({
   id, name, role, location: 'New York, US', experienceYears: 10,
-  completedStudiesThisYear, recentStars, priorStudies: [], ...extra,
+  completedStudiesThisYear, recentStars: starsFor(score, completedStudiesThisYear),
+  priorStudies: [], ...extra,
 })
 
 /**
@@ -48,59 +81,59 @@ const person = (
  * own tiles, so every frame keeps the names it was drawn with.
  */
 export const PEOPLE: Person[] = [
-  person('ferry-l', 'Ferry L', 'Oncologist', 8, [5, 5, 5, 4, 5, 5, 5, 4, 5, 5], { professionVerified: true, experienceYears: 10 }),
-  person('james-k', 'James K', 'Oncologist', 8, [5, 5, 5, 4, 5, 5, 5, 4, 5, 5], { professionVerified: true }),
-  person('jordan-m', 'Jordan M', 'Cardiologist', 6, [4, 4, 5, 4, 4, 3, 4, 5, 4, 4]),
-  person('samantha-t', 'Samantha T', 'Neurologist', 5, [4, 3, 4, 3, 4, 4, 3, 4, 3, 4]),
-  person('emily-r', 'Emily R', 'Pediatrician', 7, [5, 4, 4, 4, 5, 4, 4, 4, 5, 4], { professionVerified: true }),
-  person('michael-b', 'Michael B', 'Dermatologist', 9, [5, 5, 4, 5, 4, 5, 5, 4, 5, 4]),
-  person('laura-j', 'Laura J', 'Endocrinologist', 4, [3, 4, 3, 4, 3, 3, 4, 3, 4, 3]),
-  person('kevin-w', 'Kevin W', 'Orthopedic Surgeon', 10, [5, 5, 5, 5, 5, 5, 4, 5, 5, 5], { professionVerified: true }),
-  person('nina-s', 'Nina S', 'Psychiatrist', 6, [4, 4, 3, 4, 4, 4, 3, 4, 4, 4]),
-  person('oliver-p', 'Oliver P', 'Gastroenterologist', 3, [3, 2, 3, 3, 2, 3, 3, 2, 3, 3]),
+  person('ferry-l', 'Ferry L', 'Oncologist', 8, 92, { professionVerified: true, experienceYears: 10 }),
+  person('james-k', 'James K', 'Oncologist', 8, 92, { professionVerified: true }),
+  person('jordan-m', 'Jordan M', 'Cardiologist', 6, 85),
+  person('samantha-t', 'Samantha T', 'Neurologist', 5, 78),
+  person('emily-r', 'Emily R', 'Pediatrician', 7, 88, { professionVerified: true }),
+  person('michael-b', 'Michael B', 'Dermatologist', 9, 90),
+  person('laura-j', 'Laura J', 'Endocrinologist', 4, 76),
+  person('kevin-w', 'Kevin W', 'Orthopedic Surgeon', 10, 95, { professionVerified: true }),
+  person('nina-s', 'Nina S', 'Psychiatrist', 6, 82),
+  person('oliver-p', 'Oliver P', 'Gastroenterologist', 3, 68),
 
-  person('veronica-l', 'Veronica L', 'Human Resources Manager', 8, [5, 5, 4, 5, 5, 4, 5, 5, 4, 5], { professionVerified: true }),
-  person('john-m', 'John M', 'Operations Manager', 9, [5, 5, 5, 4, 5, 5, 5, 5, 4, 5]),
-  person('john-m-2', 'John M', 'Supply Chain Specialist', 9, [5, 5, 5, 5, 4, 5, 5, 5, 5, 4]),
-  person('john-m-3', 'John M', 'Sales Strategist', 6, [4, 4, 4, 5, 4, 4, 4, 4, 5, 4]),
-  person('john-m-4', 'John M', 'Compliance Officer', 7, [4, 5, 4, 4, 5, 4, 4, 5, 4, 4]),
-  person('john-m-5', 'John M', 'Financial Consultant', 9, [5, 5, 4, 5, 5, 5, 4, 5, 5, 5]),
-  person('john-m-6', 'John M', 'Project Coordinator', 4, [3, 4, 3, 4, 4, 3, 3, 4, 4, 3]),
-  person('john-m-7', 'John M', 'Business Analyst', 6, [4, 4, 5, 4, 4, 4, 4, 4, 5, 4]),
-  person('john-m-8', 'John M', 'Market Research Analyst', 2, [2, 3, 2, 2, 3, 2, 3, 2, 2, 3]),
-  person('john-m-9', 'John M', 'Data Analyst', 3, [3, 3, 3, 3, 4, 3, 3, 3, 3, 3]),
+  person('veronica-l', 'Veronica L', 'Human Resources Manager', 8, 90, { professionVerified: true }),
+  person('john-m', 'John M', 'Operations Manager', 9, 92),
+  person('john-m-2', 'John M', 'Supply Chain Specialist', 9, 92),
+  person('john-m-3', 'John M', 'Sales Strategist', 6, 85),
+  person('john-m-4', 'John M', 'Compliance Officer', 7, 88),
+  person('john-m-5', 'John M', 'Financial Consultant', 9, 91),
+  person('john-m-6', 'John M', 'Project Coordinator', 4, 78),
+  person('john-m-7', 'John M', 'Business Analyst', 6, 86),
+  person('john-m-8', 'John M', 'Market Research Analyst', 2, 65),
+  person('john-m-9', 'John M', 'Data Analyst', 3, 70),
 
-  person('michael-t', 'Michael T', 'Software Engineer', 9, [5, 5, 5, 4, 5, 5, 5, 4, 5, 5]),
-  person('sophia-k', 'Sophia K', 'Product Designer', 7, [4, 5, 4, 4, 5, 4, 5, 4, 4, 5]),
-  person('david-l', 'David L', 'Data Analyst', 6, [4, 4, 5, 4, 4, 4, 5, 4, 4, 4]),
-  person('olivia-j', 'Olivia J', 'Project Manager', 9, [5, 5, 4, 5, 5, 5, 5, 4, 5, 5]),
-  person('james-c', 'James C', 'UX Researcher', 7, [5, 4, 4, 5, 4, 4, 5, 4, 4, 5]),
-  person('ava-b', 'Ava B', 'Sales Executive', 10, [5, 5, 5, 5, 5, 4, 5, 5, 5, 5]),
-  person('lucas-h', 'Lucas H', 'Content Writer', 6, [4, 4, 4, 5, 4, 4, 4, 4, 4, 5]),
+  person('michael-t', 'Michael T', 'Software Engineer', 9, 92),
+  person('sophia-k', 'Sophia K', 'Product Designer', 7, 88),
+  person('david-l', 'David L', 'Data Analyst', 6, 87),
+  person('olivia-j', 'Olivia J', 'Project Manager', 9, 91),
+  person('james-c', 'James C', 'UX Researcher', 7, 89),
+  person('ava-b', 'Ava B', 'Sales Executive', 10, 93),
+  person('lucas-h', 'Lucas H', 'Content Writer', 6, 86),
 
-  person('r-ferry', 'Ferry L.', 'Physiology Therapist, Orthopedic', 10, [5, 5, 5, 5, 5, 5, 5, 5, 4, 5], { professionVerified: true }),
-  person('r-sophie', 'Sophie A.', 'Clinical Psychologist', 8, [5, 4, 5, 4, 5, 5, 4, 5, 4, 5], { professionVerified: true }),
-  person('r-ella', 'Ella M.', 'Nutritionist', 7, [4, 5, 4, 4, 5, 4, 5, 4, 4, 5]),
-  person('r-tom', 'Tom H.', 'Cardiologist', 10, [5, 5, 5, 5, 5, 5, 5, 4, 5, 5]),
-  person('r-liam', 'Liam T.', 'Orthopedic Surgeon', 10, [5, 5, 5, 5, 4, 5, 5, 5, 5, 5], { professionVerified: true }),
-  person('r-david', 'David P.', 'Gastroenterologist', 10, [5, 5, 5, 5, 5, 5, 4, 5, 5, 5]),
-  person('r-james', 'James K.', 'Pediatrician', 9, [5, 5, 4, 5, 5, 5, 5, 4, 5, 5], { professionVerified: true }),
-  person('r-ava', 'Ava R.', 'Dermatologist', 9, [5, 5, 5, 4, 5, 5, 4, 5, 5, 5], { professionVerified: true }),
-  person('r-nina', 'Nina C.', 'Radiologist', 2, [3, 2, 2, 3, 2, 3, 2, 2, 3, 2]),
+  person('r-ferry', 'Ferry L.', 'Physiology Therapist, Orthopedic', 10, 95, { professionVerified: true }),
+  person('r-sophie', 'Sophie A.', 'Clinical Psychologist', 8, 89, { professionVerified: true }),
+  person('r-ella', 'Ella M.', 'Nutritionist', 7, 87),
+  person('r-tom', 'Tom H.', 'Cardiologist', 10, 95),
+  person('r-liam', 'Liam T.', 'Orthopedic Surgeon', 10, 93, { professionVerified: true }),
+  person('r-david', 'David P.', 'Gastroenterologist', 10, 94),
+  person('r-james', 'James K.', 'Pediatrician', 9, 91, { professionVerified: true }),
+  person('r-ava', 'Ava R.', 'Dermatologist', 9, 90, { professionVerified: true }),
+  person('r-nina', 'Nina C.', 'Radiologist', 2, 68),
 
   /* The Pool's own tiles (1645:161430). Same list, same scoring. */
-  person('tom-h', 'Tom H.', 'Chiropractor, Sports Medicine', 10, [5, 5, 5, 5, 5, 5, 5, 5, 5, 4], { professionVerified: true }),
-  person('sofia-p', 'Sofia P.', 'Occupational Therapist, Pediatric', 10, [5, 5, 5, 5, 5, 4, 5, 5, 4, 5], { professionVerified: true }),
-  person('yara-m', 'Yara M.', 'Rehabilitation Specialist, Cardiology', 9, [5, 5, 5, 4, 5, 5, 4, 5, 5, 5], { professionVerified: true }),
-  person('daniel-l', 'Daniel L.', 'Acupuncturist, Chronic Pain', 8, [5, 4, 5, 4, 5, 4, 5, 4, 5, 5], { professionVerified: true }),
-  person('alice-f', 'Alice F.', 'Exercise Physiologist, Fitness', 6, [4, 4, 5, 4, 4, 4, 5, 4, 4, 4], { professionVerified: true }),
-  person('clara-j', 'Clara J.', 'Pilates Instructor, Holistic Health', 9, [5, 5, 4, 5, 5, 5, 4, 5, 5, 5], { professionVerified: true }),
-  person('xander-b', 'Xander B.', 'Physiotherapist, Geriatrics', 10, [5, 5, 5, 5, 4, 5, 5, 5, 5, 5], { professionVerified: true }),
-  person('zach-k', 'Zach K.', 'Athletic Trainer, Injury Prevention', 5, [4, 4, 4, 4, 4, 4, 4, 4, 4, 4], { professionVerified: true }),
-  person('brian-d', 'Brian D.', 'Orthopedic Surgeon, Sports', 6, [4, 4, 5, 4, 4, 4, 5, 4, 4, 4], { professionVerified: true }),
-  person('victor-s', 'Victor S.', 'Massage Therapist, Wellness', 4, [4, 4, 4, 3, 4, 4, 4, 3, 4, 4], { professionVerified: true }),
-  person('uma-r', 'Uma R.', 'Physical Therapist, Neurology', 3, [3, 3, 3, 3, 3, 3, 3, 3, 3, 3], { professionVerified: true }),
-  person('wendy-t', 'Wendy T.', 'Kinesiologist, Rehabilitation', 3, [3, 3, 3, 3, 3, 3, 3, 3, 2, 3], { professionVerified: true }),
+  person('tom-h', 'Tom H.', 'Chiropractor, Sports Medicine', 10, 98, { professionVerified: true }),
+  person('sofia-p', 'Sofia P.', 'Occupational Therapist, Pediatric', 10, 94, { professionVerified: true }),
+  person('yara-m', 'Yara M.', 'Rehabilitation Specialist, Cardiology', 9, 92, { professionVerified: true }),
+  person('daniel-l', 'Daniel L.', 'Acupuncturist, Chronic Pain', 8, 89, { professionVerified: true }),
+  person('alice-f', 'Alice F.', 'Exercise Physiologist, Fitness', 6, 84, { professionVerified: true }),
+  person('clara-j', 'Clara J.', 'Pilates Instructor, Holistic Health', 9, 93, { professionVerified: true }),
+  person('xander-b', 'Xander B.', 'Physiotherapist, Geriatrics', 10, 95, { professionVerified: true }),
+  person('zach-k', 'Zach K.', 'Athletic Trainer, Injury Prevention', 5, 80, { professionVerified: true }),
+  person('brian-d', 'Brian D.', 'Orthopedic Surgeon, Sports', 6, 84, { professionVerified: true }),
+  person('victor-s', 'Victor S.', 'Massage Therapist, Wellness', 4, 79, { professionVerified: true }),
+  person('uma-r', 'Uma R.', 'Physical Therapist, Neurology', 3, 69, { professionVerified: true }),
+  person('wendy-t', 'Wendy T.', 'Kinesiologist, Rehabilitation', 3, 68, { professionVerified: true }),
 ]
 
 export const personById = (id: string) => PEOPLE.find((p) => p.id === id)

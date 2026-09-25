@@ -11,6 +11,7 @@ import { CheckCircle, Clock, DollarCircle, ShieldIcon, UsersIcon } from '../../c
 import { DASHBOARD_STUDY_IDS, GREETING, RECOMMENDED } from '../../mock/dashboard'
 import RespondentPanel from './RespondentPanel'
 import { useStudies } from '../../mock/store'
+import { useSession } from '../../mock/session'
 import { billing, dashboardStats, rankedPool, unpaidStudies } from '../../lib/derive'
 import { studyTab } from '../../lib/lifecycle'
 import { scoreOf, tierOf } from '../../mock/db'
@@ -42,6 +43,7 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
   const navigate = useNavigate()
   const [profile, setProfile] = useState<Respondent | null>(null)
   const { studies: all } = useStudies()
+  const { account } = useSession()
   const live = empty ? [] : all.filter((s) => studyTab(s.state) === 'ongoing')
   /** The frame puts these three first; the rest follow in their own order. */
   const studies = DASHBOARD_STUDY_IDS
@@ -74,7 +76,12 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
     <AppShell crumbs={[{ label: 'Dashboard' }]}>
       <div className="min-h-[881px] rounded-lg bg-bgAlt-0 p-4">
         <div className="flex flex-col gap-1">
-          <h1 className="text-title-l leading-[31px] text-text-title">{GREETING.title}</h1>
+          {/* The frame greets "John"; the account card names whoever is signed
+              in, so the greeting does too, and a first visit is not "back". */}
+          <h1 className="text-title-l leading-[31px] text-text-title">
+            {live.length === 0 && all.length === 0 ? 'Welcome, ' : 'Welcome Back, '}
+            {(account?.name ?? 'there').split(' ')[0]}!
+          </h1>
           <p className="text-body-regular text-text-subtitle">{GREETING.sub}</p>
         </div>
 

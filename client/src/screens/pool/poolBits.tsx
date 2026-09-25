@@ -37,8 +37,9 @@ export function PanelTile({ c, to, onDelete }: { c: PanelCard; to: string; onDel
         )}
       </span>
       {c.roles && (
-        <span className="flex items-center gap-1.5 truncate pt-3 text-text-regular text-text-title">
-          <span className="text-text-body">&#9878;</span>{c.roles}
+        <span className="flex items-center gap-1.5 pt-3 text-text-regular text-text-title">
+          <span className="shrink-0 text-text-body">&#9878;</span>
+          <span className="truncate">{c.roles}</span>
         </span>
       )}
       {c.description && <span className="line-clamp-2 pt-3 text-text-regular text-text-subtitle">{c.description}</span>}

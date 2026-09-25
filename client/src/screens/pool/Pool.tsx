@@ -12,6 +12,7 @@ import { Close, Plus, Search } from '../../components/ui/icons'
 import { useToast } from '../../components/ui/Toast'
 import { cn } from '../../lib/cn'
 import { FEATURED_CATEGORIES, FEATURED_PANELS, MY_PANELS, POOL_CHIPS, POOL_PEOPLE, POOL_RESULTS, POOL_SEARCH } from '../../mock/pool'
+import { useSeeded } from '../../mock/seeded'
 
 /**
  * Pool of Participants (1645:161430 with filters, 1777:98738 without,
@@ -25,6 +26,9 @@ export default function Pool() {
   const [params, setParams] = useSearchParams()
   const panels = params.get('view') === 'panels'
   const featured = params.get('sub') === 'featured'
+  /** Featured panels are public; a client's own panels are theirs. */
+  const mine = useSeeded(MY_PANELS)
+  const panelCards = featured ? FEATURED_PANELS : mine
   const [filters, setFilters] = useState(params.get('filters') !== 'hidden')
   /** The four 600px panels the pool cards open. */
   const [panel, setPanel] = useState(params.get('panel') ?? '')
@@ -104,7 +108,22 @@ export default function Pool() {
             )}
 
             <div className="grid grid-cols-3 gap-3 pt-4">
-              {(featured ? FEATURED_PANELS : MY_PANELS).map((c) => (
+              {panelCards.length === 0 && (
+                <div className="col-span-3 flex flex-col items-center gap-3 py-16 text-center">
+                  <p className="text-body-medium text-text-title">
+                    {featured ? 'No featured panels yet.' : 'You have not built a micro-panel yet.'}
+                  </p>
+                  <p className="text-text-regular text-text-subtitle">
+                    {featured
+                      ? 'Public panels appear here once they are published.'
+                      : 'Save people from the pool into a panel and recruit from it again later.'}
+                  </p>
+                  {!featured && (
+                    <Button size="row" className="mt-1" onClick={() => nav('/pool/panels/new')}>Create Micro-panel</Button>
+                  )}
+                </div>
+              )}
+              {panelCards.map((c) => (
                 <PanelTile key={c.id} c={c} to={`/pool/${featured ? 'featured' : 'panels'}/${c.id}`} onDelete={() => setPanel('delete')} />
               ))}
             </div>

@@ -6,6 +6,7 @@ import NotificationsPanel from '../screens/dashboard/NotificationsPanel'
 import { NOTIFICATIONS } from '../mock/dashboard'
 import { BellIcon, ChevronRight, DashboardIcon, HelpIcon, PaymentsIcon, Plus, PoolIcon, StudiesIcon } from '../components/ui/icons'
 import { cn } from '../lib/cn'
+import { useSession } from '../mock/session'
 
 /** The left navigation, in the order drawn on every 1440 frame. */
 const NAV = [
@@ -21,6 +22,9 @@ export interface Crumb { label: string; to?: string }
 
 /** The left navigation, shared by the app frame and the Create Study frame. */
 export function SideNav() {
+  const { account } = useSession()
+  const initials = (account?.name ?? '')
+    .split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join('') || 'FI'
   const { pathname } = useLocation()
   return (
     <nav className="sticky top-0 flex h-screen w-nav shrink-0 flex-col border-r-1 border-stroke-input bg-yellow-20">
@@ -46,10 +50,10 @@ export function SideNav() {
 
       <div className="mx-4 border-t-1 border-stroke-input" />
       <NavLink to="/account" className="m-4 flex items-center gap-3 rounded-sm bg-bg p-3 shadow-[0_1px_2px_rgba(32,30,25,0.06)] hover:bg-bg-1">
-        <span className="flex h-9 w-9 items-center justify-center rounded-sm bg-bg-2 text-text-medium text-text-subtitle">JL</span>
+        <span className="flex h-9 w-9 items-center justify-center rounded-sm bg-bg-2 text-text-medium text-text-subtitle">{initials}</span>
         <span className="flex min-w-0 flex-col">
-          <span className="truncate text-text-medium text-text-title">Jennifer Lee</span>
-          <span className="truncate text-label text-text-body">Product Manager</span>
+          <span className="truncate text-text-medium text-text-title">{account?.name ?? 'Signed out'}</span>
+          <span className="truncate text-label text-text-body">{account?.role || account?.company || 'Client'}</span>
         </span>
       </NavLink>
     </nav>

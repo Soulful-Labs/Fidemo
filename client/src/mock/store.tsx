@@ -5,6 +5,7 @@ import { canMoveRespondent, canMoveStudy } from '../lib/lifecycle'
 import type { RatingState } from '../lib/policy'
 import type { Study, StudyReview } from './db'
 import { ALL_STUDIES, RATES } from './db'
+import { useSession } from './session'
 
 /**
  * The one place the demo's fake delays live, so they can be changed or
@@ -49,7 +50,22 @@ interface Ctx {
 const StoreCtx = createContext<Ctx | null>(null)
 
 export function StudyProvider({ children }: { children: ReactNode }) {
-  const [studies, setStudies] = useState<Study[]>(ALL_STUDIES)
+  const { account } = useSession()
+  /**
+   * The seeded account carries the studies the frames were drawn around.
+   * Anyone who signs up starts with nothing, so the empty states are what a
+   * new client actually sees rather than a route nobody can reach.
+   */
+  const [byAccount, setByAccount] = useState<Record<string, Study[]>>({})
+  const key = account?.email ?? ''
+  const studies = byAccount[key] ?? (account?.seeded ? ALL_STUDIES : [])
+
+  const setStudies = useCallback((fn: (all: Study[]) => Study[]) => {
+    setByAccount((m) => {
+      const current = m[key] ?? (account?.seeded ? ALL_STUDIES : [])
+      return { ...m, [key]: fn(current) }
+    })
+  }, [account?.seeded, key])
 
   const patch = useCallback((id: string, fn: (s: Study) => Study) => {
     setStudies((all) => all.map((s) => (s.id === id ? fn(s) : s)))
@@ -178,8 +194,19 @@ export function useStudies() {
   return ctx
 }
 
-/** The study a Manage route is on, falling back to the one the frames are drawn around. */
-export function useStudy(id?: string) {
-  const { study } = useStudies()
-  return study(id) ?? study('st-pay')!
+/**
+ * The study a Manage route is on. A new account has none, so a Manage route
+ * opened without one gets an empty study rather than a crash; the screens
+ * then draw their own empty states.
+ */
+export function useStudy(id?: string): Study {
+  const { study, studies } = useStudies()
+  return study(id) ?? study('st-pay') ?? studies[0] ?? EMPTY_STUDY
+}
+
+const EMPTY_STUDY: Study = {
+  id: 'none', name: 'No study', title: 'No study', breadcrumb: 'No study',
+  type: 'survey', state: 'draft', industry: '', duration: '', description: '',
+  created: '', createdIso: '', daysRemaining: 0, required: 0,
+  repeatRule: 'prefer_fresh', rates: RATES, participants: [],
 }

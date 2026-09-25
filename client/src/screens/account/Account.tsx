@@ -9,6 +9,8 @@ import { Check, CheckCircle, ChevronDown, ChevronRight, Star, StarFilled, Trash,
 import { cn } from '../../lib/cn'
 import { CERTIFICATE, CLIENT_RATING, CLIENT_REVIEWS, EMAIL_PREFS, PROFILE_FIELDS } from '../../mock/account'
 import { useToast } from '../../components/ui/Toast'
+import { useSession } from '../../mock/session'
+import { useSeeded } from '../../mock/seeded'
 
 const NAV = [
   { key: 'profile', label: 'Profile' },
@@ -18,16 +20,18 @@ const NAV = [
   { key: 'logout', label: 'Logout' },
 ]
 
-/** One labelled field of the profile form. */
-function Field({ label, value, locked, verified, select }: {
+/** One labelled field of the profile form. Editable unless the frame locks it. */
+function Field({ label, value, locked, verified, select, onChange }: {
   label: string; value: string; locked?: boolean; verified?: boolean; select?: boolean
+  onChange?: (v: string) => void
 }) {
   return (
     <label className="flex flex-col gap-1">
       <span className="text-text-regular text-text-subtitle">{label}</span>
       <span className={cn('flex h-12 items-center justify-between gap-3 rounded-sm border-1 border-stroke-input px-4 text-body-regular',
         locked ? 'bg-bg-1 text-text-body' : 'text-text-title')}>
-        {value}
+        <input value={value} readOnly={locked} onChange={(e) => onChange?.(e.target.value)}
+          className={cn('min-w-0 flex-1 bg-transparent outline-none', locked && 'cursor-default text-text-body')} />
         {verified && <CheckCircle className="h-5 w-5 text-text-subtitle" />}
         {select && <ChevronDown className="h-5 w-5 text-text-subtitle" />}
       </span>
@@ -56,6 +60,18 @@ export default function Account() {
   const toast = useToast()
   const [params, setParams] = useSearchParams()
   const tab = params.get('tab') ?? 'profile'
+  const { account, update } = useSession()
+  const reviews = useSeeded(CLIENT_REVIEWS)
+  const [form, setForm] = useState({
+    name: account?.name ?? '',
+    email: account?.email ?? '',
+    role: account?.role ?? '',
+    company: account?.company ?? '',
+    vat: account?.vat ?? PROFILE_FIELDS.workspace.fields[1].value,
+    website: account?.website || PROFILE_FIELDS.workspace.fields[2].value,
+    industry: account?.industry ?? PROFILE_FIELDS.workspace.fields[3].value,
+    location: account?.location ?? PROFILE_FIELDS.workspace.fields[4].value,
+  })
   const [modal, setModal] = useState(params.get('modal') ?? '')
   const go = (k: string) => {
     if (k === 'logout') { setModal('logout'); return }
@@ -84,13 +100,28 @@ export default function Account() {
           <div className="w-[600px]">
             {tab === 'profile' && (
               <>
-                {[PROFILE_FIELDS.about, PROFILE_FIELDS.workspace].map((b, i) => (
-                  <div key={b.label} className={cn('flex flex-col gap-3', i > 0 && 'pt-8')}>
-                    <p className="text-title-s leading-[22px] text-text-title">{b.label}</p>
-                    {b.fields.map((f) => <Field key={f.label} {...f} />)}
-                  </div>
-                ))}
-                <Button fullWidth className="mt-8 h-12 text-body-medium" onClick={() => toast('Saved')}>Save Changes</Button>
+                {/* The signed-in account fills these, and Save Changes writes
+                    back to it, so what is typed here shows in the navigation
+                    and survives a refresh. */}
+                <div className="flex flex-col gap-3">
+                  <p className="text-title-s leading-[22px] text-text-title">{PROFILE_FIELDS.about.label}</p>
+                  <Field label="Full Name" value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
+                  <Field label="Work Email" value={form.email} locked />
+                  <Field label="Your Role" value={form.role} onChange={(v) => setForm({ ...form, role: v })} />
+                </div>
+                <div className="flex flex-col gap-3 pt-8">
+                  <p className="text-title-s leading-[22px] text-text-title">{PROFILE_FIELDS.workspace.label}</p>
+                  <Field label="Company Name" value={form.company} onChange={(v) => setForm({ ...form, company: v })} />
+                  <Field label="VAT (Tax) Number" value={form.vat} onChange={(v) => setForm({ ...form, vat: v })} />
+                  <Field label="Company Website" value={form.website} locked verified />
+                  <Field label="Industry" value={form.industry} select onChange={(v) => setForm({ ...form, industry: v })} />
+                  <Field label="Location" value={form.location} onChange={(v) => setForm({ ...form, location: v })} />
+                </div>
+                <Button fullWidth className="mt-8 h-12 text-body-medium" onClick={() => {
+                  update({ name: form.name, role: form.role, company: form.company,
+                    vat: form.vat, industry: form.industry, location: form.location })
+                  toast('Saved')
+                }}>Save Changes</Button>
               </>
             )}
 
@@ -101,7 +132,12 @@ export default function Account() {
                   <span className="text-title-l text-brand-secondary">{CLIENT_RATING.score}</span>
                   <span className="text-body-regular text-text-subtitle">{CLIENT_RATING.of}</span>
                 </div>
-                {CLIENT_REVIEWS.map((r, i) => (
+                {reviews.length === 0 && (
+                  <p className="py-12 text-center text-text-regular text-text-subtitle">
+                    No reviews yet. Participants review you after a study is delivered.
+                  </p>
+                )}
+                {reviews.map((r, i) => (
                   <div key={i} className="flex flex-col gap-1.5 border-b-1 border-stroke-1 py-3">
                     <p className="text-body-medium text-text-title">{r.study}</p>
                     <p className="flex items-center gap-2">

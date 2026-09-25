@@ -4,6 +4,7 @@ import Button from '../components/ui/Button'
 import Tag from '../components/ui/Tag'
 import { NotificationItem } from './dashboard/NotificationsPanel'
 import { NOTIFICATIONS } from '../mock/dashboard'
+import { useSeeded } from '../mock/seeded'
 
 /**
  * Notifications (1663:104077). The same rows as the 600px panel the bell
@@ -11,7 +12,8 @@ import { NOTIFICATIONS } from '../mock/dashboard'
  * the row component is imported rather than drawn twice.
  */
 export default function NotificationsPage() {
-  const [rows, setRows] = useState(NOTIFICATIONS)
+  const seeded = useSeeded(NOTIFICATIONS)
+  const [rows, setRows] = useState(seeded)
   const unread = rows.filter((n) => n.unread).length
 
   return (
@@ -29,6 +31,14 @@ export default function NotificationsPage() {
             </Button>
           </div>
           <ul className="flex flex-col pt-3">
+            {rows.length === 0 && (
+              <div className="flex flex-col items-center gap-2 py-16 text-center">
+                <p className="text-body-medium text-text-title">Nothing here yet.</p>
+                <p className="text-text-regular text-text-subtitle">
+                  You will hear from us when a study is approved, someone applies or a session is booked.
+                </p>
+              </div>
+            )}
             {rows.map((n) => <NotificationItem key={n.id} n={n} onAction={() => undefined} />)}
           </ul>
         </div>

@@ -9,6 +9,7 @@
 //   --js "<code>"     run this in the page after load (e.g. "__hl.signIn()")
 //   --wait <ms>       extra settle time after load and --js (default 400)
 //   --click "<sel>"   click a selector after --js, then wait again
+//   --signed-out      render without a session, so the guards send you to /signin
 //
 // A batch file is a JSON array of { route, out, full?, js?, wait?, click?, width?, height? }.
 // Routes are given without the leading slash ("studies/st-01") because Git
@@ -35,6 +36,14 @@ if (args[0] === '--batch') {
   }
   jobs = [{ route, out, full: args.includes('--full'), js: opt('--js', ''), click: opt('--click', ''), wait: Number(opt('--wait', 400)) }]
 }
+
+// Every screen behind the sign-in guard needs a session. The demo account is
+// put into localStorage before the document runs, so a render lands on the
+// route it asked for instead of bouncing to /signin. --signed-out skips it.
+const SIGNED_OUT = args.includes('--signed-out')
+const sessionScript = (signedIn) => signedIn
+  ? `try{localStorage.setItem('fi-client-session',JSON.stringify({accounts:[],current:'jennifer@soulfullabs.com'}))}catch(e){}`
+  : `try{localStorage.removeItem('fi-client-session')}catch(e){}`
 
 // The client app is desktop: 1440 wide, as every Figma frame is drawn.
 const WIDTH = 1440
@@ -96,6 +105,20 @@ async function capture(s, job) {
   events = []
   await s('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: width > 420 ? 1 : 2, mobile: width <= 420 })
   await s('Page.navigate', { url: base + '/' + route.replace(/^\/+/, '') })
+  for (let i = 0; i < 100; i++) {
+    if (events.some((e) => e.method === 'Page.loadEventFired')) break
+    await sleep(100)
+  }
+  /**
+   * Everything behind the sign-in guard needs a session, and a batch reuses
+   * one browser target, so localStorage carries between jobs. Set it for this
+   * job and navigate again. A reload would replay whatever the guard
+   * redirected to rather than the route that was asked for.
+   */
+  const signedIn = !SIGNED_OUT && job.signedOut !== true
+  await s('Runtime.evaluate', { expression: sessionScript(signedIn) })
+  events = []
+  await s('Page.navigate', { url: base + '/' + route.replace(/^\/+/, '') + (route.includes('?') ? '&' : '?') + '_r=' + Date.now() })
   for (let i = 0; i < 100; i++) {
     if (events.some((e) => e.method === 'Page.loadEventFired')) break
     await sleep(100)

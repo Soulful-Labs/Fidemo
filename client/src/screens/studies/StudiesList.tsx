@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import Button from '../../components/ui/Button'
 import { useNavigate } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import StudyCard from '../../components/client/StudyCard'
@@ -146,6 +147,27 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
                 </tr>
               </thead>
               <tbody>
+                {rows.length === 0 && (
+                  <tr>
+                    <td colSpan={COLUMNS[tab].length} className="px-[22px] py-16 text-center">
+                      <p className="text-body-medium text-text-title">
+                        {tab === 'drafts' ? 'No drafts yet.'
+                          : tab === 'completed' ? 'Nothing has been completed yet.'
+                            : 'No studies are running yet.'}
+                      </p>
+                      <p className="pt-1 text-text-regular text-text-subtitle">
+                        {tab === 'drafts' ? 'A study you start and leave will wait for you here.'
+                          : tab === 'completed' ? 'A study moves here once every session is done and paid.'
+                            : 'Create a study and our team will review it and take it live.'}
+                      </p>
+                      {tab === 'ongoing' && (
+                        <Button size="row" className="mt-4" onClick={() => navigate('/studies/create/about')}>
+                          Create Study
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                )}
                 {rows.map((s) => (
                   <tr key={s.id} className="border-b-1 border-stroke-input last:border-b-0 hover:bg-bg-1">
                     {COLUMNS[tab].map((c) => (

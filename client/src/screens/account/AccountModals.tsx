@@ -3,6 +3,8 @@ import Button from '../../components/ui/Button'
 import { Check, Close, Eye, Info } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { ACCOUNT_DIALOGS, CHANGE_PASSWORD, DEACTIVATE } from '../../mock/account'
+import { useNavigate } from 'react-router-dom'
+import { useSession } from '../../mock/session'
 
 /** A password box with its reveal eye, as both forms draw it. */
 function Secret({ label, placeholder }: { label: string; placeholder: string }) {
@@ -98,12 +100,18 @@ export function OutcomeModal({
 /** Logout (1663:104959): no title bar, a red glyph tile above the question. */
 export function LogoutModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const d = ACCOUNT_DIALOGS.logout
+  const { signOut } = useSession()
+  const nav = useNavigate()
   return (
     <Modal open={open} onClose={onClose} compact wide title={d.title} body={d.body}
       footer={
         <>
           <Button variant="tertiary" className="flex-1" onClick={onClose}>Cancel</Button>
-          <Button className="flex-1" onClick={onClose}>Logout</Button>
+          <Button className="flex-1" onClick={() => {
+            onClose()
+            signOut()
+            nav('/signin', { replace: true })
+          }}>Logout</Button>
         </>
       }>
       <span className="mx-auto -order-1 mb-1 flex h-[72px] w-[72px] items-center justify-center rounded-lg bg-[#fdecec] text-[#e33a38]">

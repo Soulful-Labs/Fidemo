@@ -41,8 +41,11 @@ export default function StudyCard({ study, onOpen, onMenu, menu, className }: { 
         <span className="h-[75px] w-[100px] shrink-0 overflow-hidden rounded-sm bg-bg-2">
           {study.image && <img src={study.image} alt="" className="h-full w-full object-cover" />}
         </span>
-        <span className="flex min-w-0 flex-col gap-2">
-          <span className="text-body-medium text-text-title">{study.title}</span>
+        {/* The title is one or two lines depending on its length, so it is
+            held at two. Without it the date row and everything under it rides
+            up and down from card to card. */}
+        <span className="flex min-w-0 flex-1 flex-col justify-between gap-2">
+          <span className="line-clamp-2 min-h-[44px] text-body-medium text-text-title">{study.title}</span>
           <span className="flex items-center gap-2 text-text-regular text-text-subtitle">
             <Calendar className="h-4 w-4" />
             {study.dates ?? ''}

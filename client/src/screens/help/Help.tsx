@@ -9,6 +9,7 @@ import { AskSupportPanel, SentSuccessModal } from './HelpPanels'
 import { ChevronDown, ChevronRight, MessageIcon, Search } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { DIRECT_HELP, REPLY_TIMES, FAQS, TICKETS } from '../../mock/help'
+import { useSeeded } from '../../mock/seeded'
 
 /** One question, open or closed. The frame draws the first one open. */
 function Faq({ q, a, open, onToggle }: { q: string; a?: string; open?: boolean; onToggle: () => void }) {
@@ -63,6 +64,8 @@ function DirectHelp({ wide, onAsk }: { wide?: boolean; onAsk: () => void }) {
 export default function Help() {
   const [params, setParams] = useSearchParams()
   const tickets = params.get('tab') === 'tickets'
+  /** A new account has raised none. */
+  const rows = useSeeded(TICKETS)
   const [openFaq, setOpenFaq] = useState(0)
   const [panel, setPanel] = useState(params.get('panel') ?? '')
   const set = (k: string) => { const n = new URLSearchParams(params); n.set('tab', k); setParams(n) }
@@ -107,7 +110,15 @@ export default function Help() {
                 <span className="w-[140px] px-4">Ticket Number</span>
                 <span className="w-[56px]" />
               </div>
-              {TICKETS.map((t) => (
+              {rows.length === 0 && (
+                <div className="flex flex-col items-center gap-2 py-16 text-center">
+                  <p className="text-body-medium text-text-title">You have not raised a ticket yet.</p>
+                  <p className="text-text-regular text-text-subtitle">
+                    Contact Support below and it will appear here.
+                  </p>
+                </div>
+              )}
+              {rows.map((t) => (
                 <NavLink key={t.id} to={`/help/tickets/${t.id}`}
                   className="flex h-[76px] items-center border-b-1 border-stroke-input last:border-b-0 hover:bg-bg-1">
                   <span className="flex w-[594px] flex-col gap-1 px-4">

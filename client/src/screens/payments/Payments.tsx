@@ -10,6 +10,7 @@ import { CARDS } from '../../mock/payments'
 import { invoices, paymentStats } from '../../lib/derive'
 import { useStudies } from '../../mock/store'
 import { useToast } from '../../components/ui/Toast'
+import { useSeeded } from '../../mock/seeded'
 
 const GLYPH = [InvoiceIcon, MoneyMark, DollarCircle]
 
@@ -51,6 +52,7 @@ export default function Payments() {
   const set = (k: string) => { const n = new URLSearchParams(params); n.set('tab', k); setParams(n) }
 
   const { studies } = useStudies()
+  const cards = useSeeded(CARDS)
   const ps = paymentStats(studies)
   const money = (n: number) => `$${n.toLocaleString('en-US')}`
   /** Step 53: one invoice per completed study, pending until it is settled. */
@@ -135,7 +137,7 @@ export default function Payments() {
 
         <h2 className="pt-[22px] text-title-s leading-[22px] text-text-title">Saved Payment Methods</h2>
         <div className="grid grid-cols-3 gap-3 pt-3">
-          {CARDS.map((c) => <CardTile key={c.last4} c={c} onRemove={() => setPanel('remove')} />)}
+          {cards.map((c) => <CardTile key={c.last4} c={c} onRemove={() => setPanel('remove')} />)}
         </div>
         <Button variant="secondary" size="none" className="mt-3 h-10 px-4" leftIcon={<Plus className="h-4 w-4" />}
           onClick={() => setPanel('addcard')}>
