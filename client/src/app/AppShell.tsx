@@ -28,7 +28,8 @@ export function SideNav() {
   const { pathname } = useLocation()
   return (
     <nav className="sticky top-0 flex h-screen w-nav shrink-0 flex-col border-r-1 border-stroke-input bg-yellow-20">
-      <div className="flex h-topbar items-center px-6">
+      {/* The wordmark block stays 68; only the title bar is 70. */}
+      <div className="flex h-[68px] items-center px-6">
         <span className="text-title-l text-text-title">Focus Insite</span>
       </div>
 
@@ -107,7 +108,8 @@ export default function AppShell({
           </div>
         </header>
 
-        <main className="flex-1 px-2 pb-2 pt-[10px]">{children}</main>
+        {/* The title bar is 70 tall and the page starts at 78 (1627:95962). */}
+        <main className="flex-1 px-2 pb-2 pt-2">{children}</main>
       </div>
 
       <NotificationsPanel open={notifications} rows={rows} onClose={() => setNotifications(false)}

@@ -116,12 +116,22 @@ async function capture(s, job) {
    * redirected to rather than the route that was asked for.
    */
   const signedIn = !SIGNED_OUT && job.signedOut !== true
-  await s('Runtime.evaluate', { expression: sessionScript(signedIn) })
-  events = []
-  await s('Page.navigate', { url: base + '/' + route.replace(/^\/+/, '') + (route.includes('?') ? '&' : '?') + '_r=' + Date.now() })
-  for (let i = 0; i < 100; i++) {
-    if (events.some((e) => e.method === 'Page.loadEventFired')) break
-    await sleep(100)
+  const target = base + '/' + route.replace(/^\/+/, '')
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    await s('Runtime.evaluate', { expression: sessionScript(signedIn) })
+    events = []
+    await s('Page.navigate', { url: target + (route.includes('?') ? '&' : '?') + '_r=' + Date.now() })
+    for (let i = 0; i < 100; i++) {
+      if (events.some((e) => e.method === 'Page.loadEventFired')) break
+      await sleep(100)
+    }
+    await sleep(150)
+    // The guard sends a session-less render to /signin, so check we landed
+    // where we asked and try again rather than capture the wrong screen.
+    const { result } = await s('Runtime.evaluate', { expression: 'location.pathname', returnByValue: true })
+    const asked = '/' + route.replace(/^\/+/, '').split('?')[0]
+    if (!signedIn || result.value === asked || asked === '/') break
+    if (attempt === 2) console.error(`[${route}] landed on ${result.value} after 3 tries`)
   }
   await s('Runtime.evaluate', { expression: 'document.fonts.ready', awaitPromise: true })
   await sleep(300)

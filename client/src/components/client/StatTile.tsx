@@ -24,9 +24,10 @@ export default function StatTile({
     <div className={cn('flex h-[84px] flex-col gap-2 rounded-lg border-1 border-stroke-1 bg-gradient-to-b to-transparent p-3',
       TINT[tint], className)}>
       <span className="text-text-regular text-text-subtitle">{label}</span>
-      <span className="flex items-center gap-3">
+      <span className="flex items-center gap-2">
         {icon && (
-          <span className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-full [&>svg]:h-[18px] [&>svg]:w-[18px]',
+          /* The frame draws a rounded square, not a circle, and a 40px one. */
+          <span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-md [&>svg]:h-5 [&>svg]:w-5',
             BADGE[tint], ACCENT[tint])}>{icon}</span>
         )}
         <span className="text-title-l text-text-title">{value}</span>

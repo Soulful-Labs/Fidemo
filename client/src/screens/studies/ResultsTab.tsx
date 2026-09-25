@@ -61,7 +61,8 @@ export default function ResultsTab() {
             {stats.map((t) => <OverviewTile key={t.label} {...t} />)}
             <div className="flex items-center justify-between gap-4 rounded-md bg-bgAlt-1 px-4 py-4">
               <div className="flex flex-col gap-1">
-                <p className="text-title-s leading-[22px] text-text-title">{SUMMARIES.title}</p>
+                {/* 1643:130046: a 22px box, so 16px text, not the 18 it was drawn with. */}
+                <p className="text-body-medium text-text-title">{SUMMARIES.title}</p>
                 <p className="text-text-regular text-text-subtitle">{SUMMARIES.body}</p>
               </div>
               <Button variant="secondary" size="none" className="h-12 px-6" onClick={() => toast('Summaries downloaded')}
@@ -119,15 +120,17 @@ export default function ResultsTab() {
             <Pagination page={shown.page} pages={pageLabels(shown.total, shown.page)} onPage={setPage} />
           </div>
 
-          <div className="mt-[25px] flex items-start justify-between gap-4 rounded-lg bg-bgAlt-1 py-4 pl-[30px] pr-4">
-            <div className="flex items-center gap-[31px]">
+          {/* 1777:98702: the seal sits at 16,16 and the text block starts at
+              132, so it is 16px of padding and a 16px gap, not 30 and 31. */}
+          <div className="mt-[25px] flex items-start justify-between gap-4 rounded-lg bg-bgAlt-1 p-4">
+            <div className="flex items-center gap-4">
               <Seal />
               <div className="flex flex-col gap-1">
                 <p className="text-label uppercase tracking-[0.04em] text-text-subtitle">{CERTIFICATE.label}</p>
                 <p className="text-title-s leading-[22px] text-text-title">
                   {c.completed} of {c.completed} completions verified human
                 </p>
-                <p className="max-w-[834px] text-text-regular text-text-subtitle">{CERTIFICATE.body}</p>
+                <p className="max-w-[816px] text-text-regular text-text-subtitle">{CERTIFICATE.body}</p>
                 <p className="text-text-regular text-text-subtitle">{CERTIFICATE.meta}</p>
               </div>
             </div>

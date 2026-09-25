@@ -73,7 +73,7 @@ export default function Help() {
   return (
     <AppShell hideCreate crumbs={[{ label: 'Help' }]}>
       <div className="min-h-[939px] rounded-lg bg-bg-0 p-4">
-        <Tabs variant="segmented" className="w-[318px]" value={tickets ? 'tickets' : 'help'}
+        <Tabs variant="segmented" className="w-[320px]" value={tickets ? 'tickets' : 'help'}
           onChange={set} items={[{ key: 'help', label: 'Help' }, { key: 'tickets', label: 'Support Tickets' }]} />
 
         {!tickets ? (
