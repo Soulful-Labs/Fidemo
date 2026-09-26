@@ -40,6 +40,8 @@ export interface CreateDraft {
   sessions: { date: string; time: string }[]
   overrides: { date: string; hours: string }[]
   unavailableAllDay: boolean
+  /** The availability composer has been submitted, step 4 of a session study. */
+  availabilitySet: boolean
 }
 
 export type QuestionKind =
@@ -117,6 +119,7 @@ const INITIAL: CreateDraft = {
     { date: 'Aug 25, Monday', hours: 'Unavailable' },
   ],
   unavailableAllDay: false,
+  availabilitySet: false,
 }
 
 interface Ctx { draft: CreateDraft; set: <K extends keyof CreateDraft>(k: K, v: CreateDraft[K]) => void }
@@ -139,3 +142,13 @@ export function useDraft() {
 }
 
 export const MARKS_FOR = (kind: QuestionKind) => MARKS[kind] ?? []
+
+/**
+ * Step 4 is finished when the type's own setup exists: a survey or diary
+ * needs its form, a session study needs its availability. The frames draw
+ * both states of every settings card; this is which one is showing.
+ */
+export function setupDone(draft: CreateDraft): boolean {
+  if (draft.type === 'survey' || draft.type === 'diary') return draft.surveyQuestions !== null
+  return draft.availabilitySet
+}

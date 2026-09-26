@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import { ChevronRight, Edit } from '../../components/ui/icons'
-import { blankQuestion, useDraft } from '../../mock/createStore'
+import { blankQuestion, setupDone, useDraft } from '../../mock/createStore'
 import CreateShell from './CreateShell'
 import { Section } from './CreateBits'
 import { CostingSummary, IncentivePayments, Payment, SettingsCard } from './StudyBits'
@@ -74,7 +74,7 @@ const DIARY_OPTIONS: Record<string, string[]> = {
 function DiarySettings() {
   const { draft, set } = useDraft()
   const [params] = useSearchParams()
-  const made = params.get('state') === 'created'
+  const made = params.get('state') === 'created' || draft.surveyQuestions !== null
   return (
     <Section icon={TARGET} title="Diary Study Settings" sub="Setup your Diary study for the participants" headPad="pb-4" titleLead="leading-[22px]" pad="py-4">
       <div className="flex flex-col gap-3.5 rounded-lg bg-yellow-30 p-4">
@@ -130,7 +130,7 @@ function DiarySettings() {
 
 /** Video Call Settings (1518:92729 individual, 1518:93335 group). */
 function VideoSettings({ group, open }: { group: boolean; open: boolean }) {
-  const { set } = useDraft()
+  const { draft, set } = useDraft()
   return (
     <Section icon={TARGET}
       title={group ? 'Focus Group Video Call Settings' : 'Video Call Settings'}
@@ -139,8 +139,20 @@ function VideoSettings({ group, open }: { group: boolean; open: boolean }) {
       <SettingsCard
         title={group ? 'Set Availability for Group sessions' : 'Set Availability'}
         sub="Set your availability to allow participants to book sessions with you and let you conduct your individual video calls with them at your convenient timings">
-        <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" disabled={open}
-          onClick={() => set('surveyOpen', true)}>Set Timing Availability</Button>
+        {draft.availabilitySet ? (
+          <>
+            <button type="button" onClick={() => set('surveyOpen', true)}
+              className="flex h-[38px] items-center justify-between gap-3 rounded-sm border-1 border-stroke-input bg-bg px-4 text-text-regular text-text-title">
+              {group ? `${draft.sessions.length} sessions, ${draft.seats} seats per sessions` : `available ${draft.days.length} days/week, custom timings`}
+              <ChevronRight className="h-4 w-4 text-text-subtitle" />
+            </button>
+            <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" leftIcon={<Edit className="h-5 w-5" />}
+              onClick={() => set('surveyOpen', true)}>Update Timing Availability</Button>
+          </>
+        ) : (
+          <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" disabled={open}
+            onClick={() => set('surveyOpen', true)}>Set Timing Availability</Button>
+        )}
       </SettingsCard>
     </Section>
   )
@@ -149,9 +161,9 @@ function VideoSettings({ group, open }: { group: boolean; open: boolean }) {
 
 /** In-Person Interiew Settings (1518:93678), the frame's own spelling. */
 function InPersonSettings({ group, open }: { group: boolean; open: boolean }) {
-  const { set } = useDraft()
+  const { draft, set } = useDraft()
   const [params] = useSearchParams()
-  const saved = params.get('state') === 'created'
+  const saved = params.get('state') === 'created' || draft.availabilitySet
   return (
     <Section icon={TARGET}
       title={group ? 'In-Person Group Interview Settings' : 'In-Person Interiew Settings'}
@@ -209,7 +221,8 @@ export default function StudySetup() {
     <CreateShell step="study" action={
       <>
         <Button variant="tertiary" size="row" onClick={() => nav('/studies/drafts')}>Save Draft &amp; Exit</Button>
-        <Button size="row" disabled onClick={() => nav('/studies/create/publish')}>Proceed to Publish</Button>
+        <Button size="row" disabled={!setupDone(draft)}
+          onClick={() => nav('/studies/create/publish')}>Proceed to Publish</Button>
       </>
     }>
       <div className={`rounded-lg bg-bg-0 px-6 pt-[9px] ${type === 'diary' ? 'min-h-[1707px]' : type === 'video_call' ? (open ? 'min-h-[1408px]' : 'min-h-[1374px]') : type === 'in_person' ? (open ? (group ? 'min-h-[1408px]' : 'min-h-[1579px]') : 'min-h-[1374px]') : 'min-h-[1302px]'}`}>
@@ -219,7 +232,8 @@ export default function StudySetup() {
               <AvailabilityComposer group={group} address={type === 'in_person'}
                 title={type === 'in_person' && !group ? 'Set Address & Availability' : 'Set Availability'}
                 onOverride={() => setOverride(true)}
-                onBack={() => set('surveyOpen', false)} onSubmit={() => set('surveyOpen', false)} />
+                onBack={() => set('surveyOpen', false)}
+                onSubmit={() => { set('availabilitySet', true); set('surveyOpen', false) }} />
             ) : type === 'diary' ? (
               <SurveyComposer title="Create Diary Form" submit="Submit Diary Form" dayGroup="DAY 1"
                 lead="Setup your form inputs form for users with AI or manually" kind="Multi-line input" seed={2}

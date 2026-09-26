@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import Checkbox from '../../components/ui/Checkbox'
@@ -8,6 +8,7 @@ import CreateShell from './CreateShell'
 import BreakdownPanel from './BreakdownPanel'
 import { useStudies } from '../../mock/store'
 import { AddCardPanel } from '../payments/PaymentPanels'
+import { useWorkspace } from '../../mock/workspace'
 
 const FORM = (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
@@ -43,11 +44,14 @@ function Review({ icon, title, action, children }: {
 }
 
 /** A labelled box in the card form. */
-function CardField({ label, placeholder, className }: { label: string; placeholder: string; className?: string }) {
+function CardField({ label, placeholder, className, value, onChange }: {
+  label: string; placeholder: string; className?: string
+  value?: string; onChange?: (v: string) => void
+}) {
   return (
     <label className={`flex flex-col gap-1 ${className ?? ''}`}>
       <span className="text-text-regular text-text-subtitle">{label}</span>
-      <input placeholder={placeholder}
+      <input placeholder={placeholder} value={value ?? ''} onChange={(e) => onChange?.(e.target.value)}
         className="h-12 w-full rounded-sm border-1 border-stroke-input bg-bg px-4 text-text-regular text-text-title placeholder:text-text-body" />
     </label>
   )
@@ -64,10 +68,26 @@ export default function Publish() {
   const [params] = useSearchParams()
   const { draft } = useDraft()
   const { submitStudy } = useStudies()
+  const { cards } = useWorkspace()
   const [breakdown, setBreakdown] = useState(false)
   const [addCard, setAddCard] = useState(false)
   const [saveCard, setSaveCard] = useState(false)
-  const ready = params.get('state') === 'ready'
+  const [card, setCard] = useState<Record<string, string>>({})
+  const cardField = (k: string) => ({ value: card[k], onChange: (v: string) => setCard((c) => ({ ...c, [k]: v })) })
+
+  /**
+   * What unlocks Publish Study. The frame draws it disabled on three types
+   * and enabled on the fourth, and its own secondary button says why: "Add
+   * Card to Publish". So it opens once this study has a card to charge,
+   * either typed into the form here or added through the panel. `?state=ready`
+   * still forces it, which is how the enabled frame is compared.
+   */
+  const cardsAtOpen = useRef(cards.length)
+  const typed = (card['Card Number'] ?? '').replace(/\D/g, '').length >= 12
+    && /\d{2}\s*\/\s*\d{2,4}/.test(card['Expiry Date'] ?? '')
+    && (card['CVV'] ?? '').length >= 3
+    && (card['Name on Card'] ?? '').trim().length > 0
+  const ready = params.get('state') === 'ready' || typed || cards.length > cardsAtOpen.current
 
   /**
    * Workflow steps 7 and 11, which the frame already agrees with: Publish
@@ -163,15 +183,15 @@ export default function Publish() {
           </h2>
 
           <div className="flex flex-col gap-2.5">
-            <CardField label="Card Number" placeholder="0000 0000 0000 0000" />
+            <CardField label="Card Number" placeholder="0000 0000 0000 0000" {...cardField('Card Number')} />
             <div className="grid grid-cols-2 gap-3">
-              <CardField label="Expiry Date" placeholder="MM / YYYY" />
-              <CardField label="CVV" placeholder="000" />
+              <CardField label="Expiry Date" placeholder="MM / YYYY" {...cardField('Expiry Date')} />
+              <CardField label="CVV" placeholder="000" {...cardField('CVV')} />
             </div>
-            <CardField label="Name on Card" placeholder="Enter name" />
+            <CardField label="Name on Card" placeholder="Enter name" {...cardField('Name on Card')} />
             <div className="grid grid-cols-2 gap-3">
-              <CardField label="Billing Address" placeholder="Enter street or area" />
-              <CardField label="Zip Code" placeholder="Enter zip code" />
+              <CardField label="Billing Address" placeholder="Enter street or area" {...cardField('Billing Address')} />
+              <CardField label="Zip Code" placeholder="Enter zip code" {...cardField('Zip Code')} />
             </div>
           </div>
 
