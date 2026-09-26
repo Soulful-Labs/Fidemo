@@ -36,6 +36,8 @@ export default function Pool() {
   const [panelSearch, setPanelSearch] = useState('')
   const [category, setCategory] = useState('All')
   const [deleting, setDeleting] = useState<string | null>(null)
+  /** Whose profile the panel is showing. */
+  const [viewing, setViewing] = useState<(typeof POOL_PEOPLE)[number] | null>(null)
   const [saving, setSaving] = useState<{ id: string; name: string } | null>(null)
   const panelCards = (featured ? FEATURED_PANELS : mine)
     .filter((c) => category === 'All' || c.domain === category)
@@ -124,7 +126,7 @@ export default function Pool() {
                   {people.map((p) => (
                     <RespondentCard key={p.id} respondent={{ ...p, professionVerified: true }} className="px-4 pb-2 pt-4"
                       onSave={() => { setSaving({ id: p.id, name: p.name }); setPanel('save') }}
-                      onView={() => setPanel('profile')}
+                      onView={() => { setViewing(p); setPanel('profile') }}
                       actions={<Button variant="tertiary" size="none" className="h-11 flex-1"
                         onClick={() => setPanel('invite')}>Invite To Study</Button>} />
                   ))}
@@ -185,7 +187,7 @@ export default function Pool() {
         )}
       </div>
 
-      <RespondentPanel open={panel === 'profile'} respondent={{ ...POOL_PEOPLE[0], professionVerified: true }}
+      <RespondentPanel open={panel === 'profile'} respondent={{ ...(viewing ?? POOL_PEOPLE[0]), professionVerified: true }}
         onClose={() => setPanel('')} onReviews={() => setPanel('reviews')}
         onInvite={() => setPanel('invite')} />
       <ReviewsPanel open={panel === 'reviews'} onClose={() => setPanel('')} onBack={() => setPanel('profile')} />

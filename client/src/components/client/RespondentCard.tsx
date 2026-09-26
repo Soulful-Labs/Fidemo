@@ -58,7 +58,14 @@ export default function RespondentCard({
       <div className="flex items-center gap-2">
         <Avatar name={respondent.name} />
         <div className="flex min-w-0 flex-col">
-          <span className="truncate text-text-regular text-text-subtitle">{respondent.name}</span>
+          {/* When `actions` replaces the View Profile button, as the Pool does,
+              the name is the way into the profile. Same text, same box. */}
+          {onView ? (
+            <button type="button" onClick={onView}
+              className="truncate text-left text-text-regular text-text-subtitle hover:underline">{respondent.name}</button>
+          ) : (
+            <span className="truncate text-text-regular text-text-subtitle">{respondent.name}</span>
+          )}
           <span className="truncate text-body-medium text-text-title">{respondent.role}</span>
         </div>
       </div>

@@ -202,7 +202,12 @@ export default function Publish() {
           <ul className="flex list-disc flex-col gap-1 pl-4 text-text-regular text-text-subtitle marker:text-text-body">
             <li>
               3% merchant processing fee applies when using a credit card.{' '}
-              <span className="text-text-title">Learn about payment options</span>
+              {/* Drawn as emphasised text, but it reads as a link and the screen
+                  already holds what it promises: the Payment Breakdown panel
+                  itemises the fee this sentence is about. Same classes, so the
+                  frame is unchanged. */}
+              <button type="button" onClick={() => setBreakdown(true)}
+                className="text-text-title hover:underline">Learn about payment options</button>
             </li>
           </ul>
           <span className="border-t-1 border-stroke-input" />
