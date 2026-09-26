@@ -121,6 +121,24 @@ keeps answering, so kill whatever holds the port first
 (`Get-NetTCPConnection -LocalPort 5174 -State Listen`) and check the restart
 says 5174.
 
+**A harness fault looks exactly like a build fault, and costs more.** Every
+automated check in `scripts/` has shipped at least one fault that reported
+working code as broken: the click audit compared DOM *length*, so a class swap
+of equal length read as four dead cards; it clicked everything on one page
+load, so a filter that narrowed a list made the controls after it look dead;
+the health check set the session *after* navigating, so the guard read the
+previous route's session and the redirect looked like a missing screen; it
+removed the session key rather than writing a signed-out value, and the app
+still mounted on the previous page wrote it straight back; and its route
+pattern carried a literal backspace, because a word-boundary escape written
+through a Python patch script becomes the backspace character in the JS it
+emits, so it never matched anything.
+
+Before believing any finding, reproduce it by hand with `shot.mjs --js`. Two
+consecutive runs disagreeing, or a finding on a screen that plainly works, means
+the harness. Write JS regexes into patch scripts from raw strings (`r'...'`)
+or the escape will change meaning on the way through.
+
 ---
 
 ## Rule 4, push after each screen
