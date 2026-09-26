@@ -304,3 +304,54 @@ survive being acted on. Each is a decision reported, not taken quietly.
     already recorded: $3,850 on the tile against $3,350 in the breakdown.
     Paying a study's balance now settles that study's invoice, so the figure
     is load-bearing rather than decorative.
+
+---
+
+## G. What the second functional pass decided, 26 September 2026
+
+Driving every panel and menu by hand found controls no audit reaches. Where a
+fix needed a destination or a rule the frames do not give, it is named here.
+
+18. **A scheduled session had no code, so it could never be completed.** Step 42
+    says a code exists at the end of every session and both sides enter it. The
+    seed gave one to completed participations only, so `Mark Completed` refused
+    for ever with "No code, no payment" and nothing in the UI could satisfy it.
+    A scheduled participation now carries a code with the respondent's half
+    entered and the client's not. **Confirm the client's half is sharing the
+    PIN.** That is what the card says it is for ("Share this PIN number with
+    [them] for their completion verification"), but no frame shows the client
+    entering anything, so this is a reading of step 42, not a drawing.
+
+19. **The PIN card printed the frame's PIN for every respondent.** One string,
+    `152438`, against a per-person code the store checks. Copying it verified
+    nobody. It shows the participation's own code now. The copy glyph was also
+    not a button — drawn as an affordance, wired to nothing.
+
+20. **Five items in the study row menus did nothing.** Stop-complete Study,
+    Edit and Duplicate to Drafts on an ongoing study; Edit Study and Duplicate
+    Study on a draft. No frame says where Edit goes or what a duplicate
+    contains, so: **Edit opens the Manage tab** for an ongoing study, where
+    every Create step reads back with an Edit of its own, and the Create flow
+    for a draft; **a duplicate carries the study's setup, none of its people
+    and no review, landing in Drafts unsubmitted.** Both are choices to
+    confirm.
+
+21. **Rating & Reviews claims 1,468 reviews and five exist.** The frame draws a
+    pager of 1 2 … 79 80 to match the claim. The pager is real now, so it shows
+    one page. **Either the aggregate is wrong or the seed is thin**; the figure
+    is the frame's, so it stayed.
+
+22. **The in-person address form took an address and threw it away.** Three
+    unbound fields, and its own Add Address and Cancel with no handler. The
+    frame draws one saved address and a form; the build makes them one list so
+    Edit and Delete have something to act on. **The address is not on the draft
+    yet**, so it does not survive leaving step 4 — the draft has no field for
+    it, and adding one changes what a study carries.
+
+**Where the audits cannot see, and what caught these instead.** A click audit
+asks whether a control has a consequence, so a menu item that only closes the
+menu passes, and a panel's contents are never reached because the driver
+reloads between clicks. The three checks that found the rest were a grep for
+link-styled text outside a control, a grep for buttons whose only handler is
+`onClose`, and a scan for inputs with no `value` or `onChange`. All three are
+worth re-running after any turn that adds a screen.
