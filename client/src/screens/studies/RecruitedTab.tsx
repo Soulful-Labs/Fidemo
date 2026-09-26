@@ -138,7 +138,14 @@ export default function RecruitedTab() {
                                 {r.participation.slot?.day} <span className="text-text-body">&bull;</span> {r.participation.slot?.time}
                               </span>
                               {i === 0 && (
-                                <Button size="none" className="h-[38px] px-4" onClick={() => toast('Joining the call')} leftIcon={<VideoIcon className="h-4 w-4" />}>Join Now</Button>
+                                <Button size="none" className="h-[38px] px-4" leftIcon={<VideoIcon className="h-4 w-4" />}
+                                  onClick={() => {
+                                    /* Step 39: the link is always a Focus Insite one, issued
+                                       by the team. There is no room to open here, so the
+                                       session opens in a new tab as it would. */
+                                    const w = window.open(`https://meet.focusinsite.com/${s.id}/${r.id}`, '_blank', 'noopener')
+                                    toast(w ? 'Opening the session' : 'Allow pop-ups to join the session')
+                                  }}>Join Now</Button>
                               )}
                             </span>
                           </td>

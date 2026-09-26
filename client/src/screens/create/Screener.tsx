@@ -283,7 +283,12 @@ export default function Screener() {
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
                   <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
                   <path d="m10 8.5 6 3.5-6 3.5v-7Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                </svg>} onClick={() => toast('Preview opened')}>Preview</Button>
+                </svg>} onClick={() => {
+                  /* The preview is always beside the questions on this step,
+                     so Preview brings it into view rather than opening it. */
+                  document.getElementById('screener-preview')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  toast('Preview is beside your questions')
+                }}>Preview</Button>
             </div>
           </div>
 

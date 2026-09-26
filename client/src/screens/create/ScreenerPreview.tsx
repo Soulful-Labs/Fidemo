@@ -20,7 +20,7 @@ export default function ScreenerPreview() {
   const toast = useToast()
   const [more, setMore] = useState(false)
   return (
-    <aside className="sticky top-[88px] w-[488px] shrink-0 rounded-lg bg-bg-1 p-3">
+    <aside id="screener-preview" className="sticky top-[88px] w-[488px] shrink-0 rounded-lg bg-bg-1 p-3">
       <div className="flex items-center justify-between gap-3 px-1 pb-3">
         <button type="button" aria-label="Refresh preview" onClick={() => toast('Preview refreshed')}
           className="flex h-8 w-8 items-center justify-center rounded-sm border-1 border-stroke-input bg-bg-0 text-text-subtitle hover:text-text-title">

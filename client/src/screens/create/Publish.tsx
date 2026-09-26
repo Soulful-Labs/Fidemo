@@ -66,6 +66,7 @@ export default function Publish() {
   const { submitStudy } = useStudies()
   const [breakdown, setBreakdown] = useState(false)
   const [addCard, setAddCard] = useState(false)
+  const [saveCard, setSaveCard] = useState(false)
   const ready = params.get('state') === 'ready'
 
   /**
@@ -174,7 +175,7 @@ export default function Publish() {
             </div>
           </div>
 
-          <Checkbox checked={false} label="Save this card" />
+          <Checkbox checked={saveCard} label="Save this card" onChange={() => setSaveCard((v) => !v)} />
 
           <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" onClick={() => setAddCard(true)}>Add Card to Publish</Button>
 
