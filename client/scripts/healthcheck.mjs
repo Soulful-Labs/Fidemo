@@ -76,21 +76,35 @@ async function main() {
   await s('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1200, deviceScaleFactor: 1, mobile: false })
 
   const SESSION = `try{localStorage.setItem('fi-client-session',JSON.stringify({accounts:[],current:'jennifer@soulfullabs.com'}))}catch(e){}`
+  // An explicit signed-out value, not a removal: the app still mounted on the
+  // previous page writes its session back on an effect, which put the key
+  // straight back after a removeItem and sent every onboarding route to the
+  // dashboard. Writing the signed-out state is idempotent against that.
+  const CLEAR = `try{localStorage.setItem('fi-client-session','{"accounts":[],"current":null}')}catch(e){}`
+  /** Onboarding turns a signed-in visitor away, so it is checked signed out. */
+  const OPEN = /^(signup|signin|check-email|organization|payment-method|in-review|welcome|pricing)/
   let bad = 0
+  let prior = null
 
   for (const route of ROUTES) {
     const url = base + '/' + route.replace(/^\/+/, '')
     errors.length = 0
-    await s('Page.navigate', { url })
-    await sleep(500)
-    await s('Runtime.evaluate', { expression: SESSION })
+    // The session has to be in place before the app boots, or the guard reads
+    // the previous route's session and redirects, and the route reads as
+    // broken when only the session was stale (Rule 5). An init script runs on
+    // every new document ahead of the app, which the app cannot race.
+    if (prior) await s('Page.removeScriptToEvaluateOnNewDocument', { identifier: prior })
+    const added = await s('Page.addScriptToEvaluateOnNewDocument', {
+      source: OPEN.test(route) ? CLEAR : SESSION,
+    })
+    prior = added.identifier
     await s('Page.navigate', { url: url + (url.includes('?') ? '&' : '?') + '_h=' + Date.now() })
-    await sleep(900)
+    await sleep(1000)
     const r = await s('Runtime.evaluate', {
       expression: `JSON.stringify({
         path: location.pathname,
         notFound: /Not built yet|Not Found/.test(document.body.textContent),
-        empty: document.body.textContent.trim().length < 200,
+        empty: document.body.textContent.trim().length < 120,
         controls: document.querySelectorAll('button, a[href]').length,
       })`,
       returnByValue: true,
@@ -98,7 +112,9 @@ async function main() {
     const out = JSON.parse(r.result.value)
     const faults = []
     if (out.notFound) faults.push('NOT FOUND')
-    if (out.empty) faults.push('page is empty')
+    // A confirmation screen is legitimately short and may carry a single
+    // button, so only a page with nothing on it at all is a fault.
+    if (out.empty && out.controls === 0) faults.push('page is empty')
     if (out.path !== '/' + route.replace(/^\/+/, '').split('?')[0]) faults.push(`landed on ${out.path}`)
     // React key and prop warnings are errors worth naming; a failed asset is not.
     const real = [...new Set(errors)].filter((e) => !/favicon|net::ERR/.test(e))
