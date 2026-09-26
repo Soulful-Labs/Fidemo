@@ -76,7 +76,9 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
     { key: 'activity', label: 'Activity', icon: <Clock className="h-4 w-4" /> },
   ]
 
-  const to = (t: Tab) => `/studies/${s.id}/respondent/${RESPONDENT.id}${t === 'screener' ? '' : `/${t}`}`
+  // The person you opened, not the frame's seeded one: a constant here sent
+  // every tab switch to the same respondent whoever you had opened.
+  const to = (t: Tab) => `/studies/${s.id}/respondent/${person?.id ?? rid ?? RESPONDENT.id}${t === 'screener' ? '' : `/${t}`}`
     + (done ? '' : '?state=recruited')
 
   return (
@@ -137,9 +139,26 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                 </div>
               )}
 
-              {tab !== 'activity' && (session ? running : true) && (
+              {/* Qualify / Disqualify is judged on the screener alone (1627:97609),
+                  so it does not wait for a slot to be sat. Only the completed
+                  bar on a session study does, which is what `running` gates. */}
+              {tab !== 'activity' && (!done || (session ? running : true)) && (
                 <div className={cn('flex items-center justify-between gap-4 bg-bgAlt-1 px-4', session ? 'h-[73px]' : 'mt-[11px] h-[81px]')}>
-                  {!done && (
+                  {/* The decision is only open while they are waiting on it. Someone
+                      already qualified, disqualified, recruited or scheduled is past
+                      this point, so their standing is stated rather than offered
+                      again — the store refused it, which read as a broken button. */}
+                  {!done && state !== 'applied' && (
+                    <p className="flex flex-col text-text-regular">
+                      <span className="text-text-subtitle">This application has already been decided.</span>
+                      <span className="text-text-title">
+                        {state === 'disqualified' ? `${person.name} was disqualified from this study.`
+                          : state === 'scheduled' ? `${person.name} is qualified and has booked a session.`
+                          : `${person.name} is qualified for this study.`}
+                      </span>
+                    </p>
+                  )}
+                  {!done && state === 'applied' && (
                     <>
                       <p className="flex flex-col text-text-regular">
                         <span className="text-text-subtitle">Choose Qualify for further study or Disqualify to reject from here.</span>
