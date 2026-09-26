@@ -86,7 +86,9 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
       { label: 'Studies', to: '/studies' },
       { label: 'GLP-1 Care…' },
       { label: crumbTab, to: `/studies/${s.id}/${done ? 'results' : 'recruited'}` },
-      { label: session ? RESPONDENT.name : RESPONDENT.rowName },
+      // The person you opened. The frames name John M here and someone else
+      // in the row that opens it; a live build cannot show both.
+      { label: person?.name ?? (session ? RESPONDENT.name : RESPONDENT.rowName) },
     ]}>
       <div className={cn('rounded-lg bg-bg-0 p-4', session ? 'min-h-[1173px]' : 'min-h-[1286px]')}>
         <div className="flex flex-col gap-3">
@@ -107,7 +109,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
 
               {tab === 'activity' && (
                 <div className="flex flex-col px-4 pb-4 pt-5">
-                  {done && <RatePrompt wide onRate={() => setRate(true)} />}
+                  {done && <RatePrompt name={person?.name} wide onRate={() => setRate(true)} />}
                   <ActivityList />
                   <div className="pt-[14px]"><PinCard variant="activity" /></div>
                 </div>
@@ -181,7 +183,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                     <>
                       <p className="flex flex-col">
                         <span className="text-text-medium text-brand-secondary">Marked as completed!</span>
-                        <span className="text-text-regular text-text-subtitle">The diary study has been successfully completed by {RESPONDENT.first}.</span>
+                        <span className="text-text-regular text-text-subtitle">The diary study has been successfully completed by {person?.name.split(' ')[0] ?? RESPONDENT.first}.</span>
                       </p>
                       <span className="flex h-11 items-center gap-2 rounded-sm bg-green-50 px-4 text-text-medium text-brand-secondary">
                         <CheckCircle className="h-4 w-4" />Completed
@@ -209,7 +211,8 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
               )}
             </section>
 
-            <RespondentRail rate={rated} onRate={() => setRate(true)} />
+            <RespondentRail rate={rated} onRate={() => setRate(true)}
+              person={person && { name: person.name, role: person.role, score: person.score, tier: person.tier }} />
           </div>
         </div>
       </div>

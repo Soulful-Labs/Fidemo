@@ -14,20 +14,26 @@ function Block({ title, children }: { title?: string; children: React.ReactNode 
 }
 
 /** The green card inviting the client to rate, in the rail and above the Activity list. */
-export function RatePrompt({ wide, onRate }: { wide?: boolean; onRate?: () => void }) {
+export function RatePrompt({ wide, onRate, name }: {
+  wide?: boolean; onRate?: () => void
+  /** Whoever is being rated; the seeded prompt names the frame's person. */
+  name?: string
+}) {
+  const title = name ? `Rate ${name} for this study` : RATE_PROMPT.title
+  const cta = name ? `Rate ${name.split(' ')[0]}` : RATE_PROMPT.cta
   return (
     <div className={wide
       ? 'flex h-20 items-center justify-between gap-4 rounded-lg bg-green-50 px-4'
       : 'flex flex-col gap-2 bg-green-50 px-3 py-4'}>
       <div className="flex flex-col gap-1">
         <p className="inline-flex items-center gap-2 text-body-large text-text-title">
-          <Star className="h-5 w-5 text-brand-secondary" />{RATE_PROMPT.title}
+          <Star className="h-5 w-5 text-brand-secondary" />{title}
         </p>
         <p className={wide ? 'text-text-regular text-text-subtitle' : 'max-w-[248px] text-text-regular text-text-subtitle'}>
           {wide ? RATE_PROMPT.wide : RATE_PROMPT.rail}
         </p>
       </div>
-      <Button size="none" className={wide ? 'h-12 px-6' : 'mt-3 h-12 w-full'} onClick={onRate}>{RATE_PROMPT.cta}</Button>
+      <Button size="none" className={wide ? 'h-12 px-6' : 'mt-3 h-12 w-full'} onClick={onRate}>{cta}</Button>
     </div>
   )
 }
@@ -36,11 +42,23 @@ export function RatePrompt({ wide, onRate }: { wide?: boolean; onRate?: () => vo
  * The 304px rail beside a respondent's result (1627:97305). It is the same
  * facts as the Respondent Profile Details panel, stacked for a narrow column.
  */
-export default function RespondentRail({ rate, onRate }: { rate?: boolean; onRate?: () => void }) {
-  const r = RESPONDENT
+export default function RespondentRail({ rate, onRate, person }: {
+  rate?: boolean; onRate?: () => void
+  /**
+   * Who the rail is describing. The frames draw it seeded with John M, and
+   * open it from rows naming someone else, so without this the rail named the
+   * frame's person while the client acted on a different one. The four facts
+   * the participant list actually carries come from `person`; the rest stays
+   * the frame's detail, because a Person does not hold it.
+   */
+  person?: { name: string; role: string; score: number; tier: 'silver' | 'gold' | 'platinum' }
+}) {
+  const r = person
+    ? { ...RESPONDENT, name: person.name, role: person.role, trustScore: person.score, tier: person.tier }
+    : RESPONDENT
   return (
     <aside className="flex h-fit w-[304px] shrink-0 self-start flex-col overflow-hidden rounded-lg border-1 border-stroke-input bg-bg-0">
-      {rate && <RatePrompt onRate={onRate} />}
+      {rate && <RatePrompt onRate={onRate} name={person?.name} />}
 
       <div className="flex flex-col gap-2 px-4 pb-4 pt-4">
         <p className="flex items-center gap-2">
