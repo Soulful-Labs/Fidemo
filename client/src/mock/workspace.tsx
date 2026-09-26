@@ -173,7 +173,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         ...t,
         last: `You: ${text.slice(0, 80)}`,
         activity: 'Just now',
-        messages: [...t.messages, { id: `${id}-${t.messages.length + 1}`, from: 'client' as const, lines: [text], at: now(), attachment }],
+        // `-sent` marks a reply the client typed, which is what the chat
+        // renders beyond the frame's seeded thread.
+        messages: [...t.messages, { id: `${id}-${t.messages.length + 1}-sent`, from: 'client' as const, lines: [text], at: now(), attachment }],
       } : t)),
     }))
   }, [patch])

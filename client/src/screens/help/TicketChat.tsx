@@ -45,7 +45,7 @@ export default function TicketChat() {
     setDraft('')
     setAttached(false)
   }
-  const solved = params.get('state') === 'solved'
+  const solved = params.get('state') === 'solved' || record?.status === 'Solved'
   const [ask, setAsk] = useState(params.get('modal') === 'solved')
   const t = THREAD
 
@@ -53,7 +53,7 @@ export default function TicketChat() {
     <AppShell hideCreate crumbs={[
       { label: 'Help', to: '/help' },
       { label: 'Support Ticket', to: '/help?tab=tickets' },
-      { label: 'Study results not acces…' },
+      { label: (record?.subject ?? t.subject).slice(0, 22) + '…' },
     ]}>
       <div className="min-h-[939px] rounded-lg bg-bg-0 p-4">
         <section className="flex min-h-[916px] flex-col overflow-hidden rounded-lg border-1 border-stroke-input">
@@ -63,10 +63,10 @@ export default function TicketChat() {
                 className="flex h-8 w-8 items-center justify-center text-text-subtitle hover:text-text-title">
                 <ChevronLeft className="h-5 w-5" />
               </button>
-              <span className="text-title-s leading-[25px] text-text-title">{t.subject}</span>
+              <span className="text-title-s leading-[25px] text-text-title">{record?.subject ?? t.subject}</span>
             </span>
             <span className="flex items-center gap-4">
-              <span className="text-body-regular text-text-subtitle">{t.number}</span>
+              <span className="text-body-regular text-text-subtitle">{record?.number ?? t.number}</span>
               <Tag tone="grey" className={cn('h-7 px-2.5',
                 solved ? 'bg-green-50 text-brand-secondary' : 'bg-yellow-30 text-brand-primary')}>
                 {solved ? 'Solved' : 'Open'}

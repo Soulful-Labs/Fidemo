@@ -113,6 +113,7 @@ const routes: ScreenRoute[] = [
   // ----- Notifications (1663:104076) -----
   { path: '/notifications', label: 'Notifications', node: '1663:104077', section: 'Notifications', kind: 'page', element: guard(createElement(NotificationsPage)) },
   { path: '/help', label: 'Help', node: '1663:104191 (faqs), 1663:104228 (tickets)', section: 'Help', kind: 'page', element: guard(createElement(Help)) },
+  { path: '/help/tickets', label: 'Support Tickets', node: '1663:104228', section: 'Help', kind: 'page', element: guard(createElement(Help)) },
   { path: '/help/tickets/:id', label: 'Ticket Chat', node: '1663:104436 (open), 1663:104484 (solved)', section: 'Help', kind: 'page', element: guard(createElement(TicketChat)) },
   { path: '/account', label: 'Account', node: '1663:104600, 104635, 104813, 104876', section: 'Account', kind: 'page', element: guard(createElement(Account)) },
 

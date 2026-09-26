@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink, useNavigate, useSearchParams } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import Tabs from '../../components/ui/Tabs'
@@ -15,7 +15,8 @@ import { useWorkspace } from '../../mock/workspace'
 function Faq({ q, a, open, onToggle }: { q: string; a?: string; open?: boolean; onToggle: () => void }) {
   return (
     <div className="border-b-1 border-stroke-1">
-      <button type="button" onClick={onToggle} className="flex w-full items-start justify-between gap-4 py-4 text-left">
+      <button type="button" onClick={onToggle} aria-expanded={Boolean(open)}
+        className="flex w-full items-start justify-between gap-4 py-4 text-left">
         <span className="text-body-regular leading-[22px] text-text-title">{q}</span>
         <ChevronDown className={cn('mt-0.5 h-5 w-5 shrink-0 text-text-subtitle', open && 'rotate-180')} />
       </button>
@@ -63,7 +64,10 @@ function DirectHelp({ wide, onAsk }: { wide?: boolean; onAsk: () => void }) {
  */
 export default function Help() {
   const [params, setParams] = useSearchParams()
-  const tickets = params.get('tab') === 'tickets'
+  const { pathname } = useLocation()
+  // /help/tickets is the same screen with the toggle flipped, so the path
+  // selects the tab as well as ?tab=tickets does.
+  const tickets = params.get('tab') === 'tickets' || pathname === '/help/tickets'
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState('Newest first')
   /** A new account has raised none. */
@@ -78,7 +82,10 @@ export default function Help() {
   const [panel, setPanel] = useState(params.get('panel') ?? '')
   const [raised, setRaised] = useState<string | null>(null)
   const nav = useNavigate()
-  const set = (k: string) => { const n = new URLSearchParams(params); n.set('tab', k); setParams(n) }
+  const set = (k: string) => {
+    if (pathname === '/help/tickets') { nav(k === 'tickets' ? '/help?tab=tickets' : '/help'); return }
+    const n = new URLSearchParams(params); n.set('tab', k); setParams(n)
+  }
 
   return (
     <AppShell hideCreate crumbs={[{ label: 'Help' }]}>
