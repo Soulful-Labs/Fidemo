@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useLocation } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import Toggle from '../../components/ui/Toggle'
@@ -59,7 +59,13 @@ function Stars({ n }: { n: number }) {
 export default function Account() {
   const toast = useToast()
   const [params, setParams] = useSearchParams()
-  const tab = params.get('tab') ?? 'profile'
+  const { pathname } = useLocation()
+  // The route map names each sub-page as its own path, and the sub-nav uses
+  // ?tab=. Both select the same tab, so either URL opens the right one.
+  const byPath: Record<string, string> = {
+    '/account/reviews': 'reviews', '/account/certificate': 'certificate', '/account/settings': 'settings',
+  }
+  const tab = params.get('tab') ?? byPath[pathname] ?? 'profile'
   const { account, update } = useSession()
   const reviews = useSeeded(CLIENT_REVIEWS)
   /** Which email notifications have been switched off. */

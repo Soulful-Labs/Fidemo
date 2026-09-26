@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useLocation } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import Tabs from '../../components/ui/Tabs'
@@ -46,7 +46,10 @@ function CardTile({ c, onRemove, onDefault }: { c: SavedCard; onRemove: () => vo
 export default function Payments() {
   const toast = useToast()
   const [params, setParams] = useSearchParams()
-  const done = params.get('tab') === 'completed'
+  const { pathname } = useLocation()
+  // /payments/history is this page with the toggle on Completed; the saved
+  // cards sit on the same page, so /payments/methods is this page too.
+  const done = params.get('tab') === 'completed' || pathname === '/payments/history'
   const [panel, setPanel] = useState(params.get('panel') ?? '')
   const [removing, setRemoving] = useState<string | null>(null)
   const [paying, setPaying] = useState<string | null>(null)

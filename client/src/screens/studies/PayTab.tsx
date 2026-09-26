@@ -1,4 +1,4 @@
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import { StudyFrame } from '../../components/client/StudyFrame'
@@ -55,7 +55,8 @@ export default function PayTab() {
    * appears with it. `?state=due` still forces the completed presentation so
    * the frame can be compared.
    */
-  const due = params.get('state') === 'due' || s.state === 'completed'
+  const { pathname } = useLocation()
+  const due = params.get('state') === 'due' || pathname.endsWith('/pay/due') || s.state === 'completed'
   const money = (n: number) => `$${Math.abs(n).toLocaleString('en-US')}`
 
   return (

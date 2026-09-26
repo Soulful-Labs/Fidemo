@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useLocation } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import Select from '../../components/ui/Select'
@@ -27,7 +27,9 @@ import { useToast } from '../../components/ui/Toast'
 export default function MatchedTab() {
   const { id } = useParams()
   const s = useStudy(id)
-  const [state, setState] = useState<'matched' | 'invited'>('matched')
+  const { pathname } = useLocation()
+  // Matched and Invited are one tab with a switch; the route map names both.
+  const [state, setState] = useState<'matched' | 'invited'>(pathname.endsWith('/invited') ? 'invited' : 'matched')
   const [tier, setTier] = useState('All')
   const { moveRespondent } = useStudies()
   const toast = useToast()

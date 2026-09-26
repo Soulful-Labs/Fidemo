@@ -95,6 +95,8 @@ const routes: ScreenRoute[] = [
   { path: '/studies/:id/recruited', label: 'Recruited Respondents', node: '1627:96535, 1627:101612 (session), 1627:104269 (group)', section: 'Manage', kind: 'page', element: guard(createElement(RecruitedTab)) },
   { path: '/studies/:id/results', label: 'Results', node: '1627:96628', section: 'Manage', kind: 'page', element: guard(createElement(ResultsTab)) },
   { path: '/studies/:id/pay', label: 'Pay', node: '1627:96779 (ongoing), 1627:97128 (due)', section: 'Manage', kind: 'page', element: guard(createElement(PayTab)) },
+  { path: '/studies/:id/invited', label: 'Invited', node: '1627:96329', section: 'Manage', kind: 'page', element: guard(createElement(MatchedTab)) },
+  { path: '/studies/:id/pay/due', label: 'Pay, due as completed', node: '1627:97128', section: 'Manage', kind: 'page', element: guard(createElement(PayTab)) },
   { path: '/studies/:id/payment', label: 'Bill Payment', node: '1627:96956', section: 'Manage', kind: 'page', element: guard(createElement(BillPayment)) },
   { path: '/studies/:id/respondent/:rid', label: 'Respondent result, screener', node: '1627:97305', section: 'Manage', kind: 'page', element: guard(createElement(RespondentResult, { tab: 'screener' })) },
   { path: '/studies/:id/respondent/:rid/result', label: 'Respondent result, study result', node: '1627:97609, 1627:102694 + 102902 (session)', section: 'Manage', kind: 'page', element: guard(createElement(RespondentResult, { tab: 'result' })) },
@@ -112,9 +114,14 @@ const routes: ScreenRoute[] = [
 
   // ----- Notifications (1663:104076) -----
   { path: '/notifications', label: 'Notifications', node: '1663:104077', section: 'Notifications', kind: 'page', element: guard(createElement(NotificationsPage)) },
+  { path: '/account/reviews', label: 'Rating & Reviews', node: '1663:104635', section: 'Account', kind: 'page', element: guard(createElement(Account)) },
+  { path: '/account/certificate', label: 'Certificate', node: '1663:104813', section: 'Account', kind: 'page', element: guard(createElement(Account)) },
+  { path: '/account/settings', label: 'Settings', node: '1663:104876', section: 'Account', kind: 'page', element: guard(createElement(Account)) },
   { path: '/help', label: 'Help', node: '1663:104191 (faqs), 1663:104228 (tickets)', section: 'Help', kind: 'page', element: guard(createElement(Help)) },
   { path: '/help/tickets', label: 'Support Tickets', node: '1663:104228', section: 'Help', kind: 'page', element: guard(createElement(Help)) },
   { path: '/help/tickets/:id', label: 'Ticket Chat', node: '1663:104436 (open), 1663:104484 (solved)', section: 'Help', kind: 'page', element: guard(createElement(TicketChat)) },
+  { path: '/payments/history', label: 'Payments, history', node: '1663:103525', section: 'Payments', kind: 'page', element: guard(createElement(Payments)) },
+  { path: '/payments/methods', label: 'Payments, methods', node: '1663:103724 (hidden in the file)', section: 'Payments', kind: 'page', element: guard(createElement(Payments)) },
   { path: '/account', label: 'Account', node: '1663:104600, 104635, 104813, 104876', section: 'Account', kind: 'page', element: guard(createElement(Account)) },
 
   // ----- Help (1663:104190) -----
