@@ -20,10 +20,12 @@ function Card({ title, action, children }: { title: string; action?: React.React
   )
 }
 
-/** A plain box in the address form. */
-function Field({ placeholder }: { placeholder: string }) {
+/** A box in the address form. Bound, so what is typed into it is kept. */
+function Field({ placeholder, value, onChange }: {
+  placeholder: string; value: string; onChange: (v: string) => void
+}) {
   return (
-    <input placeholder={placeholder}
+    <input placeholder={placeholder} value={value} onChange={(e) => onChange(e.target.value)}
       className="h-[38px] w-full rounded-sm border-1 border-stroke-input bg-bg px-4 text-text-regular text-text-title placeholder:text-text-body" />
   )
 }
@@ -56,6 +58,31 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
 }) {
   const [extra, setExtra] = useState<string[]>([])
   const toast = useToast()
+  /**
+   * The addresses on this study. The frame draws one, so it is the seed, and
+   * the form below adds to the same list, which is what Edit and Delete act
+   * on. The three fields were unbound and the form's own Add Address and
+   * Cancel had no handler at all, so an address typed here went nowhere.
+   */
+  const [list, setList] = useState([{
+    id: 'seed',
+    title: 'Carolina, Texas, USA',
+    detail: 'A-123, Empire State, Hamburg Street 2, Carolina, Texas, USA - 10001',
+  }])
+  const [street, setStreet] = useState('')
+  const [city, setCity] = useState('')
+  const [zip, setZip] = useState('')
+  const clearAddress = () => { setStreet(''); setCity(''); setZip('') }
+  const addAddress = () => {
+    if (!street.trim() || !city.trim()) { toast('An address needs a street and a city'); return }
+    setList((a) => [...a, {
+      id: `addr-${Date.now().toString(36)}`,
+      title: city.trim(),
+      detail: [street.trim(), city.trim(), zip.trim()].filter(Boolean).join(', '),
+    }])
+    clearAddress()
+    toast('Address added')
+  }
   const { draft, set } = useDraft()
 
   const limits = (
@@ -97,7 +124,8 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
 
   const addresses = address ? (
     <Card title="Address" action={
-      <Button variant="secondary" size="none" className="h-[38px] px-4" leftIcon={<Plus className="h-4 w-4" />} onClick={() => { setExtra((a) => [...a, `Address ${a.length + 2}`]); toast('Address added') }}>Add Address</Button>
+      <Button variant="secondary" size="none" className="h-[38px] px-4" leftIcon={<Plus className="h-4 w-4" />}
+        onClick={() => toast('Fill the address in the form below, then Add Address')}>Add Address</Button>
     }>
       <p className="-mt-1 text-text-regular text-text-subtitle">
         Add your commercial addresses for participants to book in-person interviews at.
@@ -109,30 +137,44 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
             className="text-text-subtitle hover:text-text-title"><Close className="h-4 w-4" /></button>
         </div>
       ))}
-      <div className="flex items-start justify-between gap-3 rounded-sm bg-bg-2 px-4 py-3">
-        <span className="flex flex-col gap-1">
-          <span className="text-text-regular text-text-title">{group && '1.  '}Carolina, Texas, USA</span>
-          <span className="text-text-regular text-text-title">A-123, Empire State, Hamburg Street 2, Carolina, Texas, USA - 10001</span>
-        </span>
-        {group ? (
-          <IconBtn label="Address options"><MoreVertical className="h-4 w-4" /></IconBtn>
-        ) : (
-          <span className="flex items-center gap-2">
-            <IconBtn label="Edit address"><Edit className="h-4 w-4" /></IconBtn>
-            <IconBtn label="Delete address"><Trash className="h-4 w-4" /></IconBtn>
+      {list.map((a, i) => (
+        <div key={a.id} className="flex items-start justify-between gap-3 rounded-sm bg-bg-2 px-4 py-3">
+          <span className="flex flex-col gap-1">
+            <span className="text-text-regular text-text-title">{group && `${i + 1}.\u00a0 `}{a.title}</span>
+            <span className="text-text-regular text-text-title">{a.detail}</span>
           </span>
-        )}
-      </div>
+          {/* Edit lifts the address back into the form below, so adding it
+              again replaces it; the kebab the group frame draws offers the
+              same two things in one control. */}
+          {group ? (
+            <IconBtn label={`Address options for ${a.title}`}
+              onClick={() => { setList((x) => x.filter((y) => y.id !== a.id)); setStreet(a.detail); setCity(a.title); toast('Address moved into the form to edit') }}>
+              <MoreVertical className="h-4 w-4" />
+            </IconBtn>
+          ) : (
+            <span className="flex items-center gap-2">
+              <IconBtn label={`Edit ${a.title}`}
+                onClick={() => { setList((x) => x.filter((y) => y.id !== a.id)); setStreet(a.detail); setCity(a.title); toast('Edit it below, then Add Address') }}>
+                <Edit className="h-4 w-4" />
+              </IconBtn>
+              <IconBtn label={`Delete ${a.title}`}
+                onClick={() => { setList((x) => x.filter((y) => y.id !== a.id)); toast(`${a.title} removed`) }}>
+                <Trash className="h-4 w-4" />
+              </IconBtn>
+            </span>
+          )}
+        </div>
+      ))}
       <div className="flex flex-col gap-3 rounded-sm bg-bg-2 p-3">
         <p className="text-text-regular text-text-subtitle">Add Full Address</p>
-        <Field placeholder="Office number, Building/Street name, Area" />
+        <Field placeholder="Office number, Building/Street name, Area" value={street} onChange={setStreet} />
         <div className="grid grid-cols-2 gap-3">
-          <Field placeholder="City, State" />
-          <Field placeholder="Zip Code" />
+          <Field placeholder="City, State" value={city} onChange={setCity} />
+          <Field placeholder="Zip Code" value={zip} onChange={setZip} />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Button variant="secondary" size="none" className="h-[38px]">Add Address</Button>
-          <Button variant="tertiary" size="none" className="h-[38px]">Cancel</Button>
+          <Button variant="secondary" size="none" className="h-[38px]" onClick={addAddress}>Add Address</Button>
+          <Button variant="tertiary" size="none" className="h-[38px]" onClick={clearAddress}>Cancel</Button>
         </div>
       </div>
     </Card>
