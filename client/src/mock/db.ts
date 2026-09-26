@@ -136,7 +136,16 @@ export const PEOPLE: Person[] = [
   person('wendy-t', 'Wendy T.', 'Kinesiologist, Rehabilitation', 3, 68, { professionVerified: true }),
 ]
 
-export const personById = (id: string) => PEOPLE.find((p) => p.id === id)
+/**
+ * The person behind a participation id. A study that holds more
+ * participations than there are people suffixes the repeats (`ferry-l~1`),
+ * so the suffix comes off before the lookup.
+ */
+export const personById = (id: string) => {
+  const base = id.split('~')[0]
+  const p = PEOPLE.find((x) => x.id === base)
+  return p && p.id === id ? p : p && { ...p, id }
+}
 
 /** Policy: the score is derived from its two inputs, never stored. */
 export const scoreOf = (p: Person) => trustScore(p)
@@ -248,9 +257,20 @@ function participants(counts: {
 }, opts: { sessions?: boolean } = {}): Participation[] {
   const out: Participation[] = []
   let i = 0
+  /**
+   * A study can hold more participations than there are people, so the list
+   * wraps. Each lap past the first gets a suffixed id — `ferry-l~1` — so
+   * every participation is addressable on its own. Without it, one person
+   * held several states in the same study, `moveRespondent` found whichever
+   * came first, and inviting the top Matched card was refused with
+   * "recruited cannot become invited". `personById` strips the suffix, so
+   * the name, score and tier on the card are unchanged.
+   */
   const take = (n: number, make: (p: Person, k: number) => Participation) => {
     for (let k = 0; k < n; k += 1) {
-      const p = PEOPLE[i % PEOPLE.length]
+      const base = PEOPLE[i % PEOPLE.length]
+      const lap = Math.floor(i / PEOPLE.length)
+      const p = lap === 0 ? base : { ...base, id: `${base.id}~${lap}` }
       i += 1
       out.push(make(p, k))
     }
