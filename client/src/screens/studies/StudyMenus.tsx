@@ -16,36 +16,44 @@ function Item({ children, onClick }: { children: string; onClick?: () => void })
 }
 
 /** Ongoing study options (1518:90959): a rule sits above Edit. */
-export function OngoingMenu({ open, onClose, onPause, onCopy }: { open: boolean; onClose: () => void; onPause: () => void; onCopy: () => void }) {
+export function OngoingMenu({ open, onClose, onPause, onCopy, onComplete, onEdit, onDuplicate }: {
+  open: boolean; onClose: () => void; onPause: () => void; onCopy: () => void
+  onComplete: () => void; onEdit: () => void; onDuplicate: () => void
+}) {
   return (
     <Popover open={open} onClose={onClose} width={200}>
       <Item onClick={onCopy}>Copy Study Link</Item>
       <Item onClick={onPause}>Pause Study</Item>
-      <Item onClick={onClose}>Stop-complete Study</Item>
+      <Item onClick={onComplete}>Stop-complete Study</Item>
       <div className="my-1 border-t-1 border-stroke-input" />
-      <Item onClick={onClose}>Edit</Item>
-      <Item onClick={onClose}>Duplicate to Drafts</Item>
+      <Item onClick={onEdit}>Edit</Item>
+      <Item onClick={onDuplicate}>Duplicate to Drafts</Item>
     </Popover>
   )
 }
 
 /** Drafts study options (1518:90965). */
-export function DraftMenu({ open, onClose, onDelete }: { open: boolean; onClose: () => void; onDelete: () => void }) {
+export function DraftMenu({ open, onClose, onDelete, onEdit, onDuplicate }: {
+  open: boolean; onClose: () => void; onDelete: () => void
+  onEdit: () => void; onDuplicate: () => void
+}) {
   return (
     <Popover open={open} onClose={onClose} width={180}>
-      <Item onClick={onClose}>Edit Study</Item>
-      <Item onClick={onClose}>Duplicate Study</Item>
+      <Item onClick={onEdit}>Edit Study</Item>
+      <Item onClick={onDuplicate}>Duplicate Study</Item>
       <Item onClick={onDelete}>Delete Study Draft</Item>
     </Popover>
   )
 }
 
 /** Completed study options (1726:77013). */
-export function CompletedMenu({ open, onClose, onCopy }: { open: boolean; onClose: () => void; onCopy: () => void }) {
+export function CompletedMenu({ open, onClose, onCopy, onDuplicate }: {
+  open: boolean; onClose: () => void; onCopy: () => void; onDuplicate: () => void
+}) {
   return (
     <Popover open={open} onClose={onClose} width={200}>
       <Item onClick={onCopy}>Copy Study Link</Item>
-      <Item onClick={onClose}>Duplicate to Drafts</Item>
+      <Item onClick={onDuplicate}>Duplicate to Drafts</Item>
     </Popover>
   )
 }

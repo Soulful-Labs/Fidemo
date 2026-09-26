@@ -171,11 +171,14 @@ export default function KitchenSink() {
         <Section title="Studies menus and dialogs" node="1518:90959, 1726:57600, 1726:77013, 1518:90965">
           <Row label="Row menus">
             <span className="relative"><Button variant="tertiary" onClick={() => setStudyMenu(studyMenu === 'ongoing' ? null : 'ongoing')}>Ongoing</Button>
-              <OngoingMenu open={studyMenu === 'ongoing'} onClose={() => setStudyMenu(null)} onPause={() => { setStudyMenu(null); setPause(true) }} onCopy={() => setStudyMenu(null)} /></span>
+              <OngoingMenu open={studyMenu === 'ongoing'} onClose={() => setStudyMenu(null)} onPause={() => { setStudyMenu(null); setPause(true) }} onCopy={() => setStudyMenu(null)}
+                onComplete={() => setStudyMenu(null)} onEdit={() => setStudyMenu(null)} onDuplicate={() => setStudyMenu(null)} /></span>
             <span className="relative"><Button variant="tertiary" onClick={() => setStudyMenu(studyMenu === 'draft' ? null : 'draft')}>Drafts</Button>
-              <DraftMenu open={studyMenu === 'draft'} onClose={() => setStudyMenu(null)} onDelete={() => { setStudyMenu(null); setModal(true) }} /></span>
+              <DraftMenu open={studyMenu === 'draft'} onClose={() => setStudyMenu(null)} onDelete={() => { setStudyMenu(null); setModal(true) }}
+                onEdit={() => setStudyMenu(null)} onDuplicate={() => setStudyMenu(null)} /></span>
             <span className="relative"><Button variant="tertiary" onClick={() => setStudyMenu(studyMenu === 'completed' ? null : 'completed')}>Completed</Button>
-              <CompletedMenu open={studyMenu === 'completed'} onClose={() => setStudyMenu(null)} onCopy={() => setStudyMenu(null)} /></span>
+              <CompletedMenu open={studyMenu === 'completed'} onClose={() => setStudyMenu(null)} onCopy={() => setStudyMenu(null)}
+                onDuplicate={() => setStudyMenu(null)} /></span>
             <span className="relative"><Button variant="tertiary" onClick={() => setStudyMenu(studyMenu === 'type' ? null : 'type')}>Study Type</Button>
               <StudyTypeMenu open={studyMenu === 'type'} onClose={() => setStudyMenu(null)} value={[]} onChange={() => undefined} /></span>
           </Row>

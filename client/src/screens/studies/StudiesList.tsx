@@ -248,12 +248,36 @@ function RowMenu({
   tab, row, open, onClose, onPause, onDelete,
 }: { tab: StudiesTab; row: Study; open: boolean; onClose: () => void; onPause: () => void; onDelete: () => void }) {
   const toast = useToast()
+  const nav = useNavigate()
+  const { moveStudy, duplicateStudy } = useStudies()
   const copy = async () => {
     const ok = await copyText(`https://focusinsite.com/study/${row.id}`)
     toast(ok ? 'Link copied' : 'Could not reach the clipboard')
     onClose()
   }
-  if (tab === 'drafts') return <DraftMenu open={open} onClose={onClose} onDelete={onDelete} />
-  if (tab === 'completed') return <CompletedMenu open={open} onClose={onClose} onCopy={copy} />
-  return <OngoingMenu open={open} onClose={onClose} onPause={onPause} onCopy={copy} />
+  /**
+   * Stop-complete, Edit and Duplicate each only closed the menu, and a menu
+   * closing looks like a consequence to an audit, which is why they survived
+   * one. Editing an ongoing study is its Manage tab, where each Create step
+   * reads back with an Edit of its own; editing a draft is the Create flow.
+   */
+  const complete = () => {
+    const res = moveStudy(row.id, 'completed')
+    toast(res.ok ? `${row.title} marked completed` : res.why)
+    onClose()
+  }
+  const edit = () => {
+    onClose()
+    nav(tab === 'drafts' ? '/studies/create/about' : `/studies/${row.id}/manage`)
+  }
+  const duplicate = () => {
+    const res = duplicateStudy(row.id)
+    toast(res.ok ? `Copied to Drafts as “${row.title} (copy)”` : res.why ?? 'Could not copy that study')
+    onClose()
+    if (res.ok && tab !== 'drafts') nav('/studies/drafts')
+  }
+  if (tab === 'drafts') return <DraftMenu open={open} onClose={onClose} onDelete={onDelete} onEdit={edit} onDuplicate={duplicate} />
+  if (tab === 'completed') return <CompletedMenu open={open} onClose={onClose} onCopy={copy} onDuplicate={duplicate} />
+  return <OngoingMenu open={open} onClose={onClose} onPause={onPause} onCopy={copy}
+    onComplete={complete} onEdit={edit} onDuplicate={duplicate} />
 }

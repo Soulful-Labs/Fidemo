@@ -40,6 +40,8 @@ interface Ctx {
   /** Step 46: the client confirms the payout list before anything leaves the account. */
   approvePayouts: (studyId: string, personIds: string[]) => Result
   setRepeatRule: (studyId: string, rule: Study['repeatRule']) => Result
+  /** Duplicate to Drafts: a copy of a study, unsubmitted and with nobody on it. */
+  duplicateStudy: (studyId: string) => Result & { id?: string }
   /** Workflow step 5 and 7: the client submits a study, the team takes it live. */
   submitStudy: (draft: {
     title: string; description: string; type: Study['type']; required: number
@@ -92,6 +94,27 @@ export function StudyProvider({ children }: { children: ReactNode }) {
     }, ...all])
     return id
   }, [])
+
+  /**
+   * A duplicate is a fresh draft, not a submission: it carries the study's
+   * setup and none of its people, and the client submits it themselves. That
+   * is what Duplicate to Drafts and Duplicate Study on the row menus do; both
+   * only closed the menu before.
+   */
+  const duplicateStudy = useCallback<Ctx['duplicateStudy']>((studyId) => {
+    const from = studies.find((x) => x.id === studyId)
+    if (!from) return { ok: false, why: 'That study is gone' }
+    const id = `st-copy-${Date.now().toString(36)}`
+    const now = new Date()
+    const fmt = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ (\d{4})$/, ', $1')
+    const title = `${from.title} (copy)`
+    setStudies((all) => [{
+      ...from, id, name: title, title, breadcrumb: title,
+      state: 'draft' as const, created: fmt, createdIso: now.toISOString().slice(0, 10),
+      daysRemaining: 0, participants: [], review: undefined,
+    }, ...all])
+    return { ok: true, id }
+  }, [studies])
 
   /**
    * Nothing here approves a study, so an in-review study goes live on a
@@ -183,7 +206,8 @@ export function StudyProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<Ctx>(() => ({
     studies, study, moveStudy, moveRespondent, rate, enterCode, approvePayouts, setRepeatRule, submitStudy,
-  }), [studies, study, moveStudy, moveRespondent, rate, enterCode, approvePayouts, setRepeatRule, submitStudy])
+    duplicateStudy,
+  }), [studies, study, moveStudy, moveRespondent, rate, enterCode, approvePayouts, setRepeatRule, submitStudy, duplicateStudy])
 
   return <StoreCtx.Provider value={value}>{children}</StoreCtx.Provider>
 }
