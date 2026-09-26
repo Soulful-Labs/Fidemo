@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import OnboardShell from './OnboardShell'
 import Button from '../../components/ui/Button'
 import { CheckCircle, ChevronDown, Eye, MessageIcon } from '../../components/ui/icons'
@@ -154,7 +154,15 @@ export function SignIn() {
         <Field label="Password" placeholder="Enter your password" eye value={password} onChange={(v) => { setPassword(v); setError(null) }} />
       </div>
       {error && <p className="pt-2 text-text-regular text-[#e33a38]">{error}</p>}
-      <p className="pt-2 text-right text-body-medium text-text-title">Forgot Password?</p>
+      {/* Was a paragraph, so it looked live and did nothing. Figma draws a
+          reset branch of its own (1794:80317 Check Email, 1794:80515 Set New
+          Password, 1794:80698 Password has been updated!) which is not built,
+          so it goes to the Check Email that is: the same link-in-your-email
+          step the frame's own reset starts with. */}
+      <div className="pt-2 text-right">
+        <button type="button" onClick={() => nav('/check-email?reset=1')}
+          className="text-body-medium text-text-title hover:underline">Forgot Password?</button>
+      </div>
       <Button fullWidth size="none" className="mt-6 h-12 text-body-medium" onClick={submit}>Login</Button>
       <NavLink to="/signup" className="mt-3 flex h-12 items-center justify-center rounded-sm border-1 border-cta-tertiaryStroke text-body-regular text-text-title hover:bg-bg-1">
         Don&rsquo;t have an account?&nbsp;<span className="text-body-medium">Sign Up</span>
@@ -180,6 +188,8 @@ function Seal({ size = 160, icon = 'mail' }: { size?: number; icon?: 'mail' | 'c
 
 /** Check Email (1484:81337). No code is asked for; the link is in the email. */
 export function CheckEmail() {
+  const [params] = useSearchParams()
+  const reset = params.get('reset') === '1'
   const nav = useNavigate()
   const { account } = useSession()
   return (
@@ -192,7 +202,13 @@ export function CheckEmail() {
           <span className="text-body-medium text-text-title">{account?.email ?? 'emailaddress@domain.com'}</span><br />
           to verify your account and get started
         </p>
-        <Button variant="secondary" fullWidth size="none" className="mt-6 h-12 text-body-medium" onClick={() => nav('/organization')}>Open My Email</Button>
+        {/* Sign-up lands here on the way to Organization Details. Forgot
+            Password lands here too, and Figma's reset branch (Set New
+            Password 1794:80515, Password has been updated! 1794:80698) is not
+            built, so a reset returns to sign-in rather than pushing a client
+            who already has an account through onboarding. */}
+        <Button variant="secondary" fullWidth size="none" className="mt-6 h-12 text-body-medium"
+          onClick={() => nav(reset ? '/signin' : '/organization')}>Open My Email</Button>
         <p className="pt-3 text-text-regular text-text-body">
           Demo build: no email is sent. Use code 123456 wherever one is asked for.
         </p>
