@@ -4,6 +4,7 @@ import SidePanel from '../../components/ui/SidePanel'
 import Toggle from '../../components/ui/Toggle'
 import { Calendar, Close, Plus } from '../../components/ui/icons'
 import { useDraft } from '../../mock/createStore'
+import { useToast } from '../../components/ui/Toast'
 
 function Time({ value }: { value: string }) {
   return (
@@ -21,13 +22,27 @@ function Time({ value }: { value: string }) {
 export default function OverridePanel({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [rows, setRows] = useState<number[]>([0, 1])
   const { draft, set } = useDraft()
+  const toast = useToast()
+
+  /**
+   * Save override only closed the panel, so a client could set a date's hours
+   * and nothing kept them: the Date Overrides card below never gained a row.
+   * It writes the override the panel describes onto the draft, which is what
+   * that card counts.
+   */
+  const save = () => {
+    const hours = draft.unavailableAllDay ? 'Unavailable' : `${rows.length} time${rows.length === 1 ? '' : 's'}`
+    set('overrides', [...draft.overrides, { date: 'Aug 20 - Aug 30', hours }])
+    toast(draft.unavailableAllDay ? 'Marked unavailable for those dates' : 'Override saved')
+    onClose()
+  }
 
   return (
     <SidePanel open={open} onClose={onClose} title="Add an override" headerClassName="h-[56px]"
       bodyClassName="flex flex-col gap-4 p-4"
       footer={
         <div className="flex gap-3 [&_button]:h-12 [&_button]:flex-1 [&_button]:text-body-medium">
-          <Button onClick={onClose}>Save override</Button>
+          <Button onClick={save}>Save override</Button>
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
         </div>
       }>
