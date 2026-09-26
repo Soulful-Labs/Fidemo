@@ -127,6 +127,17 @@ the loop.
 
 ## 5. Smaller things the designer should know
 
+- **Eight of the nine FAQs have no answer in the frame.** Only the first
+  accordion is drawn open; on every other one the Description text node is
+  switched off (`hidden="true"` on `1663:104207` and its siblings), so the
+  frame carries nine questions and one answer. The build now has all nine,
+  and the eight new ones are written from the 58 step workflow, the signed
+  policy and what the product does — certificates, managed vs self-managed,
+  the invoice lines, underfilling, how completion is decided, the Pool, using
+  an existing audience, and editing after launch. Each one names its source
+  in a comment above `FAQS` in `src/mock/help.ts`. **A writer should approve
+  this copy**; it is the only substantial body text in the build that did not
+  come from a frame.
 - **No reply time anywhere in Help.** No SLA, no queue position, no business
   hours. The only statement about timing is on the Sent dialog: "Our team and
   assistants will review and reach out to you shortly."
