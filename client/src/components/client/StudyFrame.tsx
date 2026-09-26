@@ -144,7 +144,10 @@ export function StudyTabs({ id, active, muted }: { id: string; active: StudyTab;
         const inner = cn('-mb-px flex h-10 items-center border-b-1 px-4 pb-1 text-body-regular transition-colors',
           on ? 'border-cta-primary text-brand-primary'
             : 'border-transparent text-text-body hover:text-text-title')
-        return <NavLink key={t.key} to={`/studies/${id}${t.path}`} role="tab" aria-selected={on} className={inner}>{t.label}</NavLink>
+        /* The tab you are on is the current one, not a link back to itself. */
+        return on
+          ? <span key={t.key} role="tab" aria-selected aria-current="page" className={inner}>{t.label}</span>
+          : <NavLink key={t.key} to={`/studies/${id}${t.path}`} role="tab" aria-selected={false} className={inner}>{t.label}</NavLink>
       })}
     </div>
   )

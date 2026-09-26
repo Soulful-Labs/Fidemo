@@ -153,13 +153,15 @@ export default function PanelDetail({ featured }: { featured?: boolean }) {
 
         <div className="mt-3 overflow-hidden rounded-lg border-1 border-stroke-input">
           <div className="flex h-11 items-end gap-8 border-b-1 border-stroke-1 px-4">
-            {tabs.map((t) => (
-              <button key={t.key} type="button" onClick={() => set(t.key)}
-                className={cn('-mb-px border-b-1 pb-2 text-body-regular',
-                  t.key === tab ? 'border-cta-primary text-brand-primary' : 'border-transparent text-text-subtitle hover:text-text-title')}>
-                {t.label}
-              </button>
-            ))}
+            {tabs.map((t) => {
+              const on = t.key === tab
+              const cls = cn('-mb-px border-b-1 pb-2 text-body-regular',
+                on ? 'border-cta-primary text-brand-primary' : 'border-transparent text-text-subtitle hover:text-text-title')
+              /* The tab you are on is the current one, not a control. */
+              return on
+                ? <span key={t.key} aria-current="page" className={cls}>{t.label}</span>
+                : <button key={t.key} type="button" onClick={() => set(t.key)} className={cls}>{t.label}</button>
+            })}
           </div>
 
           {tab === 'details' ? (
