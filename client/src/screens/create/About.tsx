@@ -21,7 +21,8 @@ function TypeCard({ t }: { t: (typeof TYPES)[number] }) {
   return (
     <div className={cn('flex flex-col rounded-lg border-1',
       on ? 'border-brand-primary bg-yellow-30' : 'border-stroke-1 bg-bg-0')}>
-      <button type="button" onClick={() => set('type', t.key)} className="flex items-start gap-3 p-[11px] text-left">
+      <button type="button" onClick={() => set('type', t.key)} aria-pressed={on}
+        className="flex items-start gap-3 p-[11px] text-left">
         <span className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-md [&>svg]:h-5 [&>svg]:w-5',
           on ? 'bg-yellow-40 text-brand-primary' : 'bg-bg-1 text-text-subtitle')}>
           <t.Icon />

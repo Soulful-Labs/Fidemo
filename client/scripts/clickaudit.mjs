@@ -84,9 +84,13 @@ const AUDIT = `(async () => {
       const r = el.getBoundingClientRect()
       if (r.width === 0 || r.height === 0) return false
       if (el.hasAttribute('disabled')) return false
-      // Deliberately inert: the tab you are on and the page you are on are
-      // marked current and are not controls, so doing nothing is right.
+      // Deliberately inert: the tab you are on, the page you are on and a
+      // choice already made are marked current or pressed, so a click that
+      // changes nothing is the right behaviour, not a dead control.
       if (el.getAttribute('aria-current')) return false
+      if (el.getAttribute('aria-pressed') === 'true') return false
+      if (el.getAttribute('aria-checked') === 'true') return false
+      if (el.getAttribute('aria-selected') === 'true') return false
       return true
     })
 
