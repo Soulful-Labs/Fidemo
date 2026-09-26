@@ -65,7 +65,12 @@ export default function AudienceNoMatch() {
     <CreateShell step="audience" action={
       <>
         <Button variant="tertiary" size="row" onClick={() => nav('/studies/drafts')}>Save Draft &amp; Exit</Button>
-        <Button size="row" disabled onClick={() => nav('/studies/create/published')}>Publish Study</Button>
+        {/* Correctly closed, not a dead control: the forecast is ~0 eligible
+            members, so there is nobody to publish to. The frame draws it
+            disabled and gives the way out, Contact Us on the no-match card.
+            The title says why rather than leaving it a mystery. */}
+        <Button size="row" disabled title="No eligible members match this audience yet. Broaden the criteria, or use Contact Us below."
+          onClick={() => nav('/studies/create/published')}>Publish Study</Button>
       </>
     }>
       <div className="flex items-start gap-12 rounded-lg bg-bg-0 p-6">

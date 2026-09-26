@@ -99,8 +99,15 @@ export default function Pool() {
                   ))}
                 </div>
                 <div className="mt-3 flex items-center gap-4">
-                  <button type="button" onClick={() => { setF({ ...POOL_DEFAULT_FILTERS }); setQuery('') }}
-                    className="inline-flex items-center gap-2 text-text-regular text-text-subtitle hover:text-text-title">
+                  {/* With nothing set there is nothing to clear, so it says so
+                      rather than looking live and doing nothing. */}
+                  <button type="button" disabled={chips.length === 0 && query === ''}
+                    title={chips.length === 0 && query === '' ? 'No filters are on' : 'Take every filter off'}
+                    onClick={() => { setF({ ...POOL_DEFAULT_FILTERS }); setQuery('') }}
+                    className={cn('inline-flex items-center gap-2 text-text-regular',
+                      chips.length === 0 && query === ''
+                        ? 'cursor-not-allowed text-text-disabled'
+                        : 'text-text-subtitle hover:text-text-title')}>
                     <Close className="h-4 w-4" />Clear All
                   </button>
                   <button type="button" onClick={() => setFilters((v) => !v)}
