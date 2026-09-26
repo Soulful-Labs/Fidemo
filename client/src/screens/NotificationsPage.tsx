@@ -3,6 +3,9 @@ import Button from '../components/ui/Button'
 import Tag from '../components/ui/Tag'
 import { NotificationItem } from './dashboard/NotificationsPanel'
 import { useWorkspace } from '../mock/workspace'
+import { notificationRoute } from '../lib/notificationRoute'
+import { useStudies } from '../mock/store'
+import { useNavigate } from 'react-router-dom'
 
 /**
  * Notifications (1663:104077). The same rows as the 600px panel the bell
@@ -11,6 +14,8 @@ import { useWorkspace } from '../mock/workspace'
  */
 export default function NotificationsPage() {
   const { notifications: rows, markNotificationsRead, markNotificationRead } = useWorkspace()
+  const { studies } = useStudies()
+  const navigate = useNavigate()
   const unread = rows.filter((n) => n.unread).length
 
   return (
@@ -36,7 +41,7 @@ export default function NotificationsPage() {
                 </p>
               </div>
             )}
-            {rows.map((n) => <NotificationItem key={n.id} n={n} onAction={() => markNotificationRead(n.id)} />)}
+            {rows.map((n) => <NotificationItem key={n.id} n={n} onAction={() => { markNotificationRead(n.id); navigate(notificationRoute(n, studies.map((x) => x.id))) }} />)}
           </ul>
         </div>
       </div>

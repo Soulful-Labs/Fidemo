@@ -9,6 +9,7 @@ import type { Study } from '../../mock/db'
 import { counts, progressPct, statusTag } from '../../lib/derive'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { copyText } from '../../lib/copy'
 
 /**
  * Every screen under this shell reads its study from the store and its
@@ -65,7 +66,8 @@ export function StudyHeader({ study }: { study: Study }) {
               icon={study.type === 'diary' ? <DiaryBookIcon className="h-4 w-4" /> : undefined} />
             <div className="flex items-center gap-2">
               <Tag tone={status.tone}>{status.label}</Tag>
-              <button type="button" aria-label="Copy study link" onClick={() => toast('Link copied')}
+              <button type="button" aria-label="Copy study link"
+                onClick={async () => toast(await copyText(study.shareLink ?? '') ? 'Link copied' : 'Could not reach the clipboard')}
                 className="flex h-btn w-btn items-center justify-center rounded-full border-1 border-stroke-input text-text-subtitle hover:text-text-title">
                 <LinkIcon className="h-4 w-4" />
               </button>

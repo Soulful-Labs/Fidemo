@@ -5,6 +5,8 @@ import { Copy } from '../../components/ui/icons'
 import { useParams } from 'react-router-dom'
 import { useStudy } from '../../mock/store'
 import { counts, progressPct } from '../../lib/derive'
+import { copyText } from '../../lib/copy'
+import { useToast } from '../../components/ui/Toast'
 
 /** The Overview tiles, in the warm tint the frame draws them in. */
 export function OverviewTile({ label, value, suffix, ring }: { label: string; value: string; suffix?: string; ring?: number }) {
@@ -36,6 +38,7 @@ export function OverviewTile({ label, value, suffix, ring }: { label: string; va
  * Manage Study, holds what the study is; this one holds how it is going.
  */
 export default function StudyOverview() {
+  const toast = useToast()
   const { id } = useParams()
   const s = useStudy(id)
   const c = counts(s)
@@ -64,7 +67,7 @@ export default function StudyOverview() {
                 {s.shareLink}
               </span>
               <Button variant="tertiary" className="px-5" leftIcon={<Copy className="h-4 w-4" />}
-                onClick={() => void navigator.clipboard?.writeText(s.shareLink ?? '').catch(() => undefined)}>
+                onClick={async () => toast(await copyText(s.shareLink ?? '') ? 'Link copied' : 'Could not reach the clipboard')}>
                 Copy
               </Button>
             </div>

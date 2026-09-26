@@ -20,15 +20,20 @@ function Body({ n }: { n: NotificationRow }) {
 export function NotificationItem({ n, onAction }: { n: NotificationRow; onAction: (n: NotificationRow) => void }) {
   const Glyph = GLYPH[n.icon]
   return (
-    <li className={cn('flex gap-3 border-b-1 border-stroke-1 px-3 pb-[13px] pt-3', n.unread ? 'bg-yellow-30' : 'bg-bg-0')}>
+    /* The whole row opens what it is about; the action button does the same
+       thing, which is what the PRD's notification table asks for. */
+    <li className={cn('flex gap-3 border-b-1 border-stroke-1 px-3 pb-[13px] pt-3 transition-colors',
+      n.unread ? 'bg-yellow-30 hover:bg-yellow-40' : 'bg-bg-0 hover:bg-bg-1')}>
       <span className={cn('flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-md text-brand-primary',
         n.unread ? 'bg-bg-0' : 'bg-bg-1')}>
         <Glyph className="h-6 w-6" />
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <p className="text-text-medium text-text-title">{n.title}</p>
-        <p className="text-text-regular text-text-subtitle"><Body n={n} /></p>
-        <p className="text-label text-text-body">{n.ago}</p>
+        <button type="button" onClick={() => onAction(n)} className="flex flex-col gap-1 text-left">
+          <span className="text-text-medium text-text-title">{n.title}</span>
+          <span className="text-text-regular text-text-subtitle"><Body n={n} /></span>
+          <span className="text-label text-text-body">{n.ago}</span>
+        </button>
         {n.action && (
           <span className="pt-1">
             <Button size="row" variant={n.unread ? 'primary' : 'secondary'}

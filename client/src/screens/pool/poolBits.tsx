@@ -126,6 +126,7 @@ function Picked({ label, placeholder, options, chips, onChange }: {
 export default function FilterRail({ value, onChange }: {
   value: PoolFilters; onChange: (next: PoolFilters) => void
 }) {
+  const toast = useToast()
   const f = POOL_FILTERS
   const set = <K extends keyof PoolFilters>(k: K, v: PoolFilters[K]) => onChange({ ...value, [k]: v })
   const toggleTier = (t: string) => {
@@ -138,7 +139,7 @@ export default function FilterRail({ value, onChange }: {
         <span className="inline-flex items-center gap-2 text-title-s leading-[22px] text-text-title">
           Filters <span className="text-text-subtitle">&#9707;</span>
         </span>
-        <button type="button" onClick={() => onChange({ ...POOL_DEFAULT_FILTERS })}
+        <button type="button" onClick={() => { onChange({ ...POOL_DEFAULT_FILTERS }); toast('Filters reset') }}
           className="inline-flex items-center gap-1.5 text-text-medium text-text-subtitle hover:text-text-title">
           &#8635; Reset
         </button>

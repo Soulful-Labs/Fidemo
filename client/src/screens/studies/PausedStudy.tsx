@@ -6,6 +6,7 @@ import { StudyFrame } from '../../components/client/StudyFrame'
 import { useToast } from '../../components/ui/Toast'
 import { useStudies, useStudy } from '../../mock/store'
 import { counts, progressPct } from '../../lib/derive'
+import { copyText } from '../../lib/copy'
 
 /** The Overview tiles, in the warm tint the frame draws them in. */
 function OverviewTile({ label, value, suffix, ring }: { label: string; value: string; suffix?: string; ring?: number }) {
@@ -86,7 +87,7 @@ export default function PausedStudy() {
                   {s.shareLink}
                 </span>
                 <Button variant="tertiary" className="px-5" leftIcon={<Copy className="h-4 w-4" />}
-                  onClick={() => void navigator.clipboard?.writeText(s.shareLink ?? '').catch(() => undefined)}>
+                  onClick={async () => toast(await copyText(s.shareLink ?? '') ? 'Link copied' : 'Could not reach the clipboard')}>
                   Copy
                 </Button>
               </div>

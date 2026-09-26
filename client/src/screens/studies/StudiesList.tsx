@@ -16,6 +16,7 @@ import { counts } from '../../lib/derive'
 import { studyTab } from '../../lib/lifecycle'
 import { CompletedMenu, DeleteStudyModal, DraftMenu, OngoingMenu, PauseStudyModal, StudyTypeMenu } from './StudyMenus'
 import { useToast } from '../../components/ui/Toast'
+import { copyText } from '../../lib/copy'
 
 export type StudiesTab = 'ongoing' | 'drafts' | 'completed'
 
@@ -246,7 +247,12 @@ function SortMark({ active, dir }: { active?: boolean; dir?: 1 | -1 }) {
 function RowMenu({
   tab, row, open, onClose, onPause, onDelete,
 }: { tab: StudiesTab; row: Study; open: boolean; onClose: () => void; onPause: () => void; onDelete: () => void }) {
-  const copy = () => { void navigator.clipboard?.writeText(`https://focusinsite.com/study/${row.id}`).catch(() => undefined); onClose() }
+  const toast = useToast()
+  const copy = async () => {
+    const ok = await copyText(`https://focusinsite.com/study/${row.id}`)
+    toast(ok ? 'Link copied' : 'Could not reach the clipboard')
+    onClose()
+  }
   if (tab === 'drafts') return <DraftMenu open={open} onClose={onClose} onDelete={onDelete} />
   if (tab === 'completed') return <CompletedMenu open={open} onClose={onClose} onCopy={copy} />
   return <OngoingMenu open={open} onClose={onClose} onPause={onPause} onCopy={copy} />

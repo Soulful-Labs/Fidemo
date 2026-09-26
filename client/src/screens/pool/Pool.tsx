@@ -13,6 +13,7 @@ import { cn } from '../../lib/cn'
 import { FEATURED_CATEGORIES, FEATURED_PANELS, POOL_DEFAULT_FILTERS, POOL_PEOPLE, POOL_SEARCH, POOL_TOTAL } from '../../mock/pool'
 import { matchesPool, poolChips } from '../../lib/poolFilter'
 import { useWorkspace } from '../../mock/workspace'
+import { useToast } from '../../components/ui/Toast'
 
 /**
  * Pool of Participants (1645:161430 with filters, 1777:98738 without,
@@ -21,6 +22,7 @@ import { useWorkspace } from '../../mock/workspace'
  * one more state of its own.
  */
 export default function Pool() {
+  const toast = useToast()
   const nav = useNavigate()
   const [params, setParams] = useSearchParams()
   const panels = params.get('view') === 'panels'
@@ -64,7 +66,12 @@ export default function Pool() {
         {!panels && (
           <>
             <form className="mt-4 flex h-[62px] items-center justify-between gap-4 rounded-lg border-1 border-stroke-input bg-bg-1 px-4"
-              onSubmit={(e) => { e.preventDefault(); setF({ ...f, query }); }}>
+              onSubmit={(e) => {
+                e.preventDefault()
+                const next = { ...f, query }
+                setF(next)
+                toast(`${POOL_PEOPLE.filter((p) => matchesPool(p, next)).length} of ${POOL_TOTAL} match`)
+              }}>
               <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={POOL_SEARCH}
                 className="min-w-0 flex-1 bg-transparent text-body-regular text-text-title outline-none placeholder:text-text-body" />
               <Button type="submit" variant="secondary" size="none" className="h-10 px-4"
