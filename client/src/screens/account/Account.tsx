@@ -4,6 +4,7 @@ import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import Toggle from '../../components/ui/Toggle'
 import Pagination from '../../components/client/Pagination'
+import { pageLabels, paginate } from '../../lib/derive'
 import { ChangePasswordModal, DeactivateModal, LogoutModal, OutcomeModal } from './AccountModals'
 import { Check, CheckCircle, ChevronDown, ChevronRight, Star, StarFilled, Trash, UsersIcon, VerifiedMark } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
@@ -67,7 +68,11 @@ export default function Account() {
   }
   const tab = params.get('tab') ?? byPath[pathname] ?? 'profile'
   const { account, update } = useSession()
-  const reviews = useSeeded(CLIENT_REVIEWS)
+  const allReviews = useSeeded(CLIENT_REVIEWS)
+  const [reviewPage, setReviewPage] = useState(1)
+  /** pageLabels counts pages, not rows, so it takes paginate's own total. */
+  const reviewPages = paginate(allReviews, reviewPage)
+  const reviews = reviewPages.rows
   /** Which email notifications have been switched off. */
   const [emailOff, setEmailOff] = useState<string[]>([])
   const [form, setForm] = useState({
@@ -95,6 +100,7 @@ export default function Account() {
           <nav className="flex h-fit w-[200px] shrink-0 flex-col gap-1 rounded-lg border-1 border-stroke-input p-[9px]">
             {NAV.map((n) => (
               <button key={n.key} type="button" onClick={() => go(n.key)}
+                aria-current={n.key === tab && n.key !== 'logout' ? 'page' : undefined}
                 className={cn('flex h-[38px] w-full items-center gap-3 rounded-sm px-3 text-body-regular',
                   n.key === tab ? 'bg-yellow-30 text-brand-primary' : 'text-text-title hover:bg-bg-1')}>
                 {n.key === 'reviews' ? <Star className="h-5 w-5" />
@@ -142,7 +148,7 @@ export default function Account() {
                   <span className="text-title-l text-brand-secondary">{CLIENT_RATING.score}</span>
                   <span className="text-body-regular text-text-subtitle">{CLIENT_RATING.of}</span>
                 </div>
-                {reviews.length === 0 && (
+                {allReviews.length === 0 && (
                   <p className="py-12 text-center text-text-regular text-text-subtitle">
                     No reviews yet. Participants review you after a study is delivered.
                   </p>
@@ -166,7 +172,11 @@ export default function Account() {
                     </p>
                   </div>
                 ))}
-                <Pagination pages={[1, 2, '…', 79, 80]} />
+                {/* Was drawn with the frame's numbers and no handler, so it
+                    could not page. It pages the list above it, and the labels
+                    come from how many reviews there actually are. */}
+                <Pagination page={reviewPages.page} pages={pageLabels(reviewPages.total, reviewPages.page)}
+                  onPage={setReviewPage} />
               </>
             )}
 

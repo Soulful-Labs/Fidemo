@@ -1,6 +1,7 @@
 import Button from '../../components/ui/Button'
 import { Calendar, CheckCircle, Clock, Copy, Download, Eye, MapPin } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
+import { copyText } from '../../lib/copy'
 import type { Answer, QA } from '../../mock/respondent'
 import { ACTIVITY, NOTES, SESSION, VERIFICATION_PIN } from '../../mock/respondent'
 import { useToast } from '../../components/ui/Toast'
@@ -103,20 +104,43 @@ export function DayBar({ label }: { label: string }) {
 }
 
 /** The verification PIN, wide on the Activity tab and boxed beside the session. */
-export function PinCard({ variant }: { variant: 'activity' | 'session' }) {
+export function PinCard({ variant, pin, name, onShared }: {
+  variant: 'activity' | 'session'
+  /**
+   * The code on this participation. The frame prints one PIN for its seeded
+   * respondent; the code the store checks is per person, so showing the
+   * frame's string meant copying a PIN that verifies nobody.
+   */
+  pin?: string
+  name?: string
+  /** The client has used the code, which is their half of step 42. */
+  onShared?: (code: string) => void
+}) {
   const wide = variant === 'activity'
+  const toast = useToast()
+  const code = pin ?? VERIFICATION_PIN.pin
+  const first = name?.split(' ')[0]
+  const body = (wide ? VERIFICATION_PIN.activityBody : VERIFICATION_PIN.sessionBody)
+    .replace('John M.', first ? `${first}.` : 'John M.')
+
+  /** The frame draws a copy glyph, so it copies, and records that it was used. */
+  const share = async () => {
+    const ok = await copyText(code)
+    onShared?.(code)
+    toast(ok ? 'PIN copied, share it to verify their session' : 'Could not reach the clipboard')
+  }
+
   return (
     <div className={cn('rounded-lg bg-bg-1 p-4', wide ? 'flex items-center justify-between gap-4' : 'flex flex-col gap-3')}>
       <div className="flex flex-col gap-1">
         <p className="text-body-large text-text-title">{VERIFICATION_PIN.title}</p>
-        <p className={cn('text-text-regular text-text-subtitle', !wide && 'max-w-[344px]')}>
-          {wide ? VERIFICATION_PIN.activityBody : VERIFICATION_PIN.sessionBody}
-        </p>
+        <p className={cn('text-text-regular text-text-subtitle', !wide && 'max-w-[344px]')}>{body}</p>
       </div>
-      <span className="flex h-12 w-[198px] items-center justify-between rounded-sm border-1 border-stroke-input bg-bg-0 px-4">
-        <span className="text-title-s text-text-title">{VERIFICATION_PIN.pin}</span>
+      <button type="button" onClick={share} aria-label={`Copy the verification PIN for ${name ?? 'this respondent'}`}
+        className="flex h-12 w-[198px] items-center justify-between rounded-sm border-1 border-stroke-input bg-bg-0 px-4 hover:border-cta-primary">
+        <span className="text-title-s text-text-title">{code}</span>
         <Copy className="h-5 w-5 text-text-subtitle" />
-      </span>
+      </button>
     </div>
   )
 }

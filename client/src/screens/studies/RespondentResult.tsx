@@ -51,7 +51,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
   const nav = useNavigate()
   const [params] = useSearchParams()
   const s = useStudy(id)
-  const { moveRespondent } = useStudies()
+  const { moveRespondent, enterCode } = useStudies()
   const [rate, setRate] = useState(params.get('rate') === '1' || params.get('rate') === 'rated')
   const [noShow, setNoShow] = useState<'one' | 'all' | null>((params.get('noshow') as 'one' | 'all') ?? null)
 
@@ -69,6 +69,18 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
   /** A session study is only rated once its slot has been sat. */
   const rated = session ? running : done
   const crumbTab = done ? 'Results' : 'Recruited'
+
+  /**
+   * Sharing the PIN is the client's half of the session code (step 42). Without
+   * it `Mark Completed` refused every time with "No code, no payment" and the
+   * client had no way to satisfy it: the card printed a PIN and nothing read it.
+   */
+  const shared = (code: string) => {
+    if (!person) return
+    const res = enterCode(s.id, person.id, code)
+    if (!res.ok && res.why) toast(res.why)
+  }
+  const pinProps = { pin: person?.participation.code?.value, name: person?.name, onShared: shared }
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
     { key: 'screener', label: 'Screener', icon: <SurveyIcon className="h-4 w-4" /> },
@@ -111,7 +123,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                 <div className="flex flex-col px-4 pb-4 pt-5">
                   {done && <RatePrompt name={person?.name} wide onRate={() => setRate(true)} />}
                   <ActivityList />
-                  <div className="pt-[14px]"><PinCard variant="activity" /></div>
+                  <div className="pt-[14px]"><PinCard variant="activity" {...pinProps} /></div>
                 </div>
               )}
 
@@ -133,11 +145,11 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                     : (
                       <div className="grid grid-cols-2 gap-3">
                         <SessionCard state="booked" />
-                        <PinCard variant="session" />
+                        <PinCard variant="session" {...pinProps} />
                       </div>
                     )}
                   <NotesCard download={running} className="flex-1" />
-                  {running && <PinCard variant="activity" />}
+                  {running && <PinCard variant="activity" {...pinProps} />}
                 </div>
               )}
 
@@ -190,7 +202,22 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                       </span>
                     </>
                   )}
-                  {done && session && (
+                  {/* The verdict is only open while the session is sat and nothing
+                      has been decided. Someone already completed, rated or marked
+                      no-show is past it, so their outcome is stated rather than
+                      offered again; the store refused it and the buttons read as
+                      broken. Same rule as Qualify above. */}
+                  {done && session && (state === 'completed' || state === 'rated' || state === 'no_show') && (
+                    <p className="flex flex-col text-text-regular">
+                      <span className="text-text-subtitle">Completion Confirmation</span>
+                      <span className="text-text-title">
+                        {state === 'no_show'
+                          ? `${person.name} was marked a no-show and is not paid for this session.`
+                          : `${person.name} completed this session.${state === 'rated' ? ' Rated.' : ''}`}
+                      </span>
+                    </p>
+                  )}
+                  {done && session && state === 'scheduled' && (
                     <>
                       <p className="flex flex-col">
                         <span className="text-text-regular text-text-subtitle">Completion Confirmation</span>

@@ -282,7 +282,14 @@ function participants(counts: {
   take(counts.completed, (p, k) => ({ personId: p.id, state: 'completed', prescreener: 'passed', completedAt: day(k + counts.rated), code: code(k) }))
   take(counts.noShow, (p) => ({ personId: p.id, state: 'no_show', prescreener: 'passed' }))
   const slots = slotsFor(counts.scheduled)
-  take(counts.scheduled, (p, k) => ({ personId: p.id, state: 'scheduled', prescreener: 'passed', slot: slots[k] }))
+  // Step 42 says a code exists at the end of every session. A scheduled
+  // participation had none, so the client's half could never be entered and
+  // Mark Completed refused for ever with no way to satisfy it. The
+  // respondent has entered theirs; the client shares the PIN to enter theirs.
+  take(counts.scheduled, (p, k) => ({
+    personId: p.id, state: 'scheduled', prescreener: 'passed', slot: slots[k],
+    code: { value: String(407060 + k), byParticipant: true, byClient: false },
+  }))
   take(counts.recruited, (p) => ({ personId: p.id, state: 'recruited', prescreener: 'passed' }))
   take(counts.qualified, (p) => ({ personId: p.id, state: 'qualified', prescreener: 'passed' }))
   take(counts.disqualified, (p) => ({ personId: p.id, state: 'disqualified', prescreener: 'terminated' }))
