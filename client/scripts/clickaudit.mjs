@@ -82,7 +82,12 @@ const AUDIT = `(async () => {
   const pick = () => [...document.querySelectorAll('button, a[href], [role="tab"]')]
     .filter((el) => {
       const r = el.getBoundingClientRect()
-      return r.width > 0 && r.height > 0 && !el.hasAttribute('disabled')
+      if (r.width === 0 || r.height === 0) return false
+      if (el.hasAttribute('disabled')) return false
+      // Deliberately inert: the tab you are on and the page you are on are
+      // marked current and are not controls, so doing nothing is right.
+      if (el.getAttribute('aria-current')) return false
+      return true
     })
 
   const dead = []

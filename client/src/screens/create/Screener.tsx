@@ -88,9 +88,13 @@ const MARK_TONE: Record<string, string> = {
 }
 
 /** The option rows a select question is answered with. */
-function Options({ q, onAdd, onRemove, onText, removable }: {
-  q: Question; onAdd: () => void; onRemove: (id: string) => void; onText: (id: string, v: string) => void; removable: boolean
+function Options({ q, onAdd, onRemove, onText, onMark, removable }: {
+  q: Question; onAdd: () => void; onRemove: (id: string) => void; onText: (id: string, v: string) => void
+  /** The mark an option carries, which the question kind decides. */
+  onMark: (id: string, mark: string) => void
+  removable: boolean
 }) {
+  const marks = MARKS_FOR(q.kind)
   return (
     <div className="flex flex-col gap-2.5">
       {q.options.map((o) => (
@@ -102,7 +106,8 @@ function Options({ q, onAdd, onRemove, onText, removable }: {
             <span className="absolute left-4 h-4 w-4 rounded-full border-1.5 border-neutral-1000" />
             <Box value={o.text} placeholder="Enter option" onChange={(v) => onText(o.id, v)} className="pl-11" />
           </span>
-          <Pick value={o.mark} tone={MARK_TONE[o.mark]} className="w-[110px] px-3" />
+          <Pick value={o.mark} tone={MARK_TONE[o.mark]} className="w-[110px] px-3"
+            options={marks} onPick={(v) => onMark(o.id, v)} />
           <button type="button" aria-label="Add option" onClick={onAdd} className="text-text-subtitle hover:text-text-title">
             <Plus className="h-5 w-5" />
           </button>
@@ -169,8 +174,15 @@ function QuestionBlock({ q, index }: { q: Question; index: number }) {
         <div className="flex items-center gap-2.5">
           <span className="flex h-[38px] items-center rounded-full bg-bg-1 px-4 text-text-regular text-text-title">{q.label}</span>
           <span className="flex-1" />
-          {q.kind === 'Mattrix' && <Pick value={q.matrixKind ?? 'Single-select/row'} className="w-[164px]" />}
-          <Pick value={q.kind} className="w-[164px]" />
+          {q.kind === 'Mattrix' && (
+            <Pick value={q.matrixKind ?? 'Single-select/row'} className="w-[164px]"
+              options={['Single-select/row', 'Multi-select/row']}
+              onPick={(v) => write({ ...q, matrixKind: v })} />
+          )}
+          <Pick value={q.kind} className="w-[164px]"
+            options={['Single-select', 'Multi-select', 'Single-line input', 'Number input',
+              'Multi-line input', 'Slider', 'Ranking', 'File Upload', 'Mattrix']}
+            onPick={(v) => write({ ...q, kind: v as QuestionKind, options: q.options.map((o) => ({ ...o, mark: MARKS_FOR(v as QuestionKind)[0] ?? o.mark })) })} />
           <button type="button" aria-label="Question options" onClick={remove}
             className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-sm border-1 border-stroke-input bg-bg text-text-subtitle hover:text-text-title">
             <MoreVertical className="h-5 w-5" />
@@ -180,7 +192,9 @@ function QuestionBlock({ q, index }: { q: Question; index: number }) {
         <Box value={q.text} placeholder="Enter question text..." onChange={(v) => write({ ...q, text: v })} />
 
         {(q.kind === 'Single-select' || q.kind === 'Multi-select') && (
-          <Options q={q} onAdd={addOption} onRemove={removeOption} onText={optionText} removable={q.kind === 'Multi-select'} />
+          <Options q={q} onAdd={addOption} onRemove={removeOption} onText={optionText}
+            onMark={(id, mark) => write({ ...q, options: q.options.map((o) => (o.id === id ? { ...o, mark } : o)) })}
+            removable={q.kind === 'Multi-select'} />
         )}
 
         {PREVIEW_LINE[q.kind] && <Box muted placeholder={PREVIEW_LINE[q.kind]} />}
@@ -223,7 +237,9 @@ function QuestionBlock({ q, index }: { q: Question; index: number }) {
           <div className="flex items-end gap-3">
             <label className="flex flex-1 flex-col gap-1">
               <span className="text-text-regular text-text-subtitle">File formats</span>
-              <Pick value={q.formats || 'Select formats'} tone={q.formats ? undefined : 'text-text-body'} className="w-full" />
+              <Pick value={q.formats || 'Select formats'} tone={q.formats ? undefined : 'text-text-body'} className="w-full"
+                options={['PDF', 'PNG or JPG', 'CSV', 'Any file']}
+                onPick={(v) => write({ ...q, formats: v })} />
             </label>
             <label className="flex flex-1 flex-col gap-1">
               <span className="text-text-regular text-text-subtitle">Max number of files</span>
