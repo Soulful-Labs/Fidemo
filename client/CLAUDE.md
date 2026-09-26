@@ -848,3 +848,33 @@ One section per turn, each ending with renders compared against the frames.
 | 15 | Sweep: walk every route at 1440 against its frame, fix the differences, list what is still off | all |
 
 Stage two, wiring the behaviour to the 58-step workflow, starts after that.
+
+---
+
+## Rule 8, three greps the click audit cannot replace
+
+A click audit asks whether a control has a consequence. Three kinds of dead
+control pass it, and each was found only by looking for it directly.
+
+1. **Text that looks like a control and is not one.** `Forgot Password?` was a
+   paragraph; `Learn about payment options` a link-styled span; the PIN card's
+   copy glyph an icon in a `<span>`. The audit only queries
+   `button, a[href], [role=tab]`, so none of them was ever clicked.
+   `grep -rnE "<(span|p)[^>]*text-text-title[^>]*>(Learn|View|Contact|Terms)"`.
+2. **A control whose only handler closes the thing it is in.** Five items in the
+   study row menus called `onClose`, and a menu closing is a real DOM change, so
+   the audit passed all five. `grep -rn "onClick={onClose}"` and read every hit
+   whose label is not Cancel, Close, Done or No.
+3. **An input bound to nothing.** The Publish card form and the in-person
+   address form both accepted typing and discarded it. Scan for `<input>` and
+   `<textarea>` with no `value`, `onChange` or `checked`.
+
+And the structural blind spot: **a panel's contents are never audited**, because
+the driver clicks the trigger and then reloads for the next control. Every
+panel and modal has to be driven by hand — `shot.mjs --js` with a script that
+opens it and clicks inside it. That is where the address form, the override
+that saved nothing and the PIN card were hiding.
+
+`scripts/healthcheck.mjs` covers the fourth kind: a route in the map with no
+screen behind it. `/help/tickets` and `/studies/:id/pay/due` both drew the
+Not-Found placeholder while the audit reported every route clean.
