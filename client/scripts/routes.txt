@@ -55,3 +55,12 @@ organization
 payment-method
 in-review
 welcome
+help/tickets
+payments/history
+payments/methods
+account/reviews
+account/certificate
+account/settings
+studies/st-goal/invited
+studies/st-travel/pay/due
+studies/st-goal/respondent/ava-b?state=recruited

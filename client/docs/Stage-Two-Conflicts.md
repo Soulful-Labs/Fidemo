@@ -246,3 +246,61 @@ exactly from the rates. **The $3,850 tile is the odd one out.**
   exists anywhere in the client app's data.
 - **Tiers**: Silver 50+, Gold 70+, Platinum 90+ in the policy, and the same
   three chips in Figma.
+
+---
+
+## F. Divergences the functional pass forced, 26 September 2026
+
+Making every control work turned up places where a frame's content cannot
+survive being acted on. Each is a decision reported, not taken quietly.
+
+11. **The respondent screens named two different people.** `1627:97305` and
+    `1627:97609` draw a row that names one person and a rail that names John M,
+    and the Rate panel names a third. Figma governs appearance, but a build
+    where clicking Samantha T opens a profile headed John M is wrong whichever
+    frame you follow. **The rail, the breadcrumb and the rate card now name the
+    person you opened**, taking the four facts the participant list carries
+    (name, role, score, tier) and keeping the frame's detail for the rest,
+    which a `Person` does not hold. Figma loses on this one because it
+    contradicts itself; confirm that is acceptable.
+
+12. **`Publish Study` and `Proceed to Publish` are drawn disabled on every
+    frame but one.** Taken literally the Create flow cannot be finished. Figma
+    draws `Publish Study` enabled on the in-person frame (`1622:87629`) and
+    disabled on the other three, so both states are designed, and the frame's
+    own secondary button says what opens it: "Add Card to Publish". Step 4
+    opens when the type's setup exists; step 5 opens once the study has a card
+    to charge. Both still render disabled on first load, so no frame moves.
+    **Confirm the gate on step 5 is a card and not something else** — a plan, a
+    credit balance, or team approval.
+
+13. **The Pool opens unfiltered, so `Clear All` has nothing to clear.**
+    `1645:161430` opens with six chips on. Opening filtered means a client
+    cannot see the whole pool and, as reported, cannot take the chips off. The
+    build opens unfiltered, and `Clear All` is therefore closed with a reason
+    until a filter is on. **This is the divergence already recorded in the
+    designer file, now with a visible consequence.**
+
+14. **Figma's password-reset branch is not built.** `1794:80317` Check Email,
+    `1794:80515` Set New Password and `1794:80698` Password has been updated!
+    are a reset flow nobody has asked for. `Forgot Password?` was drawn as text
+    and wired to nothing; it now opens the Check Email that exists and returns
+    to sign-in. **Three screens to build if reset is in scope.**
+
+15. **A study holds more participations than there are people.** The seeded
+    counts the Manage header depends on (30 required / 60 applied / 35
+    qualified / 20 completed) need 57 participations on one study against 48
+    people in the pool, so a person appeared in several states at once and
+    every per-person action found the wrong one. Repeats now carry a suffixed
+    id. **Either the pool needs more people or a study needs fewer
+    participants; the frames cannot have both.**
+
+16. **Ask Support reuses the Rate panel's placeholder.** `1663:104557` puts
+    "Describe your experience with Ferry here.." on the Subject and Message
+    fields of a support form. Kept, because Figma governs strings and Rule 1
+    keeps typos. **It reads as a mistake to anyone using it.**
+
+17. **The Pay tab's "Total Cost" disagrees with its own billing card**, as
+    already recorded: $3,850 on the tile against $3,350 in the breakdown.
+    Paying a study's balance now settles that study's invoice, so the figure
+    is load-bearing rather than decorative.
