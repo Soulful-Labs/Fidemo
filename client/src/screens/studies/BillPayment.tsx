@@ -1,10 +1,15 @@
-import { useParams } from 'react-router-dom'
+import { useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import StudyTypeTag from '../../components/client/StudyTypeTag'
 import { Clock, DiaryBookIcon, Info, PaymentsIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { BILL, BILLING, BILLING_TOTAL } from '../../mock/pay'
+import { useStudies } from '../../mock/store'
+import { useWorkspace } from '../../mock/workspace'
+import { invoices } from '../../lib/derive'
+import { PaidModal } from '../payments/PaymentPanels'
 import type { BillingRow } from '../../mock/pay'
 import { useToast } from '../../components/ui/Toast'
 import { useStudy } from '../../mock/store'
@@ -56,9 +61,29 @@ function Fig({ label, value, suffix }: { label: string; value: string; suffix?: 
  */
 export default function BillPayment() {
   const toast = useToast()
+  const nav = useNavigate()
   const { id } = useParams()
   const s = useStudy(id)
+  const { studies } = useStudies()
+  const { payInvoice, paidInvoices } = useWorkspace()
+  const [paid, setPaid] = useState(false)
   const c = BILL.card
+
+  /** The invoice this study's balance settles, and whether it is already paid. */
+  const invoice = invoices(studies).find((x) => x.studyId === s.id)
+  const already = invoice ? paidInvoices.includes(invoice.number) : false
+
+  /**
+   * Paying has to move the money, not just say so: the invoice goes to paid,
+   * which is what Payments and the Pay tab read. Then the frame's own
+   * confirmation (1779:104245), and back to the study.
+   */
+  const pay = () => {
+    if (!invoice) { toast('No balance is outstanding on this study'); return }
+    if (already) { toast('This invoice is already paid'); return }
+    payInvoice(invoice.number)
+    setPaid(true)
+  }
 
   return (
     <AppShell hideCreate crumbs={[
@@ -130,7 +155,9 @@ export default function BillPayment() {
                 <Field label="Zip Code" value={c.zip} className="w-[259px]" />
               </div>
             </div>
-            <Button size="none" className="mt-[15px] h-12 w-full" onClick={() => toast(`${c.cta} sent`)}><span className="text-body-medium">{c.cta}</span></Button>
+            <Button size="none" className="mt-[15px] h-12 w-full" disabled={already}
+              title={already ? 'This invoice is already paid' : undefined}
+              onClick={pay}><span className="text-body-medium">{already ? 'Paid' : c.cta}</span></Button>
             <ul className="flex flex-col pt-4">
               {BILL.notes.map((n) => (
                 <li key={n.text} className="flex gap-2 text-text-regular leading-5 text-text-subtitle">
@@ -142,6 +169,7 @@ export default function BillPayment() {
           </div>
         </div>
       </div>
+      <PaidModal open={paid} onClose={() => { setPaid(false); nav(`/studies/${s.id}/pay`) }} />
     </AppShell>
   )
 }
