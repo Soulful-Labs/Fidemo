@@ -71,7 +71,8 @@ const AUDIT = `(async () => {
   )
   const here = () => location.pathname + location.search
   // A hash, not a length: reordering table rows keeps the length identical
-  // and would read as a dead sort header.
+  // and would read as a dead sort header. One click per page load, so no
+  // click can hide or fake the next one.
   const shape = () => {
     const html = document.body.innerHTML
     let h = 0
@@ -98,7 +99,12 @@ const AUDIT = `(async () => {
     const changed = shape() !== dom0
     const toast = !!document.querySelector('[role="status"]')
     if (!navigated && !changed && !toast) dead.push(label(el))
-    if (navigated) { i += 1; break }
+    // One click per load. Clicking on means a filter narrows the list, a
+    // panel is already open or a tab is already active, and the next control
+    // reads as dead when it is only redundant. Those were most of the first
+    // run's findings.
+    i += 1
+    break
   }
   return JSON.stringify({ dead, next: i, total: all.length })
 })()`

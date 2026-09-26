@@ -123,6 +123,7 @@ export default function CreatePanel({ edit }: { edit?: boolean }) {
   const [language, setLanguage] = useState(['English'])
   const [lastActive, setLastActive] = useState('Any')
   const [education, setEducation] = useState("Graduate or Bachelor's")
+  const [npiOnly, setNpiOnly] = useState(true)
   const go = (v: string) => { const n = new URLSearchParams(params); n.set('step', v); setParams(n) }
   const { createPanel, updatePanel, panels } = useWorkspace()
   const nav = useNavigate()
@@ -144,6 +145,7 @@ export default function CreatePanel({ edit }: { edit?: boolean }) {
       { label: 'Language', value: language.join(', ') },
       { label: 'Last Active', value: lastActive },
       { label: 'Level of Education', value: education },
+      { label: 'Profession Verified', value: npiOnly ? 'Required' : 'Not required' },
     ]
     if (existing) {
       updatePanel(existing.id, { title: name, domain, roles, criteria })
@@ -227,7 +229,7 @@ export default function CreatePanel({ edit }: { edit?: boolean }) {
                   <span className="text-body-regular text-text-title">Require NPI-verified / licensed / certified participants</span>
                   <span className="text-text-regular text-text-subtitle">Limits pool to licensed providers cross-checked against authorized registry</span>
                 </span>
-                <Toggle checked onChange={() => undefined} />
+                <Toggle checked={npiOnly} onChange={setNpiOnly} label="Require NPI-verified participants" />
               </div>
 
               <h2 className="pt-5 text-title-s leading-[22px] text-text-title">Eligibility criteria</h2>

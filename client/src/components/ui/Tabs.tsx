@@ -25,9 +25,11 @@ export default function Tabs({
         {items.map((t) => {
           const on = t.key === value
           const inner = cn('flex h-10 flex-1 items-center justify-center whitespace-nowrap rounded-full px-2 text-body-regular transition-colors', on ? 'bg-green-200 text-text-title' : 'text-text-subtitle hover:text-text-title')
+          /* The tab you are on is the current one, not a link back to itself. */
+          if (on) return <span key={t.key} role="tab" aria-selected aria-current="page" className={inner}>{t.label}</span>
           return t.to
-            ? <NavLink key={t.key} to={t.to} role="tab" aria-selected={on} className={inner}>{t.label}</NavLink>
-            : <button key={t.key} type="button" role="tab" aria-selected={on} onClick={() => onChange?.(t.key)} className={inner}>{t.label}</button>
+            ? <NavLink key={t.key} to={t.to} role="tab" aria-selected={false} className={inner}>{t.label}</NavLink>
+            : <button key={t.key} type="button" role="tab" aria-selected={false} onClick={() => onChange?.(t.key)} className={inner}>{t.label}</button>
         })}
       </div>
     )
@@ -46,9 +48,10 @@ export default function Tabs({
           on ? 'border-cta-primary text-brand-primary'
             : t.muted ? 'border-transparent text-text-disabled'
               : 'border-transparent text-text-body hover:text-text-title')
+        if (on) return <span key={t.key} role="tab" aria-selected aria-current="page" className={inner}>{t.label}</span>
         return t.to
-          ? <NavLink key={t.key} to={t.to} role="tab" aria-selected={on} className={inner}>{t.label}</NavLink>
-          : <button key={t.key} type="button" role="tab" aria-selected={on} onClick={() => onChange?.(t.key)} className={inner}>{t.label}</button>
+          ? <NavLink key={t.key} to={t.to} role="tab" aria-selected={false} className={inner}>{t.label}</NavLink>
+          : <button key={t.key} type="button" role="tab" aria-selected={false} onClick={() => onChange?.(t.key)} className={inner}>{t.label}</button>
       })}
     </div>
   )
