@@ -132,7 +132,8 @@ export function installReducedMotion() {
  */
 export function play(el: Element | null | undefined, keyframes: Keyframe[], ms: number = CSS.base, easing: string = CSS.out, delay = 0) {
   if (!el || prefersReduced() || typeof (el as HTMLElement).animate !== 'function') return
-  ;(el as HTMLElement).animate(keyframes, { duration: ms, easing, delay })
+  // `backwards`: while waiting out its delay the element already shows the first frame.
+  return (el as HTMLElement).animate(keyframes, { duration: ms, easing, delay, fill: 'backwards' })
 }
 
 /** A short haptic tick where the device supports it. Silent everywhere else. */

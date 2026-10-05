@@ -33,7 +33,7 @@ export function PerformanceRatings({ alt = true }: { alt?: boolean }) {
             </button>
             <span className="text-text-medium text-brand-secondary">{user.ratings[r.key]}%</span>
           </div>
-          <ProgressBar value={user.ratings[r.key]} tone="green" size="sm" />
+          <ProgressBar value={user.ratings[r.key]} tone="green" size="sm" memory={`rating-${r.key}`} />
         </div>
       ))}
     </div>
@@ -60,7 +60,7 @@ export default function TrustScoreDetails() {
           <button type="button" onClick={() => navigate('/trust-score/rules')} className="flex items-center gap-1 text-text-regular text-text-subtitle">
             <Info className="h-4 w-4" />Trust Score<ChevronRight className="h-4 w-4" />
           </button>
-          <ScoreDial score={user.trustScore} size="md">
+          <ScoreDial score={user.trustScore} size="md" memory="trust">
             <TierChip tier={tier} onClick={() => navigate('/trust-score/tiers')} />
           </ScoreDial>
           {next && (
@@ -69,7 +69,7 @@ export default function TrustScoreDetails() {
                 <span className="text-tier-gold">{tierName(tier)}</span>
                 <span className={next.tier === 'gold' ? 'text-tier-gold' : 'text-tier-platinum'}>{tierName(next.tier)}</span>
               </div>
-              <ProgressBar value={user.trustScore - floor} max={next.at - floor} track={next.tier === 'gold' ? 'gold' : 'platinum'} />
+              <ProgressBar value={user.trustScore - floor} max={next.at - floor} track={next.tier === 'gold' ? 'gold' : 'platinum'} memory={`tier-bar-${next.at}`} />
               <div className="flex justify-between text-text-regular text-text-body">
                 <span className="text-tier-gold">{floor}</span>
                 <span>Gain {next.gain} to next tier</span>

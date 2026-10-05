@@ -28,9 +28,9 @@ export function markSeen(key: string, value: number) {
 }
 
 /** Lets the /motion page replay an arrival from a chosen earlier value. */
-export function forgetSeen(prefix: string) {
+export function forgetSeen(fragment: string) {
   const all = load()
-  for (const k of Object.keys(all)) if (k.startsWith(prefix)) delete all[k]
+  for (const k of Object.keys(all)) if (k.includes(fragment)) delete all[k]
   try { localStorage.setItem(STORE, JSON.stringify(all)) } catch { /* ignore */ }
 }
 

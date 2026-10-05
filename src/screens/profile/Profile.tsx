@@ -1,4 +1,7 @@
-import { useState } from 'react'
+import RollingNumber from '../../components/motion/RollingNumber'
+import { useArrival } from '../../components/motion/useArrival'
+import { CSS } from '../../lib/motion'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ScoreDial from '../../components/app/ScoreDial'
 import TierChip from '../../components/app/TierChip'
@@ -14,12 +17,34 @@ export function Avatar({ name, completion, size = 80 }: { name: string; completi
   const initials = name.split(' ').map((n) => n[0]).slice(0, 2).join('')
   const r = 46
   const c = 2 * Math.PI * r
+  const base = useRef<SVGCircleElement>(null)
+  const piece = useRef<SVGCircleElement>(null)
+
+  // Moment D for the completion ring, opacity only: the newly earned arc glows
+  // in over the old one, or the lost arc fades out, then the ring settles.
+  useArrival(completion ?? 0, completion == null ? undefined : 'profile-ring', (from, to) => {
+    const b = base.current, p = piece.current
+    if (!b || !p) return
+    const arc = (pct: number) => String(c * (1 - pct / 100))
+    if (from === undefined || from === to) { b.setAttribute('stroke-dashoffset', arc(to)); p.style.opacity = '0'; return }
+    const lo = Math.min(from, to), hi = Math.max(from, to)
+    b.setAttribute('stroke-dashoffset', arc(lo))
+    p.setAttribute('stroke-dasharray', `${(c * (hi - lo)) / 100} ${c}`)
+    p.setAttribute('stroke-dashoffset', String((-c * lo) / 100))
+    const gain = to > from
+    const a = p.animate(gain ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 1 }, { opacity: 0 }],
+      { duration: gain ? CSS.slow : CSS.base, easing: CSS.out, fill: 'forwards' })
+    a.onfinish = () => { b.setAttribute('stroke-dashoffset', arc(to)); a.cancel(); p.style.opacity = '0' }
+    return () => a.cancel()
+  })
+
   return (
     <span className="relative inline-flex shrink-0 items-center justify-center" style={{ width: size, height: size }}>
       {completion != null && (
         <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full -rotate-90">
           <circle cx="50" cy="50" r={r} fill="none" strokeWidth="4" stroke="currentColor" className="text-green-900" />
-          <circle cx="50" cy="50" r={r} fill="none" strokeWidth="4" stroke="currentColor" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - completion / 100)} className="text-brand-secondary" />
+          <circle ref={base} cx="50" cy="50" r={r} fill="none" strokeWidth="4" stroke="currentColor" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - completion / 100)} className="text-brand-secondary" />
+          <circle ref={piece} cx="50" cy="50" r={r} fill="none" strokeWidth="4" stroke="currentColor" strokeLinecap="round" style={{ opacity: 0 }} className="text-brand-secondary" />
         </svg>
       )}
       <span className="flex h-[80%] w-[80%] items-center justify-center rounded-full bg-bg-2 text-title-m text-text-title">
@@ -57,7 +82,7 @@ export default function Profile() {
         <Avatar name={user.name} completion={user.profileCompletion} />
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           {user.name && <p className="truncate text-body-medium text-text-title">{user.name}</p>}
-          <p className="text-text-regular text-brand-secondary">{user.profileCompletion}% completed</p>
+          <p className="text-text-regular text-brand-secondary"><RollingNumber value={user.profileCompletion} format={String} memory="profile-pct" />% completed</p>
           <Button size="md" variant="tertiary" rightIcon={<ChevronRight className="h-4 w-4" />} onClick={() => navigate('/profile/edit')}>
             Complete Profile
           </Button>
@@ -69,7 +94,7 @@ export default function Profile() {
           <span className="flex items-center gap-1 text-body-regular text-text-subtitle">Trust Score &amp; Tier <ChevronRight className="h-4 w-4" /></span>
           <TierChip tier={tier} />
         </div>
-        <ScoreDial score={user.trustScore} size="sm" />
+        <ScoreDial score={user.trustScore} size="sm" memory="trust" />
       </button>
 
       {ROWS.map((r) => row(r.label, r.Icon, () => navigate(r.to)))}

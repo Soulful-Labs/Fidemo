@@ -56,7 +56,7 @@ export default function DiaryOverview() {
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         <div className="flex flex-col gap-3 rounded-lg bg-bg-1 bg-yellow-fade p-4">
           <p className="text-body-medium text-brand-primary">{completedDays.length}/{totalDays} days completed</p>
-          <ProgressBar value={completedDays.length} max={totalDays} />
+          <ProgressBar value={completedDays.length} max={totalDays} memory={`diary-${study.id}`} />
           <p className="text-text-regular text-text-subtitle">
             At least {minDays} days needs to be filled out of {totalDays} to complete this study and get reward.
           </p>

@@ -62,7 +62,7 @@ export default function Certificate() {
 
           <p className="text-body-medium text-text-title">Profile Score</p>
           <div className="flex items-center justify-between gap-3 rounded-lg bg-bg-2 bg-yellow-fade p-3">
-            <ScoreDial score={user.trustScore} size="sm" />
+            <ScoreDial score={user.trustScore} size="sm" memory="trust" />
             <TierChip tier={tier} onClick={() => navigate('/trust-score/tiers')} />
           </div>
 

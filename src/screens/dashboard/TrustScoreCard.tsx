@@ -26,7 +26,7 @@ export default function TrustScoreCard() {
       onKeyDown={(e) => e.key === 'Enter' && navigate('/trust-score')}
       className="flex cursor-pointer items-center gap-3 rounded-lg bg-bg-1 bg-yellow-fade p-3"
     >
-      <ScoreDial score={user.trustScore} size="sm" />
+      <ScoreDial score={user.trustScore} size="sm" memory="trust" />
 
       <div className="flex min-w-0 flex-1 flex-col gap-3">
         <TierChip tier={tier} card />
@@ -40,7 +40,7 @@ export default function TrustScoreCard() {
                 {next.at}
               </span>
             </div>
-            <ProgressBar value={user.trustScore - floor} max={next.at - floor} track={next.tier === 'gold' ? 'gold' : 'platinum'} />
+            <ProgressBar value={user.trustScore - floor} max={next.at - floor} track={next.tier === 'gold' ? 'gold' : 'platinum'} memory={`tier-bar-${next.at}`} />
           </div>
         )}
       </div>
