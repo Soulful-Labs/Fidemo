@@ -74,7 +74,7 @@ export default function Payouts() {
           </section>
         )}
 
-        <section className="flex flex-col gap-2">
+        <section data-stagger className="flex flex-col gap-2">
           {all ? (
             <div className="flex items-center gap-2">
               <TypeFilter value={range} options={RANGES.map((r) => ({ key: r, label: r }))} onChange={setRange} />

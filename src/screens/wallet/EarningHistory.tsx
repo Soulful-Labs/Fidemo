@@ -50,7 +50,7 @@ export default function EarningHistory() {
     <div className="flex min-h-full flex-col bg-bgAlt-0">
       <TopBar alt title="Earning History" onBack={back} />
 
-      <div className="flex flex-1 flex-col gap-2 px-4 pb-6 pt-4">
+      <div data-stagger className="flex flex-1 flex-col gap-2 px-4 pb-6 pt-4">
         <div className="flex items-center gap-2">
           <div className="flex-1"><TypeFilter value={range} options={RANGES.map((r) => ({ key: r, label: r }))} onChange={setRange} /></div>
           <button type="button" aria-label="Sort" onClick={() => setSheet('sort')} className={ICON}>

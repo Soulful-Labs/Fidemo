@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
 import { DUR, EASE, HAPTIC, SPRING, STAGGER, haptic } from '../../lib/motion'
+import CoinRain from '../motion/CoinRain'
 import { Burst, burst } from '../motion/Particles'
 import Button from '../ui/Button'
 import CtaBar from '../ui/CtaBar'
@@ -24,8 +25,9 @@ export interface SuccessScreenProps {
    * How the result arrives. `win` (moment F): the badge lands with weight and
    * throws a small burst, then the rest follows. `calm` (moment G, a result
    * that is not a win): everything settles in slowly, no overshoot, no burst.
+   * `money` (moment H): lands like `win`, then coins drop into the badge.
    */
-  mood?: 'win' | 'calm'
+  mood?: 'win' | 'calm' | 'money'
 }
 
 /**
@@ -36,7 +38,9 @@ export interface SuccessScreenProps {
 export default function SuccessScreen({
   title, body, steps, children, actionLabel = 'Done', onAction, alt = false, badge, mood = 'win',
 }: SuccessScreenProps) {
-  const win = mood === 'win'
+  const win = mood !== 'calm'
+  const money = mood === 'money'
+  const purse = useRef<HTMLDivElement>(null)
   const sparks = useMemo(() => burst(14, 7, [60, 110], 0.2), [])
   useEffect(() => { if (win) { const t = window.setTimeout(() => haptic(HAPTIC.land), DUR.base * 1000); return () => window.clearTimeout(t) } }, [win])
 
@@ -53,9 +57,11 @@ export default function SuccessScreen({
     <div className={cn('flex min-h-full flex-col', alt ? 'bg-bgAlt-0' : 'bg-bg-0', 'bg-green-fade')}>
       <motion.div initial="hidden" animate="shown" transition={{ staggerChildren: win ? STAGGER * 2 : STAGGER * 3, delayChildren: after }}
         className="flex flex-1 flex-col items-center gap-6 px-4 pb-6 pt-12 text-center">
-        <motion.div variants={arrive} transition={{ delay: 0 }} className="relative">
-          {win && <Burst particles={sparks} delay={DUR.base * 0.8} tones={['text-state-success', 'text-brand-primary', 'text-text-title']} />}
+        <motion.div ref={purse} variants={arrive} transition={{ delay: 0 }} className="relative">
+          {win && !money && <Burst particles={sparks} delay={DUR.base * 0.8} tones={['text-state-success', 'text-brand-primary', 'text-text-title']} />}
           {badge ?? <SuccessBadge tone="success" delay={win ? DUR.base : DUR.slow} />}
+          {/* Drawn over the badge, so each coin is seen going in. */}
+          {money && <CoinRain target={purse} delay={DUR.slow} />}
         </motion.div>
         <motion.div variants={follow} className="flex flex-col gap-2">
           <h1 className="text-title-l text-text-title">{title}</h1>

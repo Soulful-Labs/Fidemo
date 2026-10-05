@@ -57,7 +57,7 @@ export default function Wallet() {
 
       <RowCard to="/points" icon={<PointsCoin className="h-5 w-5" />} label="Reward Points" value={<RollingNumber value={user.points} format={points} memory="points" />} />
 
-      <section className="flex flex-col gap-2 rounded-lg bg-bgAlt-2 p-4">
+      <section data-stagger className="flex flex-col gap-2 rounded-lg bg-bgAlt-2 p-4">
         <p className="flex items-center gap-2 text-body-medium text-text-title">
           <CoinIcon className="text-brand-primary" />
           Earning History

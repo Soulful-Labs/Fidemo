@@ -36,6 +36,7 @@ export default function Redeem() {
     return (
       <SuccessScreen
         alt
+        mood="money"
         title="Redeemed successfully!"
         body={`You have redeemed ${fmt(done)} points for ${money(pointsToUsd(done))} to be credited to your wallet within 2 working days.`}
         onAction={() => navigate('/points', { replace: true })}

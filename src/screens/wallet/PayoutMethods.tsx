@@ -23,7 +23,7 @@ export default function PayoutMethods() {
     <div className="flex min-h-full flex-col bg-bgAlt-0">
       <TopBar alt title="Manage Payout Methods" onBack={back} />
 
-      <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
+      <div data-stagger className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         {payoutMethods.length === 0 ? (
           <EmptyState title="No payout account added yet!" actionLabel="Add Payout Account" onAction={() => navigate('/wallet/payout-methods/add')} />
         ) : (

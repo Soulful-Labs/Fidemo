@@ -53,7 +53,7 @@ export default function RewardPoints() {
       <TopBar alt title="Reward Points" onBack={back}
         right={<button type="button" aria-label="How reward points work" onClick={() => navigate('/points/how-it-works')} className="text-text-title"><Info className="h-6 w-6" /></button>} />
 
-      <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
+      <div data-stagger className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         <section className="flex flex-col gap-4 rounded-lg bg-bgAlt-2 bg-green-fade p-4">
           <span className="text-body-regular text-text-subtitle">Balance</span>
           <div className="flex items-end justify-between gap-3">
