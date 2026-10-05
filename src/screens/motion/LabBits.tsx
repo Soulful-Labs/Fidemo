@@ -1,4 +1,6 @@
+import { useRef } from 'react'
 import type { ReactNode } from 'react'
+import { isPlayful, setFlag } from '../../lib/playful'
 import Button from '../../components/ui/Button'
 
 /** One lettered group on /motion. */
@@ -26,4 +28,16 @@ export function Play({ onClick, children }: { onClick: () => void; children: Rea
 /** A framed stage the demo plays on. */
 export function Stage({ children, alt = false }: { children: ReactNode; alt?: boolean }) {
   return <div className={alt ? 'flex flex-col gap-3 rounded-lg bg-bgAlt-2 bg-green-fade p-4' : 'flex flex-col gap-3 rounded-lg bg-bg-1 p-4'}>{children}</div>
+}
+
+/**
+ * Before and after for the big two: "Before" switches PLAYFUL off for the
+ * whole app while the moment plays (so it is exactly the pre-playful app),
+ * "After" switches it on; closing puts the switch back where it was.
+ */
+export function useBeforeAfter() {
+  const saved = useRef<boolean | null>(null)
+  const start = (playful: boolean) => { saved.current = isPlayful(); setFlag('playful', playful) }
+  const end = () => { if (saved.current !== null) setFlag('playful', saved.current); saved.current = null }
+  return { start, end }
 }

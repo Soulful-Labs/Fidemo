@@ -29,6 +29,7 @@ export function useTierPlayful(fromScore: number, score: number, hooks: { impact
     scoreMv.set(fromScore)
     const I = IMPACT
     const R = REVEAL
+    const roll = rollDuration(score - fromScore) * 1.5
     const seq: AnimationSequence = [
       [scope.current, { opacity: [0, 1] }, { duration: DUR.fast, ease: EASE.out, at: 0 }],
       ['[data-t=glow]', { opacity: [0, 0.6] }, { duration: DUR.slow, ease: EASE.out, at: 0 }],
@@ -48,7 +49,11 @@ export function useTierPlayful(fromScore: number, score: number, hooks: { impact
       ['[data-t=rays]', { scale: [0.9, 1.15], opacity: [0.6, 1] }, { ...SPRING.bouncy, at: R }],
       ['[data-t=flash]', { opacity: [0, 1, 0] }, { duration: DUR.slow, ease: EASE.out, at: R }],
       ['[data-t=score]', { opacity: [0, 1], y: [10, 0] }, { duration: DUR.base, ease: EASE.out, at: R }],
-      [scoreMv, score, { duration: rollDuration(score - fromScore) * 1.5, ease: EASE.out, at: R + DUR.fast }],
+      [scoreMv, score, { duration: roll, ease: EASE.out, at: R + DUR.fast }],
+      // The score lands: it swells and settles as the last digit arrives.
+      ['[data-t=scorenum]', { scale: [1, 1.9, 0.92, 1] }, { duration: DUR.slow, times: [0, 0.3, 0.65, 1], ease: EASE.out, at: R + DUR.fast + roll }],
+      // A band of light sweeps across the whole screen as the new tier shows.
+      ['[data-t=sweep]', { x: ['-140%', '240%'], opacity: [0, 1, 0] }, { duration: DUR.slow * 1.3, ease: EASE.inOut, at: R - DUR.fast }],
       ['[data-t=card]', { opacity: [0, 1], y: [60, 0], rotateX: [-70, 0] }, { ...SPRING.bouncy, at: R + DUR.base }],
       ['[data-t=pill]', { opacity: [0, 1], scale: [0.2, 1], rotate: [-12, 0] }, { ...SPRING.bouncy, at: R + DUR.base * 1.6 }],
       ['[data-t=benefit]', { opacity: [0, 1], rotateX: [-90, 0], y: [12, 0] }, { ...SPRING.bouncy, delay: stagger(STAGGER * 3), at: R + DUR.base * 2 }],

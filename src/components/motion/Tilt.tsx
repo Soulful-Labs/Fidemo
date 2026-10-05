@@ -78,17 +78,18 @@ function TiltOn({ children, className, holo = 1, ...rest }: TiltProps) {
 
   return (
     <motion.div ref={ref} {...(rest as object)}
-      className={cn(className, 'relative isolate overflow-hidden')}
+      className={cn(className, 'relative isolate')}
       style={{ rotateX, rotateY, transformPerspective: 700, transformStyle: 'preserve-3d' }}
       onPointerDown={(e) => { holding.current = true; askOnce(); follow(e); rest.onPointerDown?.(e as never) }}
       onPointerMove={(e) => { if (holding.current || e.pointerType === 'mouse') follow(e) }}
       onPointerUp={settle} onPointerLeave={settle} onPointerCancel={settle}>
       {children}
       {/* Holographic foil from the app's own hues, sliding against the tilt. */}
-      <motion.span data-decor aria-hidden="true" style={{ x: sheenX, y: sheenY, opacity: foil }}
-        className="hl-holo pointer-events-none absolute -inset-1/2 z-10 mix-blend-color-dodge" />
-      <motion.span data-decor aria-hidden="true" style={{ x: glareX, y: glareY, opacity: glare }}
-        className="hl-glare pointer-events-none absolute -inset-1/4 z-10 mix-blend-overlay" />
+      {/* The foil is clipped to the card on its own layer, so the card's contents can overhang it. */}
+      <span data-decor aria-hidden="true" className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-[inherit]">
+        <motion.span style={{ x: sheenX, y: sheenY, opacity: foil }} className="hl-holo absolute -inset-1/2 mix-blend-color-dodge" />
+        <motion.span style={{ x: glareX, y: glareY, opacity: glare }} className="hl-glare absolute -inset-1/4 mix-blend-overlay" />
+      </span>
     </motion.div>
   )
 }

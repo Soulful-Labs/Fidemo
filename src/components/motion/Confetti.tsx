@@ -22,6 +22,8 @@ export interface FireOptions {
   spread?: number
   /** Where the floor is, in px from the top of the viewport. Default: the bottom. */
   floor?: number
+  /** Direction of the cone's centre in radians (default straight up, -PI/2). */
+  angle?: number
 }
 
 interface Piece {
@@ -40,7 +42,7 @@ export function fire(o: FireOptions) {
   const { count = 60, power = 900, spread = 1.4, shapes = ['paper', 'paper', 'dot', 'star'] } = o
   const floor = o.floor ?? window.innerHeight
   for (let i = 0; i < count; i++) {
-    const a = -Math.PI / 2 + (Math.random() - 0.5) * spread
+    const a = (o.angle ?? -Math.PI / 2) + (Math.random() - 0.5) * spread
     const v = power * (0.45 + Math.random() * 0.75)
     pieces.push({
       x: o.x, y: o.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v,
@@ -164,4 +166,22 @@ export const CONFETTI = {
   silver: ['#b9b9b9', '#fafafa', '#68b6f1', '#3fb984'],
   green: ['#3fb984', '#00cc66', '#fafafa', '#fca311'],
   coins: ['#fca311', '#fdb541', '#e5940f'],
+}
+
+/** Two cannons from the bottom corners, crossing over the middle: the big-two salute. */
+export function cannons(colors: string[], count = 70) {
+  const w = window.innerWidth, h = window.innerHeight
+  fire({ x: 0, y: h, angle: -Math.PI / 2 + 0.45, spread: 0.5, power: 1700, count, colors })
+  fire({ x: w, y: h, angle: -Math.PI / 2 - 0.45, spread: 0.5, power: 1700, count, colors })
+}
+
+/** A gentle fall of glitter from the top edge, for a few seconds. */
+export function glitter(colors: string[], seconds = 2.5) {
+  const end = performance.now() + seconds * 1000
+  const tick = () => {
+    if (performance.now() > end) return
+    fire({ x: Math.random() * window.innerWidth, y: -10, angle: Math.PI / 2, spread: 0.6, power: 120, count: 3, colors, shapes: ['paper', 'star'] })
+    window.setTimeout(tick, 140)
+  }
+  tick()
 }

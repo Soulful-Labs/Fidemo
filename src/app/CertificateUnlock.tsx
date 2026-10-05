@@ -7,6 +7,8 @@ import { useOverlay } from '../components/ui/Modal'
 import { shownCertId } from '../screens/profile/Certificate'
 import { VerifiedIcon } from '../screens/profile/profileIcons'
 import { useStampSequence } from './useStampSequence'
+import CertificatePlayful from './playful/CertificatePlayful'
+import { usePlayful } from '../lib/playful'
 
 export interface CertificateUnlockProps {
   /** The account's email, which the certificate ID is derived from; null when closed. */
@@ -23,11 +25,13 @@ export interface CertificateUnlockProps {
  */
 export default function CertificateUnlock({ email, onClose }: CertificateUnlockProps) {
   useOverlay(email !== null, onClose)
-  return email ? <Stamp email={email} onClose={onClose} /> : null
+  const playful = usePlayful()
+  if (!email) return null
+  return playful ? <CertificatePlayful email={email} onClose={onClose} /> : <Stamp email={email} onClose={onClose} />
 }
 
 /** A line of the certificate that writes itself in from the left. */
-function Written({ children }: { children: ReactNode }) {
+export function Written({ children }: { children: ReactNode }) {
   return (
     <span className="relative inline-block overflow-hidden align-bottom">
       {children}

@@ -227,3 +227,7 @@
 }
 .pf-drift { animation: pf-drift 7s var(--ease-in-out) infinite; opacity: 0.8; }
 .pf-blink { animation: pf-blink 3.2s var(--ease-in-out) infinite; display: block; }
+
+/* The landed tier coin floats gently, once the reveal is over. */
+@keyframes pf-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+.pf-float { animation: pf-float 3.4s var(--ease-in-out) 3.4s infinite backwards; }

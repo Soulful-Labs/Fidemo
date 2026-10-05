@@ -5,6 +5,7 @@ import Tilt from '../../components/motion/Tilt'
 import Button from '../../components/ui/Button'
 import { cn } from '../../lib/cn'
 import { feedback } from '../../lib/feedback'
+import { CONFETTI, cannons, fire, glitter } from '../../components/motion/Confetti'
 import { ACCENT, BENEFITS, FlipCoin, GLOW, Rays, TierPill } from '../tierParts'
 import type { Tier } from '../tierParts'
 import { useTierPlayful } from './useTierPlayful'
@@ -22,8 +23,19 @@ export default function TierPlayful({ tier, old, score, fromScore, onClose }: Ti
   const accent = ACCENT[tier]
   const line = (t: Tier) => <>You&apos;ve reached to {TIER_LABEL[t].name} Tier!</>
   const { scope, playing, skip, scoreText } = useTierPlayful(fromScore, score, {
-    impact: () => feedback('land'),
-    reveal: () => feedback('celebrate'),
+    impact: () => {
+      feedback('land')
+      // Dust kicked up where the coin hits.
+      const r = scope.current?.querySelector('[data-t=coin]')?.getBoundingClientRect()
+      if (r) fire({ x: r.left + r.width / 2, y: r.bottom - 10, count: 26, colors: CONFETTI.silver, shapes: ['dot'], power: 520, spread: 2.8 })
+    },
+    reveal: () => {
+      feedback('celebrate')
+      const r = scope.current?.querySelector('[data-t=coin]')?.getBoundingClientRect()
+      if (r) fire({ x: r.left + r.width / 2, y: r.top + r.height / 2, count: 90, colors: CONFETTI[tier], power: 1500, spread: 2.2 })
+      cannons(CONFETTI[tier], 80)
+      window.setTimeout(() => glitter(CONFETTI[tier], 3), 900)
+    },
   })
 
   return createPortal(
@@ -32,6 +44,7 @@ export default function TierPlayful({ tier, old, score, fromScore, onClose }: Ti
       className="fixed inset-0 z-50 overflow-hidden bg-bg-0 text-center">
       <span data-t="glow" style={{ opacity: 0 }} className={cn('pointer-events-none absolute inset-0 will-change-[opacity]', GLOW[tier])} />
       <span data-t="flash" data-decor style={{ opacity: 0 }} className={cn('pointer-events-none absolute inset-0 will-change-[opacity]', GLOW[tier])} />
+      <span data-t="sweep" data-decor style={{ opacity: 0 }} className="pointer-events-none absolute inset-y-0 left-0 w-1/2 -skew-x-12 bg-linear-to-r from-transparent via-text-title/25 to-transparent will-change-transform" />
 
       <div data-t="stage" className="relative flex h-full flex-col items-center px-4 pb-6 pt-12">
         <h1 data-t="title" style={{ opacity: 0 }} className="relative text-title-l text-brand-primary">Congratulations!!</h1>
@@ -49,13 +62,15 @@ export default function TierPlayful({ tier, old, score, fromScore, onClose }: Ti
             <span data-t="ring2" style={{ opacity: 0 }} className="absolute inset-0 rounded-full border-2 border-current will-change-transform" />
           </span>
           <span data-t="coin" style={{ opacity: 0 }} className="relative block will-change-transform">
-            <Tilt holo={1.2} className="rounded-full">
-              <FlipCoin from={old} to={tier} />
-            </Tilt>
+            <span className="pf-float block">
+              <Tilt holo={1.2} className="rounded-full">
+                <FlipCoin from={old} to={tier} />
+              </Tilt>
+            </span>
           </span>
         </div>
         <p data-t="score" style={{ opacity: 0 }} className="relative mt-8 text-body-regular text-text-subtitle">
-          Your Trust score is <motion.span className="text-brand-primary">{scoreText}</motion.span>
+          Your Trust score is <motion.span data-t="scorenum" className="inline-block text-brand-primary">{scoreText}</motion.span>
         </p>
 
         <div className="relative mt-8 w-full [perspective:800px]">
