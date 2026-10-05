@@ -6,6 +6,7 @@
 //
 // A plan is a JSON array of steps:
 //   { "go": "motion" }                  navigate (no leading slash)
+//   { "viewport": [w, h] }              set the viewport (1x)
 //   { "reduced": true }                 emulate prefers-reduced-motion: reduce
 //   { "throttle": 4 }                   CPU slowdown factor (1 = off)
 //   { "js": "code" }                    evaluate, result printed
@@ -36,7 +37,7 @@ if (!chrome) throw new Error('No Chrome found. Set CHROME=<path to chrome.exe>')
 
 const proc = spawn(chrome, [
   '--headless=new', '--remote-debugging-port=0', '--no-first-run', '--no-default-browser-check',
-  '--hide-scrollbars', ...(process.env.GPU ? [] : ['--disable-gpu']), `--window-size=${WIDTH},${HEIGHT}`, 'about:blank',
+  ...(process.env.SCROLLBARS ? [] : ['--hide-scrollbars']), ...(process.env.GPU ? [] : ['--disable-gpu']), `--window-size=${WIDTH},${HEIGHT}`, 'about:blank',
 ])
 const wsUrl = await new Promise((resolve, reject) => {
   let buf = ''
@@ -115,6 +116,7 @@ try {
       await ev('document.fonts.ready')
       await sleep(step.settle ?? 600)
     }
+    if (step.viewport) { const [vw, vh] = step.viewport; await s('Emulation.setDeviceMetricsOverride', { width: vw, height: vh, deviceScaleFactor: 1, mobile: vw <= 420 }) }
     if (step.reduced !== undefined) await s('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: step.reduced ? 'reduce' : 'no-preference' }] })
     if (step.throttle !== undefined) await s('Emulation.setCPUThrottlingRate', { rate: step.throttle })
     if (step.profile === 'start') { await s('Profiler.enable'); await s('Profiler.setSamplingInterval', { interval: 200 }); await s('Profiler.start') }
@@ -139,6 +141,8 @@ try {
       }
       const shot = await s('Page.captureScreenshot', { format: 'png', clip })
       writeFileSync(step.shot, Buffer.from(shot.data, 'base64'))
+      // With "frame": true, record where the app frame is, for the escape check.
+      if (step.frame) writeFileSync(step.shot + '.json', JSON.stringify(await ev(`(() => { const r = document.getElementById('hl-frame').getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height, vw: innerWidth, vh: innerHeight } })()`)))
       console.log('saved', step.shot)
     }
     if (step.fps) {

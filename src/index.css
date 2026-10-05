@@ -122,3 +122,9 @@ body {
      the depth (edges, shadows, surfaces) stays and nothing moves. */
   [data-playful=on] :active { transform: none !important; scale: none !important; }
 }
+
+/* The app is a phone app: no desktop scrollbar track inside the frame. On a
+   laptop a classic scrollbar would take 15px of the 375px column and make it
+   read as a desktop page. Scrolling still works (wheel, trackpad, touch). */
+#hl-frame, #hl-frame * { scrollbar-width: none; }
+#hl-frame ::-webkit-scrollbar { display: none; }
