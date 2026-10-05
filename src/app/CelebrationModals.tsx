@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../mock/store'
 import { TIMINGS } from '../mock/timings'
 import type { PointsEntry, User } from '../mock/types'
+import CertificateUnlock from './CertificateUnlock'
 import PointsEarned from './PointsEarned'
 import TierUpgrade from './TierUpgrade'
 
@@ -20,6 +21,8 @@ export default function CelebrationModals() {
   const [earned, setEarned] = useState<PointsEntry | null>(null)
   const lastTier = useRef(user.tier)
   const lastScore = useRef(user.trustScore)
+  const lastGovId = useRef(user.verified.govId)
+  const [certified, setCertified] = useState<string | null>(null)
   const seenPoints = useRef(new Set(pointsHistory.map((p) => p.id)))
   const account = useRef(user.email)
   const pause = useRef<number | undefined>(undefined)
@@ -33,6 +36,7 @@ export default function CelebrationModals() {
     account.current = user.email
     lastTier.current = user.tier
     lastScore.current = user.trustScore
+    lastGovId.current = user.verified.govId
     const brandNew = Date.now() - Date.parse(user.joinedAt) < 60_000
     seenPoints.current = new Set(brandNew ? [] : pointsHistory.map((p) => p.id))
     if (!brandNew) return
@@ -52,6 +56,13 @@ export default function CelebrationModals() {
     lastScore.current = user.trustScore
   }, [user.tier, user.trustScore, switched])
 
+  // Moment C: the certificate is issued the moment the ID check passes (policy section 2).
+  useEffect(() => {
+    if (switched) return
+    if (user.verified.govId && !lastGovId.current) setCertified(user.email)
+    lastGovId.current = user.verified.govId
+  }, [user.verified.govId, user.email, switched])
+
   useEffect(() => {
     if (switched) return
     const fresh = pointsHistory.find((p) => !seenPoints.current.has(p.id) && p.amount > 0)
@@ -63,6 +74,7 @@ export default function CelebrationModals() {
     <>
       <TierUpgrade tier={tierUp?.tier ?? null} from={tierUp?.from} fromScore={tierUp?.fromScore} score={user.trustScore} onClose={() => setTierUp(null)} />
       <PointsEarned entry={earned} onClose={() => setEarned(null)} />
+      <CertificateUnlock email={certified} onClose={() => setCertified(null)} />
     </>
   )
 }

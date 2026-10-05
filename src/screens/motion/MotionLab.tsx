@@ -3,6 +3,7 @@ import TopBar from '../../components/ui/TopBar'
 import { prefersReduced } from '../../lib/motion'
 import { PointsSection } from './PointsSection'
 import { TierSection } from './TierSection'
+import { CertificateSection } from './CertificateSection'
 
 /**
  * /motion: every animation from the motion turn, playable on demand, grouped
@@ -20,6 +21,7 @@ export default function MotionLab() {
         </p>
         <PointsSection />
         <TierSection />
+        <CertificateSection />
       </div>
     </div>
   )

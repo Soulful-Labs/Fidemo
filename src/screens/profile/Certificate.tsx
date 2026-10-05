@@ -18,11 +18,14 @@ import { VerifiedIcon } from './profileIcons'
  * this screen matches the frame (turn report, copy rule). "Live Photo
  * Verified" only shows once a selfie has actually passed (hard rule 9).
  */
+/** The ID as this screen shows it (the frame's HL-R form; see the note above). */
+export const shownCertId = (email: string) => `HL-R-${accountCode(email, 4)}-${accountCode(email + '#', 4)}`
+
 export default function Certificate() {
   const navigate = useNavigate()
   const { back } = useAppNav()
   const { user, toast } = useStore()
-  const certId = `HL-R-${accountCode(user.email, 4)}-${accountCode(user.email + '#', 4)}`
+  const certId = shownCertId(user.email)
   const certLink = `https://humanlayer.app/certificate/${certId}`
   const tier = tierFor(user.trustScore)
 
