@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { createPortal } from 'react-dom'
+import { frameLayer } from '../../app/frame'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
 import { scrim, sheet, sheetPlayful } from '../../lib/motion'
@@ -95,6 +96,6 @@ export default function BottomSheet({
     )}
     </AnimatePresence>
   )
-  // PLAYFUL: lifted out of the screen to <body>, so the screen itself can recede behind it.
-  return playful ? createPortal(layer, document.body) : layer
+  // PLAYFUL: lifted out of the screen into the frame's own layer, so the screen can recede behind it.
+  return playful ? createPortal(layer, frameLayer()) : layer
 }

@@ -1,4 +1,5 @@
 import { createPortal } from 'react-dom'
+import { frameLayer } from '../frame'
 import { CONFETTI, cannons, fire, glitter } from '../../components/motion/Confetti'
 import Tilt from '../../components/motion/Tilt'
 import Button from '../../components/ui/Button'
@@ -64,6 +65,6 @@ export default function CertificatePlayful({ email, onClose }: { email: string; 
         </div>
       </div>
     </div>,
-    document.body,
+    frameLayer(),
   )
 }

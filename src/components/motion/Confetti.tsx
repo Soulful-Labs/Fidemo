@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { createPortal } from 'react-dom'
+import { frameLayer, frameRect } from '../../app/frame'
 import { prefersReduced } from '../../lib/motion'
 import { isPlayful } from '../../lib/playful'
 
@@ -25,8 +25,11 @@ export function fire(o: FireOptions) {
   if (!isPlayful() || prefersReduced()) return
   // Dev only: lets the frame-rate probe measure a moment without its confetti.
   if (import.meta.env.DEV && (window as unknown as { __noConfetti?: boolean }).__noConfetti) return
-  if (worker) { worker.postMessage({ type: 'fire', o }); return }
-  pieces = pieces.concat(spawn(o, window.innerHeight)).slice(-MAX_PIECES)
+  // Callers give window coordinates (getBoundingClientRect); confetti lives in the frame.
+  const f = frameRect()
+  const local: FireOptions = { ...o, x: o.x - f.left, y: o.y - f.top, floor: o.floor === undefined ? undefined : o.floor - f.top }
+  if (worker) { worker.postMessage({ type: 'fire', o: local }); return }
+  pieces = pieces.concat(spawn(local, f.height)).slice(-MAX_PIECES)
   wake?.()
 }
 
@@ -36,7 +39,8 @@ export function ConfettiLayer() {
   useEffect(() => {
     const canvas = ref.current
     if (!canvas) return
-    const w = () => window.innerWidth, h = () => window.innerHeight
+    // Sized off the frame, never the window.
+    const w = () => Math.round(frameRect().width), h = () => Math.round(frameRect().height)
     // Drawn at 1x: confetti is small and moving, and half the pixels is half the cost.
     const offscreen = typeof OffscreenCanvas !== 'undefined' && typeof canvas.transferControlToOffscreen === 'function'
     if (offscreen) {
@@ -52,9 +56,10 @@ export function ConfettiLayer() {
       }
       worker = el.__worker
       const size = () => worker?.postMessage({ type: 'size', w: w(), h: h() })
-      window.addEventListener('resize', size)
+      const ro = new ResizeObserver(size)
+      ro.observe(frameLayer())
       return () => {
-        window.removeEventListener('resize', size)
+        ro.disconnect()
         // Terminate only on a real unmount (a rehearsal re-mounts within the same tick).
         el.__bye = window.setTimeout(() => { el.__worker?.terminate(); el.__worker = undefined; if (worker === el.__worker) worker = null }, 0)
       }
@@ -65,7 +70,8 @@ export function ConfettiLayer() {
     let last = 0
     const size = () => { canvas.width = w(); canvas.height = h() }
     size()
-    window.addEventListener('resize', size)
+    const ro = new ResizeObserver(size)
+    ro.observe(frameLayer())
     const frame = (t: number) => {
       const dt = Math.min(0.033, last ? (t - last) / 1000 : 0.016)
       last = t
@@ -74,12 +80,10 @@ export function ConfettiLayer() {
       else { raf = 0; last = 0 }
     }
     wake = () => { if (!raf) raf = requestAnimationFrame(frame) }
-    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', size); wake = null }
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); wake = null }
   }, [])
-  return createPortal(
-    <canvas ref={ref} data-decor aria-hidden="true" className="pointer-events-none fixed inset-0 z-toast h-full w-full" />,
-    document.body,
-  )
+  // Rendered by the app shell inside the frame, so it is positioned against and clipped by the frame.
+  return <canvas ref={ref} data-decor aria-hidden="true" className="pointer-events-none absolute inset-0 z-toast h-full w-full" />
 }
 
 export const CONFETTI = {
@@ -93,8 +97,10 @@ export const CONFETTI = {
 
 /** Two cannons from the bottom corners, crossing over the middle: the big-two salute. */
 export function cannons(colors: string[], count = 70) {
-  const w = window.innerWidth, h = window.innerHeight
-  fire({ x: 0, y: h, angle: -Math.PI / 2 + 0.45, spread: 0.5, power: 1700, count, colors })
+  // From the frame's bottom corners, in window coordinates (fire() converts).
+  const f = frameRect()
+  const w = f.right, h = f.bottom, x0 = f.left
+  fire({ x: x0, y: h, angle: -Math.PI / 2 + 0.45, spread: 0.5, power: 1700, count, colors })
   fire({ x: w, y: h, angle: -Math.PI / 2 - 0.45, spread: 0.5, power: 1700, count, colors })
 }
 
@@ -103,7 +109,8 @@ export function glitter(colors: string[], seconds = 2.5) {
   const end = performance.now() + seconds * 1000
   const tick = () => {
     if (performance.now() > end) return
-    fire({ x: Math.random() * window.innerWidth, y: -10, angle: Math.PI / 2, spread: 0.6, power: 120, count: 2, colors, shapes: ['paper', 'star'] })
+    const f = frameRect()
+    fire({ x: f.left + Math.random() * f.width, y: f.top - 10, angle: Math.PI / 2, spread: 0.6, power: 120, count: 2, colors, shapes: ['paper', 'star'] })
     window.setTimeout(tick, 200)
   }
   tick()

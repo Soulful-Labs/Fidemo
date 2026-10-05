@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { createPortal } from 'react-dom'
+import { frameLayer } from '../frame'
 import { TIER_LABEL } from '../../components/app/TierChip'
 import Tilt from '../../components/motion/Tilt'
 import Button from '../../components/ui/Button'
@@ -91,6 +92,6 @@ export default function TierPlayful({ tier, old, score, fromScore, onClose }: Ti
         </div>
       </div>
     </div>,
-    document.body,
+    frameLayer(),
   )
 }

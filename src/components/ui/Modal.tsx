@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { createPortal } from 'react-dom'
+import { frameLayer } from '../../app/frame'
 import { useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
@@ -98,6 +99,6 @@ export default function Modal({
     )}
     </AnimatePresence>
   )
-  // PLAYFUL: lifted out of the screen to <body>, so the screen itself can recede behind it.
-  return playful ? createPortal(layer, document.body) : layer
+  // PLAYFUL: lifted out of the screen into the frame's own layer, so the screen can recede behind it.
+  return playful ? createPortal(layer, frameLayer()) : layer
 }

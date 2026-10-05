@@ -47,7 +47,8 @@ export default {
       maxWidth: { frame:'375px', content:'343px' },
       // Global interaction rule 9: the phone shell kicks in above 420px.
       screens: { frame:'420px' },
-      maxHeight: { sheet:'70vh', 'sheet-tall':'85vh' },
+      // Sheets are capped as a share of the frame, not the window (app/frame.ts).
+      maxHeight: { sheet:'70%', 'sheet-tall':'85%' },
       zIndex: { toast:'60' },
       boxShadow: { glow: '0 0 16px 0 var(--tw-shadow-color)' },
       fontSize: {
