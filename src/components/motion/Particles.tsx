@@ -1,5 +1,6 @@
-import { useMemo } from 'react'
+import { useLayoutEffect, useMemo, useRef } from 'react'
 import { cn } from '../../lib/cn'
+import { CSS, prefersReduced } from '../../lib/motion'
 
 /** A small seeded random, so a burst looks the same on every render. */
 export function seeded(seed: number) {
@@ -60,4 +61,26 @@ export function ParticleField({ particles, tones, name }: { particles: Particle[
     </span>
   )), [particles, tones, name])
   return <span data-decor aria-hidden="true" className="pointer-events-none absolute inset-0">{nodes}</span>
+}
+
+/**
+ * A self-playing burst for places without a timeline: on mount, after
+ * `delay` seconds, every piece flies out from the centre and sinks away.
+ */
+export function Burst({ particles, tones, delay = 0 }: { particles: Particle[]; tones: [string, string, string]; delay?: number }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  useLayoutEffect(() => {
+    if (prefersReduced()) return
+    const nodes = [...(ref.current?.querySelectorAll<HTMLElement>('[data-p]') ?? [])]
+    const runs = nodes.map((el, i) => {
+      const p = particles[i]
+      return el.animate([
+        { transform: 'translate(0, 0) scale(0.3)', opacity: 1 },
+        { transform: `translate(${p.dx}px, ${p.dy}px) scale(1) rotate(${p.spin * 0.6}deg)`, opacity: 1, offset: 0.4 },
+        { transform: `translate(${p.dx * 1.08}px, ${p.dy + p.fall}px) scale(0.5) rotate(${p.spin}deg)`, opacity: 0 },
+      ], { duration: CSS.slow * 1.6, easing: CSS.out, delay: delay * 1000 + (i % 4) * 20, fill: 'backwards' })
+    })
+    return () => runs.forEach((a) => a.cancel())
+  }, [particles, delay])
+  return <span ref={ref} className="contents"><ParticleField name="burst" particles={particles} tones={tones} /></span>
 }

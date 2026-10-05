@@ -1,5 +1,9 @@
+import { motion } from 'framer-motion'
+import { useEffect, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
+import { DUR, EASE, HAPTIC, SPRING, STAGGER, haptic } from '../../lib/motion'
+import { Burst, burst } from '../motion/Particles'
 import Button from '../ui/Button'
 import CtaBar from '../ui/CtaBar'
 import { Check } from '../ui/icons'
@@ -16,6 +20,12 @@ export interface SuccessScreenProps {
   alt?: boolean
   /** Replaces the green tick, e.g. the brand badge for a neutral outcome. */
   badge?: ReactNode
+  /**
+   * How the result arrives. `win` (moment F): the badge lands with weight and
+   * throws a small burst, then the rest follows. `calm` (moment G, a result
+   * that is not a win): everything settles in slowly, no overshoot, no burst.
+   */
+  mood?: 'win' | 'calm'
 }
 
 /**
@@ -24,41 +34,63 @@ export interface SuccessScreenProps {
  * tick in its halo, a title, body and the Done button in the CTA bar.
  */
 export default function SuccessScreen({
-  title, body, steps, children, actionLabel = 'Done', onAction, alt = false, badge,
+  title, body, steps, children, actionLabel = 'Done', onAction, alt = false, badge, mood = 'win',
 }: SuccessScreenProps) {
+  const win = mood === 'win'
+  const sparks = useMemo(() => burst(14, 7, [60, 110], 0.2), [])
+  useEffect(() => { if (win) { const t = window.setTimeout(() => haptic(HAPTIC.land), DUR.base * 1000); return () => window.clearTimeout(t) } }, [win])
+
+  const arrive = win
+    ? { hidden: { opacity: 0, scale: 0.4, y: -40 }, shown: { opacity: 1, scale: 1, y: 0, transition: SPRING.heavy } }
+    : { hidden: { opacity: 0, y: 10 }, shown: { opacity: 1, y: 0, transition: { duration: DUR.slow, ease: EASE.out } } }
+  const follow = {
+    hidden: { opacity: 0, y: win ? 14 : 8 },
+    shown: { opacity: 1, y: 0, transition: { duration: win ? DUR.base : DUR.slow, ease: EASE.out } },
+  }
+  const after = win ? DUR.slow * 0.6 : DUR.base
+
   return (
     <div className={cn('flex min-h-full flex-col', alt ? 'bg-bgAlt-0' : 'bg-bg-0', 'bg-green-fade')}>
-      <div className="flex flex-1 flex-col items-center gap-6 px-4 pb-6 pt-12 text-center">
-        {badge ?? <SuccessBadge tone="success" />}
-        <div className="flex flex-col gap-2">
+      <motion.div initial="hidden" animate="shown" transition={{ staggerChildren: win ? STAGGER * 2 : STAGGER * 3, delayChildren: after }}
+        className="flex flex-1 flex-col items-center gap-6 px-4 pb-6 pt-12 text-center">
+        <motion.div variants={arrive} transition={{ delay: 0 }} className="relative">
+          {win && <Burst particles={sparks} delay={DUR.base * 0.8} tones={['text-state-success', 'text-brand-primary', 'text-text-title']} />}
+          {badge ?? <SuccessBadge tone="success" delay={win ? DUR.base : DUR.slow} />}
+        </motion.div>
+        <motion.div variants={follow} className="flex flex-col gap-2">
           <h1 className="text-title-l text-text-title">{title}</h1>
           {body && <p className="text-body-regular text-text-body">{body}</p>}
-        </div>
+        </motion.div>
 
         {steps && (
-          <ul className="flex w-full flex-col gap-3 rounded-lg bg-bg-1 p-4 text-left">
+          <motion.ul variants={follow} transition={{ staggerChildren: STAGGER * 3, delayChildren: DUR.fast }}
+            className="flex w-full flex-col gap-3 rounded-lg bg-bg-1 p-4 text-left">
             {steps.map((step, i) => (
-              <li key={step} className="flex items-start gap-3">
-                <span
+              <motion.li key={step} variants={follow} className="flex items-start gap-3">
+                <motion.span
+                  variants={i === 0 && win ? { hidden: { scale: 0.3, opacity: 0 }, shown: { scale: 1, opacity: 1, transition: SPRING.snappy } } : follow}
                   className={cn(
                     'mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-1',
                     i === 0 ? 'border-brand-primary bg-brand-primary text-cta-primaryText' : 'border-text-disabled text-text-disabled',
                   )}
                 >
                   <Check className="h-3.5 w-3.5" />
-                </span>
+                </motion.span>
                 <span className="text-text-regular text-text-subtitle">{step}</span>
-              </li>
+              </motion.li>
             ))}
-          </ul>
+          </motion.ul>
         )}
 
         {children}
-      </div>
+      </motion.div>
 
-      <CtaBar alt={alt}>
-        <Button fullWidth onClick={onAction}>{actionLabel}</Button>
-      </CtaBar>
+      <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: DUR.base, ease: EASE.out, delay: after + DUR.base }} className="sticky bottom-0 z-20 shrink-0">
+        <CtaBar alt={alt}>
+          <Button fullWidth onClick={onAction}>{actionLabel}</Button>
+        </CtaBar>
+      </motion.div>
     </div>
   )
 }
