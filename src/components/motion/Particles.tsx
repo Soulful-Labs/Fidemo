@@ -1,6 +1,8 @@
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import { cn } from '../../lib/cn'
 import { CSS, prefersReduced } from '../../lib/motion'
+import { isPlayful } from '../../lib/playful'
+import { CONFETTI, fire } from './Confetti'
 
 /** A small seeded random, so a burst looks the same on every render. */
 export function seeded(seed: number) {
@@ -67,10 +69,18 @@ export function ParticleField({ particles, tones, name }: { particles: Particle[
  * A self-playing burst for places without a timeline: on mount, after
  * `delay` seconds, every piece flies out from the centre and sinks away.
  */
-export function Burst({ particles, tones, delay = 0 }: { particles: Particle[]; tones: [string, string, string]; delay?: number }) {
+export function Burst({ particles, tones, delay = 0, palette = CONFETTI.brand }: { particles: Particle[]; tones: [string, string, string]; delay?: number; palette?: string[] }) {
   const ref = useRef<HTMLSpanElement>(null)
   useLayoutEffect(() => {
     if (prefersReduced()) return
+    if (isPlayful()) {
+      // PLAYFUL: real confetti, thrown up from here, that falls and lands on the floor.
+      const t = window.setTimeout(() => {
+        const r = ref.current?.parentElement?.getBoundingClientRect()
+        if (r) fire({ x: r.left + r.width / 2, y: r.top + r.height / 2, count: 56, colors: palette, power: 1100, spread: 1.7 })
+      }, delay * 1000)
+      return () => window.clearTimeout(t)
+    }
     const nodes = [...(ref.current?.querySelectorAll<HTMLElement>('[data-p]') ?? [])]
     const runs = nodes.map((el, i) => {
       const p = particles[i]
@@ -81,6 +91,6 @@ export function Burst({ particles, tones, delay = 0 }: { particles: Particle[]; 
       ], { duration: CSS.slow * 1.6, easing: CSS.out, delay: delay * 1000 + (i % 4) * 20, fill: 'backwards' })
     })
     return () => runs.forEach((a) => a.cancel())
-  }, [particles, delay])
+  }, [particles, delay, palette])
   return <span ref={ref} className="contents"><ParticleField name="burst" particles={particles} tones={tones} /></span>
 }

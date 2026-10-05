@@ -6,10 +6,11 @@ import BottomNav from './BottomNav'
 import ModalHost from './ModalHost'
 import PhoneFrame from './PhoneFrame'
 import ToastHost from './ToastHost'
+import { ConfettiLayer } from '../components/motion/Confetti'
+import { isPlayful, usePlayful } from '../lib/playful'
 import { recordNavigation } from './history'
 import { isAltPalette, showsNav } from './navigation'
 import { CSS, HAPTIC, haptic, play, springTo } from '../lib/motion'
-import { isPlayful } from '../lib/playful'
 
 /**
  * Global interaction rule 8: scroll resets on a new navigation and is restored
@@ -101,6 +102,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   usePressHaptics()
 
   const navVisible = showsNav(pathname)
+  const playful = usePlayful()
   const alt = isAltPalette(pathname)
 
   return (
@@ -113,6 +115,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
       <ToastHost navVisible={navVisible} />
       <ModalHost />
+      {playful && <ConfettiLayer />}
     </PhoneFrame>
   )
 }

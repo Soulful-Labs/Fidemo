@@ -187,3 +187,25 @@
     animation-timing-function: var(--spring-bouncy);
   }
 }
+
+/* Liquid progress (ProgressBar under PLAYFUL): a highlight travelling along the
+   filled part, and a bright leading edge, both tints of the fill itself. */
+@keyframes pf-shimmer {
+  from { transform: translateX(-60%); }
+  to { transform: translateX(160%); }
+}
+.pf-shimmer {
+  background: linear-gradient(100deg, transparent 30%, color-mix(in oklab, var(--pf-title) 45%, transparent) 50%, transparent 70%);
+  width: 60%;
+  animation: pf-shimmer 2.2s var(--ease-in-out) infinite;
+}
+.pf-cap {
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--pf-title) 70%, transparent));
+  box-shadow: 0 0 10px 2px color-mix(in oklab, var(--pf-title) 35%, transparent);
+}
+
+/* The Trust Score dial's glow (ScoreDial under PLAYFUL), the brand yellow fading out. */
+.pf-dial-glow {
+  background: radial-gradient(circle, color-mix(in oklab, var(--pf-yellow) 55%, transparent) 0%, color-mix(in oklab, var(--pf-yellow) 18%, transparent) 45%, transparent 70%);
+  transition: opacity 900ms var(--ease-out);
+}

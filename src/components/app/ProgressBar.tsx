@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { cn } from '../../lib/cn'
-import { CSS, STAGGER, play } from '../../lib/motion'
+import { CSS, STAGGER, play, springTo } from '../../lib/motion'
+import { isPlayful, usePlayful } from '../../lib/playful'
 import { nextSlot } from '../../lib/seen'
 import { useArrival } from '../motion/useArrival'
 
@@ -39,6 +40,9 @@ export default function ProgressBar({
   const fill = useRef<HTMLDivElement>(null)
   const glint = useRef<HTMLSpanElement>(null)
   const mounted = useRef(false)
+  const cap = useRef<HTMLSpanElement>(null)
+  const flash = useRef<HTMLSpanElement>(null)
+  const playful = usePlayful()
 
   useArrival(pct, memory, (from, to) => {
     const el = fill.current
@@ -56,11 +60,20 @@ export default function ProgressBar({
     const gain = to > from
     const a = el.animate([{ transform: at(from) }, { transform: at(to) }],
       { duration: gain ? CSS.slow : CSS.base, easing: CSS.out, delay, fill: 'backwards' })
-    if (gain && to >= 100 && from < 100) {
-      a.onfinish = () => {
+    const crossed = gain && to >= 100 && from < 100
+    a.onfinish = () => {
+      if (isPlayful()) {
+        // PLAYFUL: the liquid's leading edge sloshes as it arrives...
+        springTo(cap.current, { transform: gain ? 'scaleX(2.6)' : 'scaleX(0.4)' }, 'bouncy')
+        // ...and crossing the line flashes the whole bar its own colour and bulges it.
+        if (crossed) {
+          play(flash.current, [{ opacity: 0.9 }, { opacity: 0 }], CSS.slow, CSS.out)
+          springTo(trackEl.current, { transform: 'scaleY(2.4)' }, 'bouncy')
+        }
+      } else if (crossed) {
         play(trackEl.current, [{ transform: 'scaleY(1)' }, { transform: 'scaleY(1.9)', offset: 0.3 }, { transform: 'scaleY(1)' }], CSS.base, CSS.out)
-        play(glint.current, [{ transform: 'translateX(-100%)', opacity: 1 }, { transform: 'translateX(400%)', opacity: 1 }], CSS.slow, CSS.inOut)
       }
+      if (crossed) play(glint.current, [{ transform: 'translateX(-100%)', opacity: 1 }, { transform: 'translateX(400%)', opacity: 1 }], CSS.slow, CSS.inOut)
     }
     return () => a.cancel()
   })
@@ -88,9 +101,18 @@ export default function ProgressBar({
       >
         <div
           ref={fill}
-          className={cn('h-full w-full rounded-full will-change-transform', tone === 'green' ? 'bg-brand-secondary' : 'bg-tier-gold')}
+          className={cn('h-full w-full rounded-full will-change-transform', tone === 'green' ? 'bg-brand-secondary' : 'bg-tier-gold', playful && 'relative overflow-hidden')}
           style={{ transform: at(pct) }}
-        />
+        >
+          {playful && (
+            <>
+              {/* Liquid: a shimmer travelling along what is filled, and a bright leading edge. */}
+              <span data-decor aria-hidden="true" className="pf-shimmer pointer-events-none absolute inset-0" />
+              <span ref={cap} data-decor aria-hidden="true" className="pf-cap pointer-events-none absolute inset-y-0 right-0 w-4 origin-right rounded-full" />
+            </>
+          )}
+        </div>
+        {playful && <span ref={flash} data-decor aria-hidden="true" className={cn('pointer-events-none absolute inset-0 opacity-0', tone === 'green' ? 'bg-brand-secondary' : 'bg-tier-gold')} />}
         <span ref={glint} data-decor aria-hidden="true"
           className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-linear-to-r from-transparent via-text-title/60 to-transparent opacity-0" />
       </div>

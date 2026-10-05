@@ -2,8 +2,11 @@ import { animate } from 'framer-motion'
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import { cn } from '../../lib/cn'
-import { CSS, DUR, EASE, HAPTIC, haptic, play, prefersReduced, rollDuration, springTo } from '../../lib/motion'
+import { CSS, EASE, HAPTIC, haptic, play, prefersReduced, rollDuration, springTo } from '../../lib/motion'
 import { isPlayful } from '../../lib/playful'
+import { feedback } from '../../lib/feedback'
+import { spinDigits } from './odometer'
+import FloatDelta from './FloatDelta'
 import { whenClear } from '../../lib/overlays'
 import { lastSeen, markSeen } from '../../lib/seen'
 import { useSeenKey } from './useSeen'
@@ -63,6 +66,7 @@ export default function RollingNumber({
     const gain = value - prev
     const round = (n: number) => Math.round(n / step) * step
     let controls: ReturnType<typeof animate> | undefined
+    let stopSpin = () => undefined as void
     write(prev)
 
     const run = () => {
@@ -71,6 +75,21 @@ export default function RollingNumber({
         // Moment E: the figure falls into place. One short drop, no counting down.
         done()
         play(node, [{ transform: 'translateY(-0.35em)', opacity: 0.2 }, { transform: 'none', opacity: 1 }], CSS.base, CSS.out, delay * 1000)
+        if (isPlayful()) feedback('deduct')
+        return
+      }
+      if (isPlayful()) {
+        // PLAYFUL: the digits tumble like a counter, then the figure lands with a spring.
+        const wait = window.setTimeout(() => {
+          const cancelSpin = spinDigits(node, fmt.current(prev), fmt.current(value), rollDuration(gain / step) * 1300, () => {
+            done()
+            feedback('gain')
+            springTo(node, { transform: 'scale(1.4)' })
+            springTo(pulse?.current, { transform: 'scale(1.3)' })
+          })
+          stopSpin = () => { cancelSpin(); write(displayed) }
+        }, delay * 1000)
+        stopSpin = () => window.clearTimeout(wait)
         return
       }
       controls = animate(prev, value, {
@@ -94,42 +113,13 @@ export default function RollingNumber({
       cancel = () => window.clearTimeout(beat)
     } else run()
     // Interrupted (a newer value, or StrictMode's rehearsal): carry on from what is on screen.
-    return () => { cancel(); controls?.stop(); shown.current = displayed }
+    return () => { cancel(); controls?.stop(); stopSpin(); shown.current = displayed }
   }, [value, key, step, float, pulse, from, delay])
 
   return (
     <span className={cn('relative', className)}>
       <span ref={el} className="inline-block" />
       {delta && <FloatDelta key={delta.id} n={delta.n} into={float === 'into'} delay={delay} onDone={() => setDelta(null)} text={(formatDelta ?? format)(Math.abs(delta.n))} />}
-    </span>
-  )
-}
-
-/** The +X that rises and fades from the figure, or the quieter -X that settles under it. */
-function FloatDelta({ n, text, delay, into, onDone }: { n: number; text: string; delay: number; into: boolean; onDone: () => void }) {
-  const ref = useRef<HTMLSpanElement>(null)
-  const done = useRef(onDone)
-  done.current = onDone
-  const up = n > 0
-  useLayoutEffect(() => {
-    const node = ref.current
-    if (!node) return
-    const a = node.animate(
-      up && into
-        ? [{ transform: 'translate(-50%, 18px) scale(0.9)', opacity: 0 }, { transform: 'translate(-50%, 8px) scale(1.05)', opacity: 1, offset: 0.3 }, { transform: 'translate(-50%, -6px) scale(0.6)', opacity: 0 }]
-        : up
-        ? [{ transform: 'translate(-50%, 4px) scale(0.8)', opacity: 0 }, { transform: 'translate(-50%, -14px) scale(1.05)', opacity: 1, offset: 0.25 }, { transform: 'translate(-50%, -34px) scale(1)', opacity: 0 }]
-        : [{ transform: 'translateY(-4px)', opacity: 0 }, { transform: 'translateY(4px)', opacity: 0.7, offset: 0.3 }, { transform: 'translateY(10px)', opacity: 0 }],
-      { duration: (up ? DUR.slow * 2 : DUR.slow) * 1000, easing: CSS.out, fill: 'both', delay: delay * 1000 },
-    )
-    a.onfinish = () => done.current()
-    return () => a.cancel()
-  }, [up, into, delay])
-  return (
-    <span ref={ref} data-decor aria-hidden="true"
-      className={cn('pointer-events-none absolute whitespace-nowrap text-body-large opacity-0',
-        up && !into ? 'bottom-full left-1/2 text-brand-secondary' : up ? 'top-full left-1/2 text-brand-secondary' : 'left-full top-0 pl-1 text-text-body')}>
-      {up ? '+' : '-'}{text}
     </span>
   )
 }

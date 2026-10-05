@@ -5,6 +5,7 @@ import { cn } from '../../lib/cn'
 import { DUR, EASE, HAPTIC, SPRING, STAGGER, haptic } from '../../lib/motion'
 import CoinRain from '../motion/CoinRain'
 import { Burst, burst } from '../motion/Particles'
+import { CONFETTI } from '../motion/Confetti'
 import Button from '../ui/Button'
 import CtaBar from '../ui/CtaBar'
 import { Check } from '../ui/icons'
@@ -58,7 +59,7 @@ export default function SuccessScreen({
       <motion.div initial="hidden" animate="shown" transition={{ staggerChildren: win ? STAGGER * 2 : STAGGER * 3, delayChildren: after }}
         className="flex flex-1 flex-col items-center gap-6 px-4 pb-6 pt-12 text-center">
         <motion.div ref={purse} variants={arrive} transition={{ delay: 0 }} className="relative">
-          {win && !money && <Burst particles={sparks} delay={DUR.base * 0.8} tones={['text-state-success', 'text-brand-primary', 'text-text-title']} />}
+          {win && !money && <Burst particles={sparks} delay={DUR.base * 0.8} palette={CONFETTI.green} tones={['text-state-success', 'text-brand-primary', 'text-text-title']} />}
           {badge ?? <SuccessBadge tone="success" delay={win ? DUR.base : DUR.slow} />}
           {/* Drawn over the badge, so each coin is seen going in. */}
           {money && <CoinRain target={purse} delay={DUR.slow} />}

@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
 import { CSS, play } from '../../lib/motion'
+import { usePlayful } from '../../lib/playful'
 import { TIERS } from '../../lib/rules'
 import RollingNumber from '../motion/RollingNumber'
 import { useArrival } from '../motion/useArrival'
@@ -56,6 +57,7 @@ export default function ScoreDial({
   const lit = Math.round(pct * DOTS)
   const wrap = useRef<HTMLDivElement>(null)
   const litDots = useRef<(SVGEllipseElement | null)[]>([])
+  const playful = usePlayful()
   useDots(compact ? 0 : score, max, compact ? undefined : memory, wrap, litDots)
 
   if (compact) {
@@ -80,7 +82,10 @@ export default function ScoreDial({
 
   return (
     <div ref={wrap} className={cn('relative shrink-0', WIDTHS[size], className)} role="img" aria-label={`Score ${score} out of ${max}`}>
-      <svg viewBox="0 0 200 172" className="block w-full">
+      {/* PLAYFUL: a glow behind the dial that grows with the score (50 is barely lit, 100 blazes). */}
+      {playful && <span data-decor aria-hidden="true" className="pf-dial-glow pointer-events-none absolute inset-[6%] rounded-full"
+        style={{ opacity: 0.12 + 0.88 * Math.max(0, (score - 50) / 50) ** 1.3 }} />}
+      <svg viewBox="0 0 200 172" className={cn('block w-full', playful && 'relative')}>
         <path d={arc(START, litAngle, 74)} fill="none" strokeWidth="2" stroke="currentColor" className="text-yellow-700" />
         <path d={arc(litAngle, START - SWEEP, 74)} fill="none" strokeWidth="2" stroke="currentColor" className="text-yellow-1000" />
         {/* Unlit dots underneath, lit dots on top: lighting one up is an opacity change only. */}

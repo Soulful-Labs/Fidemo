@@ -52,6 +52,9 @@ function TiltOn({ children, className, holo = 1, ...rest }: TiltProps) {
   const sheenY = useTransform(sy, (v) => `${-v * 30}%`)
   const glareX = useTransform(sx, (v) => `${v * 45}%`)
   const glareY = useTransform(sy, (v) => `${v * 45}%`)
+  // The foil catches the light as the card turns: faint at rest, bright when tilted.
+  const foil = useTransform([sx, sy], ([x, y]: number[]) => (0.06 + 0.34 * Math.min(1, Math.hypot(x, y))) * holo)
+  const glare = useTransform([sx, sy], ([x, y]: number[]) => 0.25 + 0.75 * Math.min(1, Math.hypot(x, y)))
   const holding = useRef(false)
 
   // The phone's own tilt, when the device reports it and nobody is touching the card.
@@ -82,9 +85,9 @@ function TiltOn({ children, className, holo = 1, ...rest }: TiltProps) {
       onPointerUp={settle} onPointerLeave={settle} onPointerCancel={settle}>
       {children}
       {/* Holographic foil from the app's own hues, sliding against the tilt. */}
-      <motion.span data-decor aria-hidden="true" style={{ x: sheenX, y: sheenY, opacity: 0.28 * holo }}
+      <motion.span data-decor aria-hidden="true" style={{ x: sheenX, y: sheenY, opacity: foil }}
         className="hl-holo pointer-events-none absolute -inset-1/2 z-10 mix-blend-color-dodge" />
-      <motion.span data-decor aria-hidden="true" style={{ x: glareX, y: glareY }}
+      <motion.span data-decor aria-hidden="true" style={{ x: glareX, y: glareY, opacity: glare }}
         className="hl-glare pointer-events-none absolute -inset-1/4 z-10 mix-blend-overlay" />
     </motion.div>
   )

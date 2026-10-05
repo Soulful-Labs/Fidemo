@@ -11,7 +11,7 @@
 //   { "js": "code" }                    evaluate, result printed
 //   { "tap": "Button text" }            click the first button/link whose text matches
 //   { "wait": 300 }
-//   { "shot": "out.png" }               screenshot the viewport
+//   { "shot": "out.png", "el": "sel" }  screenshot the viewport, or clip to an element
 //   { "fps": { "tap": "Text", "js": "code", "ms": 2000, "label": "x" } }
 //                                       start a rAF recorder, trigger, report fps
 
@@ -120,7 +120,13 @@ try {
     if (step.tap) { const r = await ev(TAP(step.tap)); if (r !== 'ok') console.log(r) }
     if (step.wait) await sleep(step.wait)
     if (step.shot) {
-      const shot = await s('Page.captureScreenshot', { format: 'png' })
+      let clip
+      if (step.el) {
+        // Clip to an element (with a margin), scrolled into view first.
+        const r = await ev(`(() => { const e = document.querySelector(${JSON.stringify(step.el)}); if (!e) return null; e.scrollIntoView({ block: 'center' }); const b = e.getBoundingClientRect(); return [b.x, b.y, b.width, b.height] })()`)
+        if (Array.isArray(r)) { const m = step.margin ?? 24; clip = { x: Math.max(0, r[0] - m), y: Math.max(0, r[1] - m), width: r[2] + m * 2, height: r[3] + m * 2, scale: 1 } }
+      }
+      const shot = await s('Page.captureScreenshot', { format: 'png', clip })
       writeFileSync(step.shot, Buffer.from(shot.data, 'base64'))
       console.log('saved', step.shot)
     }
