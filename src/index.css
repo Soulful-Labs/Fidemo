@@ -82,12 +82,6 @@ body {
 }
 .hl-skeleton { animation: hl-pulse 1.4s var(--ease-in-out) infinite; }
 
-/* Light passing across something precious (tier coin, unlocked buttons). */
-@keyframes hl-sheen {
-  from { transform: translateX(-120%) skewX(-18deg); }
-  to { transform: translateX(220%) skewX(-18deg); }
-}
-
 /* The sheen crosses once, then rests, then crosses again. */
 @keyframes hl-sheen-loop {
   0% { transform: translateX(-120%) skewX(-18deg); }
