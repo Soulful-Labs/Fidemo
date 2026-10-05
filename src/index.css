@@ -85,6 +85,27 @@ body {
   to { transform: translateX(220%) skewX(-18deg); }
 }
 
+/* The sheen crosses once, then rests, then crosses again. */
+@keyframes hl-sheen-loop {
+  0% { transform: translateX(-120%) skewX(-18deg); }
+  35%, 100% { transform: translateX(320%) skewX(-18deg); }
+}
+.hl-sheen-loop { animation: hl-sheen-loop 3.6s var(--ease-in-out) 1.4s infinite backwards; }
+
+/* Rays sway rather than spin: three easings, and linear is not one of them. */
+@keyframes hl-sway {
+  0%, 100% { transform: rotate(-9deg); }
+  50% { transform: rotate(9deg); }
+}
+.hl-sway { animation: hl-sway 9s var(--ease-in-out) infinite; }
+
+/* A small spark that comes and goes. */
+@keyframes hl-twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.4); }
+  50% { opacity: 1; transform: scale(1); }
+}
+.hl-twinkle { animation: hl-twinkle 2.4s var(--ease-in-out) infinite backwards; }
+
 /* Reduced motion: every transition and keyframe resolves instantly, and the
    purely decorative layers (particles, sheens, idle loops) are not drawn.
    A loading spinner still turns: it is information, not decoration. */

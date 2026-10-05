@@ -16,9 +16,10 @@ const RANK: Record<Tier, number> = { silver: 0, gold: 1, platinum: 2 }
  */
 export default function CelebrationModals() {
   const { user, pointsHistory } = useStore()
-  const [tierUp, setTierUp] = useState<Tier | null>(null)
+  const [tierUp, setTierUp] = useState<{ tier: Tier; from: Tier; fromScore: number } | null>(null)
   const [earned, setEarned] = useState<PointsEntry | null>(null)
   const lastTier = useRef(user.tier)
+  const lastScore = useRef(user.trustScore)
   const seenPoints = useRef(new Set(pointsHistory.map((p) => p.id)))
   const account = useRef(user.email)
   const pause = useRef<number | undefined>(undefined)
@@ -31,6 +32,7 @@ export default function CelebrationModals() {
     if (!switched) return
     account.current = user.email
     lastTier.current = user.tier
+    lastScore.current = user.trustScore
     const brandNew = Date.now() - Date.parse(user.joinedAt) < 60_000
     seenPoints.current = new Set(brandNew ? [] : pointsHistory.map((p) => p.id))
     if (!brandNew) return
@@ -45,9 +47,10 @@ export default function CelebrationModals() {
 
   useEffect(() => {
     if (switched) return
-    if (RANK[user.tier] > RANK[lastTier.current]) setTierUp(user.tier)
+    if (RANK[user.tier] > RANK[lastTier.current]) setTierUp({ tier: user.tier, from: lastTier.current, fromScore: lastScore.current })
     lastTier.current = user.tier
-  }, [user.tier, switched])
+    lastScore.current = user.trustScore
+  }, [user.tier, user.trustScore, switched])
 
   useEffect(() => {
     if (switched) return
@@ -58,7 +61,7 @@ export default function CelebrationModals() {
 
   return (
     <>
-      <TierUpgrade tier={tierUp} score={user.trustScore} onClose={() => setTierUp(null)} />
+      <TierUpgrade tier={tierUp?.tier ?? null} from={tierUp?.from} fromScore={tierUp?.fromScore} score={user.trustScore} onClose={() => setTierUp(null)} />
       <PointsEarned entry={earned} onClose={() => setEarned(null)} />
     </>
   )

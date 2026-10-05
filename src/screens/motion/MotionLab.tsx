@@ -2,6 +2,7 @@ import { useAppNav } from '../../app/useAppNav'
 import TopBar from '../../components/ui/TopBar'
 import { prefersReduced } from '../../lib/motion'
 import { PointsSection } from './PointsSection'
+import { TierSection } from './TierSection'
 
 /**
  * /motion: every animation from the motion turn, playable on demand, grouped
@@ -18,6 +19,7 @@ export default function MotionLab() {
           Reduced motion is {prefersReduced() ? 'on: everything below jumps straight to its final state.' : 'off.'}
         </p>
         <PointsSection />
+        <TierSection />
       </div>
     </div>
   )

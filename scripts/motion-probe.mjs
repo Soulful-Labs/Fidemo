@@ -89,7 +89,7 @@ const RECORD = (ms) => `new Promise((done) => {
     const gaps = times.slice(1).map((t, i) => t - times[i])
     const avg = gaps.reduce((a, b) => a + b, 0) / gaps.length
     done({ frames: gaps.length, fps: +(1000 / avg).toFixed(1), worstMs: +Math.max(...gaps).toFixed(1),
-      over33: gaps.filter((g) => g > 33.4).length, over50: gaps.filter((g) => g > 50).length, p95: +gaps.sort((a,b)=>a-b)[Math.floor(gaps.length*0.95)].toFixed(1) })
+      over33: gaps.filter((g) => g > 33.4).length, over50: gaps.filter((g) => g > 50).length, long: gaps.map((g, i) => [Math.round(times[i] - t0), Math.round(g)]).filter(([, g]) => g > 33.4), p95: +[...gaps].sort((a,b)=>a-b)[Math.floor(gaps.length*0.95)].toFixed(1) })
   } }
   requestAnimationFrame(tick)
 })`
