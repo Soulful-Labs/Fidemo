@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppNav } from '../../app/useAppNav'
 import EmptyState from '../../components/app/EmptyState'
+import RollingNumber from '../../components/motion/RollingNumber'
 import Button from '../../components/ui/Button'
 import TabBar from '../../components/ui/TabBar'
 import TopBar from '../../components/ui/TopBar'
@@ -31,6 +32,7 @@ export default function RewardPoints() {
   const navigate = useNavigate()
   const { back } = useAppNav()
   const { user, pointsHistory, redeemHistory } = useStore()
+  const badge = useRef<HTMLSpanElement>(null)
   const [tab, setTab] = useState<'points' | 'redeem'>('points')
   const [range, setRange] = useState('All Time')
   const [filters, setFilters] = useState<PointsFilterState>({ kind: 'all', sort: 'new', max: 500 })
@@ -55,9 +57,9 @@ export default function RewardPoints() {
         <section className="flex flex-col gap-4 rounded-lg bg-bgAlt-2 bg-green-fade p-4">
           <span className="text-body-regular text-text-subtitle">Balance</span>
           <div className="flex items-end justify-between gap-3">
-            <span className="flex items-center gap-2 text-title-l text-brand-secondary">
+            <span ref={badge} className="flex items-center gap-2 text-title-l text-brand-secondary">
               <PointsCoin className="h-6 w-6" />
-              {fmt(user.points)}
+              <RollingNumber value={user.points} format={fmt} memory="points" float pulse={badge} />
             </span>
             <span className="text-text-regular text-text-subtitle">100 points = $1</span>
           </div>

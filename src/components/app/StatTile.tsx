@@ -7,8 +7,8 @@ export type TileTint = 'yellow' | 'green' | 'purple' | 'blue' | 'none'
 export interface StatTileProps {
   /** "Wallet Balance", "Studies In Review" */
   label: string
-  /** "$624.48", "128" */
-  value: string
+  /** "$624.48", "128", or a RollingNumber showing one arriving. */
+  value: ReactNode
   /**
    * "+$260". Green when positive. A fall is shown in the neutral body colour,
    * not red: red is reserved for things that are wrong, and earning less this

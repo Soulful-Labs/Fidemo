@@ -1,6 +1,8 @@
+import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import Logo from '../../components/app/Logo'
+import RollingNumber from '../../components/motion/RollingNumber'
 import { Bell, PointsCoin } from '../../components/ui/icons'
 import { points as fmtPoints } from '../../lib/format'
 import { useStore } from '../../mock/store'
@@ -13,6 +15,7 @@ import { useStore } from '../../mock/store'
 export default function DashboardHeader({ right }: { right?: ReactNode }) {
   const { user, notifications } = useStore()
   const unread = notifications.filter((n) => !n.read).length
+  const chip = useRef<HTMLAnchorElement>(null)
 
   return (
     <header className="flex h-bar shrink-0 items-center gap-4 px-4">
@@ -21,11 +24,12 @@ export default function DashboardHeader({ right }: { right?: ReactNode }) {
       {right ?? (
         <>
           <Link
+            ref={chip}
             to="/points"
             className="ml-auto flex h-tag items-center gap-2 rounded-full border-1 border-green-900 bg-green-900/40 px-3 text-body-medium text-brand-secondary"
           >
             <PointsCoin className="h-5 w-5 text-brand-secondary" />
-            {fmtPoints(user.points)}
+            <RollingNumber value={user.points} format={fmtPoints} memory="points" float="into" pulse={chip} />
           </Link>
 
           <Link to="/notifications" aria-label={`Notifications${unread ? `, ${unread} unread` : ''}`} className="relative text-text-title">

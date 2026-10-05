@@ -5,6 +5,7 @@ import { Navigate } from 'react-router-dom'
 import NotFound from './screens/NotFound'
 import RootRedirect from './app/RootRedirect'
 import KitchenSink from './screens/kitchen-sink/KitchenSink'
+import MotionLab from './screens/motion/MotionLab'
 import SignUp from './screens/auth/SignUp'
 import SignIn from './screens/auth/SignIn'
 import VerifyOtp from './screens/auth/VerifyOtp'
@@ -155,6 +156,7 @@ export const routes: ScreenRoute[] = [
 
   // ----- Dev -----
   { path: '/kitchen-sink', label: 'Kitchen Sink', element: createElement(KitchenSink) },
+  { path: '/motion', label: 'Motion, every animation on demand', element: createElement(MotionLab) },
 
   // ----- Fallback -----
   built('*', 'Not Found', NotFound),

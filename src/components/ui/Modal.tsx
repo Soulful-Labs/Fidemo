@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
+import { overlayClosed, overlayOpened } from '../../lib/overlays'
 import { Close } from './icons'
 
 export interface ModalProps {
@@ -23,10 +24,12 @@ export function useOverlay(open: boolean, onClose: () => void) {
       if (e.key === 'Escape') onClose()
     }
     document.addEventListener('keydown', onKey)
+    overlayOpened()
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
       document.removeEventListener('keydown', onKey)
+      overlayClosed()
       document.body.style.overflow = prev
     }
   }, [open, onClose])

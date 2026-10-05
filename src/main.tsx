@@ -5,6 +5,9 @@ import App from './App'
 import { UIProvider } from './app/ui'
 import { StoreProvider } from './mock/store'
 import './index.css'
+import { installReducedMotion } from './lib/motion'
+
+installReducedMotion()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

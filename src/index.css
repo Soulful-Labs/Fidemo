@@ -30,3 +30,74 @@ body {
 * {
   box-sizing: border-box;
 }
+
+/* ---------------------------------------------------------------------------
+   Motion (lib/motion.ts holds the vocabulary; these are its CSS twins).
+   Only transform and opacity animate. Durations: 160 / 320 / 720ms.
+   ------------------------------------------------------------------------- */
+:root {
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.55, 0, 0.85, 0.3);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Press feedback on everything tappable. `scale` is its own property, so it
+   never fights Tailwind's `translate` or framer-motion's `transform`. */
+:where(button, a[href], [role='button'], [role='link'], [role='tab']) {
+  transition-property: scale, color, background-color, border-color, opacity, filter;
+  transition-duration: 160ms;
+  transition-timing-function: var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+:where(button, a[href], [role='button'], [role='link'], [role='tab']):not(:disabled):not([aria-disabled='true']):active {
+  scale: 0.97;
+}
+
+/* Lists: items rise in one after another. `backwards` fill so an item's own
+   opacity or transform is untouched once it has arrived. */
+@keyframes hl-rise {
+  from { opacity: 0; transform: translateY(10px); }
+}
+[data-stagger] > * { animation: hl-rise 320ms var(--ease-out) backwards; }
+[data-stagger] > :nth-child(2) { animation-delay: 45ms; }
+[data-stagger] > :nth-child(3) { animation-delay: 90ms; }
+[data-stagger] > :nth-child(4) { animation-delay: 135ms; }
+[data-stagger] > :nth-child(5) { animation-delay: 180ms; }
+[data-stagger] > :nth-child(6) { animation-delay: 225ms; }
+[data-stagger] > :nth-child(7) { animation-delay: 270ms; }
+[data-stagger] > :nth-child(n + 8) { animation-delay: 315ms; }
+
+/* Empty states breathe gently so they look alive, not broken. */
+@keyframes hl-bob {
+  50% { transform: translateY(-4px); }
+}
+[data-idle] { animation: hl-bob 3.2s var(--ease-in-out) infinite; }
+
+/* Skeletons pulse rather than sit dead. */
+@keyframes hl-pulse {
+  50% { opacity: 0.45; }
+}
+.hl-skeleton { animation: hl-pulse 1.4s var(--ease-in-out) infinite; }
+
+/* Light passing across something precious (tier coin, unlocked buttons). */
+@keyframes hl-sheen {
+  from { transform: translateX(-120%) skewX(-18deg); }
+  to { transform: translateX(220%) skewX(-18deg); }
+}
+
+/* Reduced motion: every transition and keyframe resolves instantly, and the
+   purely decorative layers (particles, sheens, idle loops) are not drawn.
+   A loading spinner still turns: it is information, not decoration. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-spin { animation-duration: 1s !important; animation-iteration-count: infinite !important; }
+  [data-decor] { display: none !important; }
+  :where(button, a[href], [role='button'], [role='link'], [role='tab']):active { scale: none; }
+}

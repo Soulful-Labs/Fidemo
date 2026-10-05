@@ -1,3 +1,4 @@
+import RollingNumber from '../../components/motion/RollingNumber'
 import { useNavigate } from 'react-router-dom'
 import StatTile from '../../components/app/StatTile'
 import { Clock, Dollar, ListIcon } from '../../components/ui/icons'
@@ -44,7 +45,7 @@ export default function OverviewTiles() {
     <section className="flex flex-col gap-4">
       <SectionHeader title="Overview" />
       <div className="grid grid-cols-2 gap-2">
-        <StatTile tint="yellow" icon={<Dollar />} label="Wallet Balance" value={money(user.walletBalance)} onClick={() => navigate('/wallet')} />
+        <StatTile tint="yellow" icon={<Dollar />} label="Wallet Balance" value={<RollingNumber value={user.walletBalance} format={money} step={0.01} memory="wallet" float />} onClick={() => navigate('/wallet')} />
         <StatTile
           tint="green" icon={<Coin />}
           label="This Month"

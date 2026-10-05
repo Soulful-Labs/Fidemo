@@ -1,0 +1,24 @@
+import { useAppNav } from '../../app/useAppNav'
+import TopBar from '../../components/ui/TopBar'
+import { prefersReduced } from '../../lib/motion'
+import { PointsSection } from './PointsSection'
+
+/**
+ * /motion: every animation from the motion turn, playable on demand, grouped
+ * A to J in the order of docs/Motion.md. Demos run on local copies of the
+ * figures, so nothing here changes the account.
+ */
+export default function MotionLab() {
+  const { back } = useAppNav()
+  return (
+    <div className="flex min-h-full flex-col">
+      <TopBar title="Motion" onBack={back} />
+      <div className="flex flex-col gap-6 px-4 pb-6 pt-4">
+        <p className="text-text-regular text-text-body">
+          Reduced motion is {prefersReduced() ? 'on: everything below jumps straight to its final state.' : 'off.'}
+        </p>
+        <PointsSection />
+      </div>
+    </div>
+  )
+}
