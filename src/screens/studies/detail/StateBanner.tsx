@@ -5,6 +5,7 @@ import { POINTS, TRUST } from '../../../lib/rules'
 import type { Study } from '../../../mock/types'
 import { BannerIcon } from './bannerIcons'
 import { outcomeFor } from '../../../lib/studyState'
+import { EarnedLine, RevealCard, useBannerReveal } from './BannerReveal'
 
 /** The attendance PIN used throughout the prototype (PRD 6.11). */
 export const ATTENDANCE_PIN = '407060'
@@ -126,10 +127,18 @@ export function diaryBannerFor(study: Study): BannerContent | null {
 }
 
 /** The tinted status card at the top of Study Details (Figma 919:74597 and siblings). */
-export default function StateBanner({ content, children }: { content: BannerContent; children?: ReactNode }) {
+export default function StateBanner({ content, children, studyId, status, replay }: {
+  content: BannerContent; children?: ReactNode
+  /** With both, a status the person has not seen on this study yet is revealed (BannerReveal). */
+  studyId?: string; status?: string
+  /** /motion only: play a given reveal regardless of what has been seen. */
+  replay?: ReturnType<typeof useBannerReveal>
+}) {
   const { tone } = content
+  const seen = useBannerReveal(studyId, status ?? '')
+  const reveal = replay ?? seen
   return (
-    <div className={cn('flex flex-col gap-3 rounded-lg bg-bg-1 p-4', CARD[tone])}>
+    <RevealCard kind={reveal} className={cn('flex flex-col gap-3 rounded-lg bg-bg-1 p-4', CARD[tone])}>
       <div className="flex items-center justify-between gap-3">
         <span
           className={cn(
@@ -154,13 +163,13 @@ export default function StateBanner({ content, children }: { content: BannerCont
         </p>
       )}
       {content.headline && (
-        <p className={cn('text-body-medium', content.tone === 'yellow' ? 'rounded-md bg-yellow-1000/50 px-3 py-2 text-text-title' : TEXT[tone])}>
+        <EarnedLine kind={reveal} className={cn('text-body-medium', content.tone === 'yellow' ? 'rounded-md bg-yellow-1000/50 px-3 py-2 text-text-title' : TEXT[tone])}>
           {content.headline}
-        </p>
+        </EarnedLine>
       )}
       {content.subline && <p className={cn('text-text-regular', TEXT[tone])}>{content.subline}</p>}
       {children}
       {content.body && <p className="text-text-regular text-text-subtitle">{content.body}</p>}
-    </div>
+    </RevealCard>
   )
 }

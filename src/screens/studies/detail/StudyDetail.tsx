@@ -88,7 +88,7 @@ export default function StudyDetail() {
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         {showBanner && (
-          <StateBanner content={banner}>
+          <StateBanner key={study.status} content={banner} studyId={study.id} status={study.status}>
             <BannerActions
               study={study}
               onSchedule={actions.primary}

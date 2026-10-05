@@ -54,6 +54,7 @@ export default function Screener() {
     return (
       <SuccessScreen
         badge={<SuccessBadge tone="brand" />}
+        mood="calm"
         title="Not a match this time"
         body="Thanks for checking. This study is looking for a slightly different group, so we won't take you through the full screener."
         steps={[
