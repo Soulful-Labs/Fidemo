@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
+import { feedback } from '../lib/feedback'
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import { useStore } from '../mock/store'
 import type { ReactNode } from 'react'
@@ -12,7 +13,7 @@ import { useElastic, useLongPressSwell } from './playful/touch'
 import { isPlayful, usePlayful } from '../lib/playful'
 import { recordNavigation } from './history'
 import { isAltPalette, showsNav } from './navigation'
-import { CSS, HAPTIC, haptic, play, springTo } from '../lib/motion'
+import { CSS, play, springTo } from '../lib/motion'
 
 /**
  * Global interaction rule 8: scroll resets on a new navigation and is restored
@@ -67,7 +68,7 @@ function usePressHaptics() {
   useEffect(() => {
     const onDown = (e: PointerEvent) => {
       const el = (e.target as Element | null)?.closest('button, a[href], [role=button], [role=link], [role=tab], [role=switch]')
-      if (el && !el.matches(':disabled, [aria-disabled=true]')) haptic(HAPTIC.press)
+      if (el && !el.matches(':disabled, [aria-disabled=true]')) feedback('press')
     }
     document.addEventListener('pointerdown', onDown, { passive: true })
     return () => document.removeEventListener('pointerdown', onDown)

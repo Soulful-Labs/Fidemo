@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
+import { feedback } from '../../lib/feedback'
 import { useRef } from 'react'
 import { cn } from '../../lib/cn'
-import { HAPTIC, SPRING, haptic } from '../../lib/motion'
+import { SPRING } from '../../lib/motion'
 import { Check, Upload } from '../ui/icons'
 
 export interface FileFieldProps {
@@ -44,7 +45,7 @@ export default function FileField({
         <span className={cn('flex max-w-full items-center gap-2 text-text-medium', chosen ? 'text-brand-secondary' : 'text-text-title')}>
           {chosen ? (
             <motion.span key={fileName} className="flex" initial={fresh ? { scale: 0.2, rotate: -40, opacity: 0 } : false}
-              animate={{ scale: 1, rotate: 0, opacity: 1 }} transition={SPRING.snappy} onAnimationComplete={() => fresh && haptic(HAPTIC.press)}>
+              animate={{ scale: 1, rotate: 0, opacity: 1 }} transition={SPRING.snappy} onAnimationComplete={() => fresh && feedback('select')}>
               <Check className="h-5 w-5" />
             </motion.span>
           ) : <Upload className="h-5 w-5" />}

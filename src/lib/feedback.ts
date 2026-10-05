@@ -25,7 +25,13 @@ export const HAPTICS: Record<Feedback, number[]> = {
   toy: [6, 30, 6],                               // a tiny double click
 }
 
-const LEGACY: Partial<Record<Feedback, number | number[]>> = { press: 6, gain: [10, 30, 16], land: [24, 40, 12], stamp: 36, celebrate: [24, 40, 12] }
+/**
+ * What each call site did before the playful layer, so turning PLAYFUL off
+ * restores it exactly: a picked file and a press ticked 6ms; gains, and the
+ * banner reveals (qualified and earned), used the old double; landings the
+ * old thud. Everything else was silent.
+ */
+const LEGACY: Partial<Record<Feedback, number | number[]>> = { press: 6, select: 6, gain: [10, 30, 16], celebrate: [10, 30, 16], land: [24, 40, 12], stamp: 36 }
 
 export function feedback(kind: Feedback) {
   if (isPlayful()) {

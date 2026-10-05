@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion'
+import { feedback } from '../../lib/feedback'
+import { isPlayful } from '../../lib/playful'
 import { useEffect, useMemo, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
-import { DUR, EASE, HAPTIC, SPRING, STAGGER, haptic } from '../../lib/motion'
+import { DUR, EASE, SPRING, STAGGER } from '../../lib/motion'
 import CoinRain from '../motion/CoinRain'
 import { Burst, burst } from '../motion/Particles'
 import { CONFETTI } from '../motion/Confetti'
@@ -43,7 +45,7 @@ export default function SuccessScreen({
   const money = mood === 'money'
   const purse = useRef<HTMLDivElement>(null)
   const sparks = useMemo(() => burst(14, 7, [60, 110], 0.2), [])
-  useEffect(() => { if (win) { const t = window.setTimeout(() => haptic(HAPTIC.land), DUR.base * 1000); return () => window.clearTimeout(t) } }, [win])
+  useEffect(() => { if (win) { const t = window.setTimeout(() => feedback(isPlayful() && mood === 'money' ? 'gain' : 'land'), DUR.base * 1000); return () => window.clearTimeout(t) } }, [win])
 
   const arrive = win
     ? { hidden: { opacity: 0, scale: 0.4, y: -40 }, shown: { opacity: 1, scale: 1, y: 0, transition: SPRING.heavy } }

@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from 'react'
-import { CSS, HAPTIC, haptic, play, prefersReduced } from '../../lib/motion'
+import { feedback } from '../../lib/feedback'
+import { CSS, play, prefersReduced } from '../../lib/motion'
 
 const COINS = [
   { x: -6, at: 0, spin: 200 },
@@ -25,7 +26,7 @@ export default function CoinRain({ target, delay = 0 }: { target: React.RefObjec
       const c = COINS[i]
       const start = delay * 1000 + c.at * gap
       timers.push(window.setTimeout(() => {
-        haptic(HAPTIC.press)
+        feedback('press')
         play(target.current, [{ transform: 'scale(1)' }, { transform: 'scale(1.07)', offset: 0.3 }, { transform: 'scale(1)' }], CSS.base, CSS.out)
       }, start + CSS.base * 0.8))
       return (el as HTMLElement).animate([

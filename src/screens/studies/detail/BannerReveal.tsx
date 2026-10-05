@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion'
+import { feedback } from '../../../lib/feedback'
 import { useMemo, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { Burst, burst } from '../../../components/motion/Particles'
 import { useSeenKey } from '../../../components/motion/useSeen'
-import { DUR, EASE, HAPTIC, SPRING, haptic } from '../../../lib/motion'
+import { DUR, EASE, SPRING } from '../../../lib/motion'
 import { lastSeen, markSeen } from '../../../lib/seen'
 import type { StudyStatus } from '../../../mock/types'
 
@@ -49,7 +50,7 @@ export function RevealCard({ kind, className, children }: { kind: ReturnType<typ
 
   return (
     <motion.div initial={from} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ ...transition, delay: kind ? DUR.fast : 0 }}
-      onAnimationComplete={() => { if (kind === 'qualified' || kind === 'earned') haptic(HAPTIC.gain) }}
+      onAnimationComplete={() => { if (kind === 'qualified' || kind === 'earned') feedback(kind === 'earned' ? 'celebrate' : 'gain') }}
       className={className + (kind === 'qualified' ? ' relative overflow-hidden' : kind === 'earned' ? ' relative' : '')}>
       {children}
       {kind === 'qualified' && (
