@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import Tilt from '../../components/motion/Tilt'
 import { useAppNav } from '../../app/useAppNav'
 import ScoreDial from '../../components/app/ScoreDial'
 import TierChip from '../../components/app/TierChip'
@@ -51,7 +52,7 @@ export default function Certificate() {
         } />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
-        <div className="flex flex-col gap-4 rounded-lg bg-bg-1 p-4">
+        <Tilt className="flex flex-col gap-4 rounded-lg bg-bg-1 p-4">
           <div className="flex items-center gap-3">
             <Avatar name={user.name} size={56} />
             <div className="flex flex-col gap-0.5">
@@ -78,7 +79,7 @@ export default function Certificate() {
               </li>
             ))}
           </ul>
-        </div>
+        </Tilt>
       </div>
     </div>
   )

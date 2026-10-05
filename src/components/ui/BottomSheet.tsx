@@ -1,7 +1,9 @@
 import { AnimatePresence, motion } from 'framer-motion'
+import { createPortal } from 'react-dom'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
-import { scrim, sheet } from '../../lib/motion'
+import { scrim, sheet, sheetPlayful } from '../../lib/motion'
+import { usePlayful } from '../../lib/playful'
 import { Close } from './icons'
 import { useOverlay } from './Modal'
 
@@ -36,9 +38,10 @@ export default function BottomSheet({
   tall = false,
 }: BottomSheetProps) {
   useOverlay(open, onClose)
+  const playful = usePlayful()
 
   // Rises on a spring and sinks away on close, keeping its last content while it goes.
-  return (
+  const layer = (
     <AnimatePresence>
     {open && (
     <motion.div
@@ -49,7 +52,7 @@ export default function BottomSheet({
       role="presentation"
     >
       <motion.div
-        variants={sheet}
+        variants={playful ? sheetPlayful : sheet}
         role="dialog"
         aria-modal="true"
         aria-label={title}
@@ -92,4 +95,6 @@ export default function BottomSheet({
     )}
     </AnimatePresence>
   )
+  // PLAYFUL: lifted out of the screen to <body>, so the screen itself can recede behind it.
+  return playful ? createPortal(layer, document.body) : layer
 }

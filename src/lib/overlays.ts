@@ -6,10 +6,18 @@
 let depth = 0
 const waiting = new Set<() => void>()
 
-export function overlayOpened() { depth += 1 }
+/** Marks <html> while anything is open, so the playful layer can push the page back. */
+function mark() {
+  if (typeof document === 'undefined') return
+  if (depth > 0) document.documentElement.dataset.overlay = ''
+  else delete document.documentElement.dataset.overlay
+}
+
+export function overlayOpened() { depth += 1; mark() }
 
 export function overlayClosed() {
   depth = Math.max(0, depth - 1)
+  mark()
   if (depth > 0) return
   // Let the closing overlay start leaving before the figure starts moving.
   const run = [...waiting]

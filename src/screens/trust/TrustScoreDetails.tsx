@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import Tilt from '../../components/motion/Tilt'
 import { useAppNav } from '../../app/useAppNav'
 import ProgressBar from '../../components/app/ProgressBar'
 import ScoreDial from '../../components/app/ScoreDial'
@@ -56,7 +57,7 @@ export default function TrustScoreDetails() {
         right={<button type="button" aria-label="Trust Score Rules" onClick={() => navigate('/trust-score/rules')} className="text-text-title"><Info className="h-6 w-6" /></button>} />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
-        <section className="flex flex-col items-center gap-4 rounded-lg bg-bgAlt-2 bg-yellow-fade p-4">
+        <Tilt holo={0.7} className="flex flex-col items-center gap-4 rounded-lg bg-bgAlt-2 bg-yellow-fade p-4">
           <button type="button" onClick={() => navigate('/trust-score/rules')} className="flex items-center gap-1 text-text-regular text-text-subtitle">
             <Info className="h-4 w-4" />Trust Score<ChevronRight className="h-4 w-4" />
           </button>
@@ -80,7 +81,7 @@ export default function TrustScoreDetails() {
           <Button variant="tertiary" fullWidth leftIcon={<Info className="h-4 w-4" />} onClick={() => navigate('/trust-score/tiers')}>
             Learn More About Tiers
           </Button>
-        </section>
+        </Tilt>
 
         <h2 className="text-body-medium text-text-title">Performance Ratings</h2>
         <PerformanceRatings />

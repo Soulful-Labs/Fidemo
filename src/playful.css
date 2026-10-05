@@ -149,3 +149,29 @@
     box-shadow: 0 2px 0 rgb(0 0 0 / 0.45), var(--pf-hi);
   }
 }
+
+/* Collectible-card foil and glare (components/motion/Tilt.tsx, playful only).
+   The foil is a band of the app's own hues side by side (purple, blue, green,
+   yellow), each clearly a different hue from its neighbour. */
+.hl-holo {
+  background: repeating-linear-gradient(115deg,
+    transparent 0%, color-mix(in oklab, var(--pf-purple) 70%, transparent) 8%,
+    color-mix(in oklab, var(--pf-blue) 70%, transparent) 14%, color-mix(in oklab, var(--pf-green) 70%, transparent) 20%,
+    color-mix(in oklab, var(--pf-yellow) 70%, transparent) 26%, transparent 34%);
+}
+.hl-glare {
+  background: radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--pf-title) 38%, transparent) 0%, transparent 42%);
+}
+
+/* While a modal, sheet or celebration is up (lib/overlays.ts marks <html>),
+   the screen and its nav recede into the phone. Under PLAYFUL every overlay
+   is portalled to <body>, so nothing it holds is inside what recedes. */
+@scope ([data-playful=on]) to ([data-playful=off]) {
+  main, main ~ nav {
+    transition: transform var(--spring-soft-ms) var(--spring-soft), opacity 220ms var(--ease-out);
+  }
+  :scope[data-overlay] :is(main, main ~ nav) {
+    transform: scale(0.93) translateY(10px);
+    opacity: 0.55;
+  }
+}

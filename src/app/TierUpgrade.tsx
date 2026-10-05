@@ -8,6 +8,8 @@ import { cn } from '../lib/cn'
 import { ACCENT, BENEFITS, GLOW, Glyph, Rays, TierCoin } from './tierParts'
 import type { Tier } from './tierParts'
 import { useTierSequence } from './useTierSequence'
+import TierPlayful from './playful/TierPlayful'
+import { usePlayful } from '../lib/playful'
 
 const BELOW: Record<Tier, Tier> = { silver: 'silver', gold: 'silver', platinum: 'gold' }
 
@@ -28,8 +30,14 @@ export interface TierUpgradeProps {
  */
 export default function TierUpgrade(props: TierUpgradeProps) {
   useOverlay(props.tier !== null, props.onClose)
+  const playful = usePlayful()
   // Mounted fresh on every open, so each upgrade plays from the top.
-  return props.tier ? <Celebration {...props} tier={props.tier} /> : null
+  if (!props.tier) return null
+  if (playful) {
+    return <TierPlayful tier={props.tier} old={props.from ?? BELOW[props.tier]} score={props.score}
+      fromScore={props.fromScore ?? props.score} onClose={props.onClose} />
+  }
+  return <Celebration {...props} tier={props.tier} />
 }
 
 function Celebration({ tier, score, from, fromScore, onClose }: TierUpgradeProps & { tier: Tier }) {

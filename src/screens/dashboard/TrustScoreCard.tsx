@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import Tilt from '../../components/motion/Tilt'
 import ProgressBar from '../../components/app/ProgressBar'
 import ScoreDial from '../../components/app/ScoreDial'
 import TierChip from '../../components/app/TierChip'
@@ -18,8 +19,10 @@ export default function TrustScoreCard() {
   const next = nextTier(user.trustScore)
   const floor = TIERS[tier]
 
+  // The tier card is a collectible under PLAYFUL: it tilts under the finger (Tilt).
   return (
-    <div
+    <Tilt
+      holo={0.6}
       role="link"
       tabIndex={0}
       onClick={() => navigate('/trust-score')}
@@ -44,6 +47,6 @@ export default function TrustScoreCard() {
           </div>
         )}
       </div>
-    </div>
+    </Tilt>
   )
 }

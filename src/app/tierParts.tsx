@@ -65,3 +65,45 @@ export function Rays({ tier }: { tier: Tier }) {
     </span>
   )
 }
+
+/** One face of the tier mark, as drawn, without any of the timeline hooks. */
+export function CoinFace({ tier, className }: { tier: Tier; className?: string }) {
+  return (
+    <span className={cn('flex h-36 w-36 items-center justify-center overflow-hidden rounded-full border-4 shadow-glow [backface-visibility:hidden]', COIN[tier].ring, className)}>
+      <span className={cn('flex h-28 w-28 items-center justify-center rounded-full', COIN[tier].disc)}>
+        <Glyph tier={tier} size={64} />
+      </span>
+    </span>
+  )
+}
+
+/**
+ * PLAYFUL: the tier mark as a two-sided coin. The old tier is on the front,
+ * the new tier on the back; the timeline turns it over (`data-t="flip"`).
+ */
+export function FlipCoin({ from, to }: { from: Tier; to: Tier }) {
+  return (
+    <span data-t="flip" className="relative block h-36 w-36 [transform-style:preserve-3d]" style={{ transform: 'perspective(700px)' }}>
+      <CoinFace tier={from} className="absolute inset-0" />
+      <CoinFace tier={to} className="absolute inset-0 [transform:rotateY(180deg)]" />
+    </span>
+  )
+}
+
+/** The tier name pill that sits on the benefits card (same strings as the tier screen). */
+export function TierPill({ tier, label }: { tier: Tier; label: { name: string; top: string } }) {
+  const gold = tier === 'gold'
+  return (
+    <span data-t="pill" style={{ opacity: 0 }}
+      className={cn('absolute left-1/2 top-0 z-10 flex h-14 -translate-x-1/2 -translate-y-1/2 items-center gap-3 rounded-full border-1 px-4 pr-6',
+        gold ? 'border-yellow-700 bg-yellow-1000' : tier === 'platinum' ? 'border-tier-platinum/60 bg-tier-platinum/20' : 'border-tier-silver/60 bg-bg-2')}>
+      <span className={cn('flex h-9 w-9 items-center justify-center rounded-full', gold ? 'bg-yellow-900' : tier === 'platinum' ? 'bg-tier-platinum/30' : 'bg-tier-silver/20', ACCENT[tier])}>
+        <Glyph tier={tier} size={20} />
+      </span>
+      <span className="flex flex-col items-start whitespace-nowrap">
+        <span className={cn('text-title-s leading-tight', ACCENT[tier])}>{label.name}</span>
+        <span className="text-text-regular text-text-subtitle">You are in {label.top.replace('In ', '')}</span>
+      </span>
+    </span>
+  )
+}

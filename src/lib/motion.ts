@@ -134,6 +134,20 @@ export const dialog: Variants = {
   gone: { opacity: 0, scale: 0.96, transition: { duration: DUR.fast, ease: EASE.in } },
 }
 
+/** PLAYFUL: dialogs come at you from in front of the glass and bounce into place. */
+export const dialogPlayful: Variants = {
+  hidden: { opacity: 0, scale: 1.18, rotateX: 22, y: -24 },
+  shown: { opacity: 1, scale: 1, rotateX: 0, y: 0, transition: { ...SPRING.bouncy, opacity: { duration: DUR.fast } } },
+  gone: { opacity: 0, scale: 0.88, rotateX: -10, transition: { duration: DUR.fast, ease: EASE.in } },
+}
+
+/** PLAYFUL: sheets rise past their resting line and settle back. */
+export const sheetPlayful: Variants = {
+  hidden: { y: '100%' },
+  shown: { y: 0, transition: SPRING.bouncy },
+  gone: { y: '100%', transition: { duration: DUR.base, ease: EASE.in } },
+}
+
 export const sheet: Variants = {
   hidden: { y: '100%' },
   shown: { y: 0, transition: SPRING.soft },
