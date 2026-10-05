@@ -76,7 +76,7 @@ export default function ScoreHistory() {
         {list.length === 0 ? (
           <EmptyState title="Nothing in this range" body="Try a wider date range or a different kind." actionLabel="Show all" onAction={() => { setRange('All Time'); setKind('all') }} />
         ) : (
-          <div className="flex flex-col rounded-lg bg-bgAlt-2 px-4">
+          <div data-stagger className="flex flex-col rounded-lg bg-bgAlt-2 px-4">
             {list.map((e, i) => <ScoreHistoryRow key={`${e.label}-${e.at}-${i}`} entry={e} />)}
           </div>
         )}

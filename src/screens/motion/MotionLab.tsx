@@ -5,6 +5,7 @@ import { PointsSection } from './PointsSection'
 import { TierSection } from './TierSection'
 import { CertificateSection } from './CertificateSection'
 import { ProgressSection } from './ProgressSection'
+import { DeductionSection } from './DeductionSection'
 
 /**
  * /motion: every animation from the motion turn, playable on demand, grouped
@@ -24,6 +25,7 @@ export default function MotionLab() {
         <TierSection />
         <CertificateSection />
         <ProgressSection />
+        <DeductionSection />
       </div>
     </div>
   )

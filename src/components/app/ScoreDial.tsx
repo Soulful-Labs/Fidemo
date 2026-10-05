@@ -95,7 +95,7 @@ export default function ScoreDial({
       </svg>
       <div className="absolute inset-x-0 top-1/4 flex flex-col items-center">
         <span className={cn('font-semibold leading-none text-brand-primary', NUMBER[size])}>
-          {memory ? <RollingNumber value={score} format={String} memory={memory} /> : score}
+          {memory ? <RollingNumber value={score} format={String} memory={memory} float /> : score}
         </span>
         <span className="pt-1 text-body-regular text-text-body">/{max}</span>
         {children && <div className="pt-2">{children}</div>}
