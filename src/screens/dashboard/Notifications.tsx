@@ -45,7 +45,7 @@ export default function Notifications() {
           onAction={() => navigate('/studies')}
         />
       ) : (
-        <ul>
+        <ul data-stagger>
           {notifications.map((n) => (
             <li key={n.id}>
               <NotificationRow

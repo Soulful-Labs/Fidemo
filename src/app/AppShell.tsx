@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import { useStore } from '../mock/store'
 import type { ReactNode } from 'react'
@@ -8,6 +8,7 @@ import PhoneFrame from './PhoneFrame'
 import ToastHost from './ToastHost'
 import { recordNavigation } from './history'
 import { isAltPalette, showsNav } from './navigation'
+import { CSS, HAPTIC, haptic, play } from '../lib/motion'
 
 /**
  * Global interaction rule 8: scroll resets on a new navigation and is restored
@@ -29,6 +30,39 @@ function useScrollMemory(ref: React.RefObject<HTMLElement | null>, key: string) 
     el.addEventListener('scroll', remember, { passive: true })
     return () => el.removeEventListener('scroll', remember)
   }, [ref, key, navigationType])
+}
+
+/**
+ * Route transitions (moment J): going forward slides the new screen in from
+ * the right, going back from the left, and moving between tab roots or
+ * replacing a step just fades it up. Opacity and transform only, on <main>.
+ */
+function useRouteMotion(ref: React.RefObject<HTMLElement | null>, pathname: string) {
+  const navigationType = useNavigationType()
+  const last = useRef<string | null>(null)
+  useLayoutEffect(() => {
+    const from = last.current
+    last.current = pathname
+    if (from === null || from === pathname) return
+    const tabs = showsNav(from) && showsNav(pathname)
+    const dx = tabs || navigationType === 'REPLACE' ? 0 : navigationType === 'POP' ? -24 : 24
+    play(ref.current, [
+      { opacity: 0, transform: dx ? `translateX(${dx}px)` : 'translateY(8px)' },
+      { opacity: 1, transform: 'none' },
+    ], CSS.base, CSS.out)
+  }, [ref, pathname, navigationType])
+}
+
+/** A short haptic tick on every press of something live, wherever the device supports it. */
+function usePressHaptics() {
+  useEffect(() => {
+    const onDown = (e: PointerEvent) => {
+      const el = (e.target as Element | null)?.closest('button, a[href], [role=button], [role=link], [role=tab], [role=switch]')
+      if (el && !el.matches(':disabled, [aria-disabled=true]')) haptic(HAPTIC.press)
+    }
+    document.addEventListener('pointerdown', onDown, { passive: true })
+    return () => document.removeEventListener('pointerdown', onDown)
+  }, [])
 }
 
 export default function AppShell({ children }: { children: ReactNode }) {
@@ -57,6 +91,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
     if (import.meta.env.DEV) (window as unknown as { __hlNavigate?: unknown }).__hlNavigate = navigate
   }, [navigate])
   useScrollMemory(main, pathname)
+  useRouteMotion(main, pathname)
+  usePressHaptics()
 
   const navVisible = showsNav(pathname)
   const alt = isAltPalette(pathname)

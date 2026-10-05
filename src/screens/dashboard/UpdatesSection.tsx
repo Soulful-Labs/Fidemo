@@ -23,7 +23,7 @@ export default function UpdatesSection() {
   }
 
   return (
-    <section className="flex flex-col gap-4">
+    <section data-stagger className="flex flex-col gap-4">
       <SectionHeader title="Updates" />
       {updates.map((study) => (
         <StudyCard

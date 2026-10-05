@@ -74,7 +74,7 @@ export default function Referrals() {
         {referrals.length === 0 ? (
           <EmptyState title="0 referrals yet" body="Invite friends and earn points when they complete their first study." actionLabel="Copy Link" onAction={copy} />
         ) : (
-          <ul className="flex flex-col gap-4">
+          <ul data-stagger className="flex flex-col gap-4">
             {referrals.map((r) => (
               <li key={r.id} className="flex items-center gap-3">
                 <Avatar name={r.name} size={40} />

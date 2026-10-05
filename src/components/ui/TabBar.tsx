@@ -1,5 +1,7 @@
+import { motion } from 'framer-motion'
 import { NavLink } from 'react-router-dom'
 import { cn } from '../../lib/cn'
+import { SPRING } from '../../lib/motion'
 
 export interface TabItem {
   key: string
@@ -21,12 +23,21 @@ export interface TabBarProps {
   className?: string
 }
 
-const SEGMENT_ON = 'bg-green-segment text-text-title'
+// The selected fill and underline are drawn by Indicator, which slides between tabs.
+const SEGMENT_ON = 'text-text-title'
 const SEGMENT_OFF = 'text-text-subtitle hover:text-text-title'
 const BOX_ON = 'border-cta-primary bg-yellow-1000/40 text-brand-primary'
 const BOX_OFF = 'border-stroke-3 text-text-title hover:border-cta-tertiaryStroke'
-const UNDER_ON = 'text-text-title border-cta-primary'
+const UNDER_ON = 'text-text-title border-transparent'
 const UNDER_OFF = 'text-text-body border-transparent hover:text-text-title'
+
+/** The selected fill (segmented) or underline, sliding to whichever tab is selected. */
+function Indicator({ id, segmented }: { id: string; segmented: boolean }) {
+  return (
+    <motion.span layoutId={id} transition={SPRING.soft} aria-hidden="true"
+      className={segmented ? 'absolute inset-0 -z-10 rounded-md bg-green-segment' : 'absolute inset-x-0 -bottom-0.5 h-0.5 bg-cta-primary'} />
+  )
+}
 
 export default function TabBar({
   items,
@@ -50,14 +61,19 @@ export default function TabBar({
 
   const itemClass = (active: boolean) =>
     cn(
-      'flex items-center justify-center gap-1 whitespace-nowrap transition-colors',
+      'relative isolate flex items-center justify-center gap-1 whitespace-nowrap transition-colors',
       segmented && cn('h-10 flex-1 rounded-md px-4 text-body-medium', active ? SEGMENT_ON : SEGMENT_OFF),
       boxes && cn('h-input flex-1 rounded-md border-1 px-3 text-body-regular', active ? BOX_ON : BOX_OFF),
       variant === 'underline' && cn('h-12 px-4 text-text-medium border-b-2', active ? UNDER_ON : UNDER_OFF),
     )
 
-  const label = (item: TabItem) => (
+  // Shared by every TabBar showing the same tabs, so the Explore / My Studies /
+  // Saved fill slides across even though each is its own screen.
+  const group = items.map((i) => i.key).join('|')
+
+  const label = (item: TabItem, on: boolean) => (
     <>
+      {on && !boxes && <Indicator id={`tab-${variant}-${group}`} segmented={segmented} />}
       {item.label}
       {item.count != null && <span className="text-label opacity-70">({item.count})</span>}
     </>
@@ -68,7 +84,7 @@ export default function TabBar({
       {items.map((item) =>
         item.to ? (
           <NavLink key={item.key} to={item.to} end className={({ isActive }) => itemClass(isActive)}>
-            {label(item)}
+            {({ isActive }) => label(item, isActive)}
           </NavLink>
         ) : (
           <button
@@ -79,7 +95,7 @@ export default function TabBar({
             onClick={() => onChange?.(item.key)}
             className={itemClass(value === item.key)}
           >
-            {label(item)}
+            {label(item, value === item.key)}
           </button>
         ),
       )}

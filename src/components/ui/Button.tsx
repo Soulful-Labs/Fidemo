@@ -1,5 +1,7 @@
+import { useEffect, useRef } from 'react'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { cn } from '../../lib/cn'
+import { CSS, haptic, play } from '../../lib/motion'
 import { Spinner } from './icons'
 
 export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'danger' | 'ghost'
@@ -66,14 +68,32 @@ export default function Button({
   const isDisabled = Boolean(disabled) || loading
   // With onBlocked the button stays clickable so it can say why it is blocked.
   const explains = isDisabled && Boolean(onBlocked) && !loading
+  const el = useRef<HTMLButtonElement>(null)
+  const wasLocked = useRef(Boolean(disabled))
+
+  // Moment J, locked things: a button that becomes available visibly unlocks
+  // with one small pop. (Not after loading: that is the same action finishing.)
+  useEffect(() => {
+    const locked = Boolean(disabled)
+    if (wasLocked.current && !locked) play(el.current, [{ transform: 'scale(1)' }, { transform: 'scale(1.045)', offset: 0.35 }, { transform: 'scale(1)' }], CSS.slow, CSS.out)
+    wasLocked.current = locked
+  }, [disabled])
+
+  // ...and a locked one answers a tap with a small sideways nudge and a double tick, then says why.
+  const blocked = () => {
+    play(el.current, [{ transform: 'none' }, { transform: 'translateX(-3px)' }, { transform: 'translateX(3px)' }, { transform: 'none' }], CSS.base, CSS.out)
+    haptic([8, 40, 8])
+    onBlocked?.()
+  }
 
   return (
     <button
+      ref={el}
       type={type}
       disabled={isDisabled && !explains}
       aria-disabled={isDisabled || undefined}
       aria-busy={loading || undefined}
-      onClick={explains ? () => onBlocked?.() : onClick}
+      onClick={explains ? blocked : onClick}
       className={cn(
         'inline-flex items-center justify-center gap-2 font-sans whitespace-nowrap transition-colors',
         SIZES[size],

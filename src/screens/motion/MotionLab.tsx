@@ -10,6 +10,7 @@ import { CompletionSection } from './CompletionSection'
 import { ScreeningSection } from './ScreeningSection'
 import { PayoutSection } from './PayoutSection'
 import { StepsSection } from './StepsSection'
+import { SmallStuffSection } from './SmallStuffSection'
 
 /**
  * /motion: every animation from the motion turn, playable on demand, grouped
@@ -34,6 +35,7 @@ export default function MotionLab() {
         <ScreeningSection />
         <PayoutSection />
         <StepsSection />
+        <SmallStuffSection />
       </div>
     </div>
   )

@@ -1,5 +1,7 @@
+import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { cn } from '../lib/cn'
+import { SPRING } from '../lib/motion'
 import { TABS, activeTab } from './navigation'
 
 /**
@@ -24,10 +26,12 @@ export default function BottomNav({ pathname, alt = false }: { pathname: string;
             to={tab.to}
             aria-current={isActive ? 'page' : undefined}
             className={cn(
-              'flex flex-1 flex-col items-center gap-1 rounded-lg py-2 transition-colors',
-              isActive ? 'bg-yellow-1000/40 text-brand-primary' : 'text-text-subtitle hover:text-text-title',
+              'relative isolate flex flex-1 flex-col items-center gap-1 rounded-lg py-2 transition-colors',
+              isActive ? 'text-brand-primary' : 'text-text-subtitle hover:text-text-title',
             )}
           >
+            {/* The tint slides from tab to tab. */}
+            {isActive && <motion.span layoutId="nav-tint" transition={SPRING.soft} aria-hidden="true" className="absolute inset-0 -z-10 rounded-lg bg-yellow-1000/40" />}
             <tab.Icon />
             <span className="text-text-regular">{tab.label}</span>
           </Link>

@@ -1,5 +1,7 @@
+import { AnimatePresence, motion } from 'framer-motion'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
+import { scrim, sheet } from '../../lib/motion'
 import { Close } from './icons'
 import { useOverlay } from './Modal'
 
@@ -34,15 +36,20 @@ export default function BottomSheet({
   tall = false,
 }: BottomSheetProps) {
   useOverlay(open, onClose)
-  if (!open) return null
 
+  // Rises on a spring and sinks away on close, keeping its last content while it goes.
   return (
-    <div
+    <AnimatePresence>
+    {open && (
+    <motion.div
+      key="sheet"
+      variants={scrim} initial="hidden" animate="shown" exit="gone"
       className="fixed inset-0 z-50 flex items-end justify-center bg-bg-0/80"
       onClick={onClose}
       role="presentation"
     >
-      <div
+      <motion.div
+        variants={sheet}
         role="dialog"
         aria-modal="true"
         aria-label={title}
@@ -80,7 +87,9 @@ export default function BottomSheet({
         {footer && (
           <div className="flex flex-col gap-2 border-t-1 border-stroke-2 px-4 pb-6 pt-4">{footer}</div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+    )}
+    </AnimatePresence>
   )
 }

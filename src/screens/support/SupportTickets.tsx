@@ -29,7 +29,7 @@ export default function SupportTickets() {
   }, [tickets, query, status, sort])
 
   return (
-    <div className="flex flex-col gap-4">
+    <div data-stagger className="flex flex-col gap-4">
       <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by name or ticket number" aria-label="Search tickets" leftIcon={<Search className="text-text-title" />} />
       <div className="flex gap-2">
         <div className="flex-1"><TypeFilter full value={status} options={STATUS} onChange={setStatus} /></div>

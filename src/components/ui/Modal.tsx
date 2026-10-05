@@ -1,6 +1,8 @@
+import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
+import { dialog, scrim } from '../../lib/motion'
 import { overlayClosed, overlayOpened } from '../../lib/overlays'
 import { Close } from './icons'
 
@@ -45,15 +47,21 @@ export default function Modal({
   alt = false,
 }: ModalProps) {
   useOverlay(open, onClose)
-  if (!open) return null
 
+  // Springs in from slightly small, and on close plays out with the content it
+  // last had (AnimatePresence keeps the last render), so nothing empties mid-exit.
   return (
-    <div
+    <AnimatePresence>
+    {open && (
+    <motion.div
+      key="modal"
+      variants={scrim} initial="hidden" animate="shown" exit="gone"
       className="fixed inset-0 z-50 flex items-center justify-center bg-bg-0/80 px-4"
       onClick={onClose}
       role="presentation"
     >
-      <div
+      <motion.div
+        variants={dialog}
         role="dialog"
         aria-modal="true"
         aria-label={title}
@@ -81,7 +89,9 @@ export default function Modal({
 
         {children && <div className="text-text-regular text-text-body">{children}</div>}
         {footer && <div className="flex flex-col gap-2">{footer}</div>}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+    )}
+    </AnimatePresence>
   )
 }

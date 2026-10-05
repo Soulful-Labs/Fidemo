@@ -20,7 +20,7 @@ export default function StudyList({
   const h = useCardHandlers()
 
   return (
-    <div className="flex flex-col gap-4">
+    <div data-stagger className="flex flex-col gap-4">
       {studies.map((study) => (
         <StudyCard
           key={study.id}
