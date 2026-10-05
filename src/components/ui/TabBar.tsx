@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { NavLink } from 'react-router-dom'
 import { cn } from '../../lib/cn'
 import { SPRING } from '../../lib/motion'
+import { isPlayful } from '../../lib/playful'
 
 export interface TabItem {
   key: string
@@ -34,7 +35,7 @@ const UNDER_OFF = 'text-text-body border-transparent hover:text-text-title'
 /** The selected fill (segmented) or underline, sliding to whichever tab is selected. */
 function Indicator({ id, segmented }: { id: string; segmented: boolean }) {
   return (
-    <motion.span layoutId={id} transition={SPRING.soft} aria-hidden="true"
+    <motion.span layoutId={id} transition={isPlayful() ? SPRING.bouncy : SPRING.soft} aria-hidden="true"
       className={segmented ? 'absolute inset-0 -z-10 rounded-md bg-green-segment' : 'absolute inset-x-0 -bottom-0.5 h-0.5 bg-cta-primary'} />
   )
 }

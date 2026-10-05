@@ -1,6 +1,7 @@
 import { useId, useLayoutEffect, useRef } from 'react'
 import { cn } from '../../lib/cn'
-import { CSS, haptic, play } from '../../lib/motion'
+import { CSS, haptic, play, springTo } from '../../lib/motion'
+import { isPlayful } from '../../lib/playful'
 
 export interface ToggleProps {
   checked: boolean
@@ -39,7 +40,8 @@ export default function Toggle({
     if (!el) return
     const x = el.offsetLeft
     if (at.current !== null && at.current !== x) {
-      play(el, [{ transform: `translateX(${at.current - x}px)` }, { transform: 'none' }], CSS.base, CSS.out)
+      if (isPlayful()) springTo(el, { transform: `translateX(${at.current - x}px) scaleX(1.25)` })
+      else play(el, [{ transform: `translateX(${at.current - x}px)` }, { transform: 'none' }], CSS.base, CSS.out)
     }
     at.current = x
   }, [checked])

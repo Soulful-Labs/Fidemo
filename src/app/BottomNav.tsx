@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { cn } from '../lib/cn'
 import { SPRING } from '../lib/motion'
+import { isPlayful } from '../lib/playful'
 import { TABS, activeTab } from './navigation'
 
 /**
@@ -31,7 +32,7 @@ export default function BottomNav({ pathname, alt = false }: { pathname: string;
             )}
           >
             {/* The tint slides from tab to tab. */}
-            {isActive && <motion.span layoutId="nav-tint" transition={SPRING.soft} aria-hidden="true" className="absolute inset-0 -z-10 rounded-lg bg-yellow-1000/40" />}
+            {isActive && <motion.span layoutId="nav-tint" transition={isPlayful() ? SPRING.bouncy : SPRING.soft} aria-hidden="true" className="absolute inset-0 -z-10 rounded-lg bg-yellow-1000/40" />}
             <tab.Icon />
             <span className="text-text-regular">{tab.label}</span>
           </Link>

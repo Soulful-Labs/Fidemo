@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { cn } from '../../lib/cn'
-import { CSS, haptic, play } from '../../lib/motion'
+import { CSS, haptic, play, springTo } from '../../lib/motion'
+import { isPlayful } from '../../lib/playful'
 import { Spinner } from './icons'
 
 export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'danger' | 'ghost'
@@ -75,7 +76,10 @@ export default function Button({
   // with one small pop. (Not after loading: that is the same action finishing.)
   useEffect(() => {
     const locked = Boolean(disabled)
-    if (wasLocked.current && !locked) play(el.current, [{ transform: 'scale(1)' }, { transform: 'scale(1.045)', offset: 0.35 }, { transform: 'scale(1)' }], CSS.slow, CSS.out)
+    if (wasLocked.current && !locked) {
+      if (isPlayful()) springTo(el.current, { transform: 'scale(1.12)' })
+      else play(el.current, [{ transform: 'scale(1)' }, { transform: 'scale(1.045)', offset: 0.35 }, { transform: 'scale(1)' }], CSS.slow, CSS.out)
+    }
     wasLocked.current = locked
   }, [disabled])
 

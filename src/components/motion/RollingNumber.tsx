@@ -2,7 +2,8 @@ import { animate } from 'framer-motion'
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import { cn } from '../../lib/cn'
-import { CSS, DUR, EASE, HAPTIC, haptic, play, prefersReduced, rollDuration } from '../../lib/motion'
+import { CSS, DUR, EASE, HAPTIC, haptic, play, prefersReduced, rollDuration, springTo } from '../../lib/motion'
+import { isPlayful } from '../../lib/playful'
 import { whenClear } from '../../lib/overlays'
 import { lastSeen, markSeen } from '../../lib/seen'
 import { useSeenKey } from './useSeen'
@@ -80,7 +81,8 @@ export default function RollingNumber({
         onComplete: () => {
           done()
           haptic(HAPTIC.gain)
-          play(pulse?.current, [{ transform: 'scale(1)' }, { transform: 'scale(1.14)', offset: 0.35 }, { transform: 'scale(1)' }], CSS.slow, CSS.out)
+          if (isPlayful()) springTo(pulse?.current, { transform: 'scale(1.3)' })
+          else play(pulse?.current, [{ transform: 'scale(1)' }, { transform: 'scale(1.14)', offset: 0.35 }, { transform: 'scale(1)' }], CSS.slow, CSS.out)
         },
       })
     }

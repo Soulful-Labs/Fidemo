@@ -8,7 +8,8 @@ import PhoneFrame from './PhoneFrame'
 import ToastHost from './ToastHost'
 import { recordNavigation } from './history'
 import { isAltPalette, showsNav } from './navigation'
-import { CSS, HAPTIC, haptic, play } from '../lib/motion'
+import { CSS, HAPTIC, haptic, play, springTo } from '../lib/motion'
+import { isPlayful } from '../lib/playful'
 
 /**
  * Global interaction rule 8: scroll resets on a new navigation and is restored
@@ -46,6 +47,11 @@ function useRouteMotion(ref: React.RefObject<HTMLElement | null>, pathname: stri
     if (from === null || from === pathname) return
     const tabs = showsNav(from) && showsNav(pathname)
     const dx = tabs || navigationType === 'REPLACE' ? 0 : navigationType === 'POP' ? -24 : 24
+    // PLAYFUL: the new screen swings in on a bouncy spring, past its place and back.
+    if (isPlayful()) {
+      springTo(ref.current, { opacity: 0, transform: dx ? `translateX(${dx * 2}px) scale(0.96)` : 'translateY(24px) scale(0.96)' }, 'bouncy', 0, { opacity: 1, transform: 'none' })
+      return
+    }
     play(ref.current, [
       { opacity: 0, transform: dx ? `translateX(${dx}px)` : 'translateY(8px)' },
       { opacity: 1, transform: 'none' },

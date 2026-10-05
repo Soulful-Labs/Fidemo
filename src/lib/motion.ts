@@ -186,6 +186,24 @@ export function installReducedMotion() {
  * Web Animations for the small imperative touches (a nudge, a pulse). Skipped
  * entirely under reduced motion, so nothing per screen has to remember to check.
  */
+const curves = new Map<string, { easing: string; ms: number }>()
+/** springCurve, cached: the same five springs are asked for again and again. */
+export function springEase(name: keyof typeof SPRING) {
+  let c = curves.get(name)
+  if (!c) { c = springCurve(name); curves.set(name, c) }
+  return c
+}
+
+/**
+ * Moves an element from `from` to `to` (default: its resting state) on a
+ * spring, with real overshoot, through WAAPI and a linear() easing, so it runs
+ * on the compositor. Skipped under reduced motion.
+ */
+export function springTo(el: Element | null | undefined, from: Keyframe, name: keyof typeof SPRING = 'bouncy', delay = 0, to: Keyframe = { transform: 'none' }) {
+  const { easing, ms } = springEase(name)
+  return play(el, [from, to], ms, easing, delay)
+}
+
 export function play(el: Element | null | undefined, keyframes: Keyframe[], ms: number = CSS.base, easing: string = CSS.out, delay = 0) {
   if (!el || prefersReduced() || typeof (el as HTMLElement).animate !== 'function') return
   // `backwards`: while waiting out its delay the element already shows the first frame.

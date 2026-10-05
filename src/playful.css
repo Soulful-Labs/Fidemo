@@ -175,3 +175,15 @@
     opacity: 0.55;
   }
 }
+
+/* Lists: each row springs up into place, past its line and back, instead of easing in. */
+@keyframes pf-rise {
+  from { opacity: 0; transform: translateY(22px) scale(0.96); }
+}
+@scope ([data-playful=on]) to ([data-playful=off]) {
+  [data-stagger] > * {
+    animation-name: pf-rise;
+    animation-duration: var(--spring-bouncy-ms);
+    animation-timing-function: var(--spring-bouncy);
+  }
+}
