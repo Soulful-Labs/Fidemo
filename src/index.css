@@ -118,4 +118,7 @@ body {
   .animate-spin { animation-duration: 1s !important; animation-iteration-count: infinite !important; }
   [data-decor] { display: none !important; }
   :where(button, a[href], [role='button'], [role='link'], [role='tab']):active { scale: none; }
+  /* The playful layer's press travel and card lift are motion too: under reduced motion
+     the depth (edges, shadows, surfaces) stays and nothing moves. */
+  [data-playful=on] :active { transform: none !important; scale: none !important; }
 }

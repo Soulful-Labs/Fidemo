@@ -1,6 +1,8 @@
 import { useAppNav } from '../../app/useAppNav'
 import TopBar from '../../components/ui/TopBar'
 import { prefersReduced } from '../../lib/motion'
+import Toggle from '../../components/ui/Toggle'
+import { setFlag, useFlags } from '../../lib/playful'
 import { PointsSection } from './PointsSection'
 import { TierSection } from './TierSection'
 import { CertificateSection } from './CertificateSection'
@@ -19,6 +21,7 @@ import { SmallStuffSection } from './SmallStuffSection'
  */
 export default function MotionLab() {
   const { back } = useAppNav()
+  const flags = useFlags()
   return (
     <div className="flex min-h-full flex-col">
       <TopBar title="Motion" onBack={back} />
@@ -26,6 +29,10 @@ export default function MotionLab() {
         <p className="text-text-regular text-text-body">
           Reduced motion is {prefersReduced() ? 'on: everything below jumps straight to its final state.' : 'off.'}
         </p>
+        <section className="flex flex-col gap-4 rounded-lg bg-bg-1 p-4">
+          <Toggle checked={flags.playful} onChange={(v) => setFlag('playful', v)} label="PLAYFUL"
+            description="Depth, surfaces, tilt, bounce and the bigger celebrations. Off is the app exactly as it was before this layer." />
+        </section>
         <PointsSection />
         <TierSection />
         <CertificateSection />

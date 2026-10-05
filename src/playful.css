@@ -1,0 +1,151 @@
+/* ---------------------------------------------------------------------------
+   PLAYFUL: the game-feel surface layer (docs/Motion.md, "Depth").
+
+   Everything here lives inside one @scope: it applies only under
+   [data-playful=on] (set on <html> by lib/playful.ts) and stops at any
+   [data-playful=off] subtree, which is how /motion shows before and after.
+   With the flag off none of it matches, and the app is exactly as it was.
+
+   Colours: only the existing tokens, mirrored below as variables (Tailwind's
+   legacy config does not expose them), plus shades and tints of those made
+   with color-mix against black or the title white. No new hue.
+
+   Rules held: nothing moves in its resting state (edges and shadows paint
+   outside the box; radius changes do not move anything). On press only the
+   transform moves; the edge is a box-shadow that is swapped, not animated
+   frame by frame (one small element, once per tap).
+   ------------------------------------------------------------------------- */
+
+:root {
+  --pf-yellow: #fca311;
+  --pf-yellow-end: #fca415;
+  --pf-yellow-700: #b3740c;
+  --pf-yellow-1000: #513303;
+  --pf-green: #3fb984;
+  --pf-green-700: #2d835e;
+  --pf-green-900: #1a4e37;
+  --pf-bg-0: #0c0800;
+  --pf-bg-1: #15130f;
+  --pf-bg-2: #201e19;
+  --pf-bgalt-2: #202623;
+  --pf-stroke-3: #282d2b;
+  --pf-tert: #4b4946;
+  --pf-danger: #e33a38;
+  --pf-danger-bg: #3a1a17;
+  --pf-title: #fafafa;
+  --pf-gold: #e4b300;
+  --pf-platinum: #9139f6;
+  --pf-silver: #b9b9b9;
+  --pf-purple: #ac99fb;
+  --pf-blue: #68b6f1;
+
+  /* Light from above: a hairline of the title white along the top edge. */
+  --pf-hi: inset 0 1.5px 0 color-mix(in oklab, var(--pf-title) 9%, transparent);
+  /* A tight contact shadow and a soft ambient one. */
+  --pf-contact: 0 2px 3px -1px rgb(0 0 0 / 0.7);
+  --pf-ambient: 0 14px 28px -12px rgb(0 0 0 / 0.85);
+  --pf-lifted: 0 22px 36px -14px rgb(0 0 0 / 0.9);
+}
+
+@scope ([data-playful=on]) to ([data-playful=off]) {
+  /* ---- Rounder corners ---------------------------------------------------- */
+  .rounded-sm { border-radius: 10px; }
+  .rounded-md { border-radius: 15px; }
+  .rounded-lg { border-radius: 20px; }
+  .rounded-xl { border-radius: 30px; }
+
+  /* ---- Pressables with a surface: a solid edge, pushed into the page ------ */
+  :is(button, a[href], [role=link], [role=button], label):is(
+    .bg-cta-gradient, .bg-cta-secondary, .bg-state-dangerBg,
+    .border-cta-tertiaryStroke, .border-stroke-3, .border-cta-primary,
+    .bg-bg-1, .bg-bg-2, .bg-bgAlt-2, .bg-green-900\/40
+  ) {
+    --edge-h: 4px;
+    box-shadow: 0 var(--edge-h) 0 var(--edge, transparent), var(--ring, 0 0 #0000), var(--pf-hi), var(--pf-contact), var(--pf-ambient);
+    transition:
+      transform var(--spring-bouncy-ms) var(--spring-bouncy),
+      box-shadow 140ms var(--ease-out),
+      color 160ms var(--ease-out), background-color 160ms var(--ease-out);
+  }
+
+  /* Each edge is a darker shade of the thing's own fill. */
+  .bg-cta-gradient { --edge: var(--pf-yellow-700); --edge-h: 5px; border-bottom-color: var(--pf-yellow-end); }
+  .bg-cta-secondary { --edge: color-mix(in oklab, var(--pf-yellow-1000) 52%, black); }
+  .bg-state-dangerBg { --edge: color-mix(in oklab, var(--pf-danger-bg) 45%, black); }
+  .bg-bg-1, .bg-bg-2 { --edge: color-mix(in oklab, var(--pf-bg-2) 40%, black); --ring: inset 0 0 0 1.5px color-mix(in oklab, var(--pf-title) 6%, transparent); }
+  .bg-bgAlt-2 { --edge: color-mix(in oklab, var(--pf-bgalt-2) 45%, black); --ring: inset 0 0 0 1.5px color-mix(in oklab, var(--pf-green) 10%, transparent); }
+  .bg-green-900\/40 { --edge: var(--pf-green-900); }
+  /* Outlined controls: a confident 2.5px rim, and an edge in the rim's own colour. */
+  .border-cta-tertiaryStroke { --edge: color-mix(in oklab, var(--pf-tert) 70%, black); --ring: inset 0 0 0 1.5px var(--pf-tert); }
+  .border-stroke-3 { --edge: color-mix(in oklab, var(--pf-stroke-3) 70%, black); --ring: inset 0 0 0 1.5px var(--pf-stroke-3); }
+  .border-cta-primary { --edge: var(--pf-yellow-1000); --ring: inset 0 0 0 1.5px var(--pf-yellow); }
+
+  /* Pressed: down by exactly the edge, the edge gone, released on a bouncy spring. */
+  :is(button, a[href], [role=link], [role=button], label):is(
+    .bg-cta-gradient, .bg-cta-secondary, .bg-state-dangerBg,
+    .border-cta-tertiaryStroke, .border-stroke-3, .border-cta-primary,
+    .bg-bg-1, .bg-bg-2, .bg-bgAlt-2, .bg-green-900\/40
+  ):not(:disabled, [aria-disabled=true]):active {
+    transform: translateY(var(--edge-h));
+    box-shadow: 0 0 0 var(--edge, transparent), var(--ring, 0 0 #0000), var(--pf-hi), 0 1px 1px rgb(0 0 0 / 0.6);
+    scale: none;
+    transition-duration: 40ms;
+  }
+
+  /* Locked things sit flat and sunken, so unlocking visibly raises them. */
+  :is(button, a[href], [role=button]):is(:disabled, [aria-disabled=true]):is(.bg-bg-2, .border-cta-tertiaryStrokeDisabled) {
+    box-shadow: inset 0 3px 0 rgb(0 0 0 / 0.4), inset 0 0 0 1.5px color-mix(in oklab, var(--pf-tert) 40%, transparent);
+  }
+
+  /* Everything else tappable squishes and bounces back past rest. */
+  :where(button, a[href], [role=button], [role=link], [role=tab]) {
+    /* `scale` only: transform belongs to framer-motion on some of these, and a CSS
+       transition on it would smear every frame framer writes. */
+    transition-property: scale, color, background-color, border-color, opacity;
+    transition-duration: var(--spring-bouncy-ms), 160ms, 160ms, 160ms, 160ms;
+    transition-timing-function: var(--spring-bouncy), var(--ease-out), var(--ease-out), var(--ease-out), var(--ease-out);
+  }
+  :where(button, a[href], [role=button], [role=link], [role=tab]):not(:disabled, [aria-disabled=true]):active {
+    scale: 0.92;
+    transition-duration: 60ms;
+  }
+
+  /* ---- Cards: real elevation, and they lift when touched ------------------- */
+  :is(div, section, article, li):is(.rounded-lg, .rounded-xl):is(.bg-bg-1, .bg-bg-2, .bg-bgAlt-2) {
+    box-shadow:
+      0 4px 0 color-mix(in oklab, var(--pf-bg-1) 45%, black),
+      inset 0 0 0 1.5px color-mix(in oklab, var(--pf-title) 5%, transparent),
+      var(--pf-hi), var(--pf-contact), var(--pf-ambient);
+    transition: transform var(--spring-bouncy-ms) var(--spring-bouncy), box-shadow 200ms var(--ease-out);
+  }
+  :is(div, section, article, li):is(.rounded-lg, .rounded-xl):is(.bg-bg-1, .bg-bg-2, .bg-bgAlt-2):active {
+    transform: translateY(-3px);
+    box-shadow:
+      0 7px 0 color-mix(in oklab, var(--pf-bg-1) 45%, black),
+      inset 0 0 0 1.5px color-mix(in oklab, var(--pf-title) 7%, transparent),
+      var(--pf-hi), var(--pf-contact), var(--pf-lifted);
+    transition-duration: 160ms, 160ms;
+  }
+
+  /* ---- Inputs: sunken wells with a confident rim --------------------------- */
+  div.border-1.border-stroke-3, input.border-1, textarea.border-1 {
+    box-shadow: inset 0 0 0 1.5px var(--pf-stroke-3), inset 0 3px 6px -2px rgb(0 0 0 / 0.65);
+  }
+
+  /* ---- Toggles: a sunken track and a knob with its own edge ---------------- */
+  [role=switch] {
+    box-shadow: inset 0 3px 4px -1px rgb(0 0 0 / 0.6), inset 0 0 0 1px color-mix(in oklab, var(--pf-title) 6%, transparent);
+  }
+  [role=switch] > span {
+    box-shadow: 0 2px 0 rgb(0 0 0 / 0.45), inset 0 1.5px 0 color-mix(in oklab, var(--pf-title) 25%, transparent);
+  }
+
+  /* ---- Selected-tab fills and the nav tint get an edge of their own -------- */
+  .bg-green-segment { box-shadow: 0 3px 0 var(--pf-green-900), var(--pf-hi), var(--pf-contact); }
+  nav .bg-yellow-1000\/40 { box-shadow: 0 3px 0 color-mix(in oklab, var(--pf-yellow-1000) 70%, black), var(--pf-hi); }
+
+  /* ---- Chips and tags: raised pills --------------------------------------- */
+  span.rounded-full:is(.bg-green-900\/60, .bg-yellow-1000\/50, .bg-yellow-1000\/70, .bg-state-dangerBg, .bg-bg-2) {
+    box-shadow: 0 2px 0 rgb(0 0 0 / 0.45), var(--pf-hi);
+  }
+}

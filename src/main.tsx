@@ -5,9 +5,12 @@ import App from './App'
 import { UIProvider } from './app/ui'
 import { StoreProvider } from './mock/store'
 import './index.css'
-import { installReducedMotion } from './lib/motion'
+import './playful.css'
+import { installReducedMotion, installSpringVars } from './lib/motion'
+import './lib/playful'
 
 installReducedMotion()
+installSpringVars()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

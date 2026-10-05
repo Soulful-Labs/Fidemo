@@ -20,12 +20,54 @@ export const EASE = {
   inOut: [0.65, 0, 0.35, 1],
 } as const
 
-/** soft = sheets and toasts, snappy = presses and pops, heavy = things that land with weight. */
+/**
+ * soft = sheets and toasts, snappy = presses and pops, heavy = things that land
+ * with weight. The playful layer adds two: bouncy = everything you touch,
+ * springing back past rest and settling; slam = the big two's hardest
+ * landings, a lot of mass arriving fast.
+ */
 export const SPRING = {
   soft: { type: 'spring', stiffness: 380, damping: 36, mass: 1 },
   snappy: { type: 'spring', stiffness: 600, damping: 26, mass: 0.6 },
   heavy: { type: 'spring', stiffness: 260, damping: 14, mass: 1.4 },
+  bouncy: { type: 'spring', stiffness: 520, damping: 13, mass: 0.8 },
+  slam: { type: 'spring', stiffness: 900, damping: 24, mass: 2.4 },
 } as const satisfies Record<string, Transition>
+
+/**
+ * A spring as a CSS easing: the step response sampled into `linear()`, with
+ * the time it takes to settle. Lets CSS transitions and WAAPI spring too
+ * (press release, route changes) without a JS loop per frame.
+ */
+export function springCurve(name: keyof typeof SPRING, points = 48): { easing: string; ms: number } {
+  const { stiffness: k, damping: c, mass: m } = SPRING[name]
+  const dt = 1 / 240
+  let x = 0, v = 0, t = 0
+  const trace: number[] = []
+  while (t < 3) {
+    const a = (-k * (x - 1) - c * v) / m
+    v += a * dt
+    x += v * dt
+    t += dt
+    trace.push(x)
+    if (t > 0.1 && Math.abs(x - 1) < 0.001 && Math.abs(v) < 0.01) break
+  }
+  const step = (trace.length - 1) / (points - 1)
+  const values = Array.from({ length: points }, (_, i) => +trace[Math.round(i * step)].toFixed(4))
+  values[0] = 0
+  values[points - 1] = 1
+  return { easing: `linear(${values.join(', ')})`, ms: Math.round(t * 1000) }
+}
+
+/** CSS custom properties for the springs, so stylesheets can use them: --spring-bouncy, --spring-bouncy-ms and so on. */
+export function installSpringVars() {
+  if (typeof document === 'undefined') return
+  for (const name of ['bouncy', 'snappy', 'soft', 'slam'] as const) {
+    const { easing, ms } = springCurve(name)
+    document.documentElement.style.setProperty(`--spring-${name}`, easing)
+    document.documentElement.style.setProperty(`--spring-${name}-ms`, `${ms}ms`)
+  }
+}
 
 /** Seconds between siblings arriving one after another. */
 export const STAGGER = 0.045
