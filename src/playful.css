@@ -209,3 +209,21 @@
   background: radial-gradient(circle, color-mix(in oklab, var(--pf-yellow) 55%, transparent) 0%, color-mix(in oklab, var(--pf-yellow) 18%, transparent) 45%, transparent 70%);
   transition: opacity 900ms var(--ease-out);
 }
+
+/* Rubber banding is ours under PLAYFUL; keep the browser's own pull-to-refresh out of it. */
+@scope ([data-playful=on]) to ([data-playful=off]) {
+  main { overscroll-behavior-y: contain; }
+}
+
+/* Empty states under PLAYFUL: a glow that breathes, motes that drift, stars that blink. */
+@keyframes pf-breathe { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.35); opacity: 0.35; } }
+@keyframes pf-drift { 0%, 100% { transform: translate(0, 0); } 33% { transform: translate(10px, -12px); } 66% { transform: translate(-8px, -4px); } }
+@keyframes pf-blink { 0%, 86%, 100% { opacity: 0.9; transform: scale(1); } 90% { opacity: 0; transform: scale(0.4); } 95% { opacity: 1; transform: scale(1.3); } }
+.pf-breathe {
+  background: radial-gradient(circle, color-mix(in oklab, var(--pf-green) 30%, transparent), transparent 70%);
+  opacity: 0.7;
+  transform: translate(-50%, -50%);
+  animation: pf-breathe 3.6s var(--ease-in-out) infinite;
+}
+.pf-drift { animation: pf-drift 7s var(--ease-in-out) infinite; opacity: 0.8; }
+.pf-blink { animation: pf-blink 3.2s var(--ease-in-out) infinite; display: block; }

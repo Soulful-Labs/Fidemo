@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import Logo from '../../components/app/Logo'
 import RollingNumber from '../../components/motion/RollingNumber'
+import { popCoins } from '../../components/motion/toyCoins'
 import { Bell, PointsCoin } from '../../components/ui/icons'
 import { points as fmtPoints } from '../../lib/format'
 import { useStore } from '../../mock/store'
@@ -25,6 +26,7 @@ export default function DashboardHeader({ right }: { right?: ReactNode }) {
         <>
           <Link
             ref={chip}
+            onPointerDown={popCoins}
             to="/points"
             className="ml-auto flex h-tag items-center gap-2 rounded-full border-1 border-green-900 bg-green-900/40 px-3 text-body-medium text-brand-secondary"
           >

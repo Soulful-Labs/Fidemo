@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom'
 import { cn } from '../../lib/cn'
 import { SPRING } from '../../lib/motion'
 import { isPlayful } from '../../lib/playful'
+import { feedback } from '../../lib/feedback'
 
 export interface TabItem {
   key: string
@@ -93,7 +94,7 @@ export default function TabBar({
             type="button"
             role="tab"
             aria-selected={value === item.key}
-            onClick={() => onChange?.(item.key)}
+            onClick={() => { if (isPlayful() && value !== item.key) feedback('select'); onChange?.(item.key) }}
             className={itemClass(value === item.key)}
           >
             {label(item, value === item.key)}

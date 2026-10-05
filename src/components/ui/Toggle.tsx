@@ -2,6 +2,8 @@ import { useId, useLayoutEffect, useRef } from 'react'
 import { cn } from '../../lib/cn'
 import { CSS, haptic, play, springTo } from '../../lib/motion'
 import { isPlayful } from '../../lib/playful'
+import { rattle } from '../motion/locks'
+import { feedback } from '../../lib/feedback'
 
 export interface ToggleProps {
   checked: boolean
@@ -56,9 +58,9 @@ export default function Toggle({
       aria-disabled={isOff || undefined}
       ref={box}
       onClick={() => {
-        if (!isOff) return onChange(!checked)
-        play(box.current, [{ transform: 'none' }, { transform: 'translateX(-3px)' }, { transform: 'translateX(3px)' }, { transform: 'none' }], CSS.base, CSS.out)
-        haptic([8, 40, 8])
+        if (!isOff) { if (isPlayful()) feedback('select'); return onChange(!checked) }
+        rattle(box.current)
+        if (!isPlayful()) haptic([8, 40, 8])
         onBlocked?.()
       }}
       className={cn(

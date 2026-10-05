@@ -7,6 +7,8 @@ import ModalHost from './ModalHost'
 import PhoneFrame from './PhoneFrame'
 import ToastHost from './ToastHost'
 import { ConfettiLayer } from '../components/motion/Confetti'
+import PullIndicator from './playful/PullIndicator'
+import { useElastic, useLongPressSwell } from './playful/touch'
 import { isPlayful, usePlayful } from '../lib/playful'
 import { recordNavigation } from './history'
 import { isAltPalette, showsNav } from './navigation'
@@ -99,6 +101,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }, [navigate])
   useScrollMemory(main, pathname)
   useRouteMotion(main, pathname)
+  const elastic = useElastic(main)
+  useLongPressSwell()
   usePressHaptics()
 
   const navVisible = showsNav(pathname)
@@ -110,6 +114,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <main ref={main} className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
         {children}
       </main>
+
+      {playful && <PullIndicator {...elastic} />}
 
       {navVisible && <BottomNav pathname={pathname} alt={alt} />}
 

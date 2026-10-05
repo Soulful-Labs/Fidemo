@@ -10,6 +10,7 @@
 //   { "throttle": 4 }                   CPU slowdown factor (1 = off)
 //   { "js": "code" }                    evaluate, result printed
 //   { "tap": "Button text" }            click the first button/link whose text matches
+//   { "cdp": [[method, params], ...], "gap": 16 }   raw DevTools commands (touch, mouse)
 //   { "wait": 300 }
 //   { "shot": "out.png", "el": "sel" }  screenshot the viewport, or clip to an element
 //   { "fps": { "tap": "Text", "js": "code", "ms": 2000, "label": "x" } }
@@ -116,6 +117,7 @@ try {
     }
     if (step.reduced !== undefined) await s('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: step.reduced ? 'reduce' : 'no-preference' }] })
     if (step.throttle !== undefined) await s('Emulation.setCPUThrottlingRate', { rate: step.throttle })
+    if (step.cdp) for (const [method, params] of step.cdp) { await s(method, params); if (step.gap) await sleep(step.gap) }
     if (step.js) console.log('js:', JSON.stringify(await ev(step.js)))
     if (step.tap) { const r = await ev(TAP(step.tap)); if (r !== 'ok') console.log(r) }
     if (step.wait) await sleep(step.wait)
