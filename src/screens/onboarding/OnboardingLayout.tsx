@@ -30,7 +30,7 @@ export default function OnboardingLayout({
       <TopBar
         title={title}
         onBack={onBack}
-        progress={{ current: step, total: 3 }}
+        progress={{ current: step, total: 3, memory: 'onboarding-step' }}
         helper="Just 2 minutes, then you are browsing studies."
         right={
           onInfo && (

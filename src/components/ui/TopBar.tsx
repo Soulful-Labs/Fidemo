@@ -10,7 +10,7 @@ export interface TopBarProps {
   /** Trailing actions, e.g. an info icon or "Mark all as read". */
   right?: ReactNode
   /** Adds the onboarding progress bar; the bar grows to 93px. */
-  progress?: { current: number; total: number }
+  progress?: { current: number; total: number; memory?: string }
   /** Helper line under the progress bar, e.g. "Just 2 minutes...". */
   helper?: string
   alt?: boolean
@@ -57,7 +57,7 @@ export default function TopBar({
 
       {progress && (
         <div className="flex flex-col gap-2 pt-2">
-          <Stepper current={progress.current} total={progress.total} tone="green" />
+          <Stepper current={progress.current} total={progress.total} tone="green" memory={progress.memory} />
           {helper && <p className="text-label text-text-body">{helper}</p>}
         </div>
       )}

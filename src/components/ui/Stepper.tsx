@@ -1,4 +1,10 @@
+import { motion } from 'framer-motion'
+import { useRef } from 'react'
 import { cn } from '../../lib/cn'
+import { SPRING, STAGGER } from '../../lib/motion'
+import { lastSeen, markSeen } from '../../lib/seen'
+import FillSegment from '../motion/FillSegment'
+import { useSeenKey } from '../motion/useSeen'
 import { Check } from './icons'
 
 export interface StepperProps {
@@ -9,6 +15,8 @@ export interface StepperProps {
   variant?: 'bar' | 'pills'
   tone?: 'yellow' | 'green'
   className?: string
+  /** Remembers the step last seen, so only the steps completed since then animate in (moment I). */
+  memory?: string
 }
 
 export default function Stepper({
@@ -17,9 +25,17 @@ export default function Stepper({
   variant = 'bar',
   tone = 'yellow',
   className,
+  memory,
 }: StepperProps) {
   const fill = tone === 'green' ? 'bg-brand-secondary' : 'bg-cta-primary'
   const steps = Array.from({ length: total }, (_, i) => i + 1)
+  const key = useSeenKey(memory)
+  // Read once per mount: the step this person had reached when they last saw this stepper.
+  const before = useRef<number | undefined>(undefined)
+  if (before.current === undefined) before.current = key ? lastSeen(key) ?? current : current
+  if (key) queueMicrotask(() => markSeen(key, current))
+  const fresh = (step: number) => step > (before.current ?? current) && step <= current
+  const order = (step: number) => step - (before.current ?? current) - 1
 
   if (variant === 'bar') {
     return (
@@ -31,13 +47,8 @@ export default function Stepper({
         aria-valuemax={total}
       >
         {steps.map((step) => (
-          <span
-            key={step}
-            className={cn(
-              'h-1 flex-1 rounded-full transition-colors',
-              step <= current ? fill : tone === 'green' ? 'bg-green-900/60' : 'bg-yellow-1000',
-            )}
-          />
+          <FillSegment key={step} className="h-1 flex-1" on={step <= current} animate={fresh(step)} delay={order(step) * STAGGER * 4000}
+            track={tone === 'green' ? 'bg-green-900/60' : 'bg-yellow-1000'} fill={fill} />
         ))}
       </div>
     )
@@ -55,7 +66,12 @@ export default function Stepper({
               done ? cn(fill, 'text-cta-primaryText') : 'bg-bg-0 text-text-title',
             )}
           >
-            {done ? <Check className="h-4 w-4" /> : step}
+            {done ? (
+              <motion.span className="flex" initial={fresh(step) ? { scale: 0.3, rotate: -30, opacity: 0 } : false}
+                animate={{ scale: 1, rotate: 0, opacity: 1 }} transition={{ ...SPRING.snappy, delay: order(step) * STAGGER * 4 + 0.2 }}>
+                <Check className="h-4 w-4" />
+              </motion.span>
+            ) : step}
           </span>
         )
       })}

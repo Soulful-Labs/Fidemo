@@ -34,7 +34,7 @@ export default function MonthlyStreakCard({ onOpen }: { onOpen: () => void }) {
               {POINTS.STREAK} Pts
             </span>
           </span>
-          <Stepper current={current} total={target} variant="pills" />
+          <Stepper current={current} total={target} variant="pills" memory="streak" />
         </span>
       </button>
     </section>

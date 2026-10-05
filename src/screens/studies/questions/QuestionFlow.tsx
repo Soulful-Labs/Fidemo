@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import FillSegment from '../../../components/motion/FillSegment'
 import type { ReactNode } from 'react'
 import Button from '../../../components/ui/Button'
 import CtaBar from '../../../components/ui/CtaBar'
@@ -6,7 +7,6 @@ import { ArrowLeft, ChevronRight, Close, Info } from '../../../components/ui/ico
 import type { Question } from '../../../mock/types'
 import type { Answers } from '../../../mock/storeTypes'
 import QuestionInput, { isAnswered } from './QuestionInput'
-import { cn } from '../../../lib/cn'
 import { useStore } from '../../../mock/store'
 
 export interface QuestionFlowProps {
@@ -36,6 +36,9 @@ export default function QuestionFlow({
 }: QuestionFlowProps) {
   const { toast } = useStore()
   const [index, setIndex] = useState(0)
+  // The furthest question reached: only a step forward into new ground sweeps its segment in.
+  const reached = useRef(1)
+  useEffect(() => { reached.current = Math.max(reached.current, index + 1) }, [index])
   const question = questions[index]
   const last = index === questions.length - 1
   const answered = question ? isAnswered(question, answers[question.id]) : false
@@ -61,7 +64,7 @@ export default function QuestionFlow({
         {progress === 'segments' ? (
           <div className="flex items-center gap-2" role="progressbar" aria-valuenow={index + 1} aria-valuemax={questions.length}>
             {questions.map((q, i) => (
-              <span key={q.id} className={cn('h-1 flex-1 rounded-full', i <= index ? 'bg-brand-secondary' : 'bg-green-900/60')} />
+              <FillSegment key={q.id} className="h-1 flex-1" on={i <= index} animate={i === index && index > reached.current - 1} track="bg-green-900/60" fill="bg-brand-secondary" />
             ))}
           </div>
         ) : (

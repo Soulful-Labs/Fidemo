@@ -1,5 +1,7 @@
+import { motion } from 'framer-motion'
 import { useRef } from 'react'
 import { cn } from '../../lib/cn'
+import { HAPTIC, SPRING, haptic } from '../../lib/motion'
 import { Check, Upload } from '../ui/icons'
 
 export interface FileFieldProps {
@@ -24,6 +26,9 @@ export default function FileField({
 }: FileFieldProps) {
   const input = useRef<HTMLInputElement>(null)
   const chosen = Boolean(fileName)
+  // A file picked on this visit ticks in (moment I); one already on file just shows.
+  const initial = useRef(fileName)
+  const fresh = chosen && fileName !== initial.current
 
   return (
     <div className="flex flex-col gap-1">
@@ -37,7 +42,12 @@ export default function FileField({
         )}
       >
         <span className={cn('flex max-w-full items-center gap-2 text-text-medium', chosen ? 'text-brand-secondary' : 'text-text-title')}>
-          {chosen ? <Check className="h-5 w-5" /> : <Upload className="h-5 w-5" />}
+          {chosen ? (
+            <motion.span key={fileName} className="flex" initial={fresh ? { scale: 0.2, rotate: -40, opacity: 0 } : false}
+              animate={{ scale: 1, rotate: 0, opacity: 1 }} transition={SPRING.snappy} onAnimationComplete={() => fresh && haptic(HAPTIC.press)}>
+              <Check className="h-5 w-5" />
+            </motion.span>
+          ) : <Upload className="h-5 w-5" />}
           <span className="truncate">{fileName ?? label}</span>
         </span>
         {description && !chosen && <span className="text-text-regular text-text-body">{description}</span>}
