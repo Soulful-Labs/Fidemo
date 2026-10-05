@@ -28,32 +28,34 @@ export function useStampPlayful(hooks: { strike: () => void; shown: () => void }
 
   useLayoutEffect(() => {
     const S = STRIKE_AT
+    // Whole transform strings so framer runs these on the compositor (WAAPI).
+    const seal = (y: number, k: number, r: number) => `translateY(${y}px) scale(${k}) rotate(${r}deg)`
     const seq: AnimationSequence = [
       [scope.current, { opacity: [0, 1] }, { duration: DUR.fast, ease: EASE.out, at: 0 }],
-      ['[data-s=card]', { opacity: [0, 1], y: [260, 0], rotateX: [50, 0], scale: [0.8, 1] }, { ...SPRING.bouncy, at: DUR.fast }],
-      ['[data-s=title]', { opacity: [0, 1], y: [-14, 0] }, { duration: DUR.base, ease: EASE.out, at: DUR.base }],
+      ['[data-s=card]', { opacity: [0, 1], transform: ['translateY(260px) rotateX(50deg) scale(0.8)', 'translateY(0px) rotateX(0deg) scale(1)'] }, { ...SPRING.bouncy, at: DUR.fast }],
+      ['[data-s=title]', { opacity: [0, 1], transform: ['translateY(-14px)', 'translateY(0px)'] }, { duration: DUR.base, ease: EASE.out, at: DUR.base }],
       // Hoisted: huge, tilted, high; its shadow small and faint on the paper below.
-      ['[data-s=seal]', { opacity: [0, 1], scale: [5, 3.4], rotate: [-40, -22], y: [-220, -150] }, { duration: DUR.base, ease: EASE.out, at: RAISE_AT }],
-      ['[data-s=shadow]', { opacity: [0, 0.25], scale: [0.4, 0.55] }, { duration: DUR.base, ease: EASE.out, at: RAISE_AT }],
+      ['[data-s=seal]', { opacity: [0, 1], transform: [seal(-220, 5, -40), seal(-150, 3.4, -22)] }, { duration: DUR.base, ease: EASE.out, at: RAISE_AT }],
+      ['[data-s=shadow]', { opacity: [0, 0.25], transform: ['scale(0.4)', 'scale(0.55)'] }, { duration: DUR.base, ease: EASE.out, at: RAISE_AT }],
       // The tremble at the top of the swing.
-      ['[data-s=seal]', { rotate: [-22, -26, -19, -25, -20], y: [-150, -160, -150, -162, -152] }, { duration: HOVER, ease: EASE.inOut, at: RAISE_AT + DUR.base }],
+      ['[data-s=seal]', { transform: [seal(-150, 3.4, -22), seal(-160, 3.4, -26), seal(-150, 3.4, -19), seal(-162, 3.4, -25), seal(-152, 3.4, -20)] }, { duration: HOVER, ease: EASE.inOut, at: RAISE_AT + DUR.base }],
       // Down like a hammer.
-      ['[data-s=seal]', { scale: [3.4, 0.86], rotate: [-20, -3], y: [-152, 0] }, { duration: STRIKE, ease: EASE.in, at: S - STRIKE }],
-      ['[data-s=shadow]', { opacity: [0.25, 0.7], scale: [0.55, 1] }, { duration: STRIKE, ease: EASE.in, at: S - STRIKE }],
-      ['[data-s=seal]', { scale: [0.86, 1], rotate: [-3, -7] }, { ...SPRING.slam, at: S }],
+      ['[data-s=seal]', { transform: [seal(-152, 3.4, -20), seal(0, 0.86, -3)] }, { duration: STRIKE, ease: EASE.in, at: S - STRIKE }],
+      ['[data-s=shadow]', { opacity: [0.25, 0.7], transform: ['scale(0.55)', 'scale(1)'] }, { duration: STRIKE, ease: EASE.in, at: S - STRIKE }],
+      ['[data-s=seal]', { transform: [seal(0, 0.86, -3), seal(0, 1, -7)] }, { ...SPRING.slam, at: S }],
       ['[data-s=shadow]', { opacity: [0.7, 0] }, { duration: DUR.fast, at: S + 0.02 }],
       // The blow: the screen jolts, the card squashes, ink splashes and stays behind.
-      ['[data-s=stage]', { y: [0, 18, -8, 4, 0], x: [0, -6, 5, -2, 0] }, { duration: DUR.slow * 0.8, times: [0, 0.15, 0.4, 0.7, 1], ease: EASE.out, at: S }],
-      ['[data-s=card]', { scaleY: [1, 0.9, 1.04, 1], scaleX: [1, 1.05, 0.99, 1] }, { duration: DUR.slow, times: [0, 0.18, 0.5, 1], ease: EASE.out, at: S }],
-      ['[data-s=ink]', { opacity: [0, 0.8, 0], scale: [0.85, 0.95, 1.9] }, { duration: DUR.slow, times: [0, 0.06, 1], ease: EASE.out, at: S }],
-      ['[data-s=ink2]', { opacity: [0, 0.5, 0], scale: [0.9, 1, 2.8] }, { duration: DUR.slow * 1.3, times: [0, 0.06, 1], ease: EASE.out, at: S + 0.05 }],
+      ['[data-s=stage]', { transform: ['translate(0px, 0px)', 'translate(-6px, 18px)', 'translate(5px, -8px)', 'translate(-2px, 4px)', 'translate(0px, 0px)'] }, { duration: DUR.slow * 0.8, times: [0, 0.15, 0.4, 0.7, 1], ease: EASE.out, at: S }],
+      ['[data-s=card]', { transform: ['scale(1, 1)', 'scale(1.05, 0.9)', 'scale(0.99, 1.04)', 'scale(1, 1)'] }, { duration: DUR.slow, times: [0, 0.18, 0.5, 1], ease: EASE.out, at: S }],
+      ['[data-s=ink]', { opacity: [0, 0.8, 0], transform: ['scale(0.85)', 'scale(0.95)', 'scale(1.9)'] }, { duration: DUR.slow, times: [0, 0.06, 1], ease: EASE.out, at: S }],
+      ['[data-s=ink2]', { opacity: [0, 0.5, 0], transform: ['scale(0.9)', 'scale(1)', 'scale(2.8)'] }, { duration: DUR.slow * 1.3, times: [0, 0.06, 1], ease: EASE.out, at: S + 0.05 }],
       ['[data-s=impression]', { opacity: [0, 0.3] }, { duration: DUR.base, ease: EASE.out, at: S }],
       // The words write in, line by line.
-      ['[data-s=cover]', { x: ['0%', '101%'] }, { duration: DUR.slow, ease: EASE.inOut, at: S + DUR.base }],
-      ['[data-s=tick]', { opacity: [0, 1], scale: [0.2, 1], rotate: [-60, 0] }, { ...SPRING.bouncy, at: S + DUR.slow }],
+      ['[data-s=cover]', { transform: ['translateX(0%)', 'translateX(101%)'] }, { duration: DUR.slow, ease: EASE.inOut, at: S + DUR.base }],
+      ['[data-s=tick]', { opacity: [0, 1], transform: ['scale(0.2) rotate(-60deg)', 'scale(1) rotate(0deg)'] }, { ...SPRING.bouncy, at: S + DUR.slow }],
       // Shown off: the card turns over once and lands.
-      ['[data-s=card]', { rotateY: [0, 360] }, { duration: DUR.slow * 1.1, ease: EASE.inOut, at: SHOWN_AT - DUR.slow * 1.1 }],
-      ['[data-s=cta]', { opacity: [0, 1], y: [60, 0], scale: [0.8, 1] }, { ...SPRING.bouncy, at: SHOWN_AT }],
+      ['[data-s=card]', { transform: ['rotateY(0deg)', 'rotateY(360deg)'] }, { duration: DUR.slow * 1.1, ease: EASE.inOut, at: SHOWN_AT - DUR.slow * 1.1 }],
+      ['[data-s=cta]', { opacity: [0, 1], transform: ['translateY(60px) scale(0.8)', 'translateY(0px) scale(1)'] }, { ...SPRING.bouncy, at: SHOWN_AT }],
     ]
     let live = true
     const timers: number[] = []

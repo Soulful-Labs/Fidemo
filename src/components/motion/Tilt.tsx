@@ -53,7 +53,7 @@ function TiltOn({ children, className, holo = 1, ...rest }: TiltProps) {
   const glareX = useTransform(sx, (v) => `${v * 45}%`)
   const glareY = useTransform(sy, (v) => `${v * 45}%`)
   // The foil catches the light as the card turns: faint at rest, bright when tilted.
-  const foil = useTransform([sx, sy], ([x, y]: number[]) => (0.06 + 0.34 * Math.min(1, Math.hypot(x, y))) * holo)
+  const foil = useTransform([sx, sy], ([x, y]: number[]) => (0.05 + 0.25 * Math.min(1, Math.hypot(x, y))) * holo)
   const glare = useTransform([sx, sy], ([x, y]: number[]) => 0.25 + 0.75 * Math.min(1, Math.hypot(x, y)))
   const holding = useRef(false)
 
@@ -87,8 +87,8 @@ function TiltOn({ children, className, holo = 1, ...rest }: TiltProps) {
       {/* Holographic foil from the app's own hues, sliding against the tilt. */}
       {/* The foil is clipped to the card on its own layer, so the card's contents can overhang it. */}
       <span data-decor aria-hidden="true" className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-[inherit]">
-        <motion.span style={{ x: sheenX, y: sheenY, opacity: foil }} className="hl-holo absolute -inset-1/2 mix-blend-color-dodge" />
-        <motion.span style={{ x: glareX, y: glareY, opacity: glare }} className="hl-glare absolute -inset-1/4 mix-blend-overlay" />
+        <motion.span style={{ x: sheenX, y: sheenY, opacity: foil }} className="hl-holo absolute -inset-1/2" />
+        <motion.span style={{ x: glareX, y: glareY, opacity: glare }} className="hl-glare absolute -inset-1/4" />
       </span>
     </motion.div>
   )

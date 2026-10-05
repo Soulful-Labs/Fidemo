@@ -10,119 +10,24 @@ import { isPlayful } from '../../lib/playful'
  * slides to a stop and lies there for a moment before fading. One canvas is a
  * single composited layer, so a hundred pieces cost one draw per frame.
  */
-export type Shape = 'paper' | 'dot' | 'star' | 'coin'
-export interface FireOptions {
-  x: number
-  y: number
-  count?: number
-  colors: string[]
-  shapes?: Shape[]
-  /** Launch speed in px/s and the cone it fans across (radians, 0 = straight up). */
-  power?: number
-  spread?: number
-  /** Where the floor is, in px from the top of the viewport. Default: the bottom. */
-  floor?: number
-  /** Direction of the cone's centre in radians (default straight up, -PI/2). */
-  angle?: number
-}
+import { MAX_PIECES, spawn, tick } from './confettiCore'
+import type { FireOptions, Piece } from './confettiCore'
 
-interface Piece {
-  x: number; y: number; vx: number; vy: number; r: number; vr: number; flip: number; vflip: number
-  size: number; color: string; shape: Shape; rest: number; alpha: number; floor: number; wobble: number
-}
+export type { FireOptions, Shape } from './confettiCore'
 
-const G = 2200 // px/s²
-const DRAG = 1.6 // per second, in the air
+/** The worker when the browser can hand a canvas to one; otherwise a main-thread loop. */
+let worker: Worker | null = null
 let pieces: Piece[] = []
 let wake: (() => void) | null = null
 
 /** Throws confetti from a point. No-op without PLAYFUL or under reduced motion. */
 export function fire(o: FireOptions) {
   if (!isPlayful() || prefersReduced()) return
-  const { count = 60, power = 900, spread = 1.4, shapes = ['paper', 'paper', 'dot', 'star'] } = o
-  const floor = o.floor ?? window.innerHeight
-  for (let i = 0; i < count; i++) {
-    const a = (o.angle ?? -Math.PI / 2) + (Math.random() - 0.5) * spread
-    const v = power * (0.45 + Math.random() * 0.75)
-    pieces.push({
-      x: o.x, y: o.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v,
-      r: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 18, flip: Math.random() * 6, vflip: 6 + Math.random() * 10,
-      size: 4 + Math.random() * 7, color: o.colors[i % o.colors.length], shape: shapes[i % shapes.length],
-      rest: 0, alpha: 1, floor, wobble: Math.random() * 6,
-    })
-  }
-  if (pieces.length > 420) pieces = pieces.slice(-420)
+  // Dev only: lets the frame-rate probe measure a moment without its confetti.
+  if (import.meta.env.DEV && (window as unknown as { __noConfetti?: boolean }).__noConfetti) return
+  if (worker) { worker.postMessage({ type: 'fire', o }); return }
+  pieces = pieces.concat(spawn(o, window.innerHeight)).slice(-MAX_PIECES)
   wake?.()
-}
-
-/** Each shape and colour is drawn once into a small sprite; frames only stamp sprites. */
-const sprites = new Map<string, HTMLCanvasElement>()
-const SPRITE = 32
-function sprite(shape: Shape, color: string): HTMLCanvasElement {
-  const key = shape + color
-  let sp = sprites.get(key)
-  if (sp) return sp
-  sp = document.createElement('canvas')
-  sp.width = sp.height = SPRITE
-  const c = sp.getContext('2d')!
-  const h = SPRITE / 2
-  c.translate(h, h)
-  c.fillStyle = color
-  if (shape === 'paper') c.fillRect(-h, -h * 0.45, SPRITE, h * 0.9)
-  else if (shape === 'dot') { c.beginPath(); c.arc(0, 0, h * 0.55, 0, Math.PI * 2); c.fill() }
-  else if (shape === 'coin') {
-    c.beginPath(); c.arc(0, 0, h, 0, Math.PI * 2); c.fill()
-    c.strokeStyle = 'rgba(0,0,0,0.28)'; c.lineWidth = h * 0.22
-    c.beginPath(); c.arc(0, 0, h * 0.6, 0, Math.PI * 2); c.stroke()
-  } else {
-    c.beginPath()
-    for (let k = 0; k < 8; k++) {
-      const rr = k % 2 ? h * 0.42 : h
-      c.lineTo(Math.cos((k * Math.PI) / 4) * rr, Math.sin((k * Math.PI) / 4) * rr)
-    }
-    c.closePath(); c.fill()
-  }
-  sprites.set(key, sp)
-  return sp
-}
-
-function draw(c: CanvasRenderingContext2D, p: Piece) {
-  // One transform per piece (no save/restore): rotate, then squash for the turn-over.
-  const cos = Math.cos(p.r), sin = Math.sin(p.r)
-  const k = p.size / (SPRITE / 2)
-  const turn = p.shape === 'paper' || p.shape === 'coin' ? Math.cos(p.flip) : 1
-  const sx = p.shape === 'coin' ? turn : 1
-  const sy = p.shape === 'paper' ? turn : 1
-  c.globalAlpha = p.alpha
-  c.setTransform(cos * k * sx, sin * k * sx, -sin * k * sy, cos * k * sy, p.x, p.y)
-  c.drawImage(sprite(p.shape, p.color), -SPRITE / 2, -SPRITE / 2)
-}
-
-function step(p: Piece, dt: number) {
-  const onFloor = p.y >= p.floor - p.size * 0.5
-  if (!onFloor) {
-    p.vy += G * dt
-    const drag = Math.exp(-DRAG * (p.shape === 'paper' ? 1.6 : 1) * dt)
-    p.vx *= drag; p.vy *= drag
-    if (p.shape === 'paper') p.vx += Math.sin((p.wobble += dt * 9)) * 260 * dt // flutter
-    p.x += p.vx * dt; p.y += p.vy * dt
-    p.r += p.vr * dt; p.flip += p.vflip * dt
-    if (p.y >= p.floor - p.size * 0.5) {
-      // Landing: a small bounce, most of the energy gone.
-      p.y = p.floor - p.size * 0.5
-      p.vy = -Math.abs(p.vy) * 0.28
-      p.vx *= 0.5; p.vr *= 0.4
-      if (Math.abs(p.vy) < 60) p.vy = 0
-    }
-  } else {
-    // On the ground: friction to a stop, lying flat, then fading after a rest.
-    p.vx *= Math.exp(-7 * dt); p.vr *= Math.exp(-7 * dt)
-    p.x += p.vx * dt; p.r += p.vr * dt
-    p.flip += (Math.round(p.flip / Math.PI) * Math.PI - p.flip) * Math.min(1, dt * 8)
-    if (p.vy < 0) { p.vy += G * dt; p.y += p.vy * dt } else p.y = p.floor - p.size * 0.5
-    p.rest += dt
-    if (p.rest > 1.6) p.alpha = Math.max(0, p.alpha - dt * 1.4)
-  }
 }
 
 /** The single canvas, mounted once by the app shell. */
@@ -130,22 +35,41 @@ export function ConfettiLayer() {
   const ref = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
     const canvas = ref.current
-    const c = canvas?.getContext('2d')
-    if (!canvas || !c) return
+    if (!canvas) return
+    const w = () => window.innerWidth, h = () => window.innerHeight
+    // Drawn at 1x: confetti is small and moving, and half the pixels is half the cost.
+    const offscreen = typeof OffscreenCanvas !== 'undefined' && typeof canvas.transferControlToOffscreen === 'function'
+    if (offscreen) {
+      // A canvas can be handed to a worker only once, so the worker belongs to the
+      // canvas element: StrictMode's rehearsal re-runs this effect and must reuse it.
+      const el = canvas as HTMLCanvasElement & { __worker?: Worker; __bye?: number }
+      window.clearTimeout(el.__bye)
+      if (!el.__worker) {
+        const off = canvas.transferControlToOffscreen()
+        off.width = w(); off.height = h()
+        el.__worker = new Worker(new URL('./confettiWorker.ts', import.meta.url), { type: 'module' })
+        el.__worker.postMessage({ type: 'init', canvas: off }, [off])
+      }
+      worker = el.__worker
+      const size = () => worker?.postMessage({ type: 'size', w: w(), h: h() })
+      window.addEventListener('resize', size)
+      return () => {
+        window.removeEventListener('resize', size)
+        // Terminate only on a real unmount (a rehearsal re-mounts within the same tick).
+        el.__bye = window.setTimeout(() => { el.__worker?.terminate(); el.__worker = undefined; if (worker === el.__worker) worker = null }, 0)
+      }
+    }
+    const c = canvas.getContext('2d')
+    if (!c) return
     let raf = 0
     let last = 0
-    // Drawn at 1x: confetti is small and moving, and half the pixels is half the cost.
-    const size = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight }
+    const size = () => { canvas.width = w(); canvas.height = h() }
     size()
     window.addEventListener('resize', size)
     const frame = (t: number) => {
       const dt = Math.min(0.033, last ? (t - last) / 1000 : 0.016)
       last = t
-      c.setTransform(1, 0, 0, 1, 0, 0)
-      c.globalAlpha = 1
-      c.clearRect(0, 0, canvas.width, canvas.height)
-      for (const p of pieces) { step(p, dt); draw(c, p) }
-      pieces = pieces.filter((p) => p.alpha > 0 && p.x > -40 && p.x < window.innerWidth + 40)
+      pieces = tick(c, pieces, canvas.width, canvas.height, dt)
       if (pieces.length) raf = requestAnimationFrame(frame)
       else { raf = 0; last = 0 }
     }
@@ -158,7 +82,6 @@ export function ConfettiLayer() {
   )
 }
 
-/** The token colours confetti may use (no new hue). */
 export const CONFETTI = {
   brand: ['#fca311', '#3fb984', '#fafafa', '#fdb541'],
   gold: ['#e4b300', '#fca311', '#fdb541', '#fafafa', '#3fb984'],
@@ -180,8 +103,8 @@ export function glitter(colors: string[], seconds = 2.5) {
   const end = performance.now() + seconds * 1000
   const tick = () => {
     if (performance.now() > end) return
-    fire({ x: Math.random() * window.innerWidth, y: -10, angle: Math.PI / 2, spread: 0.6, power: 120, count: 3, colors, shapes: ['paper', 'star'] })
-    window.setTimeout(tick, 140)
+    fire({ x: Math.random() * window.innerWidth, y: -10, angle: Math.PI / 2, spread: 0.6, power: 120, count: 2, colors, shapes: ['paper', 'star'] })
+    window.setTimeout(tick, 200)
   }
   tick()
 }

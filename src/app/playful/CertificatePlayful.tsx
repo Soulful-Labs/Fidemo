@@ -19,11 +19,11 @@ export default function CertificatePlayful({ email, onClose }: { email: string; 
     strike: () => {
       feedback('stamp')
       const r = scope.current?.querySelector('[data-s=seal]')?.getBoundingClientRect()
-      if (r) fire({ x: r.left + r.width / 2, y: r.top + r.height / 2, count: 40, colors: CONFETTI.green, shapes: ['dot', 'paper'], power: 700, spread: 3 })
+      if (r) fire({ x: r.left + r.width / 2, y: r.top + r.height / 2, count: 26, colors: CONFETTI.green, shapes: ['dot', 'paper'], power: 700, spread: 3 })
     },
     shown: () => {
       feedback('celebrate')
-      cannons(CONFETTI.green, 70)
+      cannons(CONFETTI.green, 44)
       window.setTimeout(() => glitter(CONFETTI.brand, 2.5), 700)
     },
   })

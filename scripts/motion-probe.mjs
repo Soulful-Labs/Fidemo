@@ -117,6 +117,15 @@ try {
     }
     if (step.reduced !== undefined) await s('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: step.reduced ? 'reduce' : 'no-preference' }] })
     if (step.throttle !== undefined) await s('Emulation.setCPUThrottlingRate', { rate: step.throttle })
+    if (step.profile === 'start') { await s('Profiler.enable'); await s('Profiler.setSamplingInterval', { interval: 200 }); await s('Profiler.start') }
+    if (step.profile === 'stop') {
+      const { profile } = await s('Profiler.stop')
+      const self = new Map(), byId = new Map(profile.nodes.map((n) => [n.id, n]))
+      const dt = profile.timeDeltas; const total = profile.endTime - profile.startTime
+      profile.samples.forEach((id, i) => { const n = byId.get(id); const k = `${n.callFrame.functionName || '(anon)'} ${(n.callFrame.url.split('/').pop() || '').split('?')[0]}:${n.callFrame.lineNumber}`; self.set(k, (self.get(k) || 0) + (dt[i] || 0)) })
+      const top = [...self].sort((a, b) => b[1] - a[1]).slice(0, step.top ?? 18)
+      console.log('profile (self ms of', Math.round(total / 1000), 'ms):'); top.forEach(([k, v]) => console.log('  ', (v / 1000).toFixed(0).padStart(5), k))
+    }
     if (step.cdp) for (const [method, params] of step.cdp) { await s(method, params); if (step.gap) await sleep(step.gap) }
     if (step.js) console.log('js:', JSON.stringify(await ev(step.js)))
     if (step.tap) { const r = await ev(TAP(step.tap)); if (r !== 'ok') console.log(r) }
@@ -138,6 +147,7 @@ try {
       await sleep(30)
       if (step.fps.tap) await ev(TAP(step.fps.tap))
       if (step.fps.js) await ev(step.fps.js)
+      if (step.fps.cdp) for (const [method, params] of step.fps.cdp) await s(method, params)
       const r = await rec
       console.log('fps', label, JSON.stringify(r.result.value))
     }

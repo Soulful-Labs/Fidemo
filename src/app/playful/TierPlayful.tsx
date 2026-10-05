@@ -27,13 +27,13 @@ export default function TierPlayful({ tier, old, score, fromScore, onClose }: Ti
       feedback('land')
       // Dust kicked up where the coin hits.
       const r = scope.current?.querySelector('[data-t=coin]')?.getBoundingClientRect()
-      if (r) fire({ x: r.left + r.width / 2, y: r.bottom - 10, count: 26, colors: CONFETTI.silver, shapes: ['dot'], power: 520, spread: 2.8 })
+      if (r) fire({ x: r.left + r.width / 2, y: r.bottom - 10, count: 16, colors: CONFETTI.silver, shapes: ['dot'], power: 520, spread: 2.8 })
     },
     reveal: () => {
       feedback('celebrate')
       const r = scope.current?.querySelector('[data-t=coin]')?.getBoundingClientRect()
-      if (r) fire({ x: r.left + r.width / 2, y: r.top + r.height / 2, count: 90, colors: CONFETTI[tier], power: 1500, spread: 2.2 })
-      cannons(CONFETTI[tier], 80)
+      if (r) fire({ x: r.left + r.width / 2, y: r.top + r.height / 2, count: 55, colors: CONFETTI[tier], power: 1500, spread: 2.2 })
+      cannons(CONFETTI[tier], 48)
       window.setTimeout(() => glitter(CONFETTI[tier], 3), 900)
     },
   })
@@ -44,7 +44,7 @@ export default function TierPlayful({ tier, old, score, fromScore, onClose }: Ti
       className="fixed inset-0 z-50 overflow-hidden bg-bg-0 text-center">
       <span data-t="glow" style={{ opacity: 0 }} className={cn('pointer-events-none absolute inset-0 will-change-[opacity]', GLOW[tier])} />
       <span data-t="flash" data-decor style={{ opacity: 0 }} className={cn('pointer-events-none absolute inset-0 will-change-[opacity]', GLOW[tier])} />
-      <span data-t="sweep" data-decor style={{ opacity: 0 }} className="pointer-events-none absolute inset-y-0 left-0 w-1/2 -skew-x-12 bg-linear-to-r from-transparent via-text-title/25 to-transparent will-change-transform" />
+      <span data-t="sweep" data-decor style={{ opacity: 0 }} className="pointer-events-none absolute inset-y-0 left-0 w-1/2 bg-linear-to-r from-transparent via-text-title/25 to-transparent will-change-transform" />
 
       <div data-t="stage" className="relative flex h-full flex-col items-center px-4 pb-6 pt-12">
         <h1 data-t="title" style={{ opacity: 0 }} className="relative text-title-l text-brand-primary">Congratulations!!</h1>

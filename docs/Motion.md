@@ -3,6 +3,13 @@
 The respondent app's motion layer: what moves, how, and why. Everything here is
 playable on demand at **`/motion`**, grouped A to J in the same order as below.
 
+There are two layers. The **base layer** (everything up to "Gamification ideas") is
+the Figma-faithful motion pass. The **PLAYFUL layer** (the second half of this
+document) makes the app feel like a game: depth, tilt, bounce, louder celebrations,
+haptics as a language and an optional sound set. PLAYFUL is on by default and is
+switched from the top of `/motion`; with it off, the app renders exactly as the base
+layer.
+
 Ground rules this layer keeps:
 
 - **No strings, layout, rules, numbers or colours changed.** Motion happens on the
@@ -285,3 +292,256 @@ Each of these would add a threshold, milestone or reward the policy does not hav
 6. **"You can redeem now" moment** the first time points cross 1,000. The threshold is
    already the policy's (`REDEEM.MINIMUM`), so only a new string stands in the way. It is
    the cheapest of these to add if copy is approved.
+
+
+---
+
+# PLAYFUL
+
+A game-feel layer on top of the base layer: chunky, tactile, bouncy, slightly 3D.
+Figma is not binding on its look. Words, rules, numbers and resting positions are
+unchanged.
+
+## The switch
+
+- `src/lib/playful.ts` holds two flags in localStorage: **PLAYFUL** (default on) and
+  **Sound** (default off). Both are toggles at the top of `/motion`.
+- Styles: everything is in `src/playful.css`, inside
+  `@scope ([data-playful=on]) to ([data-playful=off])`. `<html data-playful>` is set
+  from the flag, so with PLAYFUL off not one playful rule matches.
+- Behaviour: components read `usePlayful()` (or `isPlayful()` outside React) and,
+  when it is off, render the same DOM and run the same code as before.
+- Checked: with PLAYFUL off, 26 screens under reduced motion were compared pixel for
+  pixel with captures of HEAD before this layer. 24 are identical, and the other two
+  differ only in clock-driven text ("Good morning" vs "Good afternoon", "19h ago" vs
+  "1d ago"). Off also restores every original haptic pattern exactly (recorded by
+  stubbing `navigator.vibrate`).
+- `/motion` has **Before** and **After** buttons on the tier upgrade and the
+  certificate. Before switches PLAYFUL off for the whole app while the moment plays,
+  After switches it on, and closing restores the switch.
+
+## 1. Depth
+
+**The edge.** Every pressable thing with a surface gets a solid bottom edge in a
+darker shade of its own fill. It is a `box-shadow`, so it paints outside the box and
+moves nothing:
+
+| Surface | Fill | Edge |
+|---|---|---|
+| Primary button | `cta-gradient` | `yellow.700` (5px); its old border becomes the fill's own end colour |
+| Secondary | `cta.secondary` #513303 | that, 52% mixed with black |
+| Tertiary / outline | transparent, `cta.tertiaryStroke` rim | the rim colour 70% with black, plus a 1.5px inner rim (reads as a 2.5px border) |
+| Danger | `state.dangerBg` | that, 45% with black |
+| Cards, rows, tiles (warm) | `bg.1` / `bg.2` | `bg.2` 40% with black, plus a 1.5px rim of the title white at 6% |
+| Cards, rows, tiles (green) | `bgAlt.2` | `bgAlt.2` 45% with black, rim of green at 10% |
+| Points chip | `green.900` at 40% | `green.900` |
+| Selected tab fill / nav tint | `green-segment` / `yellow.1000` | `green.900` / `yellow.1000` darker |
+
+**The press.** On `:active` the thing moves down by exactly its edge height and the
+edge is removed: it is pushed into the page. Press-down is instant. Release springs
+back on the bouncy spring (as a CSS `linear()` easing), overshooting past rest. The edge
+is swapped once per press, not animated per frame; everything that moves per frame
+is a transform.
+
+**Cards** (non-pressable panels) get a 4px slab edge, a tight contact shadow and a soft
+ambient one, and lift 3px with a deeper shadow while touched. **Corners** are rounder
+(8→10, 12→15, 16→20, 24→30). **Inputs** are sunken wells with a confident rim.
+**Toggles** have a sunken track and a raised knob. **Locked** (disabled) buttons sit
+flat and sunken, so unlocking visibly raises them.
+
+**Colour derivations.** No new hue. Every colour is an existing token, a shade of one
+(`color-mix(in oklab, token, black)`), or a tint of one (`color-mix` with the title
+white or with transparent). The tokens are mirrored as `--pf-*` variables at the top
+of `playful.css`, because Tailwind's legacy config does not expose them. Things placed
+side by side are different hues (the holographic foil runs purple, blue, green,
+yellow, each a separate hue). The one deliberate shade-on-shade pairing is an edge
+under its own face, which was asked for. Red appears only where it already did:
+destructive buttons, deduction pills, No Show and Rejected.
+
+## 2. 3D and tilt
+
+- **Collectible cards** (`components/motion/Tilt.tsx`): the Trust Score card on the
+  dashboard, the Trust Score Details tier card, the Human Certificate, and the coin and
+  certificate inside the big two. They tilt up to 16° in 3D to follow a dragged finger
+  (or the mouse), and to the phone's own tilt where `deviceorientation` reports it.
+  Permission is asked once, on the first touch of a card, and only where the browser
+  requires asking (iOS); everything works without it. A holographic foil (bands of the
+  app's own hues) slides against the tilt and a glare follows it; both are faint at rest
+  and brighten as the card turns. The foil sits on its own clipped layer, so a lifted
+  seal can overhang the card.
+- **Tier reveal flip**: the coin has the old tier on its front and the new tier on its
+  back, and turns over in real 3D (`backface-visibility`, `preserve-3d`), spinning one
+  and a half turns. The headline flips on its X axis with it.
+- **Z push**: under PLAYFUL, modals and sheets are portalled to `<body>`. While any
+  overlay is open, the screen and nav recede (scale 0.93, dimmed) and dialogs arrive
+  from in front of the glass (from scale 1.18, tipped back 22°) on the bouncy spring.
+
+## 3. Springs
+
+Two springs join the vocabulary in `lib/motion.ts`: **bouncy** (k520 c13 m0.8, about 34%
+overshoot, settles in 0.87s) for everything you touch, and **slam** (k900 c24 m2.4)
+for the hardest landing. `springCurve()` samples any spring into a CSS `linear()`
+easing, published as `--spring-*` variables, and `springTo()` plays one through WAAPI.
+Under PLAYFUL every interactive motion springs: the press release, route changes
+(in from 48px, past −15px, home in 0.8s), the toggle knob (with a stretch), unlocks,
+badge pulses, step segments, tab and nav indicators, toasts and list rows. Fades and
+background loops keep their curves.
+
+## 4. Physical numbers
+
+- **Counter**: a gain tumbles each digit on its own wheel (`components/motion/odometer.ts`),
+  the lower places spinning further like a mechanical counter, with masked edges. When
+  the wheels stop, the exact formatted text is written back and the figure swells to
+  1.4× and springs home.
+- **Liquid bars**: a shimmer travels along the filled part, the bright leading edge
+  sloshes (scaleX spring) as the fill arrives, and crossing the end flashes the whole
+  bar its own colour and bulges it to 2.4× height. The fill position itself does not
+  overshoot: a bar never shows a value it does not have.
+- **Dial glow**: a glow behind the Trust Score dial whose opacity follows the score (50
+  barely lit, 100 blazing).
+- **Confetti** (`Confetti.tsx`, `confettiCore.ts`, `confettiWorker.ts` in
+  `components/motion`): gravity 2200px/s², air drag, paper that flutters side to side
+  and turns over as it falls, coins that spin on their edge, stars and dots in varied
+  sizes. Pieces land on the floor, bounce once, slide to a stop and lie there for 1.6s
+  before fading. It is drawn on one canvas that is handed to a Web Worker
+  (OffscreenCanvas), so physics and drawing run off the main thread. Shapes are
+  pre-rendered sprites, the canvas is 1×, and at most 260 pieces are in play. Browsers
+  without OffscreenCanvas run the same engine on the main thread.
+
+## 5. Fun to touch
+
+- **Points badge toy**: tapping the dashboard chip or the Reward Points balance
+  squashes it and pops seven coins out that fall and land. Every time; it changes nothing.
+- **Rubber banding**: lists stretch at both ends with iOS-style resistance and spring
+  back; the wheel does the same on a laptop. **Pull to refresh**: pulling down from the
+  top drops a coin that stretches the further you pull and turns past the line; let go
+  there and it spins briefly (there is nothing to fetch) and snaps back.
+- **Long press**: holding a card for 420ms swells it slowly with a soft haptic;
+  releasing springs it back, and the tap it would have made is swallowed.
+- **Locks**: locked buttons and toggles wobble and rattle (rotate and shake, with the
+  rattle haptic). A button that unlocks bursts open: a spring, a spray of confetti and
+  the unlock haptic.
+- **Empty states**: a glow that breathes, motes that drift, two stars that blink.
+- **Tab bar**: the new tab's icon squashes and bounces back; the tint travels on the
+  bouncy spring; tabs, toggles and the nav give a selection tick.
+
+## 6. Haptic language
+
+All haptics go through `lib/feedback.ts`. `navigator.vibrate` patterns, in ms (on, off, on, …):
+
+| Event | Pattern | Feels like |
+|---|---|---|
+| select (tab, toggle, nav, picked file) | `[7]` | a light tick |
+| press (any live control) | `[5]` | the lightest touch |
+| gain (points, money) | `[14, 70, 22]` | a double tap |
+| deduct | `[55]` | one short low pulse |
+| land (tier coin impact, completion) | `[28, 40, 12]` | a thud and a settle |
+| celebrate (tier upgrade, certificate, a newly paid study) | `[20, 50, 20, 50, 40, 70, 120]` | a drum roll into a long hit |
+| stamp (the seal) | `[70, 30, 18]` | one heavy blow |
+| locked | `[10, 25, 10, 25, 10]` | a rattle |
+| unlock | `[12, 40, 35]` | click, then release |
+| swell (long press) | `[18]` | a soft nudge |
+| toy (coin badge) | `[6, 30, 6]` | a tiny double click |
+
+With PLAYFUL off, each call site plays exactly what it played before: press and a
+picked file 6ms, gains and banner reveals `[10,30,16]`, landings `[24,40,12]`, the
+seal 36ms, locked `[8,40,8]`. The rest are silent. This was recorded both ways in the
+browser.
+
+## 7. Sound
+
+`lib/sound.ts`, synthesized with the Web Audio API; no audio files ship. **Muted by
+default.** It never autoplays: the AudioContext is only created inside the tap that
+switches sound on at `/motion` (or the first tap of a later visit, if it was left on).
+Sound plays only with PLAYFUL on.
+
+| Event | Sound |
+|---|---|
+| select / press | a soft triangle tick (2.4→1.8kHz, 35ms) / a quieter one |
+| gain | a rising pop: a 520→1040Hz glide, then a bright note a third above |
+| deduct | a low thunk: 150→70Hz with a little filtered noise, soft-edged |
+| land | a deep thud: 110→48Hz plus low noise |
+| celebrate | the fanfare: a C–E–G–C arpeggio into a held, slightly detuned five-note chord, sparkling high notes and a shimmer of high noise |
+| stamp | a heavy blow (90→40Hz) and a band-passed slap of paper |
+| locked / unlock | a three-click rattle / a click and a rising chime |
+| swell / toy | a soft filtered whoosh / a two-note coin bling |
+
+Checked by counting oscillators: none while muted, one per tick, two per gain, fourteen
+for the tier upgrade (thud plus fanfare).
+
+## 8. The big two
+
+**Tier upgrade** (`app/playful/TierPlayful.tsx`, `useTierPlayful.ts`). The title slams
+in from above. The old tier's coin drops from the top of the screen spinning and slams
+down. On impact dust kicks up, the camera jolts and two rings go out. The coin turns
+over in 3D to the new tier while the headline flips with it. On the reveal the screen
+flashes, a band of light sweeps across, rays bloom, confetti bursts from the coin and
+fires from both bottom corners, and glitter falls for three seconds. The score rolls
+and swells as it lands, the benefits are dealt like cards (rotating up from −90°), the
+button bounces in, and the landed coin floats and tilts as a collectible. Haptic land
+then celebrate; fanfare.
+
+**Certificate** (`app/playful/CertificatePlayful.tsx`, `useStampPlayful.ts`). The card
+springs up, tipping forward, as a collectible. A huge seal is hoisted high over it,
+with its shadow small and faint on the paper; it trembles at the top, then comes down
+like a hammer as the shadow rushes in. The screen takes the blow, the card squashes,
+ink splashes twice and leaves its off-true impression, and green specks fly. The words
+write in line by line, the tick spins in, and the card turns over once to show off,
+landing to the fanfare and corner cannons.
+
+Both are single timelines written as whole `transform` strings, which framer hands to
+the compositor (49 WAAPI animations run during the tier upgrade), and a tap anywhere
+finishes them.
+
+## Reduced motion, with PLAYFUL
+
+Everything above stops cleanly. The press travel and card lift are removed; the depth,
+edges and surfaces stay, since they are not motion. Confetti, foil, glare, glows, idle
+scenes and the pull indicator are not drawn. Tilt is a plain card. Both big moments
+open complete, with every element at full opacity and identity transform and the coin
+already turned to the new tier. Counters jump to their final figure. Checked by
+emulating the setting in the browser.
+
+## Measured (PLAYFUL on)
+
+Headless Chromium at 375px, frame times from a `requestAnimationFrame` recorder
+(`scripts/motion-probe.mjs`), with and without GPU rasterisation. "4× CPU" is DevTools
+CPU throttling, used as a stand-in for a mid-range Android. Not measured on a real phone.
+
+| Moment | Unthrottled | 4× CPU |
+|---|---|---|
+| Tier upgrade (4.2s) | **60 fps**, worst frame 16.8ms, 0 over 33ms | **49–49.5 fps**; 13–15 frames over 33ms, the worst being the mount (behind the fade-in) |
+| Certificate (4.5s) | **60 fps**, 0 over 33ms | **48–52 fps** |
+| Points roll-up (+2,000, tumbling counter) | **60 fps**, 0 over 33ms | **58.5–59 fps**, 1 frame over 33ms |
+| Long list scroll (Earning History, 2,600px touch fling) | **60 fps**, 0 over 33ms | **60 fps**, 0 over 33ms |
+
+The big two started at 25–30 fps (tier) and 34–38 (certificate) at 4×. What got them there:
+
+- confetti moved into a Web Worker on an OffscreenCanvas
+- pre-rendered sprites drawn at 1×
+- both timelines rewritten as whole transform strings, so they run on the compositor
+- no `mix-blend-mode` on the foil
+- fewer confetti pieces, capped at 260
+
+A CPU profile at the end showed our JavaScript as a small share; the remainder was the
+browser's own paint and compositing, which a real phone's GPU handles far better than
+headless software rasterisation.
+
+Bundle: 815 → 853 kB (+38 kB), plus a 2.8 kB worker. No new dependency.
+
+## PLAYFUL: chose not to do
+
+- **Animating the edge itself.** It is swapped on press rather than animated, because
+  box-shadow animation is paint, not compositing.
+- **Overshooting progress fills.** The leading edge sloshes, but the fill never passes
+  the real value: a bar should not show progress the person does not have.
+- **Confetti or bounce on deductions.** Deductions stay honest and quiet: a low pulse
+  and a thunk, nothing celebratory and nothing punishing.
+- **A playful layout.** Positions stay where Figma put them; only surfaces, depth and
+  motion changed.
+- **Device-orientation tilt everywhere.** It is only on the collectible cards; on every
+  card it would make the whole app swim when the phone moves.
+- **Sound without PLAYFUL, or sound on by default.** The first was a choice and the
+  second was ruled out by the brief and by autoplay etiquette.
+- **A scoped "before".** Before switches PLAYFUL off globally rather than per subtree,
+  so it is exactly the old app, including no recede behind the overlay.
