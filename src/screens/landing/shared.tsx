@@ -7,8 +7,8 @@ import { DUR, EASE, rollDuration } from '../../lib/motion'
 /** Lets a screen tell the page it is the one in front, for the progress segments. */
 export const LandingCtx = createContext<(id: string) => void>(() => undefined)
 
-const SectionCtx = createContext({ seen: false, live: false })
-/** `seen` turns true once, when the screen first comes into view; `live` follows whether it is on screen now. */
+const SectionCtx = createContext({ seen: false, live: false, front: false })
+/** `seen` turns true once, when the screen first comes into view; `live` follows whether any of it is on screen now; `front` whether it is the screen in front. */
 export const useSection = () => useContext(SectionCtx)
 
 /**
@@ -34,7 +34,7 @@ export function Section({ id, className, children }: { id: string; className?: s
   return (
     <section ref={ref} data-section={id} data-seen={seen} data-live={live}
       className={cn('ld-screen relative flex min-h-[var(--screen)] snap-start snap-always flex-col justify-center bg-bg-0', className)}>
-      <SectionCtx.Provider value={{ seen, live }}>{children}</SectionCtx.Provider>
+      <SectionCtx.Provider value={{ seen, live, front }}>{children}</SectionCtx.Provider>
     </section>
   )
 }

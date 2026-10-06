@@ -58,7 +58,8 @@ main.ld-snap { scroll-snap-type: y mandatory; }
 /* Still (reduced motion): the row is swiped by hand and snaps a card clear of the fade. */
 .ld-row-still { scroll-snap-type: x mandatory; scroll-padding-inline: var(--fade); }
 .ld-row-still > * { scroll-snap-align: start; }
-.ld-row-still > :first-child { margin-left: var(--fade); }
+/* Card one starts clear of the left fade, with nothing before it. */
+.ld-row > :first-child { margin-left: var(--fade); }
 .ld-row-still > :last-child { margin-right: var(--fade); }
 
 /* Each screen lays out and paints on its own. */

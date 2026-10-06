@@ -1,4 +1,4 @@
-import { Children, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Children, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
 import { prefersReduced } from '../../lib/motion'
@@ -8,6 +8,8 @@ import { at, useSection } from './shared'
 const SPEED = 22
 /** How long after the last touch, or the last bit of a flick's momentum, the row waits before drifting again. */
 const RESUME_MS = 1200
+/** How long the row rests on cards one and two when its screen arrives, before it starts to move. */
+const START_MS = 1400
 
 /**
  * A row of cards that drifts steadily sideways and loops, so there is always
@@ -16,8 +18,9 @@ const RESUME_MS = 1200
  * It is an ordinary scrolling row, so a swipe is the browser's own scroll and
  * always wins: touching it stops the drift at once, and the drift picks up
  * again a moment after the finger lifts and the flick has run out. The cards
- * are laid out three times over and the position wraps by one set, which is
- * what makes the loop endless in both directions.
+ * are laid out three times over; the row starts at the very beginning, on card
+ * one, and once it has drifted two sets along it steps back one set, which
+ * lands on identical pixels, so the loop never ends.
  *
  * Both edges fade (`.ld-row`), so a card dissolves at the edge instead of
  * being cut; two cards and their gap always fit between the fades, so at least
@@ -28,7 +31,7 @@ const RESUME_MS = 1200
  */
 export default function Marquee({ label, i = 1, children }: { label: string; i?: number; children: ReactNode }) {
   const row = useRef<HTMLDivElement>(null)
-  const { live } = useSection()
+  const { front } = useSection()
   const still = prefersReduced()
   const cards = Children.toArray(children)
   const [index, setIndex] = useState(0)
@@ -39,20 +42,18 @@ export default function Marquee({ label, i = 1, children }: { label: string; i?:
     return kids && kids.length > 1 ? (kids[1] as HTMLElement).offsetLeft - (kids[0] as HTMLElement).offsetLeft : 0
   }
 
-  // Start in the middle set, so there is a full set to either side.
-  useLayoutEffect(() => {
-    if (!still && row.current) row.current.scrollLeft = step() * cards.length
-  }, [still, cards.length])
-
   useEffect(() => {
     const el = row.current
-    if (!el || still || !live) return
+    if (!el || still || !front) return
+    // Every time this screen comes to the front the row begins again at card one, sitting clear of the fade
+    // with nothing before it, holds for a beat so one and two can be read, then drifts on from there.
+    el.scrollLeft = 0
     let raf = 0
     let last = 0
     let pos = el.scrollLeft
     let drifting = false
     let held = false
-    let resumeAt = 0
+    let resumeAt = performance.now() + START_MS
     let wrote = el.scrollLeft
     const wait = () => { drifting = false; resumeAt = performance.now() + RESUME_MS }
     const hold = () => { held = true; drifting = false }
@@ -69,7 +70,7 @@ export default function Marquee({ label, i = 1, children }: { label: string; i?:
         if (!drifting) { drifting = true; pos = el.scrollLeft }
         pos += (SPEED * dt) / 1000
         // Wrap by one whole set, which lands on identical pixels.
-        if (set > 0) { while (pos >= set * 2) pos -= set; while (pos < set) pos += set }
+        if (set > 0) while (pos >= set * 2) pos -= set
         el.scrollLeft = pos
         wrote = el.scrollLeft
       }
@@ -90,7 +91,7 @@ export default function Marquee({ label, i = 1, children }: { label: string; i?:
       el.removeEventListener('pointerdown', hold); el.removeEventListener('pointerup', release); el.removeEventListener('pointercancel', release)
       el.removeEventListener('wheel', wait); el.removeEventListener('scroll', onScroll)
     }
-  }, [still, live, cards.length])
+  }, [still, front, cards.length])
 
   const sets = still ? 1 : 3
   return (
@@ -99,8 +100,8 @@ export default function Marquee({ label, i = 1, children }: { label: string; i?:
         onScroll={still ? (e) => { const s = step(); if (s) setIndex(Math.min(cards.length - 1, Math.round(e.currentTarget.scrollLeft / s))) } : undefined}
         className={cn('ld-row flex overflow-x-auto pb-6 pt-2', still && 'ld-row-still')}>
         {Array.from({ length: sets }, (_, set) => cards.map((card, n) => (
-          // The middle set is the real one; the copies either side are for the loop only.
-          <div key={`${set}-${n}`} aria-hidden={sets > 1 && set !== 1 ? true : undefined} className="flex">{card}</div>
+          // The first set is the real one; the two after it are copies for the loop only.
+          <div key={`${set}-${n}`} aria-hidden={set > 0 ? true : undefined} className="flex">{card}</div>
         )))}
       </div>
       {still && (
