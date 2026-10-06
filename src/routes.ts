@@ -84,7 +84,7 @@ const redirect = (path: string, to: string, replace = true): ScreenRoute => ({
 
 export const routes: ScreenRoute[] = [
   // ----- Auth -----
-  { path: '/', label: 'Redirect \u2192 /dashboard or /signup', element: createElement(RootRedirect) },
+  { path: '/', label: 'Landing (signed in: redirect to /dashboard)', element: createElement(RootRedirect) },
   built('/signup', 'Create your account', SignUp),
   built('/signin', 'Welcome back', SignIn),
   built('/verify-otp', 'Enter OTP', VerifyOtp),

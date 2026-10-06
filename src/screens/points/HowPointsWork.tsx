@@ -25,7 +25,7 @@ function Dollar() {
  * (section 4). The drawn "Points have no expiry" line is not in the policy
  * and is not shown; the Good to know lines are the policy's own.
  */
-const WAYS = [
+export const WAYS = [
   { title: 'Being Referred', sub: 'When someone refers you to join, once', value: POINTS.BEING_REFERRED },
   { title: 'Referral', sub: 'Refer someone who joins', value: POINTS.REFERRAL },
   { title: 'Study Completion', sub: 'Complete a study and get paid', value: POINTS.STUDY_COMPLETION },

@@ -1,0 +1,115 @@
+/* ---------------------------------------------------------------------------
+   The landing page (screens/landing). The one loud screen: docs/Motion.md,
+   "Landing". Everything here is measured off the app frame: --screen is the
+   height of the scrolling <main>, set by Landing.tsx. No viewport units.
+   Transform and opacity only. Each keyframe set leaves the element's own
+   style as its resting state, so under reduced motion (index.css collapses
+   every animation to an instant) the still page is the designed one.
+   ------------------------------------------------------------------------- */
+
+/* The app's scroller moves between sections like screens, without trapping a tall one. */
+main.ld-snap { scroll-snap-type: y proximity; }
+
+/* Arrivals. A section's pieces wait unseen, then play once when it first comes
+   into view (data-seen, set by Section). They are CSS animations on transform
+   and opacity with the app's springs as linear() easings (--spring-*, from
+   lib/motion.ts), so they run on the compositor: scrolling through a section
+   as it arrives costs the main thread nothing. --i staggers, --d delays. */
+[data-section] .ld-in { opacity: 0; }
+[data-section][data-seen='true'] .ld-in {
+  opacity: 1;
+  animation: var(--in, ld-rise) var(--in-ms, 320ms) var(--in-ease, var(--ease-out)) backwards;
+  animation-delay: calc(var(--i, 0) * 80ms + var(--d, 0ms));
+}
+.ld-slam { --in: ld-slam; --in-ms: var(--spring-slam-ms); --in-ease: var(--spring-slam); }
+.ld-pop { --in: ld-pop; --in-ms: var(--spring-bouncy-ms); --in-ease: var(--spring-bouncy); }
+.ld-right { --in: ld-right; --in-ms: var(--spring-bouncy-ms); --in-ease: var(--spring-bouncy); }
+@keyframes ld-rise { from { opacity: 0; transform: translateY(18px); } }
+@keyframes ld-slam { from { opacity: 0; transform: translateY(44px) scale(1.22); } }
+@keyframes ld-pop { from { opacity: 0; transform: scale(0.5); } }
+@keyframes ld-right { from { opacity: 0; transform: translateX(80px); } }
+
+/* Depth as the first screen scrolls away: its layers move at different speeds,
+   tied to the hero's own progress out of the scroller (a view timeline), so
+   the compositor does it and no script runs while scrolling. Where a browser
+   has no scroll timelines the hero simply scrolls flat. */
+[data-section='hero'] { view-timeline-name: --ld-hero; view-timeline-axis: block; }
+@supports (animation-timeline: view()) {
+  @keyframes ld-par { to { transform: translateY(var(--par-y, 0px)) scale(var(--par-s, 1)); } }
+  .ld-par {
+    animation: ld-par linear both;
+    animation-timeline: --ld-hero;
+    animation-range: exit 0% exit 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) { .ld-par { animation: none !important; } }
+
+/* Each screen lays out and paints on its own. */
+[data-section] { contain: layout paint style; }
+
+/* Loops rest while their section is off screen. */
+[data-live='false'] * { animation-play-state: paused !important; }
+
+/* Home indicator and notch: the pinned actions and the first screen keep clear of them. */
+.ld-safe-b { padding-bottom: max(24px, env(safe-area-inset-bottom)); }
+.ld-safe-t { padding-top: max(24px, env(safe-area-inset-top)); }
+
+/* The glow behind the mark: the brand colours fading out. */
+.ld-glow { background: radial-gradient(circle, color-mix(in oklab, var(--pf-yellow) 42%, transparent) 0%, color-mix(in oklab, var(--pf-yellow) 12%, transparent) 42%, transparent 68%); }
+.ld-glow-green { background: radial-gradient(circle, color-mix(in oklab, var(--pf-green) 38%, transparent) 0%, color-mix(in oklab, var(--pf-green) 10%, transparent) 45%, transparent 70%); }
+@keyframes ld-breathe { 50% { transform: scale(1.18); opacity: 0.7; } }
+.ld-breathe { animation: ld-breathe 4.2s var(--ease-in-out) infinite; }
+
+/* The pinned actions sit on a fade of the page's own background. */
+.ld-scrim { background: linear-gradient(180deg, transparent 0%, var(--pf-bg-0) 38%); }
+
+/* A coin: the brand fill with a darker rim and a light top edge. */
+.ld-coin { box-shadow: 0 3px 0 var(--pf-yellow-700), inset 0 2px 0 color-mix(in oklab, var(--pf-title) 45%, transparent); }
+
+/* The opinion that turns into money: one token, two faces. */
+@keyframes ld-flip {
+  0%, 30% { transform: rotateY(0deg); }
+  50%, 80% { transform: rotateY(180deg); }
+  100% { transform: rotateY(360deg); }
+}
+.ld-flip { animation: ld-flip 4.4s var(--ease-in-out) infinite; }
+
+/* Rows of study types crossing the whole frame. A marquee is the one place a
+   constant speed is right, so this is the only linear motion in the app. */
+@keyframes ld-marquee { to { transform: translateX(-50%); } }
+.ld-marquee { animation: ld-marquee 24s linear infinite; }
+.ld-marquee-back { animation: ld-marquee 28s linear infinite reverse; }
+
+/* How it works, step visuals. */
+@keyframes ld-scan { 50% { transform: translateY(88px); } }
+.ld-scan { animation: ld-scan 2.6s var(--ease-in-out) infinite; }
+@keyframes ld-stamp {
+  0%, 46% { transform: scale(2.4) rotate(-24deg); opacity: 0; }
+  56% { transform: scale(0.86) rotate(4deg); opacity: 1; }
+  64%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.ld-stamp { animation: ld-stamp 2.6s var(--ease-out) infinite; }
+@keyframes ld-pick {
+  0%, 28%, 100% { transform: translateY(0) scale(1); }
+  44%, 84% { transform: translateY(-16px) scale(1.14); }
+}
+.ld-pick { animation: ld-pick 2.8s var(--ease-in-out) infinite; }
+@keyframes ld-side { 44%, 84% { opacity: 0.35; } }
+.ld-side { animation: ld-side 2.8s var(--ease-in-out) infinite; }
+@keyframes ld-answer {
+  0%, 12% { transform: scale(0); opacity: 0; }
+  22% { transform: scale(1.3); opacity: 1; }
+  30%, 100% { transform: scale(1); opacity: 1; }
+}
+.ld-answer { animation: ld-answer 3s var(--ease-out) infinite backwards; }
+
+/* The tier fan and the certificate sit on a stage with depth. */
+.ld-stage { perspective: 900px; }
+
+/* A tier card: its own hue, lit from the top corner. */
+.ld-tier-silver { background: linear-gradient(160deg, color-mix(in oklab, var(--pf-silver) 34%, var(--pf-bg-1)) 0%, var(--pf-bg-1) 62%); --rim: var(--pf-silver); }
+.ld-tier-gold { background: linear-gradient(160deg, color-mix(in oklab, var(--pf-gold) 40%, var(--pf-bg-1)) 0%, var(--pf-bg-1) 62%); --rim: var(--pf-gold); }
+.ld-tier-platinum { background: linear-gradient(160deg, color-mix(in oklab, var(--pf-platinum) 46%, var(--pf-bg-1)) 0%, var(--pf-bg-1) 62%); --rim: var(--pf-platinum); }
+.ld-tier {
+  box-shadow: 0 6px 0 color-mix(in oklab, var(--rim) 30%, black), inset 0 0 0 2px color-mix(in oklab, var(--rim) 55%, transparent), var(--pf-hi), var(--pf-lifted);
+}

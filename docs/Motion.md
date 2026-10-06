@@ -464,6 +464,73 @@ start clean.
 Withdrawing after step 4: this year's earnings pass $600, so the app asks for the tax
 form first. That is the policy, not a bug; upload it and Withdraw works.
 
+## Landing: the one loud screen
+
+`/` for a signed-out person is the landing page (`src/screens/landing`). A signed-in
+person never sees it: `RootRedirect` still sends them to `/dashboard`. It is the
+exception to the tier rule: navigation inside the app stays calm, this page may show off.
+
+**It is a phone screen, not a website.** One column, edge to edge, inside the app
+frame like every other screen. No header, no footer, no breakpoint, no wide layout.
+
+**Measured off the frame.** No `vw`, `vh`, `dvh`, `svh` or `lvh`. `Landing.tsx` reads
+the height of the app's own scroller (`<main>`) with a `ResizeObserver` and hands it to
+the sections as `--screen`; each section is `min-height: var(--screen)`.
+
+**Eight screens, one scroll.** Each is a snap point (`scroll-snap-type: y proximity` on
+`<main>`, so a screen taller than a short phone still scrolls freely).
+
+| Screen | What moves |
+|---|---|
+| Hero | The mark assembles: left leg slams down, right leg up, the bridge springs across, the green dot drops in, knocks the mark, rings and throws confetti. Tap the mark to play it again. Headline lands word by word. Glow breathes, rays sway, coins drift. Scrolling away moves the layers at different speeds |
+| What this is | A token that is an opinion on one face and a coin on the other, turning over, between two rows of the six study types crossing the frame |
+| How it works | Four cards you swipe; each acts its step out (ID scanned and stamped, the matching study lifting out, answers ticking, coins dropping into a wallet) |
+| Points | The app's five ways to earn as a swipe row, each figure counting up; what points are worth |
+| Tiers | Silver, Gold, Platinum as a fanned hand that springs apart. Swipe, tap a card or tap a name to bring one forward. Each card tilts with the holographic foil (`Tilt`) |
+| Certificate | The seal slams onto the certificate, rings and throws confetti |
+| A sample study | The app's own `StudyCard` with a seeded study; coins drop into a wallet and the figure counts up to the card's reward |
+| Close | Confetti cannons once; Sign Up, Log In, researcher client |
+
+**Pinned.** Sign Up and Log In stay at the thumb on every screen except the last, which
+carries its own; progress segments run along the top edge.
+
+**How it stays smooth.** There is no scroll listener.
+- Arrivals are CSS animations on transform and opacity, with the app's springs as
+  `linear()` easings (`--spring-*`), started by `data-seen` on the section. They run on
+  the compositor. Section headings land as one piece; only the hero lands word by word.
+- The hero's depth is a CSS view timeline (`.ld-par`), not script. Where a browser has
+  no scroll timelines the hero scrolls flat.
+- Which screen is in front comes from `IntersectionObserver` (`useInView`).
+- Loops pause while their screen is off screen (`data-live`).
+- The marquee is the only linear motion in the app: a marquee is the one place a
+  constant speed is right.
+
+**Reduced motion.** A still page that still reads: the mark whole, type in place, the
+token shown as both faces side by side with an arrow, no particles, no parallax,
+no running animations (measured: 0).
+
+**Measured** (production build, 375 by 812, a scripted scroll through all eight screens
+at 800px a second):
+
+| | fps | worst frame |
+|---|---|---|
+| No throttle | 60 | 17ms |
+| 4x CPU throttle | 51 to 53 | 50 to 67ms |
+| 6x CPU throttle | 37 to 39 | 117ms |
+
+For comparison, the same scripted scroll at 4x on `/motion` holds 60 and on
+`/kitchen-sink` 58. The first version of this page managed 36 at 4x with 250ms stalls;
+moving arrivals from JavaScript springs to compositor animations and dropping the
+scroll listener is what recovered it.
+
+**Weight.** No dependency, no image, no font. About 8.7 kB gzipped of code and 2.3 kB
+of CSS. The sample card's picture is one of the app's existing 640 byte SVGs.
+
+**Numbers.** Every figure on the page comes from `lib/rules.ts` or the seed data: tier
+thresholds 50, 70, 90; points 25, 200, 100, 50, 50; 100 points to $1; minimum 1,000;
+$2 withdrawal fee; certificate valid 12 months; the sample study's $120, 20 min and
+match score. Nothing is invented. The certificate ID is shown as a pattern.
+
 ## 1. Depth
 
 **The edge.** Every pressable thing with a surface gets a solid bottom edge in a
