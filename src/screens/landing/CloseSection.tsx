@@ -1,53 +1,39 @@
-import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUI } from '../../app/ui'
-import { CONFETTI, cannons } from '../../components/motion/Confetti'
+import StudyCard from '../../components/app/StudyCard'
 import Button from '../../components/ui/Button'
-import { feedback } from '../../lib/feedback'
-import { Mark } from './HeroMark'
-import { Heading, Lead, Section, at, useSection } from './shared'
+import { STUDIES } from '../../mock/data'
+import type { Study } from '../../mock/types'
+import { Heading, Section, at } from './shared'
 
-/** The page ends with a salute, once, the first time the last screen arrives. */
-function Salute() {
-  const { seen } = useSection()
-  useEffect(() => {
-    if (!seen) return
-    const t = window.setTimeout(() => { feedback('celebrate'); cannons(CONFETTI.brand, 44) }, 320)
-    return () => window.clearTimeout(t)
-  }, [seen])
-  return null
-}
+/** One of the app's own seeded studies, shown as it would be listed in Explore. An example, and labelled as one. */
+const SEED = STUDIES.find((s) => s.id === 'st-02')!
+/** The card clamps a description to two lines; the seed's own runs longer, so here it is the same sentence, shortened to fit whole. */
+const SAMPLE: Study = { ...SEED, status: 'available', saved: false, description: 'A short survey on inclusive teaching practices.' }
 
 /**
- * The close. The same three ways on as the Sign Up screen, with its exact
- * strings: Sign Up, Log In, and the researcher client route (which is the
- * app's existing "Client app" sheet, since that app is not part of this one).
+ * The close: proof and the way in. The proof is the same StudyCard every list
+ * in the app uses, with a seeded study in it; the whole card is one big target
+ * that goes to sign up, and its small inner controls (bookmark, match score)
+ * are switched off, since nobody is signed in to use them. Sign Up and Log In
+ * are the pinned pair below; the researcher client route sits above them.
  */
 export default function CloseSection() {
   const navigate = useNavigate()
   const { openComingSoon } = useUI()
   return (
-    <Section id="close" className="justify-end gap-6 bg-bg-0 bg-yellow-fade pt-12">
-      <Salute />
-      <div className="relative flex min-h-0 flex-1 items-center justify-center">
-        <span aria-hidden="true" className="ld-glow ld-breathe absolute left-1/2 top-1/2 -ml-40 -mt-40 h-80 w-80 rounded-full" />
-        <span style={at(0)} className="ld-in ld-pop relative"><span data-idle className="block"><Mark className="h-28" /></span></span>
+    <Section id="close" className="gap-3">
+      <Heading>What a study looks like</Heading>
+      <div style={at(1)} className="ld-in ld-pop flex flex-col gap-3 px-4">
+        <span className="flex h-9 items-center self-start rounded-full bg-yellow-1000/70 px-4 text-body-medium text-brand-primary">Sample study</span>
+        <div role="link" tabIndex={0} aria-label={`Sample study: ${SAMPLE.title}. Sign up to apply.`}
+          onClick={() => navigate('/signup')} onKeyDown={(e) => { if (e.key === 'Enter') navigate('/signup') }}>
+          <div inert className="pointer-events-none"><StudyCard study={SAMPLE} showActions={false} /></div>
+        </div>
       </div>
-
-      <div className="flex flex-col gap-3">
-        <Heading i={1}>Your opinion is worth money.</Heading>
-        <Lead i={2}>Join, verify once and take your first study.</Lead>
-      </div>
-
-      <div style={at(3)} className="ld-in ld-safe-b flex flex-col gap-4 px-4">
-        <Button fullWidth onClick={() => navigate('/signup')}>Sign Up</Button>
-        <Button variant="tertiary" fullWidth onClick={() => navigate('/signin')}>
-          Already have an account?&nbsp;<span className="text-brand-primary">Log In</span>
-        </Button>
-        <p className="pt-2 text-center text-body-regular text-text-subtitle">Not a respondent?</p>
-        <Button variant="tertiary" fullWidth onClick={() => openComingSoon('Client app')}>
-          Sign up as a researcher client
-        </Button>
+      <div style={at(2)} className="ld-in flex flex-col gap-2 px-4 pt-1">
+        <p className="text-center text-body-regular text-text-subtitle">Not a respondent?</p>
+        <Button variant="tertiary" fullWidth onClick={() => openComingSoon('Client app')}>Sign up as a researcher client</Button>
       </div>
     </Section>
   )

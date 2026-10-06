@@ -1,7 +1,5 @@
 import { motion } from 'framer-motion'
 import { useEffect } from 'react'
-import { Burst } from '../../components/motion/Particles'
-import { CONFETTI } from '../../components/motion/Confetti'
 import { feedback } from '../../lib/feedback'
 import { SPRING } from '../../lib/motion'
 
@@ -18,10 +16,14 @@ export function Mark({ className }: { className?: string }) {
   )
 }
 
-/** Each piece: the slice of the mark it shows, where it flies in from, and when it lands. */
+/**
+ * Each piece: the slice of the mark it shows, where it comes in from, and when it lands.
+ * The travel is short on purpose: every piece stays inside the hero's stage the whole way,
+ * so nothing is ever clipped by the stage or hidden behind the progress bar mid-flight.
+ */
 const PIECES = [
-  { clip: 'inset(0 67.7% 0 0)', from: { y: -340, rotate: -28 }, spring: SPRING.slam, at: 0.15 },
-  { clip: 'inset(0 0 0 67.7%)', from: { y: 340, rotate: 28 }, spring: SPRING.slam, at: 0.32 },
+  { clip: 'inset(0 67.7% 0 0)', from: { y: -28, rotate: -24, scale: 0.7 }, spring: SPRING.slam, at: 0.15 },
+  { clip: 'inset(0 0 0 67.7%)', from: { y: 28, rotate: 24, scale: 0.7 }, spring: SPRING.slam, at: 0.32 },
   { clip: 'inset(0 32.1% 0 32.1%)', from: { scaleX: 0, scaleY: 0.4 }, spring: SPRING.bouncy, at: 0.56 },
 ] as const
 
@@ -32,7 +34,8 @@ const DOT_AT = 0.86
  * The money shot: the HumanLayer mark assembles itself. The left leg slams
  * down from above, the right one up from below, the bridge springs across
  * between them, and the green dot drops into its seat, which knocks the whole
- * mark, rings once and throws confetti. Under reduced motion it is simply the
+ * mark and rings once. (No confetti here: it would fall across the headline
+ * and pile up on the buttons.) Under reduced motion it is simply the
  * mark, whole.
  */
 export default function HeroMark() {
@@ -48,7 +51,7 @@ export default function HeroMark() {
       className="relative block aspect-[19.6865/24] h-40 will-change-transform">
       {PIECES.map((p) => (
         <motion.svg key={p.clip} viewBox="0 0 19.6865 24" fill="none" aria-hidden="true"
-          initial={{ opacity: 0, ...p.from }} animate={{ opacity: 1, y: 0, rotate: 0, scaleX: 1, scaleY: 1 }}
+          initial={{ opacity: 0, ...p.from }} animate={{ opacity: 1, y: 0, rotate: 0, scale: 1, scaleX: 1, scaleY: 1 }}
           transition={{ ...p.spring, delay: p.at, opacity: { duration: 0.12, delay: p.at } }}
           style={{ clipPath: p.clip }} className="absolute inset-0 h-full w-full will-change-transform">
           <path d={H} className="fill-brand-primary" />
@@ -56,18 +59,16 @@ export default function HeroMark() {
       ))}
 
       {/* The ring the dot throws as it seats. */}
-      <motion.span data-decor aria-hidden="true" initial={{ opacity: 0, scale: 1 }} animate={{ opacity: [0, 0.8, 0], scale: [1, 7] }}
+      <motion.span data-decor aria-hidden="true" initial={{ opacity: 0, scale: 1 }} animate={{ opacity: [0, 0.8, 0], scale: [1, 3.6] }}
         transition={{ duration: 0.72, delay: DOT_AT + 0.14, ease: 'easeOut' }}
         className="absolute left-[40%] top-[27.8%] aspect-square w-1/5 rounded-full border-2 border-brand-secondary" />
 
       <motion.svg viewBox="0 0 19.6865 24" fill="none" aria-hidden="true"
-        initial={{ opacity: 0, y: -280, scale: 0.3 }} animate={{ opacity: 1, y: 0, scale: 1 }}
+        initial={{ opacity: 0, y: -56, scale: 0.3 }} animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ ...SPRING.bouncy, delay: DOT_AT, opacity: { duration: 0.1, delay: DOT_AT } }}
         style={{ transformOrigin: '50% 36%' }} className="absolute inset-0 h-full w-full will-change-transform">
         <circle cx="9.84315" cy="8.63955" r="1.96865" className="fill-brand-secondary" />
       </motion.svg>
-
-      <span className="absolute left-1/2 top-[36%]"><Burst delay={DOT_AT + 0.16} palette={CONFETTI.brand} /></span>
     </motion.span>
   )
 }

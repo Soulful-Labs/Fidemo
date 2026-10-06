@@ -1,52 +1,93 @@
-import { PointsCoin } from '../../components/ui/icons'
-import { REDEEM } from '../../lib/rules'
-import { WAYS } from '../points/HowPointsWork'
-import { Coin, CountUp, Heading, Lead, Pager, Section, at, useRowIndex } from './shared'
+import { ACCENT, BENEFITS, Glyph } from '../../app/tierParts'
+import type { Tier } from '../../app/tierParts'
+import { TIER_LABEL } from '../../components/app/TierChip'
+import Tilt from '../../components/motion/Tilt'
+import { Check, PointsCoin, ShieldCheck } from '../../components/ui/icons'
+import { cn } from '../../lib/cn'
+import { CERTIFICATE, POINTS, REDEEM, TIERS } from '../../lib/rules'
+import { Carousel, CountUp, Heading, Section } from './shared'
 
+const ORDER: Tier[] = ['silver', 'gold', 'platinum']
+const SKIN: Record<Tier, string> = { silver: 'ld-tier-silver', gold: 'ld-tier-gold', platinum: 'ld-tier-platinum' }
+const RING: Record<Tier, string> = { silver: 'border-tier-silver', gold: 'border-tier-gold', platinum: 'border-tier-platinum' }
+
+/** Every card in the row is the same size, so the row does not jump as it turns. */
+const CARD = 'flex h-64 flex-col gap-3 rounded-xl p-4'
 const plus = (n: number) => `+${n}`
 
-/** The app's five ways to earn (HowPointsWork), leading with the one every member does: finishing a study. */
-const ORDERED = [...WAYS].sort((a, b) => Number(b.title === 'Study Completion') - Number(a.title === 'Study Completion'))
-
-/**
- * What you earn, part one: money and points. The five ways to earn points are
- * the app's own (and the policy's own values), as a row you swipe; under it,
- * what points are worth. Every figure here comes from lib/rules.ts.
- */
-export default function EarnSection() {
-  const { row, index, onScroll } = useRowIndex(ORDERED.length)
+/** Money and points. The figures are the policy's (lib/rules.ts). */
+function PointsCard() {
   return (
-    <Section id="earn" className="justify-center gap-5 bg-bg-0 bg-yellow-fade pb-28 pt-12">
-      <div className="flex flex-col gap-3">
-        <Heading>Cash for the study. Points on top.</Heading>
-        <Lead i={1}>Every study pays a cash reward. You also collect reward points.</Lead>
-      </div>
+    <div className={cn(CARD, 'bg-bg-1')}>
+      <span className="text-title-m leading-tight text-text-title">Cash for every study</span>
+      <span className="flex items-center gap-3 text-display text-brand-secondary">
+        <PointsCoin className="h-12 w-12" />
+        <CountUp to={POINTS.STUDY_COMPLETION} format={plus} />
+      </span>
+      <span className="text-body-regular text-text-body">reward points on top, each time you complete one.</span>
+      <span className="mt-auto flex flex-col gap-1 border-t-1 border-stroke-3 pt-3">
+        <span className="text-body-large text-text-title">{REDEEM.PER_USD} points = $1</span>
+        <span className="text-body-regular text-text-body">Redeem from {REDEEM.MINIMUM.toLocaleString('en-US')} points.</span>
+      </span>
+    </div>
+  )
+}
 
-      <div ref={row} onScroll={onScroll} className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-3 pt-1">
-        {ORDERED.map((w, i) => (
-          <div key={w.title} style={at(2 + i)} className="ld-in ld-right flex w-3/5 shrink-0 snap-start scroll-ml-4 flex-col gap-2 rounded-xl bg-bg-1 p-4">
-            <span className="flex items-center gap-2 text-display-s text-brand-secondary">
-              <PointsCoin className="h-8 w-8" />
-              <CountUp to={w.value} format={plus} />
-            </span>
-            <span className="text-body-large text-text-title">{w.title}</span>
-            <span className="text-body-regular text-text-body">{w.sub}</span>
-          </div>
-        ))}
-      </div>
-      <Pager count={ORDERED.length} index={index} />
+/** A tier, with the holographic tilt: drag a finger across it. Thresholds are the policy's; the benefit lines are the app's own. */
+function TierCard({ tier }: { tier: Tier }) {
+  return (
+    <div className="ld-stage">
+      <Tilt holo={1.4} className={cn(CARD, 'ld-tier', SKIN[tier])}>
+        <span className="flex items-center gap-3">
+          <span className={cn('flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 bg-bg-0', RING[tier], ACCENT[tier])}>
+            <Glyph tier={tier} size={30} />
+          </span>
+          <span className="flex flex-col">
+            <span className={cn('text-title-l', ACCENT[tier])}>{TIER_LABEL[tier].name}</span>
+            <span className="pt-1 text-body-medium text-text-title">Trust Score {TIERS[tier]}+</span>
+          </span>
+        </span>
+        <ul className="flex flex-col gap-2 border-t-1 border-text-disabled pt-3">
+          {BENEFITS[tier].map((line) => (
+            <li key={line} className="flex items-start gap-2 text-body-regular text-text-subtitle">
+              <Check className={cn('mt-1 h-4 w-4 shrink-0', ACCENT[tier])} />
+              {line}
+            </li>
+          ))}
+        </ul>
+      </Tilt>
+    </div>
+  )
+}
 
-      <div style={at(4)} className="ld-in ld-pop mx-4 flex items-center gap-4 rounded-xl bg-bg-1 p-4">
-        <span className="flex shrink-0 items-center gap-2">
-          <PointsCoin className="h-10 w-10 text-brand-secondary" />
-          <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6 text-text-body" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          <Coin className="h-10 w-10 text-title-m" />
+/** The Human Certificate. The facts are the policy's (section 2); the ID is shown as a pattern, not a made-up number. */
+function CertificateCard() {
+  return (
+    <div className="ld-stage">
+      <Tilt holo={1.3} className={cn(CARD, 'items-center bg-bg-1 text-center')}>
+        <span className="text-title-l text-text-title">Human Certificate</span>
+        <ShieldCheck className="h-20 w-20 text-state-success" />
+        <span className="text-body-regular text-text-body">Cert. ID: <span className="text-text-title">HL-R-XXXX-XXXX</span></span>
+        <span className="flex items-center gap-2 text-body-medium text-text-title">
+          <Check className="h-5 w-5 text-brand-secondary" />
+          Government ID Verified
         </span>
-        <span className="flex flex-col gap-0.5">
-          <span className="text-title-m leading-tight text-text-title">{REDEEM.PER_USD} points = $1</span>
-          <span className="text-body-regular text-text-body">Redeem from {REDEEM.MINIMUM.toLocaleString('en-US')} points.</span>
-        </span>
-      </div>
+        <span className="mt-auto text-body-regular text-text-body">Valid for {CERTIFICATE.VALID_MONTHS} months.</span>
+      </Tilt>
+    </div>
+  )
+}
+
+/** What you earn: money and points, then the three tiers, then the certificate. One whole card at a time. */
+export default function EarnSection() {
+  return (
+    <Section id="earn" className="gap-4">
+      <Heading>What you earn</Heading>
+      <Carousel label="What you earn, five cards">
+        <PointsCard />
+        {ORDER.map((tier) => <TierCard key={tier} tier={tier} />)}
+        <CertificateCard />
+      </Carousel>
     </Section>
   )
 }
