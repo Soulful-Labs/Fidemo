@@ -8,6 +8,7 @@ export default function AppliedSuccess() {
 
   return (
     <SuccessScreen
+      tier={2}
       title="Applied successfully!"
       body="Your application for this study has been submitted."
       steps={[

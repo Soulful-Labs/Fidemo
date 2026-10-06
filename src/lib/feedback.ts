@@ -19,7 +19,7 @@ export const HAPTICS: Record<Feedback, number[]> = {
   land: [28, 40, 12],                            // a thud and a settle
   celebrate: [20, 50, 20, 50, 40, 70, 120],      // a drum roll into a long hit
   stamp: [70, 30, 18],                           // one heavy blow
-  locked: [10, 25, 10, 25, 10],                  // a rattle
+  locked: [12, 50, 12],                          // a knock against the lock
   unlock: [12, 40, 35],                          // click, then release
   swell: [18],                                   // a soft nudge as it swells
   toy: [6, 30, 6],                               // a tiny double click

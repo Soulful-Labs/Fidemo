@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { cn } from '../../lib/cn'
-import { CSS, STAGGER, play, springTo } from '../../lib/motion'
+import { CSS, STAGGER, play, settleTo, springTo } from '../../lib/motion'
 import { isPlayful, usePlayful } from '../../lib/playful'
 import { nextSlot } from '../../lib/seen'
 import { useArrival } from '../motion/useArrival'
@@ -65,9 +65,9 @@ export default function ProgressBar({
     const crossed = gain && to >= 100 && from < 100
     a.onfinish = () => {
       if (isPlayful()) {
-        // PLAYFUL: the liquid's leading edge sloshes as it arrives...
-        springTo(cap.current, { transform: gain ? 'scaleX(2.6)' : 'scaleX(0.4)' }, 'bouncy')
-        // ...and crossing the line flashes the whole bar its own colour and bulges it.
+        // PLAYFUL: the leading edge settles once as it arrives (tier 2)...
+        settleTo(cap.current, { transform: gain ? 'scaleX(1.8)' : 'scaleX(0.6)' })
+        // ...and crossing the line is earned (tier 3): the whole bar flashes its own colour and bulges.
         if (crossed) {
           play(flash.current, [{ opacity: 0.9 }, { opacity: 0 }], CSS.slow, CSS.out)
           springTo(trackEl.current, { transform: 'scaleY(2.4)' }, 'bouncy')

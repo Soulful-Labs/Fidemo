@@ -1,6 +1,6 @@
 import { useId, useLayoutEffect, useRef } from 'react'
 import { cn } from '../../lib/cn'
-import { CSS, haptic, play, springTo } from '../../lib/motion'
+import { CSS, haptic, play, settleTo } from '../../lib/motion'
 import { isPlayful } from '../../lib/playful'
 import { rattle } from '../motion/locks'
 import { feedback } from '../../lib/feedback'
@@ -42,7 +42,7 @@ export default function Toggle({
     if (!el) return
     const x = el.offsetLeft
     if (at.current !== null && at.current !== x) {
-      if (isPlayful()) springTo(el, { transform: `translateX(${at.current - x}px) scaleX(1.25)` })
+      if (isPlayful()) settleTo(el, { transform: `translateX(${at.current - x}px)` }) // tier 2
       else play(el, [{ transform: `translateX(${at.current - x}px)` }, { transform: 'none' }], CSS.base, CSS.out)
     }
     at.current = x
