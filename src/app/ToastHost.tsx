@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '../lib/cn'
-import { CHANGED, DUR, EASE, SPRING } from '../lib/motion'
+import { DUR, EASE, SPRING } from '../lib/motion'
 import { usePlayful } from '../lib/playful'
 import { useStore } from '../mock/store'
 
@@ -26,8 +26,9 @@ export default function ToastHost({ navVisible }: { navVisible: boolean }) {
           <motion.button
             key={toast.id}
             type="button"
-            initial={playful ? { opacity: 0, y: 10, scale: 0.97 } : { opacity: 0, y: 20, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1, transition: playful ? CHANGED : SPRING.soft }}
+            // PLAYFUL: a toast follows a tap that already moved something, so it only fades in (one tap, one motion).
+            initial={playful ? { opacity: 0 } : { opacity: 0, y: 20, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1, transition: playful ? { duration: 0.14, ease: EASE.out } : SPRING.soft }}
             exit={{ opacity: 0, y: 10, transition: { duration: DUR.fast, ease: EASE.in } }}
             onClick={() => dismissToast(toast.id)}
             role="status"

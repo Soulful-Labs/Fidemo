@@ -302,6 +302,73 @@ A game-feel layer on top of the base layer: chunky, tactile, bouncy, slightly 3D
 Figma is not binding on its look. Words, rules, numbers and resting positions are
 unchanged.
 
+## Tiers: motion is earned
+
+Under PLAYFUL every animation belongs to exactly one tier (`TIER`, `AROUND`,
+`CHANGED`, `around()`, `settleTo()` in `lib/motion.ts`). The bounce, overshoot,
+confetti, flips and fanfare only ever mean one thing: something was earned.
+
+**Tier 1, getting around.** No bounce, no overshoot, no oscillation. 120–180ms, ease
+out, a small fade and a small slide.
+
+| What | How it moves now |
+|---|---|
+| Opening a screen, going back | 160ms: fade from 0 and an 8px slide (forward from the right, back from the left) |
+| Switching tabs (the four tab roots) | Only the nav tint moves (160ms tween); the screen itself does not animate |
+| Nav icon on selection | A quiet dip to 0.9× and straight back, 160ms; no squash, no bounce |
+| Segmented / underline tab indicator | 160ms tween to the new tab |
+| Pressing a surface (button, card, tile, row) | Down by exactly its edge on press; back to rest in 120ms, ease out, no spring past rest |
+| Pressing anything else | Gives to 0.97× and comes straight back, 120ms |
+| Plain modal | 160ms fade and a scale from 0.97; closes in 120ms; the page behind stays put |
+| Sheet | Rises in 180ms and sinks in 160ms, never passing its line |
+| Scrolling, rubber band, pull to refresh | The list comes home in about 220ms, ease out, no bounce |
+| Long press on a card | Swells slowly to 1.04×, then eases back in 160ms |
+| List rows | Do not animate in; opening the screen is the one motion |
+| Cards when touched | Keep their depth but no longer lift (the thing pressed inside is the motion) |
+| Collectible tilt (tier card on Trust Score Details, the certificate) | Follows the finger on a soft spring with no visible overshoot; the phone's own tilt is damped (a dead zone, then half strength), so a card being read stays still |
+| Points badge toy | A 0.95× dip and three small coins that hop out and drop |
+
+**Tier 2, something changed.** One small settle (240ms, a curve that passes rest at
+most once), and it ends.
+
+| What | How it moves now |
+|---|---|
+| Toggle flipped | The knob slides and settles once (no stretch); the "Saved" toast only fades in |
+| Something saved (toast) | A 140ms fade, no movement (it always follows a tap that already moved something) |
+| A button becoming available (form valid, step complete) | Settles up once from 0.95×; no confetti |
+| Tapping something locked | One nudge (6px and back, passing rest once) and one knock haptic `[12,50,12]` |
+| A bar's value changing | Fill moves (ease out, never past its value); the bright edge settles once |
+| A form step completed (onboarding, screener and survey segments) | The segment fills in 240ms, ease out |
+| Applied, Scheduled / Rescheduled, Withdrawal requested | The success badge settles in once; no burst, no coins, no thud |
+| A deduction | The figure drops into place once (unchanged from the base layer) |
+
+**Tier 3, something was earned.** Unchanged: this is where all the springs, overshoot,
+confetti, particles, flips and fanfare live.
+
+| What | |
+|---|---|
+| Points or money gained | Counter tumble, landing pop, badge pulse, +X, gain haptic and pop |
+| Tier upgrade | The whole playful sequence (falling coin, 3D flip, cannons, fanfare) |
+| Certificate unlock | The whole playful stamp |
+| Study completed, PIN (attendance) confirmed | Badge lands, confetti burst |
+| Screening passed (invited), study paid | Banner reveal with glint / burst |
+| Redeemed (money arriving in the wallet) | Coins drop into the badge |
+| A bar reaching its end, the dial crossing a tier line | Flash and bulge / dial pulse |
+| A streak day ticked | The pill pops its tick |
+| Points earned modal | Coin flip, ring, count-up |
+
+**Idle motion.** A screen with content on it is still: no travelling shimmer on bars, no
+first-sight glint, no tilt on cards you scroll past, and the phone's own tilt is
+damped. Things only move on their own on a genuinely empty state (the breathing,
+drifting, blinking scene) and inside the tier 3 celebrations while they play.
+
+Checked by walking the app as a person would (sign in, dashboard, switching tabs,
+opening a study, applying, the wallet, withdraw, the profile, settings, a toggle,
+sign out). `scripts/wobble.js` records every moving element's transform each frame
+and counts how often it crosses its resting value. Every tier 1 step: 0 crossings, one
+moving thing per tap. The toggle: 1 crossing of 0.6px (tier 2). Tier 3 still swings
+3 to 5 times: points gain, tier upgrade, certificate and study completed.
+
 ## The switch
 
 - `src/lib/playful.ts` holds two flags in localStorage: **PLAYFUL** (default on) and
@@ -338,13 +405,13 @@ moves nothing:
 | Selected tab fill / nav tint | `green-segment` / `yellow.1000` | `green.900` / `yellow.1000` darker |
 
 **The press.** On `:active` the thing moves down by exactly its edge height and the
-edge is removed: it is pushed into the page. Press-down is instant. Release springs
-back on the bouncy spring (as a CSS `linear()` easing), overshooting past rest. The edge
+edge is removed: it is pushed into the page. Press-down is instant. Release comes
+straight back to rest in 120ms, ease out (tier 1: it used to spring past rest). The edge
 is swapped once per press, not animated per frame; everything that moves per frame
 is a transform.
 
 **Cards** (non-pressable panels) get a 4px slab edge, a tight contact shadow and a soft
-ambient one, and lift 3px with a deeper shadow while touched. **Corners** are rounder
+ambient one. (They used to lift when touched; that made two things move per tap, so it is gone.) **Corners** are rounder
 (8→10, 12→15, 16→20, 24→30). **Inputs** are sunken wells with a confident rim.
 **Toggles** have a sunken track and a raised knob. **Locked** (disabled) buttons sit
 flat and sunken, so unlocking visibly raises them.
@@ -438,7 +505,7 @@ All haptics go through `lib/feedback.ts`. `navigator.vibrate` patterns, in ms (o
 | land (tier coin impact, completion) | `[28, 40, 12]` | a thud and a settle |
 | celebrate (tier upgrade, certificate, a newly paid study) | `[20, 50, 20, 50, 40, 70, 120]` | a drum roll into a long hit |
 | stamp (the seal) | `[70, 30, 18]` | one heavy blow |
-| locked | `[10, 25, 10, 25, 10]` | a rattle |
+| locked | `[12, 50, 12]` | one knock against the lock (tier 2; was a five-pulse rattle) |
 | unlock | `[12, 40, 35]` | click, then release |
 | swell (long press) | `[18]` | a soft nudge |
 | toy (coin badge) | `[6, 30, 6]` | a tiny double click |
