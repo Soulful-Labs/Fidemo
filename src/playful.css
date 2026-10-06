@@ -156,6 +156,24 @@
   background: radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--pf-title) 38%, transparent) 0%, transparent 42%);
 }
 
+/* Lists do not animate in under PLAYFUL: opening a screen is one motion (the route
+   change), not one per row. :scope adds specificity so this beats the base layer's rule. */
+@scope ([data-playful=on]) to ([data-playful=off]) {
+  :scope [data-stagger] > * { animation: none; }
+}
+
+/* Progress under PLAYFUL: a bright leading edge, a tint of the fill itself. */
+.pf-cap {
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--pf-title) 70%, transparent));
+  box-shadow: 0 0 10px 2px color-mix(in oklab, var(--pf-title) 35%, transparent);
+}
+
+/* The Trust Score dial's glow (ScoreDial under PLAYFUL), the brand yellow fading out. */
+.pf-dial-glow {
+  background: radial-gradient(circle, color-mix(in oklab, var(--pf-yellow) 55%, transparent) 0%, color-mix(in oklab, var(--pf-yellow) 18%, transparent) 45%, transparent 70%);
+  transition: opacity 900ms var(--ease-out);
+}
+
 /* Rubber banding is ours under PLAYFUL; keep the browser's own pull-to-refresh out of it. */
 @scope ([data-playful=on]) to ([data-playful=off]) {
   main { overscroll-behavior-y: contain; }
