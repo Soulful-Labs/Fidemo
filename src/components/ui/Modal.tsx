@@ -4,7 +4,7 @@ import { frameLayer } from '../../app/frame'
 import { useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
-import { dialogPlayful, scrim } from '../../lib/motion'
+import { dialogEarned, dialogPlayful, scrim } from '../../lib/motion'
 import { overlayClosed, overlayOpened } from '../../lib/overlays'
 import { Close } from './icons'
 
@@ -18,6 +18,8 @@ export interface ModalProps {
   showClose?: boolean
   /** Green-tinted surface for Trust Score / Points / Wallet screens. */
   alt?: boolean
+  /** Something finished or was earned: the dialog lands with weight instead of fading in. */
+  earned?: boolean
 }
 
 /** Locks body scroll and wires Escape while any overlay is open. */
@@ -47,6 +49,7 @@ export default function Modal({
   footer,
   showClose = true,
   alt = false,
+  earned = false,
 }: ModalProps) {
   useOverlay(open, onClose)
 
@@ -63,7 +66,7 @@ export default function Modal({
       role="presentation"
     >
       <motion.div
-        variants={dialogPlayful}
+        variants={earned ? dialogEarned : dialogPlayful}
         style={{ transformPerspective: 900 }}
         role="dialog"
         aria-modal="true"

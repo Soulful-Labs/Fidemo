@@ -141,6 +141,13 @@ export const dialogPlayful: Variants = {
   gone: { opacity: 0, scale: 0.98, transition: { duration: 0.12, ease: EASE.in } },
 }
 
+/** Tier 3: a modal that confirms something finished drops in with weight and settles. */
+export const dialogEarned: Variants = {
+  hidden: { opacity: 0, scale: 1.18, rotateX: 22, y: -24 },
+  shown: { opacity: 1, scale: 1, rotateX: 0, y: 0, transition: { ...SPRING.bouncy, opacity: { duration: DUR.fast } } },
+  gone: { opacity: 0, scale: 0.98, rotateX: 0, y: 0, transition: { duration: 0.12, ease: EASE.in } },
+}
+
 /** Tier 1: a sheet rises and sinks without passing its line. */
 export const sheetPlayful: Variants = {
   hidden: { y: '100%' },

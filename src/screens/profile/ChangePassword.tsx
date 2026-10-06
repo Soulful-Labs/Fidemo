@@ -56,7 +56,7 @@ export default function ChangePassword() {
         </Button>
       </CtaBar>
 
-      <Modal open={done} onClose={() => setDone(false)} showClose={false}
+      <Modal earned open={done} onClose={() => setDone(false)} showClose={false}
         footer={<Button fullWidth onClick={() => { setDone(false); navigate('/profile/settings') }}>Done</Button>}>
         <div className="flex flex-col items-center gap-4 pt-2 text-center">
           <SuccessBadge />

@@ -71,7 +71,7 @@ export default function ContactUs() {
         <Button fullWidth loading={sending} disabled={!valid} onClick={submit} onBlocked={() => { setTouched(true); toast('Add a subject and a message') }}>Submit</Button>
       </CtaBar>
 
-      <Modal open={ticketId !== null} onClose={() => undefined} showClose={false}
+      <Modal earned open={ticketId !== null} onClose={() => undefined} showClose={false}
         footer={
           <div className="flex gap-3">
             <Button variant="secondary" className="flex-1" onClick={() => navigate(`/support/tickets/${ticketId}`, { replace: true })}>Go To Chat</Button>

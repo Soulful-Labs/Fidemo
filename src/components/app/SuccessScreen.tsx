@@ -3,7 +3,7 @@ import { feedback } from '../../lib/feedback'
 import { useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
-import { DUR, EASE, SPRING, STAGGER, AROUND, CHANGED } from '../../lib/motion'
+import { DUR, EASE, SPRING, STAGGER } from '../../lib/motion'
 import CoinRain from '../motion/CoinRain'
 import { Burst } from '../motion/Particles'
 import { CONFETTI } from '../motion/Confetti'
@@ -30,12 +30,6 @@ export interface SuccessScreenProps {
    * `money` (moment H): lands like `win`, then coins drop into the badge.
    */
   mood?: 'win' | 'calm' | 'money'
-  /**
-   * 3 (default) when something was earned, 2 when something just
-   * changed (applied, scheduled, a withdrawal requested). Tier 2 arrives with one
-   * small settle: no burst, no coins, no landing thud.
-   */
-  tier?: 2 | 3
 }
 
 /**
@@ -44,25 +38,21 @@ export interface SuccessScreenProps {
  * tick in its halo, a title, body and the Done button in the CTA bar.
  */
 export default function SuccessScreen({
-  title, body, steps, children, actionLabel = 'Done', onAction, alt = false, badge, mood = 'win', tier = 3,
+  title, body, steps, children, actionLabel = 'Done', onAction, alt = false, badge, mood = 'win',
 }: SuccessScreenProps) {
-  const changed = tier === 2
-  const win = !changed && mood !== 'calm'
-  const money = !changed && mood === 'money'
+  const win = mood !== 'calm'
+  const money = mood === 'money'
   const purse = useRef<HTMLDivElement>(null)
   useEffect(() => { if (win) { const t = window.setTimeout(() => feedback(mood === 'money' ? 'gain' : 'land'), DUR.base * 1000); return () => window.clearTimeout(t) } }, [win])
 
   const arrive = win
     ? { hidden: { opacity: 0, scale: 0.4, y: -40 }, shown: { opacity: 1, scale: 1, y: 0, transition: SPRING.heavy } }
-    : changed
-      // Tier 2: the badge settles in once and that is all.
-      ? { hidden: { opacity: 0, scale: 0.92 }, shown: { opacity: 1, scale: 1, transition: CHANGED } }
-      : { hidden: { opacity: 0, y: 10 }, shown: { opacity: 1, y: 0, transition: { duration: DUR.slow, ease: EASE.out } } }
+    : { hidden: { opacity: 0, y: 10 }, shown: { opacity: 1, y: 0, transition: { duration: DUR.slow, ease: EASE.out } } }
   const follow = {
-    hidden: { opacity: 0, y: win ? 14 : changed ? 4 : 8 },
-    shown: { opacity: 1, y: 0, transition: changed ? AROUND : { duration: win ? DUR.base : DUR.slow, ease: EASE.out } },
+    hidden: { opacity: 0, y: win ? 14 : 8 },
+    shown: { opacity: 1, y: 0, transition: { duration: win ? DUR.base : DUR.slow, ease: EASE.out } },
   }
-  const after = win ? DUR.slow * 0.6 : changed ? DUR.fast : DUR.base
+  const after = win ? DUR.slow * 0.6 : DUR.base
 
   return (
     <div className={cn('flex min-h-full flex-col', alt ? 'bg-bgAlt-0' : 'bg-bg-0', 'bg-green-fade')}>

@@ -43,7 +43,6 @@ export default function Withdraw() {
       <SuccessScreen
         alt
         mood="money"
-        tier={2}
         title={`${money(sent)} withdrawal request sent successfully!`}
         body={`Your withdrawal request for ${money(sent)} has been sent and the funds will be credited within 2-3 working days.`}
         onAction={() => navigate('/wallet', { replace: true })}

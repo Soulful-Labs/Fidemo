@@ -62,7 +62,6 @@ export default function ScheduleFlow() {
   if (step === 'done') {
     return (
       <SuccessScreen
-        tier={2}
         title={isReschedule ? 'Rescheduled successfully!' : 'Scheduled successfully!'}
         body={study.booking ? `Your session is booked for ${bookingLong(study.booking.date, study.booking.slot)} ET. We will remind you before it starts.` : undefined}
         onAction={() => navigate(`/studies/${id}`, { replace: true })}

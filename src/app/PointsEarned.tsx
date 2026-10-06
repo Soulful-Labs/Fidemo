@@ -30,7 +30,7 @@ const REASON: Record<PointsEntry['kind'], (e: PointsEntry) => string> = {
 export default function PointsEarned({ entry, onClose }: { entry: PointsEntry | null; onClose: () => void }) {
   const coin = useRef<HTMLSpanElement>(null)
   return (
-    <Modal open={entry !== null} onClose={onClose} showClose={false} alt footer={<Button fullWidth onClick={onClose}>Done!</Button>}>
+    <Modal earned open={entry !== null} onClose={onClose} showClose={false} alt footer={<Button fullWidth onClick={onClose}>Done!</Button>}>
       {entry && (
         <motion.div initial="hidden" animate="shown" transition={{ staggerChildren: 0.09, delayChildren: DUR.base }}
           className="-mx-4 -mt-4 flex flex-col items-center gap-4 rounded-t-lg bg-green-glow px-4 pb-2 pt-8 text-center">

@@ -337,7 +337,6 @@ most once), and it ends.
 | Tapping something locked | One nudge (6px and back, passing rest once) and one knock haptic `[12,50,12]` |
 | A bar's value changing | Fill moves (ease out, never past its value); the bright edge settles once |
 | A form step completed (onboarding, screener and survey segments) | The segment fills in 240ms, ease out |
-| Applied, Scheduled / Rescheduled, Withdrawal requested, Redeemed | The success badge settles in once; no burst, no coins, no thud (redeeming is spending your own points, not earning) |
 | A deduction | The figure drops into place once (unchanged from the base layer) |
 
 **Tier 3, something was earned.** Unchanged: this is where all the springs, overshoot,
@@ -348,7 +347,9 @@ confetti, particles, flips and fanfare live.
 | Points or money gained | Counter tumble, landing pop, +X, gain haptic and pop (no badge pulse) |
 | Tier upgrade | The whole playful sequence (falling coin, 3D flip, cannons, fanfare) |
 | Certificate unlock | The whole playful stamp |
-| Study completed, PIN (attendance) confirmed | Badge lands, confetti burst |
+| Study completed, PIN (attendance) confirmed, Applied, Scheduled / Rescheduled | Badge lands, confetti burst |
+| Withdrawal requested, Redeemed | Badge lands, coins drop into it |
+| Password Updated, support ticket Submitted, Points earned (modals) | The dialog drops in with weight and settles (`dialogEarned`, the `earned` prop on `Modal`); every other modal stays a calm fade |
 | Screening passed (invited), study paid | Banner reveal with glint / burst |
 | A bar reaching its end, the dial crossing a tier line | Flash and bulge / dial pulse |
 | A streak day ticked | The pill pops its tick |
@@ -400,10 +401,12 @@ checks each one moves (`OUT=<dir> node --experimental-websocket scripts/moments-
 | E. Deduction (quiet fall, no bounce) | Dashboard dial and Trust Score Details after Cancel Study | yes, 90 to 88 |
 | F. Completed successfully | `/studies/:id/survey/done`, PIN confirmed | yes |
 | F/G. Paid banner (earned line, small burst) | Study Detail, first time it is seen as Paid | yes |
-| G. Applied (one settle) | `/studies/:id/applied` | yes |
+| G. Applied (badge lands, burst) | `/studies/:id/applied` | yes |
 | G. Qualified (pop and glint) | Study Detail banner, first time seen as invited | yes |
 | G. Not a match (calm) | Screener result | yes |
-| H. Redeemed, Withdrawal sent (one settle) | `/points/redeem/done`, `/wallet/withdraw/done` | yes |
+| H. Redeemed, Withdrawal sent (badge lands, coins drop in) | `/points/redeem/done`, `/wallet/withdraw/done` | yes |
+| F. Scheduled, Rescheduled (badge lands, burst) | `/studies/:id/schedule/done` | yes |
+| Password Updated, ticket Submitted (dialog lands) | Change Password, Contact us | yes, Password Updated |
 | I. Step fills, file ticks in, Welcome seal | Onboarding 1 to 3 and Welcome | yes |
 | J. Toggle settle, locked nudge, blocked button nudge, toast | Email Notifications, Consent and Cookies, any disabled Continue | yes |
 
@@ -447,12 +450,12 @@ start clean.
 9. **Reward Points:** long press the balance for the toy.
 10. **Diary:** Resume Study Day 4, submit: bar fills 3 to 4, edge settles. Day 5: bar
     reaches the end, flash and bulge. Complete Study pays again.
-11. **Explore, Telehealth triage, Accept & Apply,** pass the screener: Applied settles
-    once; three seconds later the detail shows the **qualified** pop and glint.
+11. **Explore, Telehealth triage, Accept & Apply,** pass the screener: Applied lands
+    with a burst; three seconds later the detail shows the **qualified** pop and glint.
 12. **GLP-1 Care Plans,** answer the last option each time: **not a match**, calm.
 13. **Scheduled, Nurse staffing software review, Cancel Study:** dial falls 90 to 88,
     quietly, back to Gold. No bounce, no red flash.
-14. **Redeem 1,000 points:** one settle, no coins; points fall, wallet rises $10.
+14. **Redeem 1,000 points:** the badge lands and coins drop into it; points fall, wallet rises $10.
 15. **Profile, My Profile, save About Me:** the ring fills.
 16. **Sign out. Sign up** from a referral link (`/signup?ref=DEMO7`): being referred
     points arrive after OTP; step bar fills 1 to 3; ID files tick in; after Consent the

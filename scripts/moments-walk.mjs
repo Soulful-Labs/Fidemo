@@ -231,7 +231,7 @@ await step('applied', async () => {
   console.log('\n-- Screening: applied, then qualified --')
   await nav('/studies/st-04'); await clickAny(['Accept & Apply', 'Apply'], 800)
   await answerAll('/applied')
-  let m = moving(1200); await sleep(500); await shot('applied'); report('G (tier 2): Applied successfully settles once', await m, /div|span/)
+  let m = moving(1200); await sleep(500); await shot('applied'); report('G (tier 3): Applied successfully lands with a burst', await m, /div|span/)
   await click('Done', 300)
   for (let i = 0; i < 20 && (await store("st.studies.find(s => s.id === 'st-04').status")) === 'applied'; i++) await sleep(300)
   m = moving(1800); await sleep(600); await shot('qualified-banner'); report('G: qualified banner reveal (pop and glint)', await m, /div|span/)
@@ -261,7 +261,7 @@ await step('cancel', async () => {
 await step('redeem', async () => {
   console.log('\n-- Spending: redeem --')
   await nav('/points/redeem'); await type('main input', '1000'); await clickAny(['Confirm']); await clickIn('[role=dialog]', 'Redeem', 1200)
-  let m = moving(1200); await sleep(500); await shot('redeemed'); report('H (tier 2): Redeemed settles once, no coins', await m, /div|span/)
+  let m = moving(1200); await sleep(500); await shot('redeemed'); report('H (tier 3): Redeemed lands, coins drop into the badge', await m, /div|span/)
   await click('Done', 300); report('E-style: points balance falls', await moving(1500), /span/)
   await nav('/wallet'); m = moving(4000); await sleep(1500); await shot('wallet-after-redeem'); report('H: wallet rises by the redeemed amount', await m, /span/)
 })
