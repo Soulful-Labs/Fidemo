@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import RollingNumber from '../../components/motion/RollingNumber'
 import Tilt from '../../components/motion/Tilt'
 import { useAppNav } from '../../app/useAppNav'
 import ProgressBar from '../../components/app/ProgressBar'
@@ -61,7 +62,7 @@ export default function TrustScoreDetails() {
           <button type="button" onClick={() => navigate('/trust-score/rules')} className="flex items-center gap-1 text-text-regular text-text-subtitle">
             <Info className="h-4 w-4" />Trust Score<ChevronRight className="h-4 w-4" />
           </button>
-          <ScoreDial score={user.trustScore} size="md" memory="trust">
+          <ScoreDial score={user.trustScore} size="md" memory="trust-details">
             <TierChip tier={tier} onClick={() => navigate('/trust-score/tiers')} />
           </ScoreDial>
           {next && (
@@ -96,11 +97,11 @@ export default function TrustScoreDetails() {
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1 rounded-lg bg-bgAlt-2 p-4">
             <span className="text-text-regular text-text-body">Completed Studies</span>
-            <span className="text-body-medium text-text-title">{user.completedStudies}</span>
+            <RollingNumber className="text-body-medium text-text-title" value={user.completedStudies} format={String} memory="studies-details" />
           </div>
           <div className="flex flex-col gap-1 rounded-lg bg-bgAlt-2 p-4">
             <span className="text-text-regular text-text-body">Lifetime Earnings</span>
-            <span className="text-body-medium text-text-title">{money(user.allTimeEarned)}</span>
+            <RollingNumber className="text-body-medium text-text-title" value={user.allTimeEarned} format={money} step={0.01} memory="earned-details" />
           </div>
         </div>
       </div>

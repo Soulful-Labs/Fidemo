@@ -45,17 +45,17 @@ export default function OverviewTiles() {
     <section className="flex flex-col gap-4">
       <SectionHeader title="Overview" />
       <div className="grid grid-cols-2 gap-2">
-        <StatTile tint="yellow" icon={<Dollar />} label="Wallet Balance" value={<RollingNumber value={user.walletBalance} format={money} step={0.01} memory="wallet" float />} onClick={() => navigate('/wallet')} />
+        <StatTile tint="yellow" icon={<Dollar />} label="Wallet Balance" value={<RollingNumber value={user.walletBalance} format={money} step={0.01} memory="wallet-tile" float />} onClick={() => navigate('/wallet')} />
         <StatTile
           tint="green" icon={<Coin />}
           label="This Month"
-          value={money(thisMonth)}
+          value={<RollingNumber value={thisMonth} format={money} step={0.01} memory="month-tile" />}
           delta={change !== 0 ? moneyDelta(change) : undefined}
           deltaLabel={change !== 0 ? 'vs last month' : undefined}
           onClick={() => navigate('/wallet')}
         />
         <StatTile tint="purple" icon={<Clock className="h-5 w-5" />} label="Studies In Review" value={String(inReview)} onClick={() => navigate('/studies/mine/applied')} />
-        <StatTile tint="blue" icon={<ListIcon />} label="All Time Studies" value={String(user.completedStudies)} onClick={() => navigate('/studies/mine/history')} />
+        <StatTile tint="blue" icon={<ListIcon />} label="All Time Studies" value={<RollingNumber value={user.completedStudies} format={String} memory="studies-tile" />} onClick={() => navigate('/studies/mine/history')} />
       </div>
     </section>
   )

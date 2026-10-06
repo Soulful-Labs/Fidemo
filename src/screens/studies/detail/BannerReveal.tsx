@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
+import { whenClear } from '../../../lib/overlays'
 import { feedback } from '../../../lib/feedback'
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Burst } from '../../../components/motion/Particles'
 import { useSeenKey } from '../../../components/motion/useSeen'
@@ -41,23 +42,41 @@ export function useBannerReveal(studyId: string | undefined, status: string) {
   return kind
 }
 
+/**
+ * A reveal is only worth playing if it is seen: when the status changes while
+ * an overlay is up (a paid study lands under the tier upgrade or the points
+ * earned modal), the banner holds its hidden first frame until the overlay
+ * has closed, then plays.
+ */
+function useRevealReady(kind: ReturnType<typeof useBannerReveal>) {
+  const [ready, setReady] = useState(!kind)
+  useEffect(() => {
+    if (!kind) return
+    let cancel = () => undefined as void
+    const beat = window.setTimeout(() => { cancel = whenClear(() => setReady(true)) }, DUR.fast * 1000)
+    return () => { window.clearTimeout(beat); cancel() }
+  }, [kind])
+  return ready
+}
+
 export function RevealCard({ kind, className, children }: { kind: ReturnType<typeof useBannerReveal>; className: string; children: ReactNode }) {
   const glint = useRef<HTMLSpanElement>(null)
+  const ready = useRevealReady(kind)
   const from = kind === 'calm' ? { opacity: 0, y: 8 } : kind ? { opacity: 0, scale: 0.94, y: 6 } : { opacity: 0 }
   const transition = kind === 'calm' ? { duration: DUR.slow, ease: EASE.out }
     : kind ? SPRING.snappy : { duration: DUR.fast, ease: EASE.out }
 
   return (
-    <motion.div initial={from} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ ...transition, delay: kind ? DUR.fast : 0 }}
+    <motion.div initial={from} animate={ready ? { opacity: 1, scale: 1, y: 0 } : from} transition={{ ...transition, delay: kind ? DUR.fast : 0 }}
       onAnimationComplete={() => { if (kind === 'qualified' || kind === 'earned') feedback(kind === 'earned' ? 'celebrate' : 'gain') }}
       className={className + (kind === 'qualified' ? ' relative overflow-hidden' : kind === 'earned' ? ' relative' : '')}>
       {children}
-      {kind === 'qualified' && (
+      {kind === 'qualified' && ready && (
         <motion.span ref={glint} data-decor aria-hidden="true" initial={{ x: '-120%' }} animate={{ x: '420%' }}
           transition={{ duration: DUR.slow * 1.4, ease: EASE.inOut, delay: DUR.base * 1.5 }}
           className="pointer-events-none absolute inset-y-0 left-0 w-1/4 -skew-x-12 bg-linear-to-r from-transparent via-text-title/15 to-transparent" />
       )}
-      {kind === 'earned' && (
+      {kind === 'earned' && ready && (
         <span className="pointer-events-none absolute left-8 top-6">
           <Burst delay={DUR.base * 1.4 + DUR.slow * 0.6} />
         </span>
@@ -68,9 +87,10 @@ export function RevealCard({ kind, className, children }: { kind: ReturnType<typ
 
 /** The earned line on a newly paid banner pops after the card has arrived. */
 export function EarnedLine({ kind, className, children }: { kind: ReturnType<typeof useBannerReveal>; className: string; children: ReactNode }) {
+  const ready = useRevealReady(kind)
   if (kind !== 'earned') return <p className={className}>{children}</p>
   return (
-    <motion.p initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
+    <motion.p initial={{ opacity: 0, scale: 0.85 }} animate={ready ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.85 }}
       transition={{ ...SPRING.snappy, delay: DUR.base * 1.4 }} className={className + ' origin-left'}>
       {children}
     </motion.p>

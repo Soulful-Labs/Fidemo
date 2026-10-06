@@ -4,6 +4,9 @@ import type { ReactNode } from 'react'
 import { createActions } from './actions'
 import type { Actions } from './actions'
 import { returningUserState } from './data'
+import { forgetSeen } from '../lib/seen'
+
+const SEED_EMAIL = returningUserState().user.email.toLowerCase()
 import { deriveUser, trustHistory } from '../lib/derive'
 import type { DerivedFigures, TrustHistoryEntry } from '../lib/derive'
 import { reducer } from './reducer'
@@ -61,7 +64,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     toast,
     dismissToast: (id: string) => dispatch({ type: 'DISMISS_TOAST', id }),
     notify,
-    signIn: (email?: string) => dispatch({ type: 'SIGN_IN', email }),
+    signIn: (email?: string) => {
+      // Signing back into the demo account restores its seed; forget what was last
+      // seen for it, so the restored figures do not animate as if they had fallen.
+      if (email && email.trim().toLowerCase() === SEED_EMAIL && state.user.email.toLowerCase() !== SEED_EMAIL) forgetSeen(`${SEED_EMAIL}:`)
+      dispatch({ type: 'SIGN_IN', email })
+    },
     signOut: () => dispatch({ type: 'SIGN_OUT' }),
   }), [state, toast, notify])
 

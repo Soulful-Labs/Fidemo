@@ -19,10 +19,15 @@ export function overlayClosed() {
   depth = Math.max(0, depth - 1)
   mark()
   if (depth > 0) return
-  // Let the closing overlay start leaving before the figure starts moving.
-  const run = [...waiting]
-  waiting.clear()
-  setTimeout(() => run.forEach((fn) => fn()), 120)
+  // Let the closing overlay start leaving before the figure starts moving. If
+  // another overlay opened in that beat (the points modal following the tier
+  // upgrade), keep waiting for that one instead.
+  setTimeout(() => {
+    if (depth > 0) return
+    const run = [...waiting]
+    waiting.clear()
+    run.forEach((fn) => fn())
+  }, 120)
 }
 
 /** Runs `fn` now, or once the last open overlay closes. Returns a cancel. */

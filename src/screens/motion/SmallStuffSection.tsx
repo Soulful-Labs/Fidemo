@@ -18,7 +18,6 @@ export function SmallStuffSection() {
   const [locked, setLocked] = useState(true)
   const [on, setOn] = useState(false)
   const [tab, setTab] = useState('a')
-  const [list, setList] = useState(0)
 
   return (
     <Group letter="J" title="The small stuff">
@@ -33,18 +32,6 @@ export function SmallStuffSection() {
         <Plays><Play onClick={() => setLocked((l) => !l)}>{locked ? 'Unlock it' : 'Lock it again'}</Play></Plays>
         <Toggle checked={on} onChange={setOn} label="A toggle" description="The knob slides by transform." />
         <TabBar items={[{ key: 'a', label: 'Explore' }, { key: 'b', label: 'My Studies' }, { key: 'c', label: 'Saved' }]} value={tab} onChange={setTab} />
-      </Stage>
-      <Stage>
-        <ul key={list} data-stagger className="flex flex-col gap-2">
-          {['First row', 'Second row', 'Third row', 'Fourth row', 'Fifth row'].map((r) => (
-            <li key={r} className="rounded-md bg-bg-2 px-3 py-2 text-text-regular text-text-title">{r}</li>
-          ))}
-        </ul>
-        <Plays>
-          <Play onClick={() => setList((n) => n + 1)}>Replay the list</Play>
-          <Play onClick={() => toast('Skeletons: none in the app yet; .hl-skeleton is ready for them')}>Skeletons?</Play>
-        </Plays>
-        <div className="hl-skeleton h-4 w-2/3 rounded-full bg-bg-2" aria-hidden="true" />
       </Stage>
       <EmptyState title="Nothing saved yet" body="An empty state breathes gently while it waits." />
       <Modal open={modal} onClose={() => setModal(false)} title="A modal" footer={<Button fullWidth onClick={() => setModal(false)}>Got It!</Button>}>

@@ -70,7 +70,10 @@ export default function QuestionFlow({
         ) : (
           <div className="flex items-center gap-3">
             <div className="h-1 flex-1 overflow-hidden rounded-full bg-green-900/60" role="progressbar" aria-valuenow={index + 1} aria-valuemax={questions.length}>
-              <div className="h-full w-full rounded-full bg-brand-secondary transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] will-change-transform" style={{ transform: `translateX(${pct - 100}%)` }} />
+              <div className="relative h-full w-full overflow-hidden rounded-full bg-brand-secondary transition-transform duration-[var(--dur-base)] ease-[var(--ease-out)] will-change-transform" style={{ transform: `translateX(${pct - 100}%)` }}>
+                {/* The bright leading edge every progress bar has. */}
+                <span data-decor aria-hidden="true" className="pf-cap pointer-events-none absolute inset-y-0 right-0 w-4 rounded-full" />
+              </div>
             </div>
             <span className="text-text-regular text-text-subtitle">{index + 1}/{questions.length}</span>
           </div>

@@ -60,14 +60,14 @@ export default function RewardPoints() {
           <div className="flex items-end justify-between gap-3">
             <span ref={badge} onPointerDown={popCoins} className="flex items-center gap-2 text-title-l text-brand-secondary">
               <PointsCoin className="h-6 w-6" />
-              <RollingNumber value={user.points} format={fmt} memory="points" float />
+              <RollingNumber value={user.points} format={fmt} memory="points-rewards" float />
             </span>
             <span className="text-text-regular text-text-subtitle">100 points = $1</span>
           </div>
           <Button fullWidth onClick={() => navigate('/points/redeem')}>Redeem</Button>
         </section>
         <p className="rounded-md border-1 border-stroke-3 py-2 text-center text-text-regular text-text-body">
-          All Time Earned: <span className="text-text-title">{fmt(allTime)}</span>
+          All Time Earned: <RollingNumber className="text-text-title" value={allTime} format={fmt} memory="points-alltime" />
         </p>
 
         <TabBar items={[{ key: 'points', label: 'Points History' }, { key: 'redeem', label: 'Redeem History' }]} value={tab} onChange={(k) => setTab(k as typeof tab)} />

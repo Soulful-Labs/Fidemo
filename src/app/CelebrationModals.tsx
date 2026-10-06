@@ -73,7 +73,8 @@ export default function CelebrationModals() {
   return (
     <>
       <TierUpgrade tier={tierUp?.tier ?? null} from={tierUp?.from} fromScore={tierUp?.fromScore} score={user.trustScore} onClose={() => setTierUp(null)} />
-      <PointsEarned entry={earned} onClose={() => setEarned(null)} />
+      {/* One celebration at a time: points earned waits for the tier upgrade to be closed. */}
+      <PointsEarned entry={tierUp ? null : earned} onClose={() => setEarned(null)} />
       <CertificateUnlock email={certified} onClose={() => setCertified(null)} />
     </>
   )

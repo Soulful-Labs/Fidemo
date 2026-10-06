@@ -48,14 +48,14 @@ export default function Wallet() {
         )}
         <p className="flex items-center gap-3 text-text-regular text-text-body">
           <span className="h-px flex-1 bg-stroke-3" />
-          All Time Earned: <span className="text-text-title">{money(user.allTimeEarned)}</span>
+          All Time Earned: <RollingNumber className="text-text-title" value={user.allTimeEarned} format={money} step={0.01} memory="earned-wallet" />
           <span className="h-px flex-1 bg-stroke-3" />
         </p>
       </section>
 
       <TaxFormBanner />
 
-      <RowCard to="/points" icon={<PointsCoin className="h-5 w-5" />} label="Reward Points" value={<RollingNumber value={user.points} format={points} memory="points" />} />
+      <RowCard to="/points" icon={<PointsCoin className="h-5 w-5" />} label="Reward Points" value={<RollingNumber value={user.points} format={points} memory="points-wallet" />} />
 
       <section data-stagger className="flex flex-col gap-2 rounded-lg bg-bgAlt-2 p-4">
         <p className="flex items-center gap-2 text-body-medium text-text-title">

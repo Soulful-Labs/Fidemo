@@ -94,7 +94,7 @@ export default function Profile() {
           <span className="flex items-center gap-1 text-body-regular text-text-subtitle">Trust Score &amp; Tier <ChevronRight className="h-4 w-4" /></span>
           <TierChip tier={tier} />
         </div>
-        <ScoreDial score={user.trustScore} size="sm" memory="trust" />
+        <ScoreDial score={user.trustScore} size="sm" memory="trust-profile" />
       </button>
 
       {ROWS.map((r) => row(r.label, r.Icon, () => navigate(r.to)))}

@@ -1,3 +1,4 @@
+import { forgetSeen } from '../lib/seen'
 import type { AppState } from './storeTypes'
 
 /**
@@ -7,18 +8,21 @@ import type { AppState } from './storeTypes'
  * over from the seed; bump VERSION when the seed shape changes.
  */
 const KEY = 'hl-respondent-demo'
-const VERSION = 2
+// 3: the demo starting state was tuned so an ordinary walk earns things (docs/Motion.md, "Demo walk").
+const VERSION = 3
 
 export function loadPersisted(seed: AppState): AppState {
   try {
     if (new URLSearchParams(window.location.search).has('reset')) {
       localStorage.removeItem(KEY)
+      // Back to the seed: forget the figures last seen, so nothing animates as if it had fallen.
+      forgetSeen('')
       return seed
     }
     const raw = localStorage.getItem(KEY)
-    if (!raw) return seed
+    if (!raw) { forgetSeen(''); return seed }
     const saved = JSON.parse(raw) as { version: number; state: AppState }
-    if (saved.version !== VERSION) return seed
+    if (saved.version !== VERSION) { forgetSeen(''); return seed }
     return { ...seed, ...saved.state, toasts: [] }
   } catch {
     return seed
