@@ -36,6 +36,31 @@ main.ld-snap { scroll-snap-type: y mandatory; }
 @keyframes ld-slam { from { opacity: 0; transform: translateY(44px) scale(1.22); } }
 @keyframes ld-pop { from { opacity: 0; transform: scale(0.5); } }
 
+/* The rows of cards. Both edges of a row fade out, so a card arriving or
+   leaving dissolves instead of being cut at a hard line: at the frame's edge
+   the row is fully transparent. --fade is how wide that is (wide: a card is
+   well on its way out before any of it is hard to read). Two cards plus
+   their gap always fit between the fades (--card), so as the row drifts there
+   is always at least one card completely clear of both. */
+.ld-row {
+  --fade: 44px;
+  --gap: 12px;
+  --card: calc((100% - var(--fade) * 2 - var(--gap)) / 2 - 4px);
+  gap: var(--gap);
+  /* Eased, not linear: nothing at all for the outermost few pixels, barely there for the next third, then up to full. */
+  --mask: linear-gradient(90deg,
+    transparent 0, transparent 6px, rgb(0 0 0 / 0.1) calc(var(--fade) * 0.4), rgb(0 0 0 / 0.45) calc(var(--fade) * 0.7), #000 var(--fade),
+    #000 calc(100% - var(--fade)), rgb(0 0 0 / 0.45) calc(100% - var(--fade) * 0.7), rgb(0 0 0 / 0.1) calc(100% - var(--fade) * 0.4), transparent calc(100% - 6px), transparent 100%);
+  -webkit-mask-image: var(--mask);
+  mask-image: var(--mask);
+}
+.ld-row > * { width: var(--card); flex-shrink: 0; }
+/* Still (reduced motion): the row is swiped by hand and snaps a card clear of the fade. */
+.ld-row-still { scroll-snap-type: x mandatory; scroll-padding-inline: var(--fade); }
+.ld-row-still > * { scroll-snap-align: start; }
+.ld-row-still > :first-child { margin-left: var(--fade); }
+.ld-row-still > :last-child { margin-right: var(--fade); }
+
 /* Each screen lays out and paints on its own. */
 [data-section] { contain: layout paint style; }
 
@@ -51,7 +76,7 @@ main.ld-snap { scroll-snap-type: y mandatory; }
 .ld-coin { box-shadow: 0 3px 0 var(--pf-yellow-700), inset 0 2px 0 color-mix(in oklab, var(--pf-title) 45%, transparent); }
 
 /* How it works, step visuals. Every one stays inside its own stage. */
-@keyframes ld-scan { 50% { transform: translateY(88px); } }
+@keyframes ld-scan { 50% { transform: translateY(56px); } }
 .ld-scan { animation: ld-scan 2.6s var(--ease-in-out) infinite; }
 @keyframes ld-stamp {
   0%, 46% { transform: scale(1.8) rotate(-24deg); opacity: 0; }
@@ -61,7 +86,7 @@ main.ld-snap { scroll-snap-type: y mandatory; }
 .ld-stamp { animation: ld-stamp 2.6s var(--ease-out) infinite; }
 @keyframes ld-pick {
   0%, 28%, 100% { transform: translateY(0) scale(1); }
-  44%, 84% { transform: translateY(-10px) scale(1.1); }
+  44%, 84% { transform: translateY(-6px) scale(1.1); }
 }
 .ld-pick { animation: ld-pick 2.8s var(--ease-in-out) infinite; }
 @keyframes ld-side { 44%, 84% { opacity: 0.35; } }
@@ -73,8 +98,8 @@ main.ld-snap { scroll-snap-type: y mandatory; }
 }
 .ld-answer { animation: ld-answer 3s var(--ease-out) infinite backwards; }
 @keyframes ld-drop {
-  0% { transform: translateY(-52px); opacity: 0; }
-  18% { transform: translateY(-44px); opacity: 1; }
+  0% { transform: translateY(-34px); opacity: 0; }
+  18% { transform: translateY(-28px); opacity: 1; }
   62% { transform: translateY(0); opacity: 1; }
   78%, 100% { transform: translateY(6px) scale(0.3); opacity: 0; }
 }

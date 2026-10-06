@@ -483,15 +483,23 @@ it always rests on one of them.
 | Screen | What is on it |
 |---|---|
 | Hero | The mark assembles (legs settle in, the bridge springs across, the green dot drops in and rings once); a coin drifts in each corner of its stage; the headline lands word by word. Tap the mark to play it again |
-| What it is and how it works | One line, then the four steps as whole cards, one at a time. Each acts its step out: an ID scanned and stamped, the matching study lifting out, answers ticking, a coin dropping into a wallet |
-| What you earn | Five whole cards, one at a time: cash and points, Silver, Gold, Platinum (each with the holographic tilt), the Human Certificate |
+| What it is and how it works | One line, then the four steps as a row of small cards drifting past. Each acts its step out: an ID scanned and stamped, the matching study lifting out, answers ticking, a coin dropping into a wallet |
+| What you earn | Six small cards drifting past: cash, points, Silver, Gold, Platinum (each with the holographic tilt), the Human Certificate. Every card is an emblem, a name and one line, so none is taller or emptier than another |
 | The close | The app's own `StudyCard` with a seeded study, labelled a sample, and the researcher client route |
 
 **The layout rules this page is built on** (it was rebuilt after a first version broke all of them):
 
-1. **Nothing is cut off.** A carousel shows one whole card at a time: each slide is the
-   full width of the frame with the 16px gutter inside it, so neighbours are entirely
-   off screen. No peeking cards. It snaps, shows dots, and turns by itself until touched.
+1. **Nothing is cut at a hard edge.** The two rows of cards are marquees
+   (`Marquee.tsx`): they drift sideways at 22px a second and loop, so there is always
+   more arriving. Both edges of a row fade out through an eased mask 44px wide
+   (`.ld-row`), fully transparent for the outermost 6px, so a card dissolves rather
+   than being sliced. Cards are sized so two of them and their gap always fit between
+   the fades: at every position in the loop at least one card is completely clear
+   (checked at every half pixel). The row is an ordinary scroller, so a swipe is the
+   browser's own and always wins: a touch stops the drift at once, and it resumes 1.2
+   seconds after the finger lifts and any flick has run out. Anything else that moves
+   the row (wheel, keys) wins the same way. Under reduced motion nothing drifts: the
+   row is swiped by hand, snaps a card clear of the fade, and shows dots.
 2. **Nothing sits under a bar.** The progress bar on top and the buttons at the bottom
    are solid. Every screen pads for both (`.ld-screen`) and centres its content between.
 3. **Everything fits at 375 by 667.** Checked by looking at the renders, and by
@@ -506,7 +514,7 @@ and opacity using the app's springs as `linear()` easings, started by `data-seen
 Which screen is in front comes from `IntersectionObserver`. Loops pause off screen.
 
 **Reduced motion.** A still page that still reads: the mark whole, type in place, cards
-at rest, no auto-turning carousel.
+at rest, rows that only move under a finger.
 
 **Numbers.** Every figure comes from `lib/rules.ts` or the seed data: 25 points a study,
 100 points to $1, minimum 1,000, tier thresholds 50, 70, 90, certificate valid 12

@@ -1,8 +1,8 @@
 import { animate, useInView } from 'framer-motion'
-import { Children, createContext, useContext, useEffect, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useRef } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { cn } from '../../lib/cn'
-import { DUR, EASE, prefersReduced, rollDuration } from '../../lib/motion'
+import { DUR, EASE, rollDuration } from '../../lib/motion'
 
 /** Lets a screen tell the page it is the one in front, for the progress segments. */
 export const LandingCtx = createContext<(id: string) => void>(() => undefined)
@@ -65,47 +65,5 @@ export function Coin({ className, children }: { className?: string; children?: R
     <span className={cn('ld-coin flex items-center justify-center rounded-full bg-brand-primary font-semibold text-yellow-1000', className)}>
       {children ?? '$'}
     </span>
-  )
-}
-
-/**
- * One whole card at a time. Each slide is the full width of the frame with the
- * app's 16px gutter inside it, so the card on screen is complete and its
- * neighbours are entirely off screen: nothing peeks, nothing is sliced. It
- * snaps, shows where you are in dots, and while nobody has touched it turns to
- * the next card by itself, which is what tells you there are more.
- */
-export function Carousel({ label, i = 1, children }: { label: string; i?: number; children: ReactNode }) {
-  const row = useRef<HTMLDivElement>(null)
-  const [index, setIndex] = useState(0)
-  const [touched, setTouched] = useState(false)
-  const { live } = useSection()
-  const count = Children.count(children)
-
-  useEffect(() => {
-    if (!live || touched || prefersReduced()) return
-    const t = window.setInterval(() => {
-      const el = row.current
-      if (!el) return
-      const next = (Math.round(el.scrollLeft / el.clientWidth) + 1) % count
-      el.scrollTo({ left: next * el.clientWidth, behavior: 'smooth' })
-    }, 3200)
-    return () => window.clearInterval(t)
-  }, [live, touched, count])
-
-  return (
-    <div style={at(i)} className="ld-in ld-pop flex flex-col">
-      <div ref={row} role="group" aria-label={label} tabIndex={0}
-        onScroll={(e) => setIndex(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}
-        onPointerDown={() => setTouched(true)} onKeyDown={() => setTouched(true)}
-        className="flex snap-x snap-mandatory overflow-x-auto">
-        {Children.map(children, (child) => <div className="w-full shrink-0 snap-center snap-always px-4 pb-6 pt-2">{child}</div>)}
-      </div>
-      <div aria-hidden="true" className="flex items-center justify-center">
-        {Array.from({ length: count }, (_, n) => (
-          <span key={n} className={cn('h-2 w-6 rounded-full transition-transform duration-300', n === index ? 'bg-brand-primary' : 'scale-x-[0.34] bg-text-disabled')} />
-        ))}
-      </div>
-    </div>
   )
 }
