@@ -1,19 +1,24 @@
 import { profileCompletion } from '../../lib/profile'
 import { POINTS, pointsToUsd, WITHDRAWAL_FEE } from '../../lib/rules'
 import { newUserState, returningUserState } from '../data'
-import { USER } from '../seed/account'
 import { DEFAULT_FILTERS } from '../storeTypes'
 import type { Action, AppState } from '../storeTypes'
 
 /** Wallet, points, profile, notifications, support and toasts. */
 export function accountReducer(state: AppState, action: Action): AppState | null {
   switch (action.type) {
-    /** The seed account's email brings that account back; anything else signs in whoever is here. */
-    case 'SIGN_IN': {
-      const seed = action.email?.trim().toLowerCase() === USER.email.toLowerCase()
-      if (seed && state.user.email.toLowerCase() !== USER.email.toLowerCase()) return { ...returningUserState(), signedIn: true }
+    /**
+     * Signing in on the Sign In screen (an email is given) always hands over the
+     * demo account exactly as a fresh install has it: every balance, study,
+     * notification, ticket, profile edit and setting back to the seed. People
+     * pass the phone to each other by signing out and in, and each must start
+     * from the same place. Only the link the device arrived through is kept: it
+     * belongs to the visit, not the account. Finishing onboarding (no email)
+     * just signs in the account that was being made.
+     */
+    case 'SIGN_IN':
+      if (action.email) return { ...returningUserState(), signedIn: true, arrivedVia: state.arrivedVia }
       return { ...state, signedIn: true }
-    }
     case 'SIGN_OUT':
       return { ...state, signedIn: false }
     /** Workflow 15: a new account starts clean, signed in, free to browse. */

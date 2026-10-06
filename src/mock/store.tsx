@@ -5,8 +5,8 @@ import { createActions } from './actions'
 import type { Actions } from './actions'
 import { returningUserState } from './data'
 import { forgetSeen } from '../lib/seen'
+import { setSound } from '../lib/settings'
 
-const SEED_EMAIL = returningUserState().user.email.toLowerCase()
 import { deriveUser, trustHistory } from '../lib/derive'
 import type { DerivedFigures, TrustHistoryEntry } from '../lib/derive'
 import { reducer } from './reducer'
@@ -65,9 +65,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     dismissToast: (id: string) => dispatch({ type: 'DISMISS_TOAST', id }),
     notify,
     signIn: (email?: string) => {
-      // Signing back into the demo account restores its seed; forget what was last
-      // seen for it, so the restored figures do not animate as if they had fallen.
-      if (email && email.trim().toLowerCase() === SEED_EMAIL && state.user.email.toLowerCase() !== SEED_EMAIL) forgetSeen(`${SEED_EMAIL}:`)
+      // Signing in restores the seed (reducers/account.ts). The device's own memory goes
+      // with it: the figures last seen, so restored numbers do not animate as if they
+      // had fallen, and the sound setting. Silent: no toast, no banner.
+      if (email) { forgetSeen(''); setSound(false) }
       dispatch({ type: 'SIGN_IN', email })
     },
     signOut: () => dispatch({ type: 'SIGN_OUT' }),

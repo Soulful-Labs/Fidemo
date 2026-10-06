@@ -165,7 +165,7 @@ Write all of these into `src/routes.ts` in step 0.
 ### Auth
 | Route | Screen |
 |---|---|
-| `/` | Redirect. Signed in goes to `/dashboard`, otherwise `/signup` |
+| `/` | Landing page for a signed-out user. Signed in redirects to `/dashboard` |
 | `/signup` | Create your account |
 | `/signin` | Welcome back |
 | `/verify-otp` | Enter OTP |

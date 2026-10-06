@@ -431,8 +431,9 @@ demo, look at a screen before the thing that changes it.
 ## The demo walk
 
 Starting state only was changed (three seeded client reviews are 5 star, the diary is
-three days in). No rule, threshold or point value moved. Open `/signin?reset=1` to
-start clean.
+three days in). No rule, threshold or point value moved. Signing in always restores
+this starting state (every balance, study, notification, ticket and setting), so to
+start clean just sign out and sign in.
 
 1. **Sign in** as the seeded account. Dashboard: Trust Score 85, Gold, 1,250 points, $473.
 2. **Look around first**, so the screens remember: Profile, Trust Score, Wallet,
