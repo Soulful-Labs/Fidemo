@@ -13,7 +13,7 @@ import { useElastic, useLongPressSwell } from './playful/touch'
 import { isPlayful, usePlayful } from '../lib/playful'
 import { recordNavigation } from './history'
 import { isAltPalette, showsNav } from './navigation'
-import { CSS, play, springTo } from '../lib/motion'
+import { CSS, TIER, around, play } from '../lib/motion'
 
 /**
  * Global interaction rule 8: scroll resets on a new navigation and is restored
@@ -51,9 +51,12 @@ function useRouteMotion(ref: React.RefObject<HTMLElement | null>, pathname: stri
     if (from === null || from === pathname) return
     const tabs = showsNav(from) && showsNav(pathname)
     const dx = tabs || navigationType === 'REPLACE' ? 0 : navigationType === 'POP' ? -24 : 24
-    // PLAYFUL: the new screen swings in on a bouncy spring, past its place and back.
+    // PLAYFUL, tier 1 (getting around): a small fade and slide, fast, ease out, no
+    // overshoot. Switching tabs moves nothing but the nav tint: one tap, one motion.
     if (isPlayful()) {
-      springTo(ref.current, { opacity: 0, transform: dx ? `translateX(${dx * 2}px) scale(0.96)` : 'translateY(24px) scale(0.96)' }, 'bouncy', 0, { opacity: 1, transform: 'none' })
+      if (tabs) return
+      const s = TIER.around.slide * Math.sign(dx)
+      around(ref.current, { opacity: 0, transform: dx ? `translateX(${s}px)` : `translateY(${TIER.around.slide * 0.75}px)` }, { opacity: 1, transform: 'none' })
       return
     }
     play(ref.current, [

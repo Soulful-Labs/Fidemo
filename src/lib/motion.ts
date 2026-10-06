@@ -134,18 +134,18 @@ export const dialog: Variants = {
   gone: { opacity: 0, scale: 0.96, transition: { duration: DUR.fast, ease: EASE.in } },
 }
 
-/** PLAYFUL: dialogs come at you from in front of the glass and bounce into place. */
+/** PLAYFUL, tier 1: a plain modal opens and closes calmly. A small fade and scale, no overshoot. */
 export const dialogPlayful: Variants = {
-  hidden: { opacity: 0, scale: 1.18, rotateX: 22, y: -24 },
-  shown: { opacity: 1, scale: 1, rotateX: 0, y: 0, transition: { ...SPRING.bouncy, opacity: { duration: DUR.fast } } },
-  gone: { opacity: 0, scale: 0.88, rotateX: -10, transition: { duration: DUR.fast, ease: EASE.in } },
+  hidden: { opacity: 0, scale: 0.97, y: 6 },
+  shown: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.16, ease: EASE.out } },
+  gone: { opacity: 0, scale: 0.98, transition: { duration: 0.12, ease: EASE.in } },
 }
 
-/** PLAYFUL: sheets rise past their resting line and settle back. */
+/** PLAYFUL, tier 1: a sheet rises and sinks without passing its line. */
 export const sheetPlayful: Variants = {
   hidden: { y: '100%' },
-  shown: { y: 0, transition: SPRING.bouncy },
-  gone: { y: '100%', transition: { duration: DUR.base, ease: EASE.in } },
+  shown: { y: 0, transition: { duration: 0.18, ease: EASE.out } },
+  gone: { y: '100%', transition: { duration: 0.16, ease: EASE.in } },
 }
 
 export const sheet: Variants = {
@@ -186,6 +186,34 @@ export function installReducedMotion() {
  * Web Animations for the small imperative touches (a nudge, a pulse). Skipped
  * entirely under reduced motion, so nothing per screen has to remember to check.
  */
+/**
+ * Motion is earned (docs/Motion.md, "Tiers"). Under PLAYFUL every animation
+ * belongs to exactly one tier:
+ *  1 AROUND  getting around: fast and calm, ease out, a small fade and slide,
+ *            never an overshoot.
+ *  2 CHANGED something changed: one small settle that may pass rest once, and ends.
+ *  3 EARNED  something was earned: springs, overshoot, confetti, flips, fanfare.
+ *            Only tier 3 uses the bouncy and slam springs.
+ */
+export const TIER = {
+  around: { ms: 160, easing: CSS.out, slide: 8 },
+  changed: { ms: 240, easing: 'cubic-bezier(0.3, 1.32, 0.6, 1)' },
+} as const
+
+/** Framer transitions for tiers 1 and 2. */
+export const AROUND = { duration: TIER.around.ms / 1000, ease: EASE.out } as const
+export const CHANGED = { duration: TIER.changed.ms / 1000, ease: [0.3, 1.32, 0.6, 1] } as const
+
+/** Tier 1: from `from` back to rest, calm and quick, no overshoot. */
+export function around(el: Element | null | undefined, from: Keyframe, to: Keyframe = { transform: 'none' }) {
+  return play(el, [from, to], TIER.around.ms, TIER.around.easing)
+}
+
+/** Tier 2: one small settle from `from` to rest (at most one pass beyond it). */
+export function settleTo(el: Element | null | undefined, from: Keyframe, to: Keyframe = { transform: 'none' }) {
+  return play(el, [from, to], TIER.changed.ms, TIER.changed.easing)
+}
+
 const curves = new Map<string, { easing: string; ms: number }>()
 /** springCurve, cached: the same five springs are asked for again and again. */
 export function springEase(name: keyof typeof SPRING) {

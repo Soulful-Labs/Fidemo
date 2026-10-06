@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { feedback } from '../../lib/feedback'
-import { DUR, prefersReduced, springTo } from '../../lib/motion'
+import { DUR, TIER, play, prefersReduced } from '../../lib/motion'
 import { usePlayful } from '../../lib/playful'
 
 const PULL_TRIGGER = 90
@@ -44,7 +44,8 @@ export function useElastic(main: React.RefObject<HTMLElement | null>) {
         window.setTimeout(() => setSpinning(false), DUR.slow * 1000)
       }
       set(0)
-      if (c && from) springTo(c, { transform: `translateY(${from}px)` }, 'bouncy')
+      // Tier 1: the list settles home, no spring past it.
+      if (c && from) play(c, [{ transform: `translateY(${from}px)` }, { transform: 'none' }], TIER.around.ms + 60, TIER.around.easing)
       edge = null
     }
 
@@ -103,13 +104,13 @@ export function useLongPressSwell() {
       timer = window.setTimeout(() => {
         feedback('swell')
         swallow.current = true
-        anim = target.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.06)' }], { duration: DUR.slow * 1.4, easing: 'ease-out', fill: 'forwards' })
+        anim = target.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.04)' }], { duration: DUR.slow * 1.4, easing: 'ease-out', fill: 'forwards' })
       }, 420)
     }
     const move = (e: PointerEvent) => { if (card && Math.hypot(e.clientX - x, e.clientY - y) > 8) window.clearTimeout(timer) }
     const up = () => {
       window.clearTimeout(timer)
-      if (anim && card) { anim.cancel(); springTo(card, { transform: 'scale(1.06)' }, 'bouncy') }
+      if (anim && card) { anim.cancel(); play(card, [{ transform: 'scale(1.04)' }, { transform: 'none' }], TIER.around.ms, TIER.around.easing) }
       anim = undefined; card = null
     }
     const click = (e: MouseEvent) => { if (swallow.current) { e.stopPropagation(); e.preventDefault(); swallow.current = false } }

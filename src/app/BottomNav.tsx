@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react'
 import { feedback } from '../lib/feedback'
 import { Link } from 'react-router-dom'
 import { cn } from '../lib/cn'
-import { SPRING, springTo } from '../lib/motion'
+import { AROUND, SPRING, around } from '../lib/motion'
 import { isPlayful, usePlayful } from '../lib/playful'
 import { TABS, activeTab } from './navigation'
 
@@ -26,7 +26,8 @@ export default function BottomNav({ pathname, alt = false }: { pathname: string;
     if (last.current === active) return
     last.current = active
     if (!playful || !active) return
-    springTo(icons.current.get(active), { transform: 'translateY(5px) scale(1.4, 0.6)' }, 'bouncy')
+    // Tier 1, and quiet: the icon dips a touch and comes straight back. No bounce.
+    around(icons.current.get(active), { transform: 'scale(0.9)' })
     feedback('select')
   }, [active, playful])
 
@@ -45,7 +46,7 @@ export default function BottomNav({ pathname, alt = false }: { pathname: string;
             )}
           >
             {/* The tint slides from tab to tab. */}
-            {isActive && <motion.span layoutId="nav-tint" transition={isPlayful() ? SPRING.bouncy : SPRING.soft} aria-hidden="true" className="absolute inset-0 -z-10 rounded-lg bg-yellow-1000/40" />}
+            {isActive && <motion.span layoutId="nav-tint" transition={isPlayful() ? AROUND : SPRING.soft} aria-hidden="true" className="absolute inset-0 -z-10 rounded-lg bg-yellow-1000/40" />}
             {playful ? <span ref={(el) => { icons.current.set(tab.key, el) }} className="flex"><tab.Icon /></span> : <tab.Icon />}
             <span className="text-text-regular">{tab.label}</span>
           </Link>

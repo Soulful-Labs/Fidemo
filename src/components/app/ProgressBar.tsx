@@ -51,6 +51,8 @@ export default function ProgressBar({
     mounted.current = true
     el.style.transform = at(to)
     if (from === undefined) {
+      // PLAYFUL: nothing moved, so nothing animates.
+      if (isPlayful()) return
       // First sight: no earlier value to move from, so it settles in place instead.
       play(el, [{ opacity: 0.35 }, { opacity: 1 }], CSS.slow, CSS.out, delay)
       play(glint.current, [{ transform: 'translateX(-100%)', opacity: 1 }, { transform: 'translateX(400%)', opacity: 1 }], CSS.slow, CSS.inOut, delay + CSS.base)
@@ -106,8 +108,7 @@ export default function ProgressBar({
         >
           {playful && (
             <>
-              {/* Liquid: a shimmer travelling along what is filled, and a bright leading edge. */}
-              <span data-decor aria-hidden="true" className="pf-shimmer pointer-events-none absolute inset-0" />
+              {/* A bright leading edge. (No travelling shimmer: a screen being read stays still.) */}
               <span ref={cap} data-decor aria-hidden="true" className="pf-cap pointer-events-none absolute inset-y-0 right-0 w-4 origin-right rounded-full" />
             </>
           )}

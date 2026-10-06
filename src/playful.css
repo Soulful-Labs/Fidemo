@@ -62,9 +62,10 @@
   ) {
     --edge-h: 4px;
     box-shadow: 0 var(--edge-h) 0 var(--edge, transparent), var(--ring, 0 0 #0000), var(--pf-hi), var(--pf-contact), var(--pf-ambient);
+    /* Tier 1: the release settles in 120ms, ease out, never springing past rest. */
     transition:
-      transform var(--spring-bouncy-ms) var(--spring-bouncy),
-      box-shadow 140ms var(--ease-out),
+      transform 120ms var(--ease-out),
+      box-shadow 120ms var(--ease-out),
       color 160ms var(--ease-out), background-color 160ms var(--ease-out);
   }
 
@@ -80,7 +81,7 @@
   .border-stroke-3 { --edge: color-mix(in oklab, var(--pf-stroke-3) 70%, black); --ring: inset 0 0 0 1.5px var(--pf-stroke-3); }
   .border-cta-primary { --edge: var(--pf-yellow-1000); --ring: inset 0 0 0 1.5px var(--pf-yellow); }
 
-  /* Pressed: down by exactly the edge, the edge gone, released on a bouncy spring. */
+  /* Pressed: down by exactly the edge, the edge gone; released straight back to rest. */
   :is(button, a[href], [role=link], [role=button], label):is(
     .bg-cta-gradient, .bg-cta-secondary, .bg-state-dangerBg,
     .border-cta-tertiaryStroke, .border-stroke-3, .border-cta-primary,
@@ -97,35 +98,27 @@
     box-shadow: inset 0 3px 0 rgb(0 0 0 / 0.4), inset 0 0 0 1.5px color-mix(in oklab, var(--pf-tert) 40%, transparent);
   }
 
-  /* Everything else tappable squishes and bounces back past rest. */
+  /* Everything else tappable gives slightly under the finger and comes straight back (tier 1). */
   :where(button, a[href], [role=button], [role=link], [role=tab]) {
     /* `scale` only: transform belongs to framer-motion on some of these, and a CSS
        transition on it would smear every frame framer writes. */
     transition-property: scale, color, background-color, border-color, opacity;
-    transition-duration: var(--spring-bouncy-ms), 160ms, 160ms, 160ms, 160ms;
-    transition-timing-function: var(--spring-bouncy), var(--ease-out), var(--ease-out), var(--ease-out), var(--ease-out);
+    transition-duration: 120ms;
+    transition-timing-function: var(--ease-out);
   }
   :where(button, a[href], [role=button], [role=link], [role=tab]):not(:disabled, [aria-disabled=true]):active {
-    scale: 0.92;
+    scale: 0.97;
     transition-duration: 60ms;
   }
 
-  /* ---- Cards: real elevation, and they lift when touched ------------------- */
+  /* ---- Cards: real elevation (a slab edge, a contact and an ambient shadow) - */
   :is(div, section, article, li):is(.rounded-lg, .rounded-xl):is(.bg-bg-1, .bg-bg-2, .bg-bgAlt-2) {
     box-shadow:
       0 4px 0 color-mix(in oklab, var(--pf-bg-1) 45%, black),
       inset 0 0 0 1.5px color-mix(in oklab, var(--pf-title) 5%, transparent),
       var(--pf-hi), var(--pf-contact), var(--pf-ambient);
-    transition: transform var(--spring-bouncy-ms) var(--spring-bouncy), box-shadow 200ms var(--ease-out);
   }
-  :is(div, section, article, li):is(.rounded-lg, .rounded-xl):is(.bg-bg-1, .bg-bg-2, .bg-bgAlt-2):active {
-    transform: translateY(-3px);
-    box-shadow:
-      0 7px 0 color-mix(in oklab, var(--pf-bg-1) 45%, black),
-      inset 0 0 0 1.5px color-mix(in oklab, var(--pf-title) 7%, transparent),
-      var(--pf-hi), var(--pf-contact), var(--pf-lifted);
-    transition-duration: 160ms, 160ms;
-  }
+  /* Cards keep their depth but do not lift when touched: the thing pressed inside them is the one motion. */
 
   /* ---- Inputs: sunken wells with a confident rim --------------------------- */
   div.border-1.border-stroke-3, input.border-1, textarea.border-1 {
@@ -161,53 +154,6 @@
 }
 .hl-glare {
   background: radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--pf-title) 38%, transparent) 0%, transparent 42%);
-}
-
-/* While a modal, sheet or celebration is up (lib/overlays.ts marks <html>),
-   the screen and its nav recede into the phone. Under PLAYFUL every overlay
-   is portalled to <body>, so nothing it holds is inside what recedes. */
-@scope ([data-playful=on]) to ([data-playful=off]) {
-  main, main ~ nav {
-    transition: transform var(--spring-soft-ms) var(--spring-soft), opacity 220ms var(--ease-out);
-  }
-  :scope[data-overlay] :is(main, main ~ nav) {
-    transform: scale(0.93) translateY(10px);
-    opacity: 0.55;
-  }
-}
-
-/* Lists: each row springs up into place, past its line and back, instead of easing in. */
-@keyframes pf-rise {
-  from { opacity: 0; transform: translateY(22px) scale(0.96); }
-}
-@scope ([data-playful=on]) to ([data-playful=off]) {
-  [data-stagger] > * {
-    animation-name: pf-rise;
-    animation-duration: var(--spring-bouncy-ms);
-    animation-timing-function: var(--spring-bouncy);
-  }
-}
-
-/* Liquid progress (ProgressBar under PLAYFUL): a highlight travelling along the
-   filled part, and a bright leading edge, both tints of the fill itself. */
-@keyframes pf-shimmer {
-  from { transform: translateX(-60%); }
-  to { transform: translateX(160%); }
-}
-.pf-shimmer {
-  background: linear-gradient(100deg, transparent 30%, color-mix(in oklab, var(--pf-title) 45%, transparent) 50%, transparent 70%);
-  width: 60%;
-  animation: pf-shimmer 2.2s var(--ease-in-out) infinite;
-}
-.pf-cap {
-  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--pf-title) 70%, transparent));
-  box-shadow: 0 0 10px 2px color-mix(in oklab, var(--pf-title) 35%, transparent);
-}
-
-/* The Trust Score dial's glow (ScoreDial under PLAYFUL), the brand yellow fading out. */
-.pf-dial-glow {
-  background: radial-gradient(circle, color-mix(in oklab, var(--pf-yellow) 55%, transparent) 0%, color-mix(in oklab, var(--pf-yellow) 18%, transparent) 45%, transparent 70%);
-  transition: opacity 900ms var(--ease-out);
 }
 
 /* Rubber banding is ours under PLAYFUL; keep the browser's own pull-to-refresh out of it. */

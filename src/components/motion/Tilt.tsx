@@ -43,8 +43,9 @@ function TiltOn({ children, className, holo = 1, ...rest }: TiltProps) {
   const ref = useRef<HTMLDivElement>(null)
   const px = useMotionValue(0) // -1 .. 1 across
   const py = useMotionValue(0) // -1 .. 1 down
-  const sx = useSpring(px, SPRING.bouncy)
-  const sy = useSpring(py, SPRING.bouncy)
+  // Follows the finger smoothly: a soft spring with no visible overshoot.
+  const sx = useSpring(px, SPRING.soft)
+  const sy = useSpring(py, SPRING.soft)
   const rotateY = useTransform(sx, (v) => v * MAX)
   const rotateX = useTransform(sy, (v) => -v * MAX)
   // The sheen slides the opposite way to the tilt, the glare follows the light.
@@ -61,8 +62,10 @@ function TiltOn({ children, className, holo = 1, ...rest }: TiltProps) {
   useEffect(() => {
     const onTurn = (e: DeviceOrientationEvent) => {
       if (holding.current || e.gamma == null || e.beta == null) return
-      px.set(Math.max(-1, Math.min(1, e.gamma / 30)))
-      py.set(Math.max(-1, Math.min(1, (e.beta - 40) / 30)))
+      // Damped: small hand movements while reading leave the card still; only a deliberate tilt moves it, and gently.
+      const dead = (v: number) => (Math.abs(v) < 0.35 ? 0 : (v - Math.sign(v) * 0.35) * 0.5)
+      px.set(dead(Math.max(-1, Math.min(1, e.gamma / 30))))
+      py.set(dead(Math.max(-1, Math.min(1, (e.beta - 40) / 30))))
     }
     window.addEventListener('deviceorientation', onTurn)
     return () => window.removeEventListener('deviceorientation', onTurn)
