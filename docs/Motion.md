@@ -380,6 +380,87 @@ It is gone: no flag, no context, no storage, no query parameter, no toggle. The 
 playful everywhere, always. To see the Figma-faithful build, check out `b001385`. The
 one remaining demo setting is **Sound** (`lib/settings.ts`), off by default.
 
+## Where each moment really lives
+
+`/motion` is a gallery, not the home of anything. Every moment on it plays in the real
+app, from the same component, and `scripts/moments-walk.mjs` walks the real screens and
+checks each one moves (`OUT=<dir> node --experimental-websocket scripts/moments-walk.mjs`).
+
+| Moment | Real home | Seen playing there |
+|---|---|---|
+| A. Points arrive (coin flip, count up) | Points earned modal after a study pays; after sign up with a referral link | yes |
+| A. Counters tumble | Dashboard points chip and tiles, Wallet balance and All Time Earned, Reward Points balance | yes |
+| A. Points toy (long press) | Reward Points balance only | yes |
+| B. Tier upgrade | Over whatever screen you are on when the score crosses 70 or 90 | yes, 85 to 90, Platinum |
+| C. Certificate seal | Onboarding, when the ID is accepted (step 3 of 3, after Consent) | yes |
+| D. Liquid bar | Diary overview, Trust Score Details rating bars, tier bar, onboarding step bar, question flows | yes |
+| D. Bar reaches the end (flash, bulge) | Diary overview at 5 of 5 | yes |
+| D. Dial dots light one by one | Dashboard, Profile, Trust Score Details (Certificate uses the same dial, not walked) | yes, on the first three |
+| D. Profile ring | Profile, after saving My Profile | yes |
+| E. Deduction (quiet fall, no bounce) | Dashboard dial and Trust Score Details after Cancel Study | yes, 90 to 88 |
+| F. Completed successfully | `/studies/:id/survey/done`, PIN confirmed | yes |
+| F/G. Paid banner (earned line, small burst) | Study Detail, first time it is seen as Paid | yes |
+| G. Applied (one settle) | `/studies/:id/applied` | yes |
+| G. Qualified (pop and glint) | Study Detail banner, first time seen as invited | yes |
+| G. Not a match (calm) | Screener result | yes |
+| H. Redeemed, Withdrawal sent (one settle) | `/points/redeem/done`, `/wallet/withdraw/done` | yes |
+| I. Step fills, file ticks in, Welcome seal | Onboarding 1 to 3 and Welcome | yes |
+| J. Toggle settle, locked nudge, blocked button nudge, toast | Email Notifications, Consent and Cookies, any disabled Continue | yes |
+
+**One bug this turned up.** Bars, dial dots and the profile ring animated on `/motion`,
+where the value changes under a mounted component, and did nothing on a real screen you
+came back to. `useArrival` marked the new value as seen on a 0 ms timer, before the
+short beat that precedes the animation, so by the time it was due the change looked
+already seen. A value is now marked seen only when its arrival starts.
+
+**Remembered, not replayed.** A bar, dial or counter animates from the value you last
+saw on *that* screen. A screen you have never opened just shows the figure. So in a
+demo, look at a screen before the thing that changes it.
+
+### No real home
+
+- **List row stagger replay.** Lists are tier 1 and stay still. Removed from `/motion`.
+- **Skeleton shimmer demo.** Loading in the app is a 600 ms spinner; there is no
+  skeleton screen to put it on. Removed from `/motion`.
+- **Sound.** Works everywhere, but its switch is only on `/motion`. Account Settings
+  has no row for it in the PRD, and adding one needs a new string.
+
+## The demo walk
+
+Starting state only was changed (three seeded client reviews are 5 star, the diary is
+three days in). No rule, threshold or point value moved. Open `/signin?reset=1` to
+start clean.
+
+1. **Sign in** as the seeded account. Dashboard: Trust Score 85, Gold, 1,250 points, $473.
+2. **Look around first**, so the screens remember: Profile, Trust Score, Wallet,
+   Reward Points, then My Studies, Invites, Weekend meal planning diary (3/5).
+3. **Invites, Wellness app first impressions, Start Study.** Answer the survey, Submit.
+   Completed successfully: badge and confetti.
+4. About five seconds later the study pays. **Tier upgrade, Gold to Platinum** (the
+   completion is +1 and the 5 star review is +4, 85 to 90). Close it.
+5. **Points earned** follows on its own: +25, coin flip, count up.
+6. Back on the study: the **Paid banner** pops its earned line with a small burst.
+7. **Dashboard:** points chip tumbles 1,250 to 1,275, wallet $473 to $548, dial lights
+   to 90, streak 0 to 1.
+8. **Trust Score:** dial dots light, rating bars fill, history shows +1 and +4.
+   **Profile**, **Wallet** and **Reward Points** each tumble once, the first time you return.
+9. **Reward Points:** long press the balance for the toy.
+10. **Diary:** Resume Study Day 4, submit: bar fills 3 to 4, edge settles. Day 5: bar
+    reaches the end, flash and bulge. Complete Study pays again.
+11. **Explore, Telehealth triage, Accept & Apply,** pass the screener: Applied settles
+    once; three seconds later the detail shows the **qualified** pop and glint.
+12. **GLP-1 Care Plans,** answer the last option each time: **not a match**, calm.
+13. **Scheduled, Nurse staffing software review, Cancel Study:** dial falls 90 to 88,
+    quietly, back to Gold. No bounce, no red flash.
+14. **Redeem 1,000 points:** one settle, no coins; points fall, wallet rises $10.
+15. **Profile, My Profile, save About Me:** the ring fills.
+16. **Sign out. Sign up** from a referral link (`/signup?ref=DEMO7`): being referred
+    points arrive after OTP; step bar fills 1 to 3; ID files tick in; after Consent the
+    **certificate seal** strikes; then Welcome.
+
+Withdrawing after step 4: this year's earnings pass $600, so the app asks for the tax
+form first. That is the policy, not a bug; upload it and Withdraw works.
+
 ## 1. Depth
 
 **The edge.** Every pressable thing with a surface gets a solid bottom edge in a

@@ -28,7 +28,10 @@ export function useArrival(
     const from = prefersReduced() ? value : shown.current ?? (key ? lastSeen(key) : undefined)
     let stop: void | (() => void)
     let cancelWait = () => undefined as void
-    const go = () => { stop = cb.current(from, value) }
+    // The value only counts as "seen" once its arrival actually starts. (Marking it
+    // on a timer let StrictMode's delayed second run of this effect find it already
+    // seen and skip the animation, so nothing moved on a screen you came back to.)
+    const go = () => { stop = cb.current(from, value); shown.current = value; if (key) markSeen(key, value) }
 
     if (key && from !== undefined && from !== value) {
       cb.current(from, from) // hold the old value on screen while waiting
@@ -36,8 +39,6 @@ export function useArrival(
       cancelWait = () => window.clearTimeout(beat)
     } else go()
 
-    // Only once this effect has really stuck (not StrictMode's rehearsal) is the value "seen".
-    const settle = window.setTimeout(() => { shown.current = value; if (key) markSeen(key, value) }, 0)
-    return () => { window.clearTimeout(settle); cancelWait(); if (typeof stop === 'function') stop() }
+    return () => { cancelWait(); if (typeof stop === 'function') stop() }
   }, [value, key])
 }

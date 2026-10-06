@@ -9,7 +9,7 @@ import type { AppState } from './storeTypes'
  */
 const KEY = 'hl-respondent-demo'
 // 3: the demo starting state was tuned so an ordinary walk earns things (docs/Motion.md, "Demo walk").
-const VERSION = 3
+const VERSION = 4
 
 export function loadPersisted(seed: AppState): AppState {
   try {
