@@ -1,8 +1,6 @@
 import { useEffect, useRef } from 'react'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { cn } from '../../lib/cn'
-import { CSS, haptic, play } from '../../lib/motion'
-import { isPlayful } from '../../lib/playful'
 import { burstOpen, rattle } from '../motion/locks'
 import { Spinner } from './icons'
 
@@ -78,8 +76,7 @@ export default function Button({
   useEffect(() => {
     const locked = Boolean(disabled)
     if (wasLocked.current && !locked) {
-      if (isPlayful()) burstOpen(el.current)
-      else play(el.current, [{ transform: 'scale(1)' }, { transform: 'scale(1.045)', offset: 0.35 }, { transform: 'scale(1)' }], CSS.slow, CSS.out)
+      burstOpen(el.current)
     }
     wasLocked.current = locked
   }, [disabled])
@@ -87,7 +84,6 @@ export default function Button({
   // ...and a locked one answers a tap with a small sideways nudge and a double tick, then says why.
   const blocked = () => {
     rattle(el.current)
-    if (!isPlayful()) haptic([8, 40, 8])
     onBlocked?.()
   }
 

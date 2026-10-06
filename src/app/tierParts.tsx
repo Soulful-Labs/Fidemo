@@ -31,19 +31,6 @@ export function Glyph({ tier, size }: { tier: Tier; size: number }) {
   return <svg viewBox="0 0 24 24" width={size} height={size}><path d="m12 3 2.6 5.5 5.9.8-4.3 4.2 1 6-5.2-2.8L6.8 19.5l1-6L3.5 9.3l5.9-.8L12 3Z" {...common} /></svg>
 }
 
-/** The tier mark, with a band of light that passes across it once it has landed. */
-export function TierCoin({ tier }: { tier: Tier }) {
-  return (
-    <span data-t="coin" style={{ opacity: 0 }}
-      className={cn('relative flex h-36 w-36 items-center justify-center overflow-hidden rounded-full border-4 shadow-glow will-change-transform', COIN[tier].ring)}>
-      <span className={cn('flex h-28 w-28 items-center justify-center rounded-full', COIN[tier].disc)}>
-        <Glyph tier={tier} size={64} />
-      </span>
-      <span data-decor aria-hidden="true" className="hl-sheen-loop pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-linear-to-r from-transparent via-text-title/35 to-transparent" />
-    </span>
-  )
-}
-
 /** Slow light rays behind the mark, in the tier's own colour. Decorative. */
 export function Rays({ tier }: { tier: Tier }) {
   const wedges = Array.from({ length: 14 }, (_, i) => i * (360 / 14))
@@ -78,7 +65,7 @@ export function CoinFace({ tier, className }: { tier: Tier; className?: string }
 }
 
 /**
- * PLAYFUL: the tier mark as a two-sided coin. The old tier is on the front,
+ * The tier mark as a two-sided coin. The old tier is on the front,
  * the new tier on the back; the timeline turns it over (`data-t="flip"`).
  */
 export function FlipCoin({ from, to }: { from: Tier; to: Tier }) {

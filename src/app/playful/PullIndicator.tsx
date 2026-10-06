@@ -1,7 +1,7 @@
 import { PointsCoin, Spinner } from '../../components/ui/icons'
 
 /**
- * The thing that stretches when a list is pulled down from the top (PLAYFUL):
+ * The thing that stretches when a list is pulled down from the top:
  * a coin that drops into view, stretches the further it is pulled, turns once
  * past the line, and spins briefly when let go there.
  */

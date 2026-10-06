@@ -17,7 +17,7 @@ export function PayoutSection() {
       <Stage alt>
         <span className="text-body-regular text-text-subtitle">Wallet Balance</span>
         <span ref={badge} className="self-start">
-          <RollingNumber className="text-display-s text-brand-primary" value={balance} format={money} step={0.01} float pulse={badge} />
+          <RollingNumber className="text-display-s text-brand-primary" value={balance} format={money} step={0.01} float />
         </span>
       </Stage>
       <Plays>

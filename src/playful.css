@@ -1,10 +1,10 @@
 /* ---------------------------------------------------------------------------
-   PLAYFUL: the game-feel surface layer (docs/Motion.md, "Depth").
+   The app's surface layer (docs/Motion.md, "Depth"): edges, elevation, rounder
+   corners, sunken wells, the collectible foil, the dial glow.
 
-   Everything here lives inside one @scope: it applies only under
-   [data-playful=on] (set on <html> by lib/playful.ts) and stops at any
-   [data-playful=off] subtree, which is how /motion shows before and after.
-   With the flag off none of it matches, and the app is exactly as it was.
+   The rules sit in @scope (:root) blocks so they win over the base stylesheet
+   on equal specificity, as they always have. There is no switch: the app is
+   always this. The Figma-faithful look lives in git history at b001385.
 
    Colours: only the existing tokens, mirrored below as variables (Tailwind's
    legacy config does not expose them), plus shades and tints of those made
@@ -47,7 +47,7 @@
   --pf-lifted: 0 22px 36px -14px rgb(0 0 0 / 0.9);
 }
 
-@scope ([data-playful=on]) to ([data-playful=off]) {
+@scope (:root) {
   /* ---- Rounder corners ---------------------------------------------------- */
   .rounded-sm { border-radius: 10px; }
   .rounded-md { border-radius: 15px; }
@@ -156,30 +156,30 @@
   background: radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--pf-title) 38%, transparent) 0%, transparent 42%);
 }
 
-/* Lists do not animate in under PLAYFUL: opening a screen is one motion (the route
+/* Lists do not animate in: opening a screen is one motion (the route
    change), not one per row. :scope adds specificity so this beats the base layer's rule. */
-@scope ([data-playful=on]) to ([data-playful=off]) {
+@scope (:root) {
   :scope [data-stagger] > * { animation: none; }
 }
 
-/* Progress under PLAYFUL: a bright leading edge, a tint of the fill itself. */
+/* Progress: a bright leading edge, a tint of the fill itself. */
 .pf-cap {
   background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--pf-title) 70%, transparent));
   box-shadow: 0 0 10px 2px color-mix(in oklab, var(--pf-title) 35%, transparent);
 }
 
-/* The Trust Score dial's glow (ScoreDial under PLAYFUL), the brand yellow fading out. */
+/* The Trust Score dial's glow (ScoreDial), the brand yellow fading out. */
 .pf-dial-glow {
   background: radial-gradient(circle, color-mix(in oklab, var(--pf-yellow) 55%, transparent) 0%, color-mix(in oklab, var(--pf-yellow) 18%, transparent) 45%, transparent 70%);
   transition: opacity 900ms var(--ease-out);
 }
 
-/* Rubber banding is ours under PLAYFUL; keep the browser's own pull-to-refresh out of it. */
-@scope ([data-playful=on]) to ([data-playful=off]) {
+/* Rubber banding is ours; keep the browser's own pull-to-refresh out of it. */
+@scope (:root) {
   main { overscroll-behavior-y: contain; }
 }
 
-/* Empty states under PLAYFUL: a glow that breathes, motes that drift, stars that blink. */
+/* Empty states: a glow that breathes, motes that drift, stars that blink. */
 @keyframes pf-breathe { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.35); opacity: 0.35; } }
 @keyframes pf-drift { 0%, 100% { transform: translate(0, 0); } 33% { transform: translate(10px, -12px); } 66% { transform: translate(-8px, -4px); } }
 @keyframes pf-blink { 0%, 86%, 100% { opacity: 0.9; transform: scale(1); } 90% { opacity: 0; transform: scale(0.4); } 95% { opacity: 1; transform: scale(1.3); } }

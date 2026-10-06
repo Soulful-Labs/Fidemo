@@ -11,7 +11,7 @@ import { Written } from '../CertificateUnlock'
 import { useStampPlayful } from './useStampPlayful'
 
 /**
- * Moment C under PLAYFUL: the same card, the same words, the same places, but
+ * Moment C: the same card, the same words, the same places, but
  * the seal is a hammer and the card is a collectible. See useStampPlayful for
  * the beats. Tap anywhere to skip.
  */

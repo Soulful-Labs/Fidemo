@@ -10,10 +10,9 @@ import ToastHost from './ToastHost'
 import { ConfettiLayer } from '../components/motion/Confetti'
 import PullIndicator from './playful/PullIndicator'
 import { useElastic, useLongPressSwell } from './playful/touch'
-import { isPlayful, usePlayful } from '../lib/playful'
 import { recordNavigation } from './history'
 import { isAltPalette, showsNav } from './navigation'
-import { CSS, TIER, around, play } from '../lib/motion'
+import { TIER, around } from '../lib/motion'
 
 /**
  * Global interaction rule 8: scroll resets on a new navigation and is restored
@@ -51,18 +50,11 @@ function useRouteMotion(ref: React.RefObject<HTMLElement | null>, pathname: stri
     if (from === null || from === pathname) return
     const tabs = showsNav(from) && showsNav(pathname)
     const dx = tabs || navigationType === 'REPLACE' ? 0 : navigationType === 'POP' ? -24 : 24
-    // PLAYFUL, tier 1 (getting around): a small fade and slide, fast, ease out, no
+    // Tier 1 (getting around): a small fade and slide, fast, ease out, no
     // overshoot. Switching tabs moves nothing but the nav tint: one tap, one motion.
-    if (isPlayful()) {
-      if (tabs) return
-      const s = TIER.around.slide * Math.sign(dx)
-      around(ref.current, { opacity: 0, transform: dx ? `translateX(${s}px)` : `translateY(${TIER.around.slide * 0.75}px)` }, { opacity: 1, transform: 'none' })
-      return
-    }
-    play(ref.current, [
-      { opacity: 0, transform: dx ? `translateX(${dx}px)` : 'translateY(8px)' },
-      { opacity: 1, transform: 'none' },
-    ], CSS.base, CSS.out)
+    if (tabs) return
+    const s = TIER.around.slide * Math.sign(dx)
+    around(ref.current, { opacity: 0, transform: dx ? `translateX(${s}px)` : `translateY(${TIER.around.slide * 0.75}px)` }, { opacity: 1, transform: 'none' })
   }, [ref, pathname, navigationType])
 }
 
@@ -110,7 +102,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
   usePressHaptics()
 
   const navVisible = showsNav(pathname)
-  const playful = usePlayful()
   const alt = isAltPalette(pathname)
 
   return (
@@ -119,13 +110,13 @@ export default function AppShell({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      {playful && <PullIndicator {...elastic} />}
+      <PullIndicator {...elastic} />
 
       {navVisible && <BottomNav pathname={pathname} alt={alt} />}
 
       <ToastHost navVisible={navVisible} />
       <ModalHost />
-      {playful && <ConfettiLayer />}
+      <ConfettiLayer />
     </PhoneFrame>
   )
 }

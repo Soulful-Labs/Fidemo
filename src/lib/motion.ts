@@ -22,9 +22,9 @@ export const EASE = {
 
 /**
  * soft = sheets and toasts, snappy = presses and pops, heavy = things that land
- * with weight. The playful layer adds two: bouncy = everything you touch,
- * springing back past rest and settling; slam = the big two's hardest
- * landings, a lot of mass arriving fast.
+ * with weight. Two more, for tier 3 only: bouncy = earned things springing
+ * back past rest and settling; slam = the big two's hardest landings, a lot
+ * of mass arriving fast.
  */
 export const SPRING = {
   soft: { type: 'spring', stiffness: 380, damping: 36, mass: 1 },
@@ -134,14 +134,14 @@ export const dialog: Variants = {
   gone: { opacity: 0, scale: 0.96, transition: { duration: DUR.fast, ease: EASE.in } },
 }
 
-/** PLAYFUL, tier 1: a plain modal opens and closes calmly. A small fade and scale, no overshoot. */
+/** Tier 1: a plain modal opens and closes calmly. A small fade and scale, no overshoot. */
 export const dialogPlayful: Variants = {
   hidden: { opacity: 0, scale: 0.97, y: 6 },
   shown: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.16, ease: EASE.out } },
   gone: { opacity: 0, scale: 0.98, transition: { duration: 0.12, ease: EASE.in } },
 }
 
-/** PLAYFUL, tier 1: a sheet rises and sinks without passing its line. */
+/** Tier 1: a sheet rises and sinks without passing its line. */
 export const sheetPlayful: Variants = {
   hidden: { y: '100%' },
   shown: { y: 0, transition: { duration: 0.18, ease: EASE.out } },
@@ -187,7 +187,7 @@ export function installReducedMotion() {
  * entirely under reduced motion, so nothing per screen has to remember to check.
  */
 /**
- * Motion is earned (docs/Motion.md, "Tiers"). Under PLAYFUL every animation
+ * Motion is earned (docs/Motion.md, "Tiers"). Every animation
  * belongs to exactly one tier:
  *  1 AROUND  getting around: fast and calm, ease out, a small fade and slide,
  *            never an overshoot.

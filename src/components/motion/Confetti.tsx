@@ -1,10 +1,9 @@
 import { useEffect, useRef } from 'react'
 import { frameLayer, frameRect } from '../../app/frame'
 import { prefersReduced } from '../../lib/motion'
-import { isPlayful } from '../../lib/playful'
 
 /**
- * Confetti with real physics, on one canvas above everything (PLAYFUL only).
+ * Confetti with real physics, on one canvas above everything in the frame.
  * Gravity pulls, air drag slows, paper flutters side to side and turns over
  * as it falls, coins spin; everything lands on the floor, bounces a little,
  * slides to a stop and lies there for a moment before fading. One canvas is a
@@ -20,9 +19,9 @@ let worker: Worker | null = null
 let pieces: Piece[] = []
 let wake: (() => void) | null = null
 
-/** Throws confetti from a point. No-op without PLAYFUL or under reduced motion. */
+/** Throws confetti from a point. No-op under reduced motion. */
 export function fire(o: FireOptions) {
-  if (!isPlayful() || prefersReduced()) return
+  if (prefersReduced()) return
   // Dev only: lets the frame-rate probe measure a moment without its confetti.
   if (import.meta.env.DEV && (window as unknown as { __noConfetti?: boolean }).__noConfetti) return
   // Callers give window coordinates (getBoundingClientRect); confetti lives in the frame.

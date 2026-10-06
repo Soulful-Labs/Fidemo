@@ -6,7 +6,7 @@
 let depth = 0
 const waiting = new Set<() => void>()
 
-/** Marks <html> while anything is open, so the playful layer can push the page back. */
+/** Marks <html> while anything is open. */
 function mark() {
   if (typeof document === 'undefined') return
   if (depth > 0) document.documentElement.dataset.overlay = ''

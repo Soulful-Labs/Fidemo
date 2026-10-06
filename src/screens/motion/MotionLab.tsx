@@ -2,7 +2,7 @@ import { useAppNav } from '../../app/useAppNav'
 import TopBar from '../../components/ui/TopBar'
 import { prefersReduced } from '../../lib/motion'
 import Toggle from '../../components/ui/Toggle'
-import { setFlag, useFlags } from '../../lib/playful'
+import { setSound, useSound } from '../../lib/settings'
 import { sound, unlockAudio } from '../../lib/sound'
 import { PointsSection } from './PointsSection'
 import { TierSection } from './TierSection'
@@ -22,7 +22,7 @@ import { SmallStuffSection } from './SmallStuffSection'
  */
 export default function MotionLab() {
   const { back } = useAppNav()
-  const flags = useFlags()
+  const soundIsOn = useSound()
   return (
     <div className="flex min-h-full flex-col">
       <TopBar title="Motion" onBack={back} />
@@ -31,11 +31,9 @@ export default function MotionLab() {
           Reduced motion is {prefersReduced() ? 'on: everything below jumps straight to its final state.' : 'off.'}
         </p>
         <section className="flex flex-col gap-4 rounded-lg bg-bg-1 p-4">
-          <Toggle checked={flags.playful} onChange={(v) => setFlag('playful', v)} label="PLAYFUL"
-            description="Depth, surfaces, tilt, bounce and the bigger celebrations. Off is the app exactly as it was before this layer." />
-          <Toggle checked={flags.sound} label="Sound"
-            onChange={(v) => { if (v) unlockAudio(); setFlag('sound', v); if (v) sound('select') }}
-            description="Synthesized, muted by default, never autoplays. Plays with PLAYFUL on." />
+          <Toggle checked={soundIsOn} label="Sound"
+            onChange={(v) => { if (v) unlockAudio(); setSound(v); if (v) sound('select') }}
+            description="Synthesized, muted by default, never autoplays." />
         </section>
         <PointsSection />
         <TierSection />

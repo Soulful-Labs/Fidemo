@@ -4,8 +4,7 @@ import { frameLayer } from '../../app/frame'
 import { useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
-import { dialog, dialogPlayful, scrim } from '../../lib/motion'
-import { usePlayful } from '../../lib/playful'
+import { dialogPlayful, scrim } from '../../lib/motion'
 import { overlayClosed, overlayOpened } from '../../lib/overlays'
 import { Close } from './icons'
 
@@ -50,7 +49,6 @@ export default function Modal({
   alt = false,
 }: ModalProps) {
   useOverlay(open, onClose)
-  const playful = usePlayful()
 
   // Springs in from slightly small, and on close plays out with the content it
   // last had (AnimatePresence keeps the last render), so nothing empties mid-exit.
@@ -65,8 +63,8 @@ export default function Modal({
       role="presentation"
     >
       <motion.div
-        variants={playful ? dialogPlayful : dialog}
-        style={playful ? { transformPerspective: 900 } : undefined}
+        variants={dialogPlayful}
+        style={{ transformPerspective: 900 }}
         role="dialog"
         aria-modal="true"
         aria-label={title}
@@ -99,6 +97,6 @@ export default function Modal({
     )}
     </AnimatePresence>
   )
-  // PLAYFUL: lifted out of the screen into the frame's own layer, so the screen can recede behind it.
-  return playful ? createPortal(layer, frameLayer()) : layer
+  // Lifted out of the screen into the frame's own layer.
+  return createPortal(layer, frameLayer())
 }

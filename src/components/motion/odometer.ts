@@ -1,7 +1,7 @@
 import { EASE } from '../../lib/motion'
 
 /**
- * PLAYFUL counter: each digit of the new figure becomes a little wheel that
+ * The counter: each digit of the new figure becomes a little wheel that
  * tumbles from its old digit to its new one, the lower places spinning
  * further (as a mechanical counter does), the higher ones stepping once.
  * Separators ($ , .) stay still. When every wheel has stopped the caller

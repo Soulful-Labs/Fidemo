@@ -2,7 +2,6 @@ import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { useEffect, useRef } from 'react'
 import type { HTMLAttributes, ReactNode } from 'react'
 import { cn } from '../../lib/cn'
-import { usePlayful } from '../../lib/playful'
 import { SPRING, prefersReduced } from '../../lib/motion'
 
 const MAX = 16 // degrees
@@ -28,14 +27,13 @@ export interface TiltProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * A physical collectible card. Under PLAYFUL it tilts in 3D to follow the
+ * A physical collectible card. It tilts in 3D to follow the
  * finger dragged across it (and the phone's own tilt where the device reports
- * it), with a holographic sheen and a glare that move against the tilt. Without
- * PLAYFUL, or under reduced motion, it is exactly the plain <div> it replaces.
+ * it), with a holographic sheen and a glare that move against the tilt. Under
+ * reduced motion it is the plain <div> it replaces.
  */
 export default function Tilt({ children, className, holo = 1, ...rest }: TiltProps) {
-  const playful = usePlayful()
-  if (!playful || prefersReduced()) return <div className={className} {...rest}>{children}</div>
+  if (prefersReduced()) return <div className={className} {...rest}>{children}</div>
   return <TiltOn className={className} holo={holo} {...rest}>{children}</TiltOn>
 }
 

@@ -11,7 +11,7 @@ export const IMPACT = DROP_AT + DROP * 0.42
 export const REVEAL = IMPACT + DUR.slow * 0.9
 
 /**
- * The PLAYFUL tier upgrade as one timeline (tap anywhere to finish it). The old
+ * The tier upgrade as one timeline (tap anywhere to finish it). The old
  * tier's mark falls and slams down, the camera takes the hit, then the mark
  * turns over in 3D to show the new tier while the headline flips with it, the
  * score rolls, and the benefits flip up like cards being dealt.

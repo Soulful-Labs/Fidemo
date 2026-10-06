@@ -14,7 +14,7 @@ import { useTierPlayful } from './useTierPlayful'
 export interface TierPlayfulProps { tier: Tier; old: Tier; score: number; fromScore: number; onClose: () => void }
 
 /**
- * Moment B under PLAYFUL. Same words in the same places as the tier screen;
+ * Moment B. Same words in the same places as the tier screen;
  * everything about how it arrives is louder: the old tier's coin falls from
  * the top of the screen and slams down, the camera takes the hit, the coin
  * turns over in 3D to the new tier with the headline flipping alongside, and
@@ -40,7 +40,7 @@ export default function TierPlayful({ tier, old, score, fromScore, onClose }: Ti
   })
 
   return createPortal(
-    <div ref={scope} role="dialog" aria-modal="true" aria-label={`You've reached ${TIER_LABEL[tier].name} Tier`} data-playful="on"
+    <div ref={scope} role="dialog" aria-modal="true" aria-label={`You've reached ${TIER_LABEL[tier].name} Tier`}
       style={{ opacity: 0 }} onClickCapture={(e) => { if (playing.current) { e.stopPropagation(); skip() } }}
       className="fixed inset-0 z-50 overflow-hidden bg-bg-0 text-center">
       <span data-t="glow" style={{ opacity: 0 }} className={cn('pointer-events-none absolute inset-0 will-change-[opacity]', GLOW[tier])} />

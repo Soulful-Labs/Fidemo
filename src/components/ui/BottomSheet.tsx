@@ -3,8 +3,7 @@ import { createPortal } from 'react-dom'
 import { frameLayer } from '../../app/frame'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
-import { scrim, sheet, sheetPlayful } from '../../lib/motion'
-import { usePlayful } from '../../lib/playful'
+import { scrim, sheetPlayful } from '../../lib/motion'
 import { Close } from './icons'
 import { useOverlay } from './Modal'
 
@@ -39,7 +38,6 @@ export default function BottomSheet({
   tall = false,
 }: BottomSheetProps) {
   useOverlay(open, onClose)
-  const playful = usePlayful()
 
   // Rises on a spring and sinks away on close, keeping its last content while it goes.
   const layer = (
@@ -53,7 +51,7 @@ export default function BottomSheet({
       role="presentation"
     >
       <motion.div
-        variants={playful ? sheetPlayful : sheet}
+        variants={sheetPlayful}
         role="dialog"
         aria-modal="true"
         aria-label={title}
@@ -96,6 +94,6 @@ export default function BottomSheet({
     )}
     </AnimatePresence>
   )
-  // PLAYFUL: lifted out of the screen into the frame's own layer, so the screen can recede behind it.
-  return playful ? createPortal(layer, frameLayer()) : layer
+  // Lifted out of the screen into the frame's own layer.
+  return createPortal(layer, frameLayer())
 }

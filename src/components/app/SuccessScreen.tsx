@@ -1,12 +1,11 @@
 import { motion } from 'framer-motion'
 import { feedback } from '../../lib/feedback'
-import { isPlayful, usePlayful } from '../../lib/playful'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
 import { DUR, EASE, SPRING, STAGGER, AROUND, CHANGED } from '../../lib/motion'
 import CoinRain from '../motion/CoinRain'
-import { Burst, burst } from '../motion/Particles'
+import { Burst } from '../motion/Particles'
 import { CONFETTI } from '../motion/Confetti'
 import Button from '../ui/Button'
 import CtaBar from '../ui/CtaBar'
@@ -32,9 +31,9 @@ export interface SuccessScreenProps {
    */
   mood?: 'win' | 'calm' | 'money'
   /**
-   * PLAYFUL only: 3 (default) when something was earned, 2 when something just
+   * 3 (default) when something was earned, 2 when something just
    * changed (applied, scheduled, a withdrawal requested). Tier 2 arrives with one
-   * small settle: no burst, no coins, no landing thud. Without PLAYFUL it is ignored.
+   * small settle: no burst, no coins, no landing thud.
    */
   tier?: 2 | 3
 }
@@ -47,12 +46,11 @@ export interface SuccessScreenProps {
 export default function SuccessScreen({
   title, body, steps, children, actionLabel = 'Done', onAction, alt = false, badge, mood = 'win', tier = 3,
 }: SuccessScreenProps) {
-  const changed = usePlayful() && tier === 2
+  const changed = tier === 2
   const win = !changed && mood !== 'calm'
   const money = !changed && mood === 'money'
   const purse = useRef<HTMLDivElement>(null)
-  const sparks = useMemo(() => burst(14, 7, [60, 110], 0.2), [])
-  useEffect(() => { if (win) { const t = window.setTimeout(() => feedback(isPlayful() && mood === 'money' ? 'gain' : 'land'), DUR.base * 1000); return () => window.clearTimeout(t) } }, [win])
+  useEffect(() => { if (win) { const t = window.setTimeout(() => feedback(mood === 'money' ? 'gain' : 'land'), DUR.base * 1000); return () => window.clearTimeout(t) } }, [win])
 
   const arrive = win
     ? { hidden: { opacity: 0, scale: 0.4, y: -40 }, shown: { opacity: 1, scale: 1, y: 0, transition: SPRING.heavy } }
@@ -71,7 +69,7 @@ export default function SuccessScreen({
       <motion.div initial="hidden" animate="shown" transition={{ staggerChildren: win ? STAGGER * 2 : STAGGER * 3, delayChildren: after }}
         className="flex flex-1 flex-col items-center gap-6 px-4 pb-6 pt-12 text-center">
         <motion.div ref={purse} variants={arrive} transition={{ delay: 0 }} className="relative">
-          {win && !money && <Burst particles={sparks} delay={DUR.base * 0.8} palette={CONFETTI.green} tones={['text-state-success', 'text-brand-primary', 'text-text-title']} />}
+          {win && !money && <Burst delay={DUR.base * 0.8} palette={CONFETTI.green} />}
           {badge ?? <SuccessBadge tone="success" delay={win ? DUR.base : DUR.slow} />}
           {/* Drawn over the badge, so each coin is seen going in. */}
           {money && <CoinRain target={purse} delay={DUR.slow} />}

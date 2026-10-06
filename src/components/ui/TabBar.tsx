@@ -1,8 +1,7 @@
 import { motion } from 'framer-motion'
 import { NavLink } from 'react-router-dom'
 import { cn } from '../../lib/cn'
-import { AROUND, SPRING } from '../../lib/motion'
-import { isPlayful } from '../../lib/playful'
+import { AROUND } from '../../lib/motion'
 import { feedback } from '../../lib/feedback'
 
 export interface TabItem {
@@ -36,7 +35,7 @@ const UNDER_OFF = 'text-text-body border-transparent hover:text-text-title'
 /** The selected fill (segmented) or underline, sliding to whichever tab is selected. */
 function Indicator({ id, segmented }: { id: string; segmented: boolean }) {
   return (
-    <motion.span layoutId={id} transition={isPlayful() ? AROUND : SPRING.soft} aria-hidden="true"
+    <motion.span layoutId={id} transition={AROUND} aria-hidden="true"
       className={segmented ? 'absolute inset-0 -z-10 rounded-md bg-green-segment' : 'absolute inset-x-0 -bottom-0.5 h-0.5 bg-cta-primary'} />
   )
 }
@@ -94,7 +93,7 @@ export default function TabBar({
             type="button"
             role="tab"
             aria-selected={value === item.key}
-            onClick={() => { if (isPlayful() && value !== item.key) feedback('select'); onChange?.(item.key) }}
+            onClick={() => { if (value !== item.key) feedback('select'); onChange?.(item.key) }}
             className={itemClass(value === item.key)}
           >
             {label(item, value === item.key)}

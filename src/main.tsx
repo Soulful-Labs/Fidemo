@@ -7,7 +7,6 @@ import { StoreProvider } from './mock/store'
 import './index.css'
 import './playful.css'
 import { installReducedMotion, installSpringVars } from './lib/motion'
-import './lib/playful'
 
 installReducedMotion()
 installSpringVars()

@@ -1,7 +1,6 @@
 import { useId, useLayoutEffect, useRef } from 'react'
 import { cn } from '../../lib/cn'
-import { CSS, haptic, play, settleTo } from '../../lib/motion'
-import { isPlayful } from '../../lib/playful'
+import { settleTo } from '../../lib/motion'
 import { rattle } from '../motion/locks'
 import { feedback } from '../../lib/feedback'
 
@@ -42,8 +41,7 @@ export default function Toggle({
     if (!el) return
     const x = el.offsetLeft
     if (at.current !== null && at.current !== x) {
-      if (isPlayful()) settleTo(el, { transform: `translateX(${at.current - x}px)` }) // tier 2
-      else play(el, [{ transform: `translateX(${at.current - x}px)` }, { transform: 'none' }], CSS.base, CSS.out)
+      settleTo(el, { transform: `translateX(${at.current - x}px)` }) // tier 2
     }
     at.current = x
   }, [checked])
@@ -58,9 +56,8 @@ export default function Toggle({
       aria-disabled={isOff || undefined}
       ref={box}
       onClick={() => {
-        if (!isOff) { if (isPlayful()) feedback('select'); return onChange(!checked) }
+        if (!isOff) { feedback('select'); return onChange(!checked) }
         rattle(box.current)
-        if (!isPlayful()) haptic([8, 40, 8])
         onBlocked?.()
       }}
       className={cn(

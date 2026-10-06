@@ -1,9 +1,6 @@
-import { animate } from 'framer-motion'
 import { useLayoutEffect, useRef, useState } from 'react'
-import type { RefObject } from 'react'
 import { cn } from '../../lib/cn'
-import { CSS, EASE, HAPTIC, earnedSlot, haptic, play, prefersReduced, rollDuration, springTo } from '../../lib/motion'
-import { isPlayful } from '../../lib/playful'
+import { CSS, earnedSlot, play, prefersReduced, rollDuration, springTo } from '../../lib/motion'
 import { feedback } from '../../lib/feedback'
 import { spinDigits } from './odometer'
 import FloatDelta from './FloatDelta'
@@ -27,8 +24,6 @@ export interface RollingNumberProps {
   float?: boolean | 'into'
   /** Formats the floating delta; defaults to the figure's own formatter. */
   formatDelta?: (n: number) => string
-  /** Something to give one pulse when a gain lands, e.g. the points badge. */
-  pulse?: RefObject<Element | null>
   /** Where to roll from on first mount when nothing has been seen yet (the /motion demos). */
   from?: number
   /** Seconds to hold the old value before rolling, so the roll starts once its screen has arrived. */
@@ -38,13 +33,13 @@ export interface RollingNumberProps {
 
 /**
  * Moment A and moment E. A gain rolls up from the old value to the new one,
- * at a speed that scales with the size of the gain, then the badge pulses.
+ * at a speed that scales with the size of the gain, tumbling like a counter.
  * A fall does not count down: the new figure drops into place, shorter and
  * quieter, with no colour beyond the figure's own. The final text is always
  * exactly `format(value)`; animation never invents or rounds the result.
  */
 export default function RollingNumber({
-  value, format, memory, step = 1, float = false, formatDelta, pulse, from, delay = 0, className,
+  value, format, memory, step = 1, float = false, formatDelta, from, delay = 0, className,
 }: RollingNumberProps) {
   const el = useRef<HTMLSpanElement>(null)
   const shown = useRef<number | undefined>(undefined)
@@ -64,8 +59,6 @@ export default function RollingNumber({
     if (prev === undefined || prev === value || prefersReduced()) { done(); return }
 
     const gain = value - prev
-    const round = (n: number) => Math.round(n / step) * step
-    let controls: ReturnType<typeof animate> | undefined
     let stopSpin = () => undefined as void
     write(prev)
 
@@ -75,37 +68,22 @@ export default function RollingNumber({
         // Moment E: the figure falls into place. One short drop, no counting down.
         done()
         play(node, [{ transform: 'translateY(-0.35em)', opacity: 0.2 }, { transform: 'none', opacity: 1 }], CSS.base, CSS.out, delay * 1000)
-        if (isPlayful()) feedback('deduct')
+        feedback('deduct')
         return
       }
-      if (isPlayful()) {
-        // PLAYFUL: the digits tumble like a counter, then the figure lands with a spring.
-        // Several figures gaining at once (a paid study) tumble one after another, not together.
-        const spin = rollDuration(gain / step) * 1300
-        const turn = earnedSlot(spin + 350)
-        const wait = window.setTimeout(() => {
-          const cancelSpin = spinDigits(node, fmt.current(prev), fmt.current(value), spin, () => {
-            done()
-            feedback('gain')
-            // The figure lands with a pop; the badge around it no longer pulses as well.
-            springTo(node, { transform: 'scale(1.4)' })
-          })
-          stopSpin = () => { cancelSpin(); write(displayed) }
-        }, delay * 1000 + turn)
-        stopSpin = () => window.clearTimeout(wait)
-        return
-      }
-      controls = animate(prev, value, {
-        duration: rollDuration(gain / step),
-        delay,
-        ease: EASE.out,
-        onUpdate: (n) => write(round(n)),
-        onComplete: () => {
+      // The digits tumble like a counter, then the figure lands with a spring.
+      // Several figures gaining at once (a paid study) tumble one after another, not together.
+      const spin = rollDuration(gain / step) * 1300
+      const turn = earnedSlot(spin + 350)
+      const wait = window.setTimeout(() => {
+        const cancelSpin = spinDigits(node, fmt.current(prev), fmt.current(value), spin, () => {
           done()
-          haptic(HAPTIC.gain)
-          play(pulse?.current, [{ transform: 'scale(1)' }, { transform: 'scale(1.14)', offset: 0.35 }, { transform: 'scale(1)' }], CSS.slow, CSS.out)
-        },
-      })
+          feedback('gain')
+          springTo(node, { transform: 'scale(1.4)' })
+        })
+        stopSpin = () => { cancelSpin(); write(displayed) }
+      }, delay * 1000 + turn)
+      stopSpin = () => window.clearTimeout(wait)
     }
     // A live figure waits for any overlay to close, so the change is seen. The
     // short beat first lets a celebration the same change triggers open.
@@ -115,8 +93,8 @@ export default function RollingNumber({
       cancel = () => window.clearTimeout(beat)
     } else run()
     // Interrupted (a newer value, or StrictMode's rehearsal): carry on from what is on screen.
-    return () => { cancel(); controls?.stop(); stopSpin(); shown.current = displayed }
-  }, [value, key, step, float, pulse, from, delay])
+    return () => { cancel(); stopSpin(); shown.current = displayed }
+  }, [value, key, step, float, from, delay])
 
   return (
     <span className={cn('relative', className)}>

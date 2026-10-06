@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion'
 import { feedback } from '../../../lib/feedback'
-import { useMemo, useRef } from 'react'
+import { useRef } from 'react'
 import type { ReactNode } from 'react'
-import { Burst, burst } from '../../../components/motion/Particles'
+import { Burst } from '../../../components/motion/Particles'
 import { useSeenKey } from '../../../components/motion/useSeen'
 import { DUR, EASE, SPRING } from '../../../lib/motion'
 import { lastSeen, markSeen } from '../../../lib/seen'
@@ -42,7 +42,6 @@ export function useBannerReveal(studyId: string | undefined, status: string) {
 }
 
 export function RevealCard({ kind, className, children }: { kind: ReturnType<typeof useBannerReveal>; className: string; children: ReactNode }) {
-  const sparks = useMemo(() => burst(10, 3, [40, 80], 0.4), [])
   const glint = useRef<HTMLSpanElement>(null)
   const from = kind === 'calm' ? { opacity: 0, y: 8 } : kind ? { opacity: 0, scale: 0.94, y: 6 } : { opacity: 0 }
   const transition = kind === 'calm' ? { duration: DUR.slow, ease: EASE.out }
@@ -60,7 +59,7 @@ export function RevealCard({ kind, className, children }: { kind: ReturnType<typ
       )}
       {kind === 'earned' && (
         <span className="pointer-events-none absolute left-8 top-6">
-          <Burst particles={sparks} delay={DUR.base * 1.4 + DUR.slow * 0.6} tones={['text-brand-secondary', 'text-brand-primary', 'text-text-title']} />
+          <Burst delay={DUR.base * 1.4 + DUR.slow * 0.6} />
         </span>
       )}
     </motion.div>

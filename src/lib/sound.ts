@@ -1,5 +1,5 @@
 import type { Feedback } from './feedback'
-import { soundOn } from './playful'
+import { soundOn } from './settings'
 
 /**
  * The sound set, synthesized with the Web Audio API: no files ship. Muted by

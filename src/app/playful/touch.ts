@@ -1,26 +1,24 @@
 import { useEffect, useRef, useState } from 'react'
 import { feedback } from '../../lib/feedback'
 import { DUR, TIER, play, prefersReduced } from '../../lib/motion'
-import { usePlayful } from '../../lib/playful'
 
 const PULL_TRIGGER = 90
 /** Rubber banding: the further you pull, the less it gives (as iOS does). */
 const rubber = (d: number, span = 420) => (1 - 1 / ((Math.abs(d) * 0.55) / span + 1)) * span * Math.sign(d)
 
 /**
- * PLAYFUL: lists rubber-band at both ends, and pulling down from the top
+ * Lists rubber-band at both ends, and pulling down from the top
  * stretches the pull indicator; let go past the line and it spins for a
  * moment (nothing to fetch, there is no backend) before snapping back. Touch
  * drives it on phones; the wheel nudges it on a laptop.
  */
 export function useElastic(main: React.RefObject<HTMLElement | null>) {
-  const playful = usePlayful()
   const [pull, setPull] = useState(0)
   const [spinning, setSpinning] = useState(false)
 
   useEffect(() => {
     const el = main.current
-    if (!playful || !el || prefersReduced()) return
+    if (!el || prefersReduced()) return
     const content = () => el.firstElementChild as HTMLElement | null
     let startY = 0
     let edge: 'top' | 'bottom' | null = null
@@ -74,7 +72,7 @@ export function useElastic(main: React.RefObject<HTMLElement | null>) {
       el.removeEventListener('touchend', release); el.removeEventListener('touchcancel', release)
       el.removeEventListener('wheel', onWheel); window.clearTimeout(wheelTimer); set(0)
     }
-  }, [main, playful])
+  }, [main])
 
   return { pull, spinning, trigger: PULL_TRIGGER }
 }
@@ -82,15 +80,14 @@ export function useElastic(main: React.RefObject<HTMLElement | null>) {
 const CARD = 'article, .rounded-lg.bg-bg-1, .rounded-lg.bg-bg-2, .rounded-lg.bg-bgAlt-2, .rounded-xl.bg-bg-1'
 
 /**
- * PLAYFUL: holding a card down makes it swell slowly, with a soft haptic; let
+ * Holding a card down makes it swell slowly, with a soft haptic; let
  * go and it springs back. A long press is not a tap, so the click it would
  * have made is swallowed.
  */
 export function useLongPressSwell() {
-  const playful = usePlayful()
   const swallow = useRef(false)
   useEffect(() => {
-    if (!playful || prefersReduced()) return
+    if (prefersReduced()) return
     let timer = 0
     let card: HTMLElement | null = null
     let anim: Animation | undefined
@@ -124,5 +121,5 @@ export function useLongPressSwell() {
       document.removeEventListener('pointerup', up); document.removeEventListener('pointercancel', up)
       document.removeEventListener('click', click, true)
     }
-  }, [playful])
+  }, [])
 }

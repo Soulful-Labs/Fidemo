@@ -12,7 +12,7 @@ export const STRIKE_AT = RAISE_AT + DUR.base + HOVER + STRIKE
 export const SHOWN_AT = STRIKE_AT + DUR.slow * 2.2
 
 /**
- * The PLAYFUL certificate as one timeline (tap to finish). A collectible card
+ * The certificate as one timeline (tap to finish). A collectible card
  * springs up; a heavy seal is hoisted high over it, its shadow on the paper
  * small and soft; it trembles at the top, then comes down like a hammer, its
  * shadow rushing in to meet it. The whole screen takes the blow, the card

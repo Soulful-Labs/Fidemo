@@ -3,12 +3,11 @@
 The respondent app's motion layer: what moves, how, and why. Everything here is
 playable on demand at **`/motion`**, grouped A to J in the same order as below.
 
-There are two layers. The **base layer** (everything up to "Gamification ideas") is
-the Figma-faithful motion pass. The **PLAYFUL layer** (the second half of this
-document) makes the app feel like a game: depth, tilt, bounce, louder celebrations,
-haptics as a language and an optional sound set. PLAYFUL is on by default and is
-switched from the top of `/motion`; with it off, the app renders exactly as the base
-layer.
+The app has one motion system. The sections up to "Gamification ideas" describe the
+first, Figma-faithful pass; the second half ("PLAYFUL", the name it was built under)
+describes the game-feel layer that now always runs on top of it, and "Tiers" says
+which motions are allowed where. There is no switch: the app is always playful. The
+Figma-faithful reference lives in git history at `b001385`.
 
 Ground rules this layer keeps:
 
@@ -374,23 +373,12 @@ and counts how often it crosses its resting value. Every tier 1 step: 0 crossing
 moving thing per tap. The toggle: 1 crossing of 0.6px (tier 2). Tier 3 still swings
 3 to 5 times: points gain, tier upgrade, certificate and study completed.
 
-## The switch
+## No switch
 
-- `src/lib/playful.ts` holds two flags in localStorage: **PLAYFUL** (default on) and
-  **Sound** (default off). Both are toggles at the top of `/motion`.
-- Styles: everything is in `src/playful.css`, inside
-  `@scope ([data-playful=on]) to ([data-playful=off])`. `<html data-playful>` is set
-  from the flag, so with PLAYFUL off not one playful rule matches.
-- Behaviour: components read `usePlayful()` (or `isPlayful()` outside React) and,
-  when it is off, render the same DOM and run the same code as before.
-- Checked: with PLAYFUL off, 26 screens under reduced motion were compared pixel for
-  pixel with captures of HEAD before this layer. 24 are identical, and the other two
-  differ only in clock-driven text ("Good morning" vs "Good afternoon", "19h ago" vs
-  "1d ago"). Off also restores every original haptic pattern exactly (recorded by
-  stubbing `navigator.vibrate`).
-- `/motion` has **Before** and **After** buttons on the tier upgrade and the
-  certificate. Before switches PLAYFUL off for the whole app while the moment plays,
-  After switches it on, and closing restores the switch.
+PLAYFUL used to be a runtime flag with a toggle and Before/After buttons on `/motion`.
+It is gone: no flag, no context, no storage, no query parameter, no toggle. The app is
+playful everywhere, always. To see the Figma-faithful build, check out `b001385`. The
+one remaining demo setting is **Sound** (`lib/settings.ts`), off by default.
 
 ## 1. Depth
 
@@ -515,10 +503,7 @@ All haptics go through `lib/feedback.ts`. `navigator.vibrate` patterns, in ms (o
 | swell (long press) | `[18]` | a soft nudge |
 | toy (coin badge) | `[6, 30, 6]` | a tiny double click |
 
-With PLAYFUL off, each call site plays exactly what it played before: press and a
-picked file 6ms, gains and banner reveals `[10,30,16]`, landings `[24,40,12]`, the
-seal 36ms, locked `[8,40,8]`. The rest are silent. This was recorded both ways in the
-browser.
+(There used to be a set of quieter patterns for when PLAYFUL was off; with the flag gone, these are the only patterns.)
 
 ## 7. Sound
 
@@ -615,5 +600,4 @@ Bundle: 815 → 853 kB (+38 kB), plus a 2.8 kB worker. No new dependency.
   card it would make the whole app swim when the phone moves.
 - **Sound without PLAYFUL, or sound on by default.** The first was a choice and the
   second was ruled out by the brief and by autoplay etiquette.
-- **A scoped "before".** Before switches PLAYFUL off globally rather than per subtree,
-  so it is exactly the old app, including no recede behind the overlay.
+- **A scoped "before".** Superseded: there is no before at runtime any more; the reference is `b001385`.

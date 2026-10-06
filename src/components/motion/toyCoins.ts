@@ -1,14 +1,12 @@
 import { feedback } from '../../lib/feedback'
 import { around } from '../../lib/motion'
-import { isPlayful } from '../../lib/playful'
 import { CONFETTI, fire } from './Confetti'
 
 /**
- * PLAYFUL toy: tapping a points badge squashes it and pops a few coins out
+ * Toy: tapping a points badge squashes it and pops a few coins out
  * that fall and land. Every time. Pure play; nothing in the account changes.
  */
 export function popCoins(e: React.PointerEvent<Element>) {
-  if (!isPlayful()) return
   const el = e.currentTarget
   const r = el.getBoundingClientRect()
   // Subtle: a small dip and three little coins that hop out and drop.

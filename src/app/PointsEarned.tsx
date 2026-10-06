@@ -47,7 +47,7 @@ export default function PointsEarned({ entry, onClose }: { entry: PointsEntry | 
           <motion.p variants={fadeUp} className="text-title-s text-text-subtitle">You&apos;ve earned</motion.p>
           <motion.p variants={fadeUp} className="flex items-center gap-2 text-title-l text-brand-secondary">
             <PointsCoin className="h-6 w-6" />
-            <RollingNumber value={entry.amount} from={0} format={points} pulse={coin} delay={DUR.slow} /> <span className="text-text-title">Reward Points!</span>
+            <RollingNumber value={entry.amount} from={0} format={points} delay={DUR.slow} /> <span className="text-text-title">Reward Points!</span>
           </motion.p>
           <motion.span variants={fadeUp} className="mt-2 flex items-center gap-3 rounded-full border-1 border-stroke-3 bg-bg-1/60 py-2 pl-2 pr-5 text-left">
             <span className="flex h-11 w-11 items-center justify-center rounded-full bg-green-900/60 text-brand-secondary"><KindIcon kind={entry.kind} /></span>

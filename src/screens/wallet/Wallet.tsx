@@ -33,7 +33,7 @@ export default function Wallet() {
         <div className="flex items-center justify-between gap-3">
           <div className="flex flex-col gap-1">
             <span className="text-body-regular text-text-subtitle">Wallet Balance</span>
-            <RollingNumber className="text-display-s text-brand-primary" value={user.walletBalance} format={money} step={0.01} memory="wallet" float pulse={coin} />
+            <RollingNumber className="text-display-s text-brand-primary" value={user.walletBalance} format={money} step={0.01} memory="wallet" float />
           </div>
           <CoinBadge ref={coin} />
         </div>

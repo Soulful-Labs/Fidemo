@@ -29,7 +29,7 @@ export default function DashboardHeader({ right }: { right?: ReactNode }) {
             className="ml-auto flex h-tag items-center gap-2 rounded-full border-1 border-green-900 bg-green-900/40 px-3 text-body-medium text-brand-secondary"
           >
             <PointsCoin className="h-5 w-5 text-brand-secondary" />
-            <RollingNumber value={user.points} format={fmtPoints} memory="points" float="into" pulse={chip} />
+            <RollingNumber value={user.points} format={fmtPoints} memory="points" float="into" />
           </Link>
 
           <Link to="/notifications" aria-label={`Notifications${unread ? `, ${unread} unread` : ''}`} className="relative text-text-title">

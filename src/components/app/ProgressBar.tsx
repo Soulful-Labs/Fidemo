@@ -1,7 +1,6 @@
 import { useRef } from 'react'
 import { cn } from '../../lib/cn'
 import { CSS, STAGGER, play, settleTo, springTo } from '../../lib/motion'
-import { isPlayful, usePlayful } from '../../lib/playful'
 import { nextSlot } from '../../lib/seen'
 import { useArrival } from '../motion/useArrival'
 
@@ -42,7 +41,6 @@ export default function ProgressBar({
   const mounted = useRef(false)
   const cap = useRef<HTMLSpanElement>(null)
   const flash = useRef<HTMLSpanElement>(null)
-  const playful = usePlayful()
 
   useArrival(pct, memory, (from, to) => {
     const el = fill.current
@@ -51,11 +49,7 @@ export default function ProgressBar({
     mounted.current = true
     el.style.transform = at(to)
     if (from === undefined) {
-      // PLAYFUL: nothing moved, so nothing animates.
-      if (isPlayful()) return
-      // First sight: no earlier value to move from, so it settles in place instead.
-      play(el, [{ opacity: 0.35 }, { opacity: 1 }], CSS.slow, CSS.out, delay)
-      play(glint.current, [{ transform: 'translateX(-100%)', opacity: 1 }, { transform: 'translateX(400%)', opacity: 1 }], CSS.slow, CSS.inOut, delay + CSS.base)
+      // First sight: nothing moved, so nothing animates.
       return
     }
     if (from === to) return
@@ -64,16 +58,12 @@ export default function ProgressBar({
       { duration: gain ? CSS.slow : CSS.base, easing: CSS.out, delay, fill: 'backwards' })
     const crossed = gain && to >= 100 && from < 100
     a.onfinish = () => {
-      if (isPlayful()) {
-        // PLAYFUL: the leading edge settles once as it arrives (tier 2)...
-        settleTo(cap.current, { transform: gain ? 'scaleX(1.8)' : 'scaleX(0.6)' })
-        // ...and crossing the line is earned (tier 3): the whole bar flashes its own colour and bulges.
-        if (crossed) {
-          play(flash.current, [{ opacity: 0.9 }, { opacity: 0 }], CSS.slow, CSS.out)
-          springTo(trackEl.current, { transform: 'scaleY(2.4)' }, 'bouncy')
-        }
-      } else if (crossed) {
-        play(trackEl.current, [{ transform: 'scaleY(1)' }, { transform: 'scaleY(1.9)', offset: 0.3 }, { transform: 'scaleY(1)' }], CSS.base, CSS.out)
+      // The leading edge settles once as it arrives (tier 2)...
+      settleTo(cap.current, { transform: gain ? 'scaleX(1.8)' : 'scaleX(0.6)' })
+      // ...and crossing the line is earned (tier 3): the whole bar flashes its own colour and bulges.
+      if (crossed) {
+        play(flash.current, [{ opacity: 0.9 }, { opacity: 0 }], CSS.slow, CSS.out)
+        springTo(trackEl.current, { transform: 'scaleY(2.4)' }, 'bouncy')
       }
       if (crossed) play(glint.current, [{ transform: 'translateX(-100%)', opacity: 1 }, { transform: 'translateX(400%)', opacity: 1 }], CSS.slow, CSS.inOut)
     }
@@ -103,17 +93,13 @@ export default function ProgressBar({
       >
         <div
           ref={fill}
-          className={cn('h-full w-full rounded-full will-change-transform', tone === 'green' ? 'bg-brand-secondary' : 'bg-tier-gold', playful && 'relative overflow-hidden')}
+          className={cn('h-full w-full rounded-full will-change-transform', tone === 'green' ? 'bg-brand-secondary' : 'bg-tier-gold', 'relative overflow-hidden')}
           style={{ transform: at(pct) }}
         >
-          {playful && (
-            <>
-              {/* A bright leading edge. (No travelling shimmer: a screen being read stays still.) */}
-              <span ref={cap} data-decor aria-hidden="true" className="pf-cap pointer-events-none absolute inset-y-0 right-0 w-4 origin-right rounded-full" />
-            </>
-          )}
+          {/* A bright leading edge. (No travelling shimmer: a screen being read stays still.) */}
+          <span ref={cap} data-decor aria-hidden="true" className="pf-cap pointer-events-none absolute inset-y-0 right-0 w-4 origin-right rounded-full" />
         </div>
-        {playful && <span ref={flash} data-decor aria-hidden="true" className={cn('pointer-events-none absolute inset-0 opacity-0', tone === 'green' ? 'bg-brand-secondary' : 'bg-tier-gold')} />}
+        <span ref={flash} data-decor aria-hidden="true" className={cn('pointer-events-none absolute inset-0 opacity-0', tone === 'green' ? 'bg-brand-secondary' : 'bg-tier-gold')} />
         <span ref={glint} data-decor aria-hidden="true"
           className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-linear-to-r from-transparent via-text-title/60 to-transparent opacity-0" />
       </div>

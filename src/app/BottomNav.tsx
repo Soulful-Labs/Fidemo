@@ -3,8 +3,7 @@ import { useEffect, useRef } from 'react'
 import { feedback } from '../lib/feedback'
 import { Link } from 'react-router-dom'
 import { cn } from '../lib/cn'
-import { AROUND, SPRING } from '../lib/motion'
-import { isPlayful, usePlayful } from '../lib/playful'
+import { AROUND } from '../lib/motion'
 import { TABS, activeTab } from './navigation'
 
 /**
@@ -18,14 +17,13 @@ import { TABS, activeTab } from './navigation'
  */
 export default function BottomNav({ pathname, alt = false }: { pathname: string; alt?: boolean }) {
   const active = activeTab(pathname)
-  const playful = usePlayful()
   const last = useRef(active)
-  // PLAYFUL: selecting a tab gives a light tick; the tint sliding across is the only motion.
+  // Selecting a tab gives a light tick; the tint sliding across is the only motion.
   useEffect(() => {
     if (last.current === active) return
     last.current = active
-    if (playful && active) feedback('select')
-  }, [active, playful])
+    if (active) feedback('select')
+  }, [active])
 
   return (
     <nav className={cn('flex h-nav shrink-0 items-start gap-2 rounded-t-xl border-t-1 border-stroke-3 px-2 pt-2', alt ? 'bg-bgAlt-0' : 'bg-bg-0')}>
@@ -42,7 +40,7 @@ export default function BottomNav({ pathname, alt = false }: { pathname: string;
             )}
           >
             {/* The tint slides from tab to tab. */}
-            {isActive && <motion.span layoutId="nav-tint" transition={isPlayful() ? AROUND : SPRING.soft} aria-hidden="true" className="absolute inset-0 -z-10 rounded-lg bg-yellow-1000/40" />}
+            {isActive && <motion.span layoutId="nav-tint" transition={AROUND} aria-hidden="true" className="absolute inset-0 -z-10 rounded-lg bg-yellow-1000/40" />}
             <tab.Icon />
             <span className="text-text-regular">{tab.label}</span>
           </Link>

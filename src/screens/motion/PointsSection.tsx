@@ -24,7 +24,7 @@ export function PointsSection() {
       <Stage alt>
         <span ref={chip} className="flex h-tag items-center gap-2 self-start rounded-full border-1 border-green-900 bg-green-900/40 px-3 text-body-medium text-brand-secondary">
           <PointsCoin className="h-5 w-5 text-brand-secondary" />
-          <RollingNumber value={balance} format={points} float pulse={chip} />
+          <RollingNumber value={balance} format={points} float />
         </span>
       </Stage>
       <Plays>

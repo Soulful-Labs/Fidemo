@@ -2,7 +2,7 @@ import { useState } from 'react'
 import TierUpgrade from '../../app/TierUpgrade'
 import type { Tier } from '../../app/tierParts'
 import { RATING_DELTA, TIERS, TRUST } from '../../lib/rules'
-import { Group, Play, Plays, useBeforeAfter } from './LabBits'
+import { Group, Play, Plays } from './LabBits'
 
 /** One completed study with a 5 star rating: what usually carries someone over a line. */
 const STEP = TRUST.STUDY_COMPLETION + RATING_DELTA[5]
@@ -10,7 +10,6 @@ const STEP = TRUST.STUDY_COMPLETION + RATING_DELTA[5]
 /** B: the tier upgrade. Tap anywhere while it plays to skip to the end. */
 export function TierSection() {
   const [show, setShow] = useState<{ tier: Tier; from: Tier; fromScore: number; score: number } | null>(null)
-  const ba = useBeforeAfter()
   const open = (tier: Tier, from: Tier) => {
     const score = TIERS[tier] + 1
     setShow({ tier, from, score, fromScore: score - STEP })
@@ -22,11 +21,7 @@ export function TierSection() {
         <Play onClick={() => open('gold', 'silver')}>Silver to Gold</Play>
         <Play onClick={() => open('platinum', 'gold')}>Gold to Platinum</Play>
       </Plays>
-      <Plays>
-        <Play onClick={() => { ba.start(false); open('gold', 'silver') }}>Before (PLAYFUL off)</Play>
-        <Play onClick={() => { ba.start(true); open('gold', 'silver') }}>After (PLAYFUL on)</Play>
-      </Plays>
-      <TierUpgrade tier={show?.tier ?? null} from={show?.from} fromScore={show?.fromScore} score={show?.score ?? 0} onClose={() => { setShow(null); ba.end() }} />
+      <TierUpgrade tier={show?.tier ?? null} from={show?.from} fromScore={show?.fromScore} score={show?.score ?? 0} onClose={() => setShow(null)} />
     </Group>
   )
 }

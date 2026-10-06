@@ -60,7 +60,7 @@ export default function RewardPoints() {
           <div className="flex items-end justify-between gap-3">
             <span ref={badge} onPointerDown={popCoins} className="flex items-center gap-2 text-title-l text-brand-secondary">
               <PointsCoin className="h-6 w-6" />
-              <RollingNumber value={user.points} format={fmt} memory="points" float pulse={badge} />
+              <RollingNumber value={user.points} format={fmt} memory="points" float />
             </span>
             <span className="text-text-regular text-text-subtitle">100 points = $1</span>
           </div>
