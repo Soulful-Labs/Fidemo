@@ -314,8 +314,7 @@ out, a small fade and a small slide.
 | What | How it moves now |
 |---|---|
 | Opening a screen, going back | 160ms: fade from 0 and an 8px slide (forward from the right, back from the left) |
-| Switching tabs (the four tab roots) | Only the nav tint moves (160ms tween); the screen itself does not animate |
-| Nav icon on selection | A quiet dip to 0.9× and straight back, 160ms; no squash, no bounce |
+| Switching tabs (the four tab roots) | Only the nav tint moves (160ms tween); the screen and the icons do not animate |
 | Segmented / underline tab indicator | 160ms tween to the new tab |
 | Pressing a surface (button, card, tile, row) | Down by exactly its edge on press; back to rest in 120ms, ease out, no spring past rest |
 | Pressing anything else | Gives to 0.97× and comes straight back, 120ms |
@@ -326,7 +325,7 @@ out, a small fade and a small slide.
 | List rows | Do not animate in; opening the screen is the one motion |
 | Cards when touched | Keep their depth but no longer lift (the thing pressed inside is the motion) |
 | Collectible tilt (tier card on Trust Score Details, the certificate) | Follows the finger on a soft spring with no visible overshoot; the phone's own tilt is damped (a dead zone, then half strength), so a card being read stays still |
-| Points badge toy | A 0.95× dip and three small coins that hop out and drop |
+| Points badge toy | On the Reward Points balance only (a tap that navigates just navigates): a 0.95× dip and three small coins that hop out and drop |
 
 **Tier 2, something changed.** One small settle (240ms, a curve that passes rest at
 most once), and it ends.
@@ -339,7 +338,7 @@ most once), and it ends.
 | Tapping something locked | One nudge (6px and back, passing rest once) and one knock haptic `[12,50,12]` |
 | A bar's value changing | Fill moves (ease out, never past its value); the bright edge settles once |
 | A form step completed (onboarding, screener and survey segments) | The segment fills in 240ms, ease out |
-| Applied, Scheduled / Rescheduled, Withdrawal requested | The success badge settles in once; no burst, no coins, no thud |
+| Applied, Scheduled / Rescheduled, Withdrawal requested, Redeemed | The success badge settles in once; no burst, no coins, no thud (redeeming is spending your own points, not earning) |
 | A deduction | The figure drops into place once (unchanged from the base layer) |
 
 **Tier 3, something was earned.** Unchanged: this is where all the springs, overshoot,
@@ -347,15 +346,21 @@ confetti, particles, flips and fanfare live.
 
 | What | |
 |---|---|
-| Points or money gained | Counter tumble, landing pop, badge pulse, +X, gain haptic and pop |
+| Points or money gained | Counter tumble, landing pop, +X, gain haptic and pop (no badge pulse) |
 | Tier upgrade | The whole playful sequence (falling coin, 3D flip, cannons, fanfare) |
 | Certificate unlock | The whole playful stamp |
 | Study completed, PIN (attendance) confirmed | Badge lands, confetti burst |
 | Screening passed (invited), study paid | Banner reveal with glint / burst |
-| Redeemed (money arriving in the wallet) | Coins drop into the badge |
 | A bar reaching its end, the dial crossing a tier line | Flash and bulge / dial pulse |
 | A streak day ticked | The pill pops its tick |
 | Points earned modal | Coin flip, ring, count-up |
+
+**Stacked tier 3 takes turns.** When several earned moments fire together (a study
+is paid: the points chip and the wallet both gain, and the Paid banner throws
+confetti), they no longer land together. `earnedSlot()` in `lib/motion.ts` queues them:
+each counter tumbles in turn, the badge no longer pulses on top, and confetti waits for
+the tumble (and on the banner, for the earned line) to finish. Measured on the dashboard
+after a payment: the points chip lands at about 4.1s, the wallet tile at about 5.7s.
 
 **Idle motion.** A screen with content on it is still: no travelling shimmer on bars, no
 first-sight glint, no tilt on cards you scroll past, and the phone's own tilt is

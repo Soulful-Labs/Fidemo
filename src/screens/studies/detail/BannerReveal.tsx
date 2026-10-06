@@ -60,7 +60,7 @@ export function RevealCard({ kind, className, children }: { kind: ReturnType<typ
       )}
       {kind === 'earned' && (
         <span className="pointer-events-none absolute left-8 top-6">
-          <Burst particles={sparks} delay={DUR.base} tones={['text-brand-secondary', 'text-brand-primary', 'text-text-title']} />
+          <Burst particles={sparks} delay={DUR.base * 1.4 + DUR.slow * 0.6} tones={['text-brand-secondary', 'text-brand-primary', 'text-text-title']} />
         </span>
       )}
     </motion.div>

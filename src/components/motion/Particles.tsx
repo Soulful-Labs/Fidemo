@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import { cn } from '../../lib/cn'
-import { CSS, prefersReduced } from '../../lib/motion'
+import { CSS, earnedSlot, prefersReduced } from '../../lib/motion'
 import { isPlayful } from '../../lib/playful'
 import { CONFETTI, fire } from './Confetti'
 
@@ -78,7 +78,7 @@ export function Burst({ particles, tones, delay = 0, palette = CONFETTI.brand }:
       const t = window.setTimeout(() => {
         const r = ref.current?.parentElement?.getBoundingClientRect()
         if (r) fire({ x: r.left + r.width / 2, y: r.top + r.height / 2, count: 56, colors: palette, power: 1100, spread: 1.7 })
-      }, delay * 1000)
+      }, Math.max(delay * 1000, earnedSlot(900)))
       return () => window.clearTimeout(t)
     }
     const nodes = [...(ref.current?.querySelectorAll<HTMLElement>('[data-p]') ?? [])]

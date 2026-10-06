@@ -2,7 +2,7 @@ import { animate } from 'framer-motion'
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import { cn } from '../../lib/cn'
-import { CSS, EASE, HAPTIC, haptic, play, prefersReduced, rollDuration, springTo } from '../../lib/motion'
+import { CSS, EASE, HAPTIC, earnedSlot, haptic, play, prefersReduced, rollDuration, springTo } from '../../lib/motion'
 import { isPlayful } from '../../lib/playful'
 import { feedback } from '../../lib/feedback'
 import { spinDigits } from './odometer'
@@ -80,15 +80,18 @@ export default function RollingNumber({
       }
       if (isPlayful()) {
         // PLAYFUL: the digits tumble like a counter, then the figure lands with a spring.
+        // Several figures gaining at once (a paid study) tumble one after another, not together.
+        const spin = rollDuration(gain / step) * 1300
+        const turn = earnedSlot(spin + 350)
         const wait = window.setTimeout(() => {
-          const cancelSpin = spinDigits(node, fmt.current(prev), fmt.current(value), rollDuration(gain / step) * 1300, () => {
+          const cancelSpin = spinDigits(node, fmt.current(prev), fmt.current(value), spin, () => {
             done()
             feedback('gain')
+            // The figure lands with a pop; the badge around it no longer pulses as well.
             springTo(node, { transform: 'scale(1.4)' })
-            springTo(pulse?.current, { transform: 'scale(1.3)' })
           })
           stopSpin = () => { cancelSpin(); write(displayed) }
-        }, delay * 1000)
+        }, delay * 1000 + turn)
         stopSpin = () => window.clearTimeout(wait)
         return
       }
@@ -100,8 +103,7 @@ export default function RollingNumber({
         onComplete: () => {
           done()
           haptic(HAPTIC.gain)
-          if (isPlayful()) springTo(pulse?.current, { transform: 'scale(1.3)' })
-          else play(pulse?.current, [{ transform: 'scale(1)' }, { transform: 'scale(1.14)', offset: 0.35 }, { transform: 'scale(1)' }], CSS.slow, CSS.out)
+          play(pulse?.current, [{ transform: 'scale(1)' }, { transform: 'scale(1.14)', offset: 0.35 }, { transform: 'scale(1)' }], CSS.slow, CSS.out)
         },
       })
     }

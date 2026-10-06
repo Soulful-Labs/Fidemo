@@ -214,6 +214,20 @@ export function settleTo(el: Element | null | undefined, from: Keyframe, to: Key
   return play(el, [from, to], TIER.changed.ms, TIER.changed.easing)
 }
 
+/**
+ * Tier 3 moments that happen together (a paid study: the points chip and the
+ * wallet tumbling, then confetti) take turns instead of landing at once. Each
+ * asks for a slot of `ms` and gets back how long to wait before starting; slots
+ * are served in the order they were asked for, with a short breath between.
+ */
+let earnedFreeAt = 0
+export function earnedSlot(ms: number): number {
+  const now = performance.now()
+  const wait = Math.max(0, earnedFreeAt - now)
+  earnedFreeAt = now + wait + ms + 120
+  return wait
+}
+
 const curves = new Map<string, { easing: string; ms: number }>()
 /** springCurve, cached: the same five springs are asked for again and again. */
 export function springEase(name: keyof typeof SPRING) {

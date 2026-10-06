@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react'
 import { feedback } from '../lib/feedback'
 import { Link } from 'react-router-dom'
 import { cn } from '../lib/cn'
-import { AROUND, SPRING, around } from '../lib/motion'
+import { AROUND, SPRING } from '../lib/motion'
 import { isPlayful, usePlayful } from '../lib/playful'
 import { TABS, activeTab } from './navigation'
 
@@ -19,16 +19,12 @@ import { TABS, activeTab } from './navigation'
 export default function BottomNav({ pathname, alt = false }: { pathname: string; alt?: boolean }) {
   const active = activeTab(pathname)
   const playful = usePlayful()
-  const icons = useRef(new Map<string, HTMLSpanElement | null>())
   const last = useRef(active)
-  // PLAYFUL: the newly selected tab's icon squashes and bounces back up, with a selection tick.
+  // PLAYFUL: selecting a tab gives a light tick; the tint sliding across is the only motion.
   useEffect(() => {
     if (last.current === active) return
     last.current = active
-    if (!playful || !active) return
-    // Tier 1, and quiet: the icon dips a touch and comes straight back. No bounce.
-    around(icons.current.get(active), { transform: 'scale(0.9)' })
-    feedback('select')
+    if (playful && active) feedback('select')
   }, [active, playful])
 
   return (
@@ -47,7 +43,7 @@ export default function BottomNav({ pathname, alt = false }: { pathname: string;
           >
             {/* The tint slides from tab to tab. */}
             {isActive && <motion.span layoutId="nav-tint" transition={isPlayful() ? AROUND : SPRING.soft} aria-hidden="true" className="absolute inset-0 -z-10 rounded-lg bg-yellow-1000/40" />}
-            {playful ? <span ref={(el) => { icons.current.set(tab.key, el) }} className="flex"><tab.Icon /></span> : <tab.Icon />}
+            <tab.Icon />
             <span className="text-text-regular">{tab.label}</span>
           </Link>
         )
