@@ -98,6 +98,16 @@ inside it. Check both: nothing escapes the frame, and nothing inside it is
 clipped, sliced, overlapping or hidden under the top bar or a panel. Look at the
 render, not only the numbers.
 
+### Rule 9, Figma outranks the console document
+
+The internal console document (`docs/Internal-Team-Console.html`) is outdated.
+Figma is the current truth for this app. Where the two disagree about what a
+screen is or does, build Figma without asking.
+
+The one thing Figma does not outrank is the signed Trust and Rewards policy
+(`docs/Trust-and-Rewards-Policy.html`) on scores, tiers, points and the
+certificate. Those conflicts are still reported, not resolved.
+
 ### Hidden frames
 
 A hidden frame cannot be screenshotted: `get_screenshot` returns a **1x1 PNG**
@@ -236,9 +246,8 @@ ticket); Refunds for unfilled studies to Finance > Refunds (rows to the refund);
 No-show verifications to Studies (rows to the study: no frame shows a no-show queue).
 The tiles are not links. **No chart anywhere**; nothing needs a library.
 
-The workflow's console doc describes the Dashboard differently ("every live study on
-a row, green if nothing is waiting on us, red if something is"); Figma draws an
-actions queue. Behaviour is stage two; flagged.
+The actions pending queue is the Dashboard. (The console document's "every live
+study on a row" list is superseded, Rule 9.)
 
 Diffs at 1440 (sidebar included): All 2.99%, Onboarding 1.80%, Studies 3.07%,
 Support 1.57%, Manage 2.43%.
