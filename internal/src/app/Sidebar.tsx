@@ -7,8 +7,9 @@ import type { NavItem } from './nav'
 /**
  * The Sidebar asset (1857:127510), measured at 1x: 230 wide on bg-1 with a 1px
  * #f0f0ef right edge; the header (mark 26x32 at 20,20 and "Admin Panel" in
- * title-l) over a stroke-1 rule at y 72; group labels in label size; 48px rows
- * 2px apart; the active row is a white pill inset 16px, with a 1px edge.
+ * title-l, medium). The asset sheet draws a stroke-1 rule under the header at
+ * y 72; no screen frame does, so it is not drawn here. group labels in Lables (14, text-body)
+ * 6px above their first row; 48px rows 2px apart; the active row is a white pill inset 16px, with a 1px edge.
  * Fixed to the window height: the frames draw it 960 or 1008 tall only
  * because that is the height the component was drawn at.
  */
@@ -22,15 +23,14 @@ export default function Sidebar() {
       <div className="flex h-[73px] shrink-0 items-start px-5 pt-5">
         <Link to="/dashboard" className="flex items-center gap-[14px]">
           <LogoMark className="h-8 w-[26px]" />
-          <span className="text-title-l"><span className="text-text-subtitle">Admin</span> <span className="text-text-body">Panel</span></span>
+          <span className="text-title-l font-medium"><span className="text-text-subtitle">Admin</span> <span className="text-text-body">Panel</span></span>
         </Link>
       </div>
-      <div className="mx-4 h-px shrink-0 bg-stroke-1" />
 
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-4">
-        {NAV.map(({ group, items }) => (
+        {NAV.map(({ group, items }, g) => (
           <div key={group} className="flex flex-col">
-            <p className="px-4 pb-2 pt-5 text-label text-text-body">{group}</p>
+            <p className={cn('px-4 pb-1.5 text-text-regular leading-5 text-text-body', g === 0 ? 'pt-[17px]' : 'pt-3.5')}>{group}</p>
             <ul className="flex flex-col gap-0.5">
               {items.map((item) => (
                 <NavRow key={item.key} item={item} active={active.item === item.key} activeChild={active.child} />
@@ -43,7 +43,7 @@ export default function Sidebar() {
       <Link to="/account" className="mx-4 mb-4 flex h-[60px] shrink-0 items-center gap-2 rounded-md border-1 border-stroke-1 bg-bg-0 px-2">
         <img src="/img/peter-avatar.png" alt="" className="h-10 w-10 rounded-sm object-cover" />
         <span className="flex flex-col">
-          <span className={cn('text-text-medium', account ? 'text-brand-primary' : 'text-text-title')}>Peter Devian</span>
+          <span className={cn('text-text-medium', account ? 'text-brand-primary' : 'text-text-subtitle')}>Peter Devian</span>
           <span className="text-text-regular text-text-body">Master Admin</span>
         </span>
       </Link>

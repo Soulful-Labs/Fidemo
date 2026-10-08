@@ -53,12 +53,18 @@ export default {
         // the sidebar's right edge and the edge of its active pill (#f0f0ef), and the
         // sub-item guide rail (#edebeb). Named here so no screen writes a raw hex.
         shell: { edge: '#f0f0ef', rail: '#edebeb' },
-        state: { success: '#14ae5c', successHover: '#009951', successBg: '#d3f8d7', danger: '#e33a38', warningBg: '#fcf2da' },
+        state: { success: '#14ae5c', successHover: '#009951', successBg: '#d3f8d7', danger: '#e33a38', warningBg: '#fcf2da',
+          // The destructive CTA (Restrict, 2036:146119) binds the same sds variable to #ea5a00, its edge to #dc5500.
+          destructive: '#ea5a00', destructiveEdge: '#dc5500' },
+        // Neutral (P)/*, on the destructive dialogs.
+        neutral: { 700: '#2d2b28', 900: '#15130f' },
       },
       // Space/* and Element/*.
       spacing: {
         0: '0px', 0.5: '2px', 1: '4px', 1.5: '6px', 2: '8px', 3: '12px', 4: '16px', 5: '20px', 6: '24px', 8: '32px', 12: '48px',
         'el-s': '16px', 'el-m': '20px', 'el-l': '24px', 'el-xl': '32px', 'el-3xl': '48px',
+        // The sidebar's width, so the content can sit beside it (ml-nav).
+        nav: '230px',
       },
       // Radius/*.
       borderRadius: { xs: '4px', sm: '8px', md: '12px', lg: '16px', xl: '24px', '4xl': '48px', full: '100px' },

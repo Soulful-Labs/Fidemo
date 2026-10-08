@@ -155,10 +155,14 @@ export default function KitchenSink() {
         footer={<><Button variant="tertiary" onClick={() => setModal(null)}>Cancel</Button><Button onClick={() => setModal(null)}>Mark Resolved</Button></>}>
         <p className="text-body-regular text-text-subtitle">Are you sure you want to mark this ticket as resolved? User won't be able to message further on this ticket.</p>
       </Modal>
-      <Modal open={modal === 'titled'} layout="titled" onClose={() => setModal(null)} title="Restrict Maya's Account"
+      <Modal open={modal === 'titled'} layout="titled" onClose={() => setModal(null)} title="Restrict Maya’s Account"
         footer={<><Button variant="secondary" onClick={() => setModal(null)}>Cancel</Button><Button variant="danger" onClick={() => setModal(null)}>Restrict</Button></>}>
-        <p className="text-text-regular text-text-title">This will make Maya's account restricted to participate, withdraw earnings &amp; rewards, for 15 days as for the 1st time.</p>
-        <PasswordInput label="Password" placeholder="Enter password" />
+        <p className="text-text-regular text-text-title">This will make Maya&rsquo;s account restricted to participate, withdraw earnings &amp; rewards, for 15 days as for the 1st time.</p>
+        <TextArea size="sm" rows={4} label="Restriction Statement*" placeholder="Describe the Restriction reason statement in detail" />
+        <div className="flex flex-col gap-2">
+          <p className="text-text-regular text-text-title">Enter your account password to confirm this action.</p>
+          <PasswordInput size="sm" label="Password" placeholder="Enter password" />
+        </div>
       </Modal>
       <SuccessModal open={modal === 'success'} onClose={() => setModal(null)} title="Password has been updated!"
         body="Your new password has been updated with your account which you can use to login from now." action="Go To Login" onAction={() => setModal(null)} />

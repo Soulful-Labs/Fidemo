@@ -32,13 +32,17 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   helper?: ReactNode
   error?: string
   boxClassName?: string
+  /** md 48 (forms, toolbars); sm 38 with 14px text and Radius/S (inside dialogs, 2036:146119). */
+  size?: 'md' | 'sm'
 }
 
-export default function Input({ label, leftIcon, rightSlot, helper, error, className, boxClassName, id, ...rest }: InputProps) {
+const SM = 'h-[38px] rounded-sm text-text-regular'
+
+export default function Input({ label, leftIcon, rightSlot, helper, error, className, boxClassName, id, size = 'md', ...rest }: InputProps) {
   const fid = id ?? (label ? `f-${label.replace(/\W+/g, '-').toLowerCase()}` : undefined)
   return (
     <Field label={label} htmlFor={fid} helper={helper} error={error} className={className}>
-      <span className={cn(BOX, error && 'border-state-danger', boxClassName)}>
+      <span className={cn(BOX, size === 'sm' && SM, error && 'border-state-danger', boxClassName)}>
         {leftIcon}
         <input id={fid} className={FIELD} {...rest} />
         {rightSlot}
@@ -50,11 +54,12 @@ export default function Input({ label, leftIcon, rightSlot, helper, error, class
 /** Password Input: the same box with the eye on the right, which shows and hides what is typed. */
 export function PasswordInput(props: Omit<InputProps, 'type' | 'rightSlot'>) {
   const [shown, setShown] = useState(false)
+  const icon = props.size === 'sm' ? 'h-5 w-5' : 'h-7 w-7'
   return (
     <Input {...props} type={shown ? 'text' : 'password'}
       rightSlot={
         <button type="button" aria-label={shown ? 'Hide password' : 'Show password'} onClick={() => setShown((s) => !s)} className="-mr-1 text-text-subtitle">
-          <EyeIcon className="h-7 w-7" />
+          <EyeIcon className={icon} />
         </button>
       } />
   )
@@ -66,11 +71,11 @@ export function SearchInput(props: Omit<InputProps, 'leftIcon'>) {
 }
 
 /** Multi-line message box (Create Ticket, Restriction Statement): same edge, 12px padding, top-aligned. */
-export function TextArea({ label, className, rows = 4, ...rest }: TextareaHTMLAttributes<HTMLTextAreaElement> & { label?: string }) {
+export function TextArea({ label, className, rows = 3, size = 'md', ...rest }: TextareaHTMLAttributes<HTMLTextAreaElement> & { label?: string; size?: 'md' | 'sm' }) {
   return (
     <Field label={label} className={className}>
       <textarea rows={rows} {...rest}
-        className="w-full resize-none rounded-md border-1 border-stroke-input bg-bg-0 px-3 py-3 text-body-regular text-text-title outline-none placeholder:text-text-body" />
+        className={cn('w-full resize-none rounded-md border-1 border-stroke-input bg-bg-0 px-3 py-3 text-body-regular text-text-title outline-none placeholder:text-text-body', size === 'sm' && 'rounded-sm py-2.5 text-text-regular')} />
     </Field>
   )
 }

@@ -23,8 +23,8 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  * - secondary: flat cta-secondary (#fed592) with secondary text (Cancel in
  *   panels and dialogs, Reset, Mark as completed).
  * - tertiary: bg-0 with a 1px cta-tertiaryStroke ring (Cancel on pages, Copy).
- * - danger: the red Restrict / Deactivate / Reject (#e33a38 bound to an sds
- *   variable in the file).
+ * - danger: the orange-red Restrict / Deactivate (#ea5a00 with a 3px
+ *   #dc5500 base, bound to an sds variable on 2036:146119).
  * - success: the green Approve to Publish.
  *
  * Sizes: lg 48 (forms, dialogs, panel footers), md 38 (title bar, rows, the
@@ -34,7 +34,7 @@ const VARIANT: Record<ButtonVariant, string> = {
   primary: 'border-b-[3px] border-yellow-700 bg-linear-to-b from-yellow-300 via-yellow-400 via-15% to-yellow-500 border-t-1 border-t-yellow-100 text-cta-primaryText',
   secondary: 'bg-cta-secondary text-cta-secondaryText',
   tertiary: 'border-1 border-cta-tertiaryStroke bg-bg-0 text-text-title',
-  danger: 'bg-state-danger text-bg',
+  danger: 'border-b-[3px] border-state-destructiveEdge bg-state-destructive text-bg-0',
   success: 'bg-state-success text-bg',
   ghost: 'text-text-title',
 }

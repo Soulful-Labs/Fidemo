@@ -157,6 +157,45 @@ reads as a fixed sidebar drawn once; build it fixed to the viewport, not stretch
 
 ---
 
+## Primitives (turn 1), measured
+
+All in `src/components/ui`, shown in every state on `/kitchen-sink`. Reuse them;
+do not draw a second version of any of these.
+
+| Primitive | Measured |
+|---|---|
+| Button (`Button.tsx`) | lg 48 / md 38 / sm 32, Radius/M. primary: gradient yellow-300 > yellow-400 (15%) > yellow-500, 1px yellow-100 top, 3px yellow-700 base. secondary: cta-secondary. tertiary: bg-0, 1px cta-tertiaryStroke. danger: #ea5a00 with a 3px #dc5500 base (`state.destructive*`, from an sds variable on 2036:146119). success: state-success |
+| IconButton | 38 (and 32, 28 in panel title bars), 1px cta-tertiaryStroke, Radius/S |
+| Input / PasswordInput / SearchInput / Select | label 14 subtitle in a 20 line, 4 gap, box 48, Radius/M, 1px stroke-input, bg-0, 12 in, 16px text. `size="sm"`: 38, Radius/S, 14px (dialogs). Eye 28 at md, 20 at sm |
+| TextArea | same edge, 12 padding, 3 rows by default |
+| Toggle | 40 x 24 track, 18 knob 3 in. Off stroke-input / subtitle knob; on brand-primary / bg-1 knob |
+| Checkbox | 16, Radius/XS (from "Checkbox-default"; its checked state is not drawn) |
+| Radio | 18 ring, 1px text-body (selected state is not drawn; green dot assumed) |
+| UnderlineTabs | 42 tall, 16 sides, Body 16, brand-primary text and 1px underline when active over a 1px stroke-input baseline; 24px count pill, filled bgAlt-2 active, ringed idle |
+| SegmentedTabs | 48 track bgAlt-2, Radius/M, 4 padding; active pill green-200, 40 tall |
+| Tag | 28, Radius/Full, 10 sides, 14px; success / warning / danger / neutral / outline / info / brand |
+| CountBadge | 24, Radius/Full |
+| Chip | 28, Radius/S, bgAlt-2, remove cross |
+| OptionTile | 48, Radius/M; selected cta-secondary, idle 1px tertiary |
+| Avatar | 24 / 32 / 40 / 48 / 64, Radius/S |
+| Table | 1px stroke-input box, Radius/L; header 52 on bg-1, 14 subtitle, 16px sort arrow; rows 64 with stroke-1 rules; 16 cell padding |
+| Pagination | 38 squares; arrows ringed; current page yellow-300 |
+| SidePanel | 600 wide, as tall as its content (the frames draw 470, 517, 597), opens top right, Radius/XL left corners; 56 title bar (Title-S, 28 close), stroke-1 rules, footer of two 48 buttons 16 apart |
+| Modal | 460, Radius/XL. centred: Title-L, body max 310, 40 above and below; titled: 56 title bar, blocks 24 apart. Bottom bar 80: rule, 16, 48 buttons 16 apart |
+| SuccessModal | 160 yellow-100 disc, 92 yellow-500 badge with 4px brand-primary rim, white tick; Title-L in a 35 line; one 48 button |
+
+### The shell, as built
+- Sidebar: fixed to the window, 230, bg-1, right edge `shell.edge`. Header 73 tall (mark 26 x 32, "Admin Panel" Title-L medium). The asset sheet draws a stroke-1 rule under the header; **no screen frame does**, so it is not drawn.
+- Group labels: 14px text-body, 17 above "Users" and 14 above "Platform", 6 above the first row. Rows 48, 2 apart.
+- The active row is a white pill with a 1px `shell.edge` ring. A parent with sub-items does not get the pill: it turns title colour and its child is lit, on a 2px `shell.rail` guide with a 6px dot.
+- The account card: 60 tall, 16 in, stroke-1 ring, 40 avatar. The name is "Peter Devian"; the asset and the Dashboard and Review frames say "Peter Davian".
+- **The nav lights by route, never copied from a frame** (`app/nav.ts`). Corrected: Studies Ongoing and every Review frame light Dashboard (built: Studies); the client verification detail lights Participants > Verifications (built: Clients > Verifications).
+
+### Turn 1 diffs at 1440
+Sign In 0.60%, Reset Password 0.50%, Check Email 0.75% (with the demo line), Set New Password 0.58%, Password has been updated! 4.77%, sidebar 3.8% to 4.8% (icon glyphs redrawn, text antialiasing), title bar 0.40%, Create Ticket panel 8.07%, Mark Resolved? 5.71%, Restrict 7.06%.
+
+---
+
 ## The file, mapped
 
 15 top-level sections and one loose frame on the page, **294 frames, 251 visible,
