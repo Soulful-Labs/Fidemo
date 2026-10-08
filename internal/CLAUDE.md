@@ -446,6 +446,70 @@ in-person 2.84%, in-person group 2.92%, paused 2.90%; Manage Study survey 2.26%,
 video 2.28%, video 1:1 2.56%, diary 2.29%, in-person 2.28%, in-person group 2.24%;
 Pause Study panel 6.06%. Nothing in these frames is cut off by its frame.
 
+## Manage a study (turn 6): Matched and Recruited
+
+Frames, from the six Manage sections pulled in turn 5 (ids unchanged): in every
+section "Auto-Matched" and "Invited - Auto-Matched" (1440 x 1401); "Recruited" once in
+survey `1932:107511` and diary `1961:180425`, twice in the four session types
+(applications 1440 x 1176, scheduled or sessions 1440 x 1272). Overlays, drawn once in
+the survey section: Respondent Profile Details `1932:109128` and `1932:109286` (600 x
+913), "Invite to apply?" `1932:110861`, "Sent" `1932:110882`. Measured: Matched differs
+between sections only in the header (2.51%, rows 29-291); the applications table is the
+same in all six but for the first name (2.46-2.69% between sections, header included).
+
+**Matched** (`?tab=matched`, `&seg=invited`): "Surfaced from the Pool who are matching
+with target audience criteria." Segments Matched / Invited; dropdowns "Sort: Score",
+"Tier: All", "Location: All" (options not drawn); nine cards, three across. A card:
+initial, name, role, match score, tier, sometimes "Profession-Verified"; "Invite To
+Study" and "View Profile". On Invited the two buttons become a flat "Invitation Sent!".
+Invite asks ("Invite Ferry to apply for this study?", Cancel / Send Invite), then
+confirms ("Invitation has been sent!", Done!). View Profile opens the 600 panel; its
+footer is "Invite To Study" or a disabled "Invited to this study". No bulk action.
+Hidden on each card: a 104px tag, a 230px line and a 38px icon button; on Invited a
+163px CTA per card.
+
+**Recruited** (`?tab=recruited`, `&view=applications`): "List of respondents applied on
+this study and track their statuses".
+- Survey, diary: the applications table alone, "Status: All" and "Tier: All" (38px).
+- Video 1:1, in-person: segments Scheduled / Applications. Scheduled: Name, Role,
+  Score, Session Time, 60px rows; the video frame draws "Join Now" on the first row.
+- Group video, in-person group: segments Sessions / Applications. A session card:
+  date, time, address (in person), "4 / 10 Seats", six initials, "View Participants".
+- Applications: Name, Role, Status, Score with tier; ten 52px rows, pagination to 10.
+Statuses drawn: **Applied, Qualified, Disqualified**. The survey Recruited frame draws
+the "Congrats!" banner.
+
+**Where rows lead (turn 7, placeholders now):** an application or booking opens the
+respondent (`/studies/:id/respondents/:rid`); View Participants opens the session
+(`/studies/:id/sessions/:sid`). The Qualify / Disqualify bar ("Screener CTAs"
+`1932:110903`: to decide, qualified with Undo, qualified, disqualified with Undo; "The
+action can be undone within 1 hour only after it is taken.") sits on the respondent's
+screener page, and the no-show dialogs ("Mark [individual] as No-show", "Mark back
+[individual] as Completed from No-show", the hidden "Mark all as No-show" `1952:80380`,
+"Didn't everyone attend?") on the session pages. None open from these two tabs, so
+they are built with those pages in turn 7, not here.
+
+**Against the workflow.** The workflow screens in two stages (a pre-screener, then the
+full screener, with a borderline answer held for review). The designs draw one
+decision: Applied becomes Qualified or Disqualified when a person presses the bar. No
+"held for review", no automatic pass or fail, no terminated state. "Pre-screener - Qn"
+appears only as question labels on Review; a "Screened 51" figure is hidden in every
+header.
+
+Not reachable as drawn: the "Invited to this study" panel (Invited cards have no View
+Profile); it is in the kitchen sink. Dead for now: "Join Now", "Reviews >" in the
+panel. All three dropdown sets show only the drawn option.
+
+Shared changes: `TierTag` (colours measured, no variable exposed), `Select size="sm"`,
+tokens `bg.3`, `tier.*`, `orange.100`, `red.50`, `text.disabled`. Everything signed off
+re-swept: unchanged.
+
+Diffs at 1440: Matched survey 3.98%, group video 3.96%, Invited 3.01%; Recruited
+survey 3.60%, diary 3.71%; applications group video 2.33%, video 1:1 2.31%, in-person
+2.30%, in-person group 2.34%; Sessions group video 1.96%, in-person group 2.37%;
+Scheduled video 1:1 2.50%, in-person 2.44%; Invite dialog 7.68%, Sent 4.66%, profile
+panel 6.44% and 4.55%. Nothing is cut off by its frame.
+
 ---
 
 ## The file, mapped

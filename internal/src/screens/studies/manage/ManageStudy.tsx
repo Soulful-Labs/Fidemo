@@ -55,7 +55,7 @@ export default function ManageStudy() {
   }
 
   return (
-    <AppShell className={study.tight ? 'flex flex-col gap-3 p-4 pb-6' : 'flex flex-col gap-3 pb-8'}
+    <AppShell className={study.tight && !paused ? 'flex flex-col gap-3 p-4 pb-6' : 'flex flex-col gap-3 pb-8'}
       crumbs={[{ label: 'Studies', to: '/studies' }, { label: 'Ongoing', to: '/studies?tab=ongoing' }, { label: study.title }]}>
       {congrats && <CongratsBanner />}
       {paused && <PausedBanner onResume={() => go({ paused: false })} onComplete={() => navigate('/studies?tab=completed')} />}
