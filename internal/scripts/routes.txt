@@ -27,3 +27,5 @@ participants/verifications/iv-1
 support/tk-1
 finance/refunds
 finance/refunds/rf-1
+studies?tab=ongoing
+studies?tab=completed

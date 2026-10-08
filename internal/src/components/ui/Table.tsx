@@ -12,18 +12,20 @@ export interface Column<T> {
 }
 
 /**
- * The list table, measured on Studies (1978:97400): a 1px stroke-input box
+ * The list table, measured on Studies (1978:97400): a 1px stroke-2 box
  * with Radius/L; a 52px header row on bg-1 in Text-Regular subtitle with the
  * 16px "sort-arrow" after sortable heads; body rows 64 tall with a 1px
  * stroke-1 rule between them; cells padded 16px. Column widths are the
  * frame's, passed per table.
  */
-export default function Table<T>({ columns, rows, rowKey, onRowClick, rowHeight = 64, className }: {
+export default function Table<T>({ columns, rows, rowKey, onRowClick, rowHeight = 64, className, highlight }: {
   columns: Column<T>[]; rows: T[]; rowKey: (r: T) => string; onRowClick?: (r: T) => void; rowHeight?: number; className?: string
+  /** A row drawn in its hover state (bgAlt-1), as the Studies frames draw their second row. */
+  highlight?: string
 }) {
   const widths = columns.map((c) => (typeof c.width === 'number' ? `${c.width}px` : c.width ?? '1fr')).join(' ')
   return (
-    <div role="table" className={cn('overflow-hidden rounded-lg border-1 border-stroke-input bg-bg-0', className)}>
+    <div role="table" className={cn('overflow-hidden rounded-lg border-1 border-stroke-2 bg-bg-0', className)}>
       <div role="row" className="grid h-[52px] items-center bg-bg-1" style={{ gridTemplateColumns: widths }}>
         {columns.map((c) => (
           <div role="columnheader" key={c.key} className={cn('flex items-center gap-1 px-4 text-text-regular text-text-subtitle', c.className)}>
@@ -33,7 +35,7 @@ export default function Table<T>({ columns, rows, rowKey, onRowClick, rowHeight 
       </div>
       {rows.map((r) => (
         <div role="row" key={rowKey(r)} onClick={onRowClick ? () => onRowClick(r) : undefined}
-          className={cn('grid items-center border-t-1 border-stroke-1', onRowClick && 'cursor-pointer hover:bg-bg-1')}
+          className={cn('grid items-center border-t-1 border-stroke-1', onRowClick && 'cursor-pointer hover:bg-bgAlt-1', rowKey(r) === highlight && 'bg-bgAlt-1')}
           style={{ gridTemplateColumns: widths, height: rowHeight }}>
           {columns.map((c) => (
             <div role="cell" key={c.key} className={cn('min-w-0 px-4 text-text-regular text-text-title', c.className)}>{c.render(r)}</div>

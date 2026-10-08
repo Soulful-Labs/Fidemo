@@ -254,6 +254,43 @@ Support 1.57%, Manage 2.43%.
 
 ---
 
+## Studies list (turn 3)
+
+One screen, three tab states (`/studies`, `?tab=ongoing|completed`): To Review
+`1978:97400`, Ongoing `1874:72973`, Completed `1906:19984`. The toolbar, count line
+and table frame are in the same place on all three; between tabs only the active
+segment, the sort label, the count line and the table columns change. The same six
+studies appear on every tab, and the second row is drawn in its hover state
+(bgAlt-1) on all three.
+
+| Tab | Count line | Columns (width) | Row action | Row opens |
+|---|---|---|---|---|
+| To Review | "6 studies to be reviewed" | Study Name 445, Type 200, Participants 140, Submitted on 140, Total Cost 140, Review button | Review | the review screen, `/studies/review/:id` |
+| Ongoing | "18 Studies" | Study Name 555, Type 180, Completed 125, Last Activity 140, Applications 160 (yellow chip with a chevron) | the chip | the running study, `/studies/:id` |
+| Completed | "18 Studies" | Study Name 695, Type 200, Completed 140, Date 125 | none | the completed study, `/studies/:id` |
+
+Sortable heads (the 16px arrow): Participants, Submitted on, Total Cost; Completed,
+Last Activity, Applications; Completed, Date. Search: "Search studies". Filter:
+"All Studies" (its options are not drawn). Sort: "Sort: Recent First" (To Review,
+Completed), "Sort: More applications" (Ongoing); the other options are not drawn.
+
+Hidden in the frames: an "18 Studies" label in the toolbar, the title bar's right
+CTA and icon button, and on Ongoing a 64px column of row icon buttons (a row menu;
+the "Ongoing Study options" popover drawn in the Manage sections is its likely menu).
+
+Counts: Ongoing's "18 Studies" agrees with the Dashboard's "Live studies 18".
+Completed also says "18 Studies" (a copy of Ongoing's line, as drawn). Each tab draws
+six rows whatever its count. No column shows who on the team owns or last touched a
+study: no assignee, no "last touched by", anywhere on the list.
+
+Primitive changes this turn: the table's edge is stroke-2 (measured), it can draw a
+row in its hover state, and the search icon is 24. Sign in and the Dashboard were
+re-swept: unchanged.
+
+Diffs at 1440: To Review 2.28%, Ongoing 2.00%, Completed 1.87%.
+
+---
+
 ## The file, mapped
 
 15 top-level sections and one loose frame on the page, **294 frames, 251 visible,

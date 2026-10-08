@@ -67,7 +67,7 @@ export function PasswordInput(props: Omit<InputProps, 'type' | 'rightSlot'>) {
 
 /** The search field on list toolbars: the 20px magnifier 12px in, then the placeholder. */
 export function SearchInput(props: Omit<InputProps, 'leftIcon'>) {
-  return <Input {...props} leftIcon={<SearchIcon className="h-5 w-5 shrink-0 text-text-subtitle" />} />
+  return <Input {...props} leftIcon={<SearchIcon className="h-6 w-6 shrink-0 text-text-subtitle" />} />
 }
 
 /** Multi-line message box (Create Ticket, Restriction Statement): same edge, 12px padding, top-aligned. */
