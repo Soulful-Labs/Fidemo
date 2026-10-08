@@ -19,3 +19,11 @@ finance
 pricing
 sub-admin
 account
+dashboard?tab=onboarding
+dashboard?tab=studies
+dashboard?tab=support
+dashboard?tab=manage
+participants/verifications/iv-1
+support/tk-1
+finance/refunds
+finance/refunds/rf-1

@@ -7,8 +7,8 @@ export interface TabItem { key: string; label: ReactNode; count?: number | strin
  * The underline "Tabs" component (1869:66618, 1162 x 42): 16px-padded labels
  * in Body 16, text-body when idle and brand-primary when active, a 1px
  * brand-primary underline the width of the active tab over a 1px stroke-input
- * baseline. A count sits in a 24px pill: filled bgAlt-2 when active, a
- * stroke-input ring when not.
+ * baseline. A count sits 8 after the label in a 28px Tag pill (10 sides):
+ * filled bgAlt-2 when active, a stroke-3 ring when not (Dashboard, 1869:66618).
  */
 export function UnderlineTabs({ items, value, onChange, className }: { items: TabItem[]; value: string; onChange?: (k: string) => void; className?: string }) {
   return (
@@ -21,8 +21,8 @@ export function UnderlineTabs({ items, value, onChange, className }: { items: Ta
               on ? 'border-brand-primary text-brand-primary' : 'border-transparent text-text-body hover:text-text-subtitle')}>
             {t.label}
             {t.count !== undefined && (
-              <span className={cn('flex h-6 min-w-6 items-center justify-center rounded-full px-2 text-text-regular text-text-title',
-                on ? 'bg-bgAlt-2' : 'border-1 border-stroke-input')}>{t.count}</span>
+              <span className={cn('flex h-7 items-center justify-center rounded-full px-2.5 text-text-regular text-text-title',
+                on ? 'bg-bgAlt-2' : 'border-1 border-stroke-3')}>{t.count}</span>
             )}
           </button>
         )

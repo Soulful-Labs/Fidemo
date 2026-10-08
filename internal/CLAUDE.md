@@ -196,6 +196,55 @@ Sign In 0.60%, Reset Password 0.50%, Check Email 0.75% (with the demo line), Set
 
 ---
 
+## Dashboard (turn 2)
+
+One screen, five tab states (`/dashboard`, `?tab=onboarding|studies|support|manage`).
+Measured: the four frames at 960 differ from each other by 0.62% to 2.09%, every
+differing pixel at y 260 or below (the tab underline and the groups); the tiles,
+heading and shell are pixel identical in all five. The section holds exactly the
+five frames; hidden inside them are the title bar's back arrow, "Home /" crumb,
+stepper and right-hand CTA and icon button, a trailing icon button on the tab bar,
+a 16px chevron after every "View", a duplicate "24 screeners" / "32 screeners"
+on the first line of two screener rows, and the rows of each collapsed group.
+
+**What each figure counts (stage two must derive all of these from one place):**
+
+| Figure | Drawn | Counts |
+|---|---|---|
+| Screeners To Review | 264 | screener applications waiting for a team decision, across all studies (workflow 29, 32) |
+| Onboarding To Verify | 36 | participant identity and profession checks plus client business checks that failed automatic verification and wait for a person (workflow 3, 18) |
+| Open Tickets | 7 | support tickets not answered by the automatic first line and not resolved (workflow 56); matches the Support nav badge |
+| Live studies | 18 | studies approved and running; matches "18 Studies" on Studies > Ongoing |
+| Tab All | 274 | every pending action below |
+| Tab Onboarding | 4 | Identity Verification + Client-Business Verification |
+| Tab Studies | 264 | Screeners to review (+ Refunds, which this tab also lists) |
+| Tab Support | 3 | new tickets, participants + clients |
+| Tab Manage | 6 | No-show verifications + Flagged/reported accounts (+ Refunds, hidden in this frame) |
+| Group counts | 16, 2, 264, 2, 2, 2, 2 | the rows waiting in that group |
+| Nav badge Dashboard | 2 | not explained by any frame |
+
+**The figures disagree with each other as drawn:** the tabs add to 277, not 274;
+Identity Verification is 16 on All and 2 on Onboarding; Onboarding To Verify is 36
+while the Onboarding tab says 4; Open Tickets is 7 while the Support tab says 3. Each
+state shows its own frame's numbers (`src/mock/dashboard.ts`).
+
+**Shortcuts.** Every group's "View All" and every row's "View" opens the item in its
+home module: Identity Verification and Flagged/reported accounts to Participants >
+Verifications; Client-Business Verification to Clients > Verifications; Screeners to
+review to Studies (rows to the study); New Support Tickets to Support (rows to the
+ticket); Refunds for unfilled studies to Finance > Refunds (rows to the refund);
+No-show verifications to Studies (rows to the study: no frame shows a no-show queue).
+The tiles are not links. **No chart anywhere**; nothing needs a library.
+
+The workflow's console doc describes the Dashboard differently ("every live study on
+a row, green if nothing is waiting on us, red if something is"); Figma draws an
+actions queue. Behaviour is stage two; flagged.
+
+Diffs at 1440 (sidebar included): All 2.99%, Onboarding 1.80%, Studies 3.07%,
+Support 1.57%, Manage 2.43%.
+
+---
+
 ## The file, mapped
 
 15 top-level sections and one loose frame on the page, **294 frames, 251 visible,

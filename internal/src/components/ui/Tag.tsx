@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
 
-export type TagTone = 'neutral' | 'outline' | 'success' | 'warning' | 'danger' | 'info' | 'brand'
+export type TagTone = 'neutral' | 'outline' | 'count' | 'success' | 'warning' | 'danger' | 'info' | 'brand'
 
 /**
  * The "Tag" component (776 instances, 28 tall): a Radius/Full pill with 10px
@@ -13,6 +13,8 @@ export type TagTone = 'neutral' | 'outline' | 'success' | 'warning' | 'danger' |
 const TONE: Record<TagTone, string> = {
   neutral: 'bg-bg-2 text-text-title',
   outline: 'border-1 border-stroke-input bg-bg-0 text-text-subtitle',
+  // The Tag's default look, as on the Dashboard group headers ("16", "264"): a stroke-3 ring, no fill.
+  count: 'border-1 border-stroke-3 text-text-subtitle',
   success: 'bg-state-successBg text-state-success',
   warning: 'bg-yellow-50 text-brand-primary',
   danger: 'bg-state-warningBg text-state-danger',

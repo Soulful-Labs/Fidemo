@@ -7,6 +7,7 @@ import SignIn from './screens/auth/SignIn'
 import ResetPassword from './screens/auth/ResetPassword'
 import CheckEmail from './screens/auth/CheckEmail'
 import SetNewPassword from './screens/auth/SetNewPassword'
+import Dashboard from './screens/dashboard/Dashboard'
 
 /** A module route not built yet: the shell, with the breadcrumb the frames give that module. */
 const later = (path: string, ...labels: string[]): RouteObject => ({
@@ -25,19 +26,23 @@ const routes: RouteObject[] = [
   { path: '/check-email', element: createElement(CheckEmail) },
   { path: '/set-password', element: createElement(SetNewPassword) },
   { path: '/kitchen-sink', element: createElement(KitchenSink) },
-  later('/dashboard', 'Dashboard'),
+  { path: '/dashboard', element: createElement(Dashboard) },
   later('/studies', 'Studies'),
   later('/studies/review/:id', 'Studies', 'Review'),
   later('/studies/:id', 'Studies', 'Ongoing'),
   later('/participants', 'All Participants'),
   later('/participants/verifications', 'Verifications'),
+  later('/participants/verifications/:id', 'Verifications'),
   later('/participants/:id', 'All Participants'),
   later('/clients', 'Clients'),
   later('/clients/verifications', 'Verifications'),
   later('/clients/verifications/:id', 'Verifications'),
   later('/clients/:id', 'Active'),
   later('/support', 'Support'),
+  later('/support/:id', 'Support'),
   later('/finance', 'Finance'),
+  later('/finance/refunds', 'Finance', 'Refunds'),
+  later('/finance/refunds/:id', 'Refunds'),
   later('/pricing', 'Pricing & Rewards'),
   later('/sub-admin', 'Sub-Admin'),
   later('/account', 'Master Admin - Account'),
