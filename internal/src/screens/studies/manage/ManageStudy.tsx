@@ -9,9 +9,10 @@ import MatchedTab from './MatchedTab'
 import OverviewTab from './OverviewTab'
 import PauseStudy from './PauseStudy'
 import RecruitedTab from './RecruitedTab'
+import ResultsTab from './ResultsTab'
 import StudyHeader from './StudyHeader'
 
-/** The strip on every managed study. Results is turn 7, Pay turn 8. */
+/** The strip on every managed study. Pay is turn 8. */
 const TABS = [
   { key: 'overview', label: 'Overview', width: 'w-[101px]' },
   { key: 'manage', label: 'Manage Study', width: 'w-[139px]' },
@@ -66,6 +67,7 @@ export default function ManageStudy() {
           {tab === 'overview' && <OverviewTab study={study} paused={paused} />}
           {tab === 'manage' && <ManageTab study={study} />}
           {tab === 'matched' && <MatchedTab study={study} invited={invited} onSegment={(v) => go({ invited: v })} />}
+          {tab === 'results' && <ResultsTab study={study} />}
           {tab === 'recruited' && <RecruitedTab study={study} view={view} onView={(v) => go({ view: v })} />}
         </div>
       </section>

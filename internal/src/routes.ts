@@ -11,6 +11,8 @@ import Dashboard from './screens/dashboard/Dashboard'
 import Studies from './screens/studies/Studies'
 import ReviewStudy from './screens/studies/review/ReviewStudy'
 import ManageStudy from './screens/studies/manage/ManageStudy'
+import RespondentPage from './screens/studies/respondent/RespondentPage'
+import SessionPage from './screens/studies/respondent/SessionPage'
 
 /** A module route not built yet: the shell, with the breadcrumb the frames give that module. */
 const later = (path: string, ...labels: string[]): RouteObject => ({
@@ -33,8 +35,8 @@ const routes: RouteObject[] = [
   { path: '/studies', element: createElement(Studies) },
   { path: '/studies/review/:id', element: createElement(ReviewStudy) },
   { path: '/studies/:id', element: createElement(ManageStudy) },
-  later('/studies/:id/respondents/:rid', 'Studies', 'Ongoing'),
-  later('/studies/:id/sessions/:sid', 'Studies', 'Ongoing'),
+  { path: '/studies/:id/respondents/:rid', element: createElement(RespondentPage) },
+  { path: '/studies/:id/sessions/:sid', element: createElement(SessionPage) },
   later('/participants', 'All Participants'),
   later('/participants/verifications', 'Verifications'),
   later('/participants/verifications/:id', 'Verifications'),

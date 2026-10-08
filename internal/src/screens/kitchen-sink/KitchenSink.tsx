@@ -6,6 +6,8 @@ import Pill from '../../components/app/Pill'
 import StudyTypeTag from '../../components/app/StudyTypeTag'
 import TierTag, { ProfessionVerified } from '../../components/app/TierTag'
 import RespondentProfile from '../studies/manage/RespondentProfile'
+import { GroupCompletionBar, ScreenerBar } from '../studies/respondent/bars'
+import { SessionCard } from '../studies/respondent/content'
 import Button, { IconButton } from '../../components/ui/Button'
 import Input, { PasswordInput, SearchInput, Select, TextArea } from '../../components/ui/Input'
 import { Checkbox, Chip, OptionTile, Radio, Toggle } from '../../components/ui/controls'
@@ -163,6 +165,16 @@ export default function KitchenSink() {
           <Select size="sm" className="w-40" value="Status: All" options={['Status: All']} />
           <Button variant="tertiary" data-ks="profile" onClick={() => setProfile('open')}>Respondent profile</Button>
           <Button variant="tertiary" data-ks="profile-invited" onClick={() => setProfile('invited')}>Respondent profile, invited</Button>
+        </Section>
+
+        <Section title="Session card states and decision bars" note="After Started (1961:184899); screener and completion bars">
+          <div className="grid w-full grid-cols-2 gap-3">
+            <SessionCard phase="running" title="In-person interview of Liam K. and You" date="August 12, 2026, Wednesday" time="10:00 AM - 11:00 AM" address />
+            <SessionCard phase="finished" title="In-person interview of Liam K. and You" date="August 12, 2026, Wednesday" time="10:00 AM - 11:00 AM" address />
+          </div>
+          <div className="w-full"><ScreenerBar initial="todo" /></div>
+          <div className="w-full"><ScreenerBar initial="settled" /></div>
+          <div className="w-full"><GroupCompletionBar /></div>
         </Section>
 
         <Section title="Study type tags" note="32 tall; ringed on lists, filled on study screens">

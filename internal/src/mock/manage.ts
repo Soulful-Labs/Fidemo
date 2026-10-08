@@ -41,7 +41,7 @@ export const MANAGED: ManagedStudy[] = [
   { id: 'st-social', type: 'survey', title: 'Social media posts designing apps', ...img('st-social'), time: '30 minutes', industry: 'Consumer',
     description: 'How do you design social media posts and what tools do you use for it', tileQualified: ['1000', '/1200 applied'],
     about: { title: 'Business Finance Operations Study', description: GOALS, time: '30 minutes' },
-    roles: 'Social Media Influencer, Creator, Digital Marketer, Graphic Designer', summary: ['Survey Form:', '10 inputs'], congrats: ['recruited'] },
+    roles: 'Social Media Influencer, Creator, Digital Marketer, Graphic Designer', summary: ['Survey Form:', '10 inputs'], congrats: ['recruited', 'results'] },
   { id: 'st-fitness', type: 'video-group', title: 'Fitness tracker apps experience', ...img('st-fitness'), time: '1 hour', industry: 'Healthcare',
     description: FITNESS, tileQualified: ['35', '/60 applied'],
     about: { title: 'Fitness tracker apps experience', description: FITNESS, time: '1 hour' },

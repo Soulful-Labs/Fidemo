@@ -7,7 +7,7 @@ import { Avatar } from '../../../components/ui/Tag'
 import { FIGURES as F, MANAGE_CLIENT as C } from '../../../mock/manage'
 import type { ManagedStudy } from '../../../mock/manage'
 
-const Tile = ({ label, value, rest, children }: { label: string; value: string; rest?: string; children?: ReactNode }) => (
+export const Tile = ({ label, value, rest, children }: { label: string; value: string; rest?: string; children?: ReactNode }) => (
   <div className="flex h-[77px] flex-1 items-center justify-between rounded-md bg-yellow-30 p-3">
     <div>
       <p className="text-text-regular leading-5 text-text-subtitle">{label}</p>

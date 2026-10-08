@@ -83,3 +83,8 @@ export const DiamondIcon = (p: P) => <svg {...base(p)}><path d="M7.500 5h9l3.500
 export const CrownIcon = (p: P) => <svg {...base(p)}><path d="m4.500 8 3.500 4 4-6 4 6 3.500-4-1.500 9.500h-12L4.500 8ZM6.500 20h11" /></svg>
 export const StarIcon = (p: P) => <svg {...base(p)}><path d="m12 4 2.400 5 5.600.700-4.100 3.800 1.100 5.500-5-2.800-5 2.800 1.100-5.500L4 9.700 9.600 9 12 4Z" /></svg>
 export const VideoUserIcon = (p: P) => <svg {...base(p)}><rect x="3.500" y="4.500" width="17" height="13" rx="3" /><circle cx="12" cy="9.500" r="2" /><path d="M8.500 14.500c.800-1.200 2-1.800 3.500-1.800s2.700.600 3.500 1.800M8 20.500h8" /></svg>
+
+/* Results, respondent and session pages (turn 7). */
+export const PlayIcon = (p: P) => <svg {...base(p)}><circle cx="12" cy="12" r="8.500" /><path d="m10.500 9 4.500 3-4.500 3V9Z" /></svg>
+export const UserIcon = (p: P) => <svg {...base(p)}><circle cx="12" cy="8.500" r="3.500" /><path d="M5.500 19.500c.800-3.200 3.200-5 6.500-5s5.700 1.800 6.500 5" /></svg>
+export const ListIcon = (p: P) => <svg {...base(p)}><path d="M9 7h10M9 12h10M9 17h10M5 7h.01M5 12h.01M5 17h.01" /></svg>
