@@ -373,6 +373,79 @@ published dialog 4.70%, Request Changes 2.42%.
 Not matched: the Receipt button does nothing yet (no receipt is drawn); icons are
 redrawn; the dialog and panel sit over a dimmed page, which no frame shows.
 
+## Manage a study (turn 5): shell, Overview, Manage Study
+
+One screen (`/studies/:id`, `?tab=manage`, `?state=paused`) for all six types. Pulled:
+the six Manage sections (`1932:106947` survey, `1952:76684` group video, `1952:80461`
+video 1:1, `1961:179867` diary, `1961:182277` in-person, `1961:184932` in-person
+group) and the loose Paused frame `1952:75945`. Ids unchanged from the map. Built this
+turn: each section's "2.1 Study Overview - Studies" and "Manage Study" frames, the
+Paused frame, the Pause Study panel `1952:76517` and the loose "Ongoing Study options"
+menu. Loose on the canvases: that menu in every section (220 x 131; the diary copy
+220 x 207), "Bottom Bar" instances (hidden in group video), three "Question menu"
+instances and a type filter dropdown in survey.
+
+**Each section draws a different study, and each is a row of the Studies list**, so a
+list row opens its own section: st-social survey, st-fitness group video, st-goal
+video 1:1, st-pay diary, st-sleep in-person, st-travel in-person group
+(`src/mock/manage.ts`).
+
+**Layout.** 24 inside the shell, except the video 1:1 frames (the ones with
+"Congrats!"), which sit 16 inside: built as drawn. Header 1162 x 214 on bgAlt-1 (243 x
+182 image; type tag; "Recruiting", copy-link and options buttons; Title-L; duration and
+industry tags; Completed, Qualified, Days Remaining, Progress). 12 below it a panel
+that fills the window: the 44px strip (Overview 101, Manage Study 139, Matched 97,
+Recruited 104, Results 88, Pay 60) and the tab's content 16 in. Matched and Recruited
+are turn 6, Results turn 7, Pay turn 8; they open empty for now.
+
+**Overview:** four yellow-30 tiles (Progress with a ring, Completed, Qualified, Days
+Remaining), Study Description, Share Link with Copy, Active Since, and the About
+Client card (304) with "Go To Profile". **Manage Study:** four read-only blocks:
+About, Audience ("Estimated Audience: 1K" and ten pills), Screener ("Screening: 8
+inputs") and Study (a one-pill summary by type, "Incentive: $700").
+
+**Banners (two drawn).** "Congrats! 30 required participants are fulfilled and
+completed now!" (yellow-40, yellow-200 edge) on every video 1:1 frame: no control, its
+two CTAs are hidden. "You have paused this study with stopping recruit new participants
+further." (red-100, red-200 edge) with "Mark as completed" and "Resume Study"; drawn
+1152 wide, 10 short of the header. The paused frame also hides a Congrats banner.
+
+**Controls.** Live: copy link (header and Share Link), the options menu, Go To
+Profile, the tabs. The menu: Copy Study Link, Pause Study, Duplicate to Drafts; the
+diary copy also shows Stop-complete Study and Edit, which the other five hide. Pause
+Study opens a 600 panel ("Pause Study Participation?", a Reason box, Cancel / Yes,
+Pause Study). Switched off (hidden layers) on Manage Study: an Edit button on each of
+the four blocks, two "Set Criteria" links, a "Study Management Control / Manage
+yourself (Self-managed)" row; on Overview a "Study Control / Self-managed (DIY)" block
+and a "Screened 51" figure. **Paused** adds the banner, drops the About Client card and
+widens the tiles and link box to the full panel; the status tag still says
+"Recruiting". Only the Pause Study panel is drawn as a way to pause.
+
+**Figures do not agree across screens.** Every header says Completed 20 /30, Qualified
+35 /60 applied, 36 days, 66%, whatever the study. The Ongoing list gives the same six
+studies 20/60, 16/50, 32/80, 24/40, 18/60, 36/50 and 68, 25, 48, 54, 18, 62
+applications. Review gives the goal-tracking study 10 participants and 30 minutes; its
+managed header says 1 hour and a target of 30, its About block 30 minutes. The survey
+Overview tile says Qualified 1000 /1200 against 35 /60 in its own header. "Congrats! 30
+... fulfilled" sits over Completed 20 /30. Three About blocks carry another study's
+title or description (survey, video 1:1, in-person). Titles are sentence case here and
+title case on the list. Built as drawn.
+
+Built choices, not drawn: Resume Study clears the paused state; Mark as completed goes
+to Studies > Completed; Duplicate to Drafts, Stop-complete Study and Edit close the
+menu and do nothing (no destination is drawn; the Edit screens are the hidden,
+discarded section).
+
+Shared changes: the study tab strip (`PanelTabs`) and `Pill` moved to
+`components/app`, the content column is `min-h-screen` so a panel can fill the window,
+tokens `red.100` / `red.200`. Sign in, Dashboard, Studies and Review re-swept:
+unchanged.
+
+Diffs at 1440: Overview survey 2.89%, group video 2.96%, video 1:1 3.81%, diary 3.01%,
+in-person 2.84%, in-person group 2.92%, paused 2.90%; Manage Study survey 2.26%, group
+video 2.28%, video 1:1 2.56%, diary 2.29%, in-person 2.28%, in-person group 2.24%;
+Pause Study panel 6.06%. Nothing in these frames is cut off by its frame.
+
 ---
 
 ## The file, mapped

@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import AppShell from '../../app/AppShell'
+import PanelTabs from '../../components/app/PanelTabs'
+import Pill from '../../components/app/Pill'
 import StudyTypeTag from '../../components/app/StudyTypeTag'
 import Button, { IconButton } from '../../components/ui/Button'
 import Input, { PasswordInput, SearchInput, Select, TextArea } from '../../components/ui/Input'
@@ -142,6 +144,15 @@ export default function KitchenSink() {
           <Button variant="tertiary" onClick={() => setModal('titled')}>Titled modal</Button>
           <Button variant="tertiary" onClick={() => setModal('success')}>Success modal</Button>
           <Button variant="tertiary" onClick={() => setModal('success-green')}>Success modal, green</Button>
+        </Section>
+
+        <Section title="Study panel tabs and pills" note="44px strip on bg-1; 32px pills, ringed or filled">
+          <div className="w-full overflow-hidden rounded-lg border-1 border-stroke-1">
+            <PanelTabs value="overview" onChange={() => undefined} tabs={[{ key: 'overview', label: 'Overview', width: 'w-[101px]' }, { key: 'manage', label: 'Manage Study', width: 'w-[139px]' }, { key: 'pay', label: 'Pay', width: 'w-[60px]' }]} />
+          </div>
+          <Pill label="Gender:">All</Pill>
+          <Pill filled>Pre-screener - Q1</Pill>
+          <Pill muted>Single-select</Pill>
         </Section>
 
         <Section title="Study type tags" note="32 tall; ringed on lists, filled on study screens">
