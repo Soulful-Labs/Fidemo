@@ -23,8 +23,10 @@ export interface ManagedStudy {
   roles: string
   /** The Study card's summary pill. */
   summary: [string, string]
-  /** The video 1:1 section draws the "Congrats!" banner on every frame. */
-  congrats?: boolean
+  /** The tabs whose frames draw the "Congrats!" banner: video 1:1 on Overview and Manage Study, survey on Recruited. */
+  congrats?: string[]
+  /** Every video 1:1 frame sits 16 inside the shell; the rest 24. */
+  tight?: boolean
   /** The diary section's options menu shows two more items. */
   fullMenu?: boolean
 }
@@ -39,7 +41,7 @@ export const MANAGED: ManagedStudy[] = [
   { id: 'st-social', type: 'survey', title: 'Social media posts designing apps', ...img('st-social'), time: '30 minutes', industry: 'Consumer',
     description: 'How do you design social media posts and what tools do you use for it', tileQualified: ['1000', '/1200 applied'],
     about: { title: 'Business Finance Operations Study', description: GOALS, time: '30 minutes' },
-    roles: 'Social Media Influencer, Creator, Digital Marketer, Graphic Designer', summary: ['Survey Form:', '10 inputs'] },
+    roles: 'Social Media Influencer, Creator, Digital Marketer, Graphic Designer', summary: ['Survey Form:', '10 inputs'], congrats: ['recruited'] },
   { id: 'st-fitness', type: 'video-group', title: 'Fitness tracker apps experience', ...img('st-fitness'), time: '1 hour', industry: 'Healthcare',
     description: FITNESS, tileQualified: ['35', '/60 applied'],
     about: { title: 'Fitness tracker apps experience', description: FITNESS, time: '1 hour' },
@@ -47,7 +49,7 @@ export const MANAGED: ManagedStudy[] = [
   { id: 'st-goal', type: 'video', title: 'About goal-tracking methods', ...img('st-goal'), time: '1 hour', industry: 'Business',
     description: GOALS, tileQualified: ['35', '/60 applied'],
     about: { title: 'Business Finance Operations Study', description: GOALS, time: '30 minutes' },
-    roles: DOCTORS, summary: ['Video Call (Individual):', SESSIONS], congrats: true },
+    roles: DOCTORS, summary: ['Video Call (Individual):', SESSIONS], congrats: ['overview', 'manage'], tight: true },
   { id: 'st-pay', type: 'diary', title: 'How do you make your digital payments mostly?', ...img('st-pay'), time: '1 hour', industry: 'Finance',
     description: 'Share about your ways of digital spending and payment methods you use in your daily life.', tileQualified: ['35', '/60 applied'],
     about: { title: 'How do you make your digital payments mostly?', description: 'Share about your ways of digital spending and payment methods you use in your daily life.', time: '1 hour' },

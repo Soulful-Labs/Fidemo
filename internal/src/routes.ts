@@ -33,6 +33,8 @@ const routes: RouteObject[] = [
   { path: '/studies', element: createElement(Studies) },
   { path: '/studies/review/:id', element: createElement(ReviewStudy) },
   { path: '/studies/:id', element: createElement(ManageStudy) },
+  later('/studies/:id/respondents/:rid', 'Studies', 'Ongoing'),
+  later('/studies/:id/sessions/:sid', 'Studies', 'Ongoing'),
   later('/participants', 'All Participants'),
   later('/participants/verifications', 'Verifications'),
   later('/participants/verifications/:id', 'Verifications'),

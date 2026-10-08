@@ -4,6 +4,8 @@ import AppShell from '../../app/AppShell'
 import PanelTabs from '../../components/app/PanelTabs'
 import Pill from '../../components/app/Pill'
 import StudyTypeTag from '../../components/app/StudyTypeTag'
+import TierTag, { ProfessionVerified } from '../../components/app/TierTag'
+import RespondentProfile from '../studies/manage/RespondentProfile'
 import Button, { IconButton } from '../../components/ui/Button'
 import Input, { PasswordInput, SearchInput, Select, TextArea } from '../../components/ui/Input'
 import { Checkbox, Chip, OptionTile, Radio, Toggle } from '../../components/ui/controls'
@@ -43,6 +45,7 @@ export default function KitchenSink() {
   const [sel, setSel] = useState('All Studies')
   const [tile, setTile] = useState('All')
   const [panel, setPanel] = useState(false)
+  const [profile, setProfile] = useState<null | 'open' | 'invited'>(null)
   const [modal, setModal] = useState<null | 'centred' | 'titled' | 'success' | 'success-green'>(null)
 
   return (
@@ -155,6 +158,13 @@ export default function KitchenSink() {
           <Pill muted>Single-select</Pill>
         </Section>
 
+        <Section title="Tier tags, select sm, respondent profile" note="tiers 28 and 32; the 600 profile panel in both footer states">
+          <TierTag tier="Platinum" /><TierTag tier="Gold" /><TierTag tier="Silver" /><TierTag tier="Platinum" size={32} /><ProfessionVerified />
+          <Select size="sm" className="w-40" value="Status: All" options={['Status: All']} />
+          <Button variant="tertiary" data-ks="profile" onClick={() => setProfile('open')}>Respondent profile</Button>
+          <Button variant="tertiary" data-ks="profile-invited" onClick={() => setProfile('invited')}>Respondent profile, invited</Button>
+        </Section>
+
         <Section title="Study type tags" note="32 tall; ringed on lists, filled on study screens">
           {(['survey', 'video', 'video-group', 'in-person', 'in-person-group', 'diary'] as const).map((t) => <StudyTypeTag key={t} type={t} />)}
           {(['survey', 'video', 'video-group', 'in-person', 'in-person-group', 'diary'] as const).map((t) => <StudyTypeTag key={t} type={t} filled />)}
@@ -186,6 +196,7 @@ export default function KitchenSink() {
         body="Your new password has been updated with your account which you can use to login from now." action="Go To Login" onAction={() => setModal(null)} />
       <SuccessModal tone="green" open={modal === 'success-green'} onClose={() => setModal(null)} title="This study has been published live!"
         body="It is live on the platform and showing to targeted participants." action="Done! View Details" onAction={() => setModal(null)} />
+      <RespondentProfile open={profile !== null} invited={profile === 'invited'} onClose={() => setProfile(null)} onInvite={() => setProfile(null)} />
     </AppShell>
   )
 }

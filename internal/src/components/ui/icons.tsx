@@ -76,3 +76,10 @@ export const DownloadIcon = (p: P) => <svg {...base(p)}><path d="M12 4v11M7.500 
 /* Manage a study (turn 5). */
 export const CopyIcon = (p: P) => <svg {...base(p)}><rect x="8.500" y="8.500" width="11" height="11" rx="2.500" /><path d="M15.500 8.500V7a2.500 2.500 0 0 0-2.500-2.500H7A2.500 2.500 0 0 0 4.500 7v6A2.500 2.500 0 0 0 7 15.500h1.500" /></svg>
 export const ExternalIcon = (p: P) => <svg {...base(p)}><path d="M11 5.500H8A3.500 3.500 0 0 0 4.500 9v7A3.500 3.500 0 0 0 8 19.500h7a3.500 3.500 0 0 0 3.500-3.500v-3M13.500 4.500h6v6M19.500 4.500 11 13" /></svg>
+
+/* Recruiting (turn 6). */
+export const ShieldUserIcon = (p: P) => <svg {...base(p)}><path d="M12 3.500 5 6v5.500c0 4.300 2.900 7.400 7 9 4.100-1.600 7-4.700 7-9V6l-7-2.500Z" /><circle cx="12" cy="10" r="2" /><path d="M8.700 15.500c.700-1.300 1.800-2 3.300-2s2.600.700 3.300 2" /></svg>
+export const DiamondIcon = (p: P) => <svg {...base(p)}><path d="M7.500 5h9l3.500 4.500-8 9.500-8-9.500L7.500 5ZM4 9.500h16M9.500 9.500 12 19l2.500-9.500" /></svg>
+export const CrownIcon = (p: P) => <svg {...base(p)}><path d="m4.500 8 3.500 4 4-6 4 6 3.500-4-1.500 9.500h-12L4.500 8ZM6.500 20h11" /></svg>
+export const StarIcon = (p: P) => <svg {...base(p)}><path d="m12 4 2.400 5 5.600.700-4.100 3.800 1.100 5.500-5-2.800-5 2.800 1.100-5.500L4 9.700 9.600 9 12 4Z" /></svg>
+export const VideoUserIcon = (p: P) => <svg {...base(p)}><rect x="3.500" y="4.500" width="17" height="13" rx="3" /><circle cx="12" cy="9.500" r="2" /><path d="M8.500 14.500c.800-1.200 2-1.800 3.500-1.800s2.700.600 3.500 1.800M8 20.500h8" /></svg>

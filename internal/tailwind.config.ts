@@ -23,11 +23,11 @@ export default {
       colors: {
         brand: { primary: '#e5940f', secondary: '#3fb984' },
         // BG/BG, BG/primary/* and BG/secondary/*.
-        bg: { DEFAULT: '#ffffff', 0: '#fdfdfc', 1: '#f8f8f7', 2: '#f3f2f1' },
+        bg: { DEFAULT: '#ffffff', 0: '#fdfdfc', 1: '#f8f8f7', 2: '#f3f2f1', 3: '#eeedec' },
         bgAlt: { 0: '#fbfefd', 1: '#f5f9f7', 2: '#edf3f0' },
         // Text/*. The file also carries two capitalised strays, Text/Title #252525
         // and Text/Subtitle #777777, on the Studies and My Account frames.
-        text: { title: '#201e19', subtitle: '#5e5d5b', body: '#9d9d9d', titleStray: '#252525', subtitleStray: '#777777' },
+        text: { title: '#201e19', subtitle: '#5e5d5b', body: '#9d9d9d', disabled: '#b4b4b4', titleStray: '#252525', subtitleStray: '#777777' },
         // Stroke/input field and Stroke/stroke-*.
         stroke: { input: '#e9e8e7', 1: '#edf3f0', 2: '#e3edea', 3: '#dae7e1' },
         // CTA/*.
@@ -44,7 +44,11 @@ export default {
         // Secondary/green-* and Alpha/green-alpha/green-15.
         green: { 100: '#c3e9d9', 200: '#a7dfc6', alpha15: '#3fb98426' },
         // Red/red-100 and Red/red-200: the paused banner (1952:75945).
-        red: { 100: '#fff0ed', 200: '#ffd1c7' },
+        red: { 50: '#fee9e7', 100: '#fff0ed', 200: '#ffd1c7' },
+        // Drawn inside instances with no variable exposed; measured off the Manage frames (1952:76970, 1952:77242):
+        // the three profile tiers, the "Disqualified" tag's fill and the disabled-button text.
+        tier: { platinum: '#9139f6', platinumBg: '#f3ebfb', gold: '#e4b300', goldBg: '#f9f3db', silver: '#7f9fb1', silverBg: '#edf1f2' },
+        orange: { 100: '#ffe0cd' },
         blue: { 600: '#42a4ed' },
         purple: { 600: '#9780fa' },
         // The file's --sds-color-background-* variables, by what they draw.

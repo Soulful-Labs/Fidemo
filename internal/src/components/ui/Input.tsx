@@ -83,15 +83,16 @@ export function TextArea({ label, className, rows = 3, size = 'md', ...rest }: T
 /**
  * The dropdown field ("All Studies", "Sort: Recent First", "Account Status"):
  * the input box with a 20px chevron on the right. A native select underneath,
- * so it works with no extra code.
+ * so it works with no extra code. `size="sm"` is the 38px, 14px one on the
+ * Recruited toolbar (1952:77242).
  */
-export function Select({ label, value, onChange, options, placeholder, className, boxClassName }: {
+export function Select({ label, value, onChange, options, placeholder, className, boxClassName, size = 'md' }: {
   label?: string; value?: string; onChange?: (v: string) => void; options: string[]; placeholder?: string
-  className?: string; boxClassName?: string
+  className?: string; boxClassName?: string; size?: 'md' | 'sm'
 }) {
   return (
     <Field label={label} className={className}>
-      <span className={cn(BOX, 'relative', boxClassName)}>
+      <span className={cn(BOX, 'relative', size === 'sm' && SM, boxClassName)}>
         <select value={value ?? ''} onChange={(e) => onChange?.(e.target.value)} aria-label={label ?? placeholder}
           className={cn(FIELD, 'cursor-pointer appearance-none pr-6', !value && 'text-text-body')}>
           {placeholder !== undefined && <option value="" disabled>{placeholder}</option>}
