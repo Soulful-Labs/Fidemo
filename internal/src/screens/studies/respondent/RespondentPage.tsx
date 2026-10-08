@@ -61,8 +61,9 @@ export default function RespondentPage() {
 
       {tab === 'result' && study.type === 'diary' && (
         <div className="flex flex-col gap-3">
-          {DIARY_ANSWERS.map(([day, answers]) => (
+          {DIARY_ANSWERS.map(([day, answers], i) => (
             <Fragment key={day}>
+              {i > 0 && <hr className="-mx-4 mt-2 border-0 border-t-1 border-stroke-1" />}
               <p className="flex h-7 items-center justify-center rounded-full bg-bg-1 text-text-regular text-text-subtitle">{day}</p>
               <Answers answers={answers} />
             </Fragment>

@@ -510,6 +510,91 @@ survey 3.60%, diary 3.71%; applications group video 2.33%, video 1:1 2.31%, in-p
 Scheduled video 1:1 2.50%, in-person 2.44%; Invite dialog 7.68%, Sent 4.66%, profile
 panel 6.44% and 4.55%. Nothing is cut off by its frame.
 
+## Manage a study (turn 7): Results, the respondent and session pages, attendance
+
+Frames, from the six Manage sections (ids unchanged): "Results" in all six;
+"Recruited respondent result" in all six (the applied respondent: Screener, Activity,
+the Qualify / Disqualify bar); "Completed respondent result" (survey, diary);
+"Scheduled Study respondent(s)" and "Study Result - completed" (the four session
+types); "Activity of respondent" in all six; "Recruited - activity" (the two group
+types). Overlays: Rate (`1932:109444`, `1952:80275`), Download Sessions Results
+`1952:80341`, "Mark [individual] as No-show" (`1952:83027` one-to-one, `1952:80402`
+group, `1961:188283`), "Mark back [individual] as Completed from No-show"
+`1974:100123`, and three state sheets: "Screener CTAs" `1932:110903`, "Marked
+Completed" `1952:83058`, "Group-session - mark all completed" `1952:80442`, "After
+Started state" `1961:184899`. Hidden: "Mark all as No-show" `1952:80380`.
+Measured: the applied respondent page differs 0.73-0.95% between five sections
+(header only); group activity 0.56%.
+
+**Routes.** `?tab=results` on the study. `/studies/:id/respondents/:rid`: `a*` from
+Applications (applied), `b*` from Scheduled (booked), `r*` from Results (finished).
+`/studies/:id/sessions/:sid`, `?state=completed`, `?tab=activity` for group sessions.
+
+**Results.** Tiles, a summary card with Download, "Completed Study Respondents" (Tier:
+All), ten rows with "Rate Now" or "Rated", pagination, and the "STUDY VERIFICATION
+CERTIFICATE / 21 of 21 completions verified human" card with Download. Survey, diary,
+video 1:1: Completed 20 /30 required, Avg. Trust Score 92, Rated By You 11 /20
+completed. In-person: Sessions Completed 2 /3, Participants Completed 20 /30 required,
+92. Group types: Completed 10 /10 required, 96, rows grouped under S1 / S2 with "View
+Result". In-person types say "Notes Summaries / Get all the Notes results archive".
+The wording is the client's ("Rated By You", "Rate Now", "you and other clients").
+
+**Qualify / Disqualify** lives only under the Screener tab of an applied respondent.
+"Choose Qualify for further study or Disqualify to reject from here. The action can be
+undone within 1 hour only after it is taken." States drawn: to decide; qualified with
+Undo; qualified, Undo gone; disqualified with Undo. Nothing drawn shows what the
+decision changes elsewhere beyond the Applications status tag.
+
+**Attendance, as drawn.** A six-digit "Verification PIN" (152438) is shown on every
+session, shared with the participant; the activity log records "Verified with PIN by
+... (participant)" and then "Marked as completed by client (you)". So the code is the
+participant's proof and a person adds a second confirmation by hand ("Mark as
+completed for an additional confirmation"). One PIN serves a whole group session.
+One-to-one: "Mark No-show" / "Mark Completed", then "Marked John as completed!" or
+"Marked John as No-show." each with Undo, and completed again with the Undo gone.
+Group: per row "Marked completed by participant", "Marked as No-show" (video) or
+"Marked No-show by client" with "Mark Completed" beside it (in person), or both
+buttons; plus "Mark all as Completed".
+
+**No-show wording.** One-to-one: "This will not allow John to get paid for this study
+and will be confirmed  by our team further from Jenna as well." and after: "You have
+marked John as no-show (absent) and it wll be confirmed by team." Group: "This will
+not allow Jenna to get paid for this study." **Undo:** one-to-one has an Undo button
+(no time limit drawn); group in-person has "Mark Completed" on a no-show row, which
+opens "Had Jenna T. completed? ... This will mark Jenna as completed and will get paid
+the reward incentive. This cannot be undone." Group video draws no way back.
+
+**Policy.** No Trust Score figure, deduction or points penalty appears on any of these
+frames or dialogs: the no-show dialogs speak only of payment. Nothing here to compare
+with the policy's No show -4 / Late cancellation -2; if a no-show is to cost score,
+no design says so at the point it is marked. There is no cancel-session control at all.
+
+**Slips kept as drawn.** The rate panels are titled "for GLP-1 Care Plans, Oncologist
+View" and "for E-commerce User Behavior Study"; the survey's finished bar says "The
+diary study has been successfully completed by John."; "succefully"; the in-person
+card says "Liam K." beside John M; the activity banner says "Rate Ferry" beside "Rate
+John"; Download Sessions gives both sessions the same date; Sarah K is a Housewife in
+the session and a Human Resource Manager on her page; group Results scores Nina S 64
+Silver where the others say 82 Gold.
+
+Built choices, not drawn: Undo returns the bar to its undecided state; Send-style
+buttons with no drawn result (Download, Download Files, View Video Recording,
+Transcript, Join Now, Finish, Submit on a rating) do nothing or close. "Mark all as
+No-show" (hidden) and the "After Started" card states have no way in: the card states
+are in the kitchen sink, the hidden dialog is not built. The uploaded-file thumbnail
+is a grey block.
+
+Shared changes: none to existing primitives (new icons; `Tile` exported). Everything
+signed off re-swept: unchanged.
+
+Diffs at 1440: Results survey 4.72%, group video 4.68%, video 1:1 5.37%, diary 4.78%,
+in-person 4.67%, in-person group 4.69%. Applied respondent 5.35-5.52% (six types).
+Finished: survey 5.38%, diary 5.78%, video 4.59%, in-person 4.71%. Booked: video
+4.15%, in-person 3.62%. Activity: survey 3.91%, diary 5.02%, video 4.83%, in-person
+4.98%, group applied 4.01% / 4.79%. Session before: 2.42% / 2.00%; after: 4.50% /
+2.80%; activity 3.71% / 3.72%. Dialogs 8.8-13.2%, rate panels 4.41% / 3.51%, Download
+Sessions 7.74%. Nothing is cut off by its frame.
+
 ---
 
 ## The file, mapped

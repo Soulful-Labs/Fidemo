@@ -48,7 +48,7 @@ export default function ResultsTab({ study }: { study: ManagedStudy }) {
   )
 
   return (
-    <div>
+    <div className={study.tight ? 'pt-3' : undefined}>
       <div className="flex gap-3">
         {spec.tiles.map(([label, value, rest]) => <Tile key={label} label={label} value={value} rest={rest} />)}
         <div className="ml-1 flex h-[77px] w-[438px] shrink-0 items-center justify-between rounded-md bg-bg-1 px-4">
