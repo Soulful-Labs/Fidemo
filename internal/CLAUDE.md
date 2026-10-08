@@ -1,0 +1,813 @@
+# Focus Insite, internal team console
+
+The desktop console the Focus Insite team uses to run the platform: verify
+participants and clients, review and approve studies, moderate them, answer
+support, confirm refunds, set pricing and rewards, and manage sub-admins. It
+lives entirely in `internal/` and shares nothing at runtime with the respondent
+app (repo root) or the client app (`client/`).
+
+Figma: file `Q83MnpAyJuc6RttXYbWudH`, page `1794:64316` ("Admin Panel Dashboard: UI").
+
+---
+
+## The rules
+
+### Rule 1, Figma governs everything visible
+
+Layout, spacing, colour, type, icons and every string come from the frame. Match
+it exactly; if a frame has a typo, the typo stays. Behaviour is a later stage:
+this stage is the screens.
+
+- Use `get_screenshot` and `get_metadata` only. Never `get_design_context`: it
+  floods the context window. (`get_metadata` on the whole page is 5.7 MB; it
+  comes back as a file, read it with a script.)
+- Every visible value comes from `internal/tailwind.config.ts`, built from
+  `get_variable_defs` on this file's own frames. No new colours, no ad-hoc
+  spacing, no invented type sizes. A value the frames draw without a variable is
+  measured off the PNG and noted here, not guessed.
+- Nothing outside `internal/`. The respondent app and `client/` are finished.
+
+### Rule 2, the compare loop
+
+Every screen, every turn:
+
+1. **Screenshot the frame** with `get_screenshot` on that screen's own frame node,
+   at its natural size (`maxDimension` = the frame's longer edge, so the PNG is
+   1x), and download it with the curl the tool prints. Never a whole section.
+2. **Build** to match the image.
+3. **Render** at the design width, 1440, in headless Chromium:
+   `npm run shot -- <route> <out.png> --full`.
+4. **Diff**: `npm run diff -- <figma.png> <render.png>`. Report the result as a
+   **percentage of differing pixels**, with where they sit.
+5. **Fix and repeat** until the image and the frame match. Anything that cannot
+   be matched goes in the turn report with the reason.
+
+Measuring beats guessing: sampling pixels out of the Figma PNG settles spacing
+questions in seconds, and the same script run against the render proves the fix.
+
+### Rule 3, a shared change re-opens what it touches
+
+When a turn changes a shared component, a token or the shell, re-run the compare
+loop on every screen already signed off and report their new diff percentages.
+A screen is only still signed off if it still matches. (In the client build a
+CTA gradient, the panel's y-offset and a button height each silently moved every
+screen already done.)
+
+### Rule 4, push after each screen
+
+Commit and push as soon as a screen matches, not only at the end of a turn. A
+session limit has cut turns short before; a push per screen means finished work
+is never lost and the branch always shows how far the turn got. Never create a
+new branch.
+
+### Rule 5, prove the render before trusting the diff
+
+**A dead dev server does not produce an error, it produces a plausible diff of
+nothing.** Before trusting a number:
+
+- `curl -s -o /dev/null -w "%{http_code}" http://localhost:5175/` must say 200.
+- `shot.mjs` prints the route it landed on. If it is not the route you asked
+  for, the image is worthless.
+- A 200 is not enough: a stale server answers with old code. Check the served
+  module: `curl -s http://localhost:5175/src/routes.ts | grep -c <NewScreen>`.
+- `vite.config.ts` sets `strictPort`, so a second server fails loudly instead of
+  quietly binding 5176 while the stale one keeps answering 5175.
+- `scripts/diff.py` refuses a render that is nearly one flat colour. That guard
+  was proven on the scaffold: the placeholder page is rejected, not scored.
+- A harness fault looks exactly like a build fault. Reproduce any finding by
+  hand with `shot.mjs --js` before believing it.
+
+### Rule 6, a node id is a starting point, not a fact
+
+Ids move between turns (in the client file `1627:103111` became `1769:93628`, same
+frame). Every id below is where to start looking. If one returns nothing, or not
+what is described, `get_metadata` the enclosing section and find the frame by
+name. Report the new id when one moves.
+
+### Rule 7, a section holds more frames than any list
+
+Any list of frames, including the map below, is a starting point. Before
+building a section, pull the whole section with `get_metadata` and report what
+is there: frames, hidden frames, loose instances (dropdowns and menus drawn on
+the section canvas, not inside a frame), and anything the brief did not mention.
+
+### Rule 8, containment and clipping are different tests
+
+A check for pixels painted outside the frame says nothing about content broken
+inside it. Check both: nothing escapes the frame, and nothing inside it is
+clipped, sliced, overlapping or hidden under the top bar or a panel. Look at the
+render, not only the numbers.
+
+### Hidden frames
+
+A hidden frame cannot be screenshotted: `get_screenshot` returns a **1x1 PNG**
+while its JSON still reports `original_width` and `original_height` (checked
+here on `2017:152956`). Only `get_metadata` can read one. Check a node renders
+before planning work on it. Hidden frames are not built unless asked.
+
+---
+
+## Stack and tooling
+
+Vite, React 19, TypeScript, Tailwind v4, React Router 7, Geist. No other UI
+libraries. Copied from `client/` so the way of working is the same.
+
+| | |
+|---|---|
+| `npm run dev` | http://localhost:5175 (respondent 5173, client 5174), `strictPort` |
+| `npm run build` | `tsc -b && vite build` |
+| `npm run shot -- <route> <out.png> [--full] [--js code] [--click sel]` | render at 1440 in headless Chromium |
+| `npm run diff -- <figma.png> <render.png> ...` | % of differing pixels, bounding box, row bands |
+| `node --experimental-websocket scripts/healthcheck.mjs` | every route in `scripts/routes.txt` renders, no errors |
+| `node --experimental-websocket scripts/clickaudit.mjs` | every control does something |
+
+The client app had no diff script; its diffs were ad hoc Python. `scripts/diff.py`
+is that Python made permanent, with the Rule 5 guard. The session key the
+scripts set (`fi-internal-session`) is a placeholder until sign-in exists.
+
+---
+
+## The shell, measured
+
+Design width **1440**. Every console screen is the same shell, measured off
+Dashboard (`1872:70720`) and Studies (`1874:72973`):
+
+| Part | Measurement |
+|---|---|
+| Sidebar ("Sidebard") | 230 wide, `bg-1` (#f8f8f7), a 1px right edge #f0f0ef at x 229 (no variable) |
+| Sidebar header | the H mark and "Admin Panel", text band y 20-51 |
+| Sidebar groups | "Users": Dashboard, Studies, Participants, Clients, Support. "Platform": Finance, Pricing & Rewards, Sub-Admin. Item rows 50 apart (text at y 132, 181, 232, 281, 331; Platform at 419, 472, 520) |
+| Active nav item | a white pill (#fcfcfc on bg-1) from x 16 to 213, about 45 tall, label and icon in `brand-primary` |
+| Badges | Dashboard "2" and Support "7", green pills |
+| Expanded groups | Participants opens to "All Participants" / "Verifications"; Clients to "All Clients" / "Verifications", with an orange dot on the active child |
+| Account card | bottom of the sidebar, text band y 896-934: avatar, name, "Master Admin" |
+| Title bar | x 230, 1210 x 70, page colour, 1px `stroke-input` (#e9e8e7) hairline at y 69. Three slots: breadcrumbs (24, 19), a centre "Stepper Slot" and "Right CTAs" |
+| Content | starts x 254, y 94 (24 inside the title bar and sidebar), 1162 wide |
+| Page | `bg-0` |
+| Side panel | 600 wide. Modal: 460 wide |
+
+The sidebar is a component with **12 variants** (Assets, `1857:127510`): Dashboard,
+Studies, P - All Participants, P - Verifications, C - All Clients, C - Verifications,
+Support, Finance, Pricing & Rewards, Sub-Admin, Account, and **P - Micro-panels,
+hidden**. The title bar is its own component, `1857:131485`.
+
+**The sidebar is 960 (or 1008) tall in every frame, never the frame's height.** On
+the 1912-tall Dashboard it stops at y 959 and the page colour runs on below it. It
+reads as a fixed sidebar drawn once; build it fixed to the viewport, not stretched.
+
+---
+
+## The file, mapped
+
+15 top-level sections and one loose frame on the page, **294 frames, 251 visible,
+43 hidden**, plus loose component instances on the section canvases (option
+menus, filter dropdowns, "Bottom Bar", "Question menu", "Tiers", "Last active").
+
+| Section | Node | Frames | Visible | Pages | Panels / modals |
+|---|---|---|---|---|---|
+| Onboarding | `1849:111735` | 5 | 5 | 4 | 1 |
+| Dashboard | `1850:115647` | 5 | 5 | 5 | 0 |
+| Studies | `1874:72972` | 137 | 121 | 91 | 30 |
+| Payment & Publish (loose frame) | `1982:106033` | 1 | 0 | | |
+| AI | `1906:6573` | 24 | **0, whole section hidden** | | |
+| Assets (sidebar sheet) | `1857:131507` | 1 | 1 | | |
+| Participants - All Participants | `1992:101340` | 28 | 27 | 13 | 14 |
+| Participants - Verifications | `2022:168588` | 32 | 32 | 14 | 18 |
+| Participants - Verifications (**holds client verifications**) | `2051:143182` | 11 | 11 | 6 | 5 |
+| Support | `2036:160943` | 9 | 9 | 6 | 3 |
+| Clients | `2045:115869` | 9 | 9 | 7 | 2 |
+| Finance | `2051:154237` | 13 | 13 | 8 | 5 |
+| Pricing & Rewards | `2051:177074` | 9 | 8 | 7 | 1 |
+| Sub-Admin | `2060:197774` | 4 | 4 | 4 | 0 |
+| My Account | `2065:203731` | 6 | 6 | 3 | 3 |
+
+A long text node, `1845:2`, sits on the page beside the sections: the module brief
+(I1 Dashboard to I9 My Account) with workflow step numbers. It is the closest
+thing to a spec inside the file.
+
+### Hidden frames (43)
+
+- **AI** `1906:6573`: the whole section, 24 frames (2.0 Studies Ongoing/Completed,
+  2.1 to 2.9 study screens, popups, dialogs, toasts). An earlier generated draft of
+  the Studies module, superseded by the Studies section. Not built.
+- **Edit Survey Study** `1932:109519` inside Manage - Survey: the whole sub-section,
+  7 frames (About, Audience, Screener, Create/Created Survey, Published, Payment &
+  Publish). The console editing a study like a client; the module brief marks
+  that as "(Discarded)". Not built.
+- **Payment & Publish - New Study** `1982:106033`, loose on the canvas.
+- **Pay / Payment frames** in the Manage sections: `1932:96864` Pay while ongoing
+  (Completed flow), `1952:78171` Payment and `1952:78343` Pay - Due (group video),
+  `1952:81555` Payment, `1952:81727` Pay - Due and `1952:83095` "$350 paid
+  successfully!" (video 1:1), `1961:183365` Payment and `1961:183537` Pay - Due
+  (in-person). The console does not pay; these are the client's payment screens
+  left switched off.
+- `1952:80380` Mark all as No-show (group video).
+- `2017:152956` Participant profile page (a duplicate under `2017:153500`;
+  screenshot returns 1x1).
+- `2058:193395` Create Ticket, under Pricing & Rewards (a stray copy of the
+  Support panel).
+
+---
+
+## Screens, after collapsing states
+
+The same rule as the client build: a screen drawn several times with one tab,
+banner or study type changed is **one screen with states**. Measured by pixel
+diff (`scripts/diff.py`) between frames suspected to be the same screen. The
+differences sit only in the content band; the shell is identical in every pair.
+
+| What | Frames | Diff evidence | Verdict |
+|---|---|---|---|
+| Dashboard tabs All / Onboarding / Studies / Support / Manage | `1851:115853`, `1872:70720`, `71323`, `71711`, `72123` | 0.62% to 2.09% vs Onboarding, all inside x 254-1402, y 260-755 (the tab underline and the group cards) | 1 screen, 5 tab states |
+| Studies To Review / Ongoing / Completed | `1978:97400`, `1874:72973`, `1906:19984` | 2.88%, 3.25%: segmented pill, column heads, last column | 1 screen, 3 tab states |
+| Manage Study, six study types | `1932:107082` survey, `1952:76819` group video, `1961:180002` diary, `1961:182412` in-person, `1961:185067` in-person group, `1952:80603` video 1:1 | 3.67% to 4.00%, rows 110-291 (header: thumbnail, title, type tag) and the one Study summary row; video 1:1 6.94% because it adds a "Congrats!" banner | 1 screen switched on type, + a banner state |
+| Study Overview, types | `1932:106948` survey, `1961:179868` diary | 3.96%, header and content rows only | 1 screen |
+| Paused study | `1952:75945` | 8.81% vs Overview: a pause banner pushes the page down | a state of Overview |
+| Review a new study: tabs About / Audience / Screener / Study / Payment / Revisions History | `1982:104845`, `1984:114713`, `1984:114217`, `1984:119698`, `1984:120589`, `1984:122012` | 1.95% to 2.65%, all inside the left content column | 1 screen, 6 tab states |
+| Review, Study tab per type | `1984:119698` video, `122634` survey, `129204` group video, `130558` in-person, `132092` in-person group, `134413` diary | 0.59% (in-person) to 2.60% | 1 tab, 6 type variants |
+| Participants Active / Deactivated | `1992:101341`, `2003:134529` | 0.88%: the segmented pill and the count line | 1 screen, 2 tabs |
+| Participant profile: About; Studies (Invites To Schedule, Scheduled, Applied, History, Saved); Wallet (Earnings, Payouts, Reward Points, Referrals) | `2017:148911`, `150996`, `152230`, `153500`, `155171`, `155992`, `2020:160313`, `2021:165139`, `2022:166544`, `2022:177272` | Studies sub-tabs differ 1.20% to 1.84% from each other | 1 screen, 3 tabs, 10 states |
+| Deactivated participant profile | `2024:178894` | 5.43% vs `2017:148911`: an "Account is deactivated." banner | a state of the profile |
+| Verifications Onboarding / Reported | `2022:168589`, `2036:142437` | 4.42%: tab, columns, rows | 1 screen, 2 tabs |
+| Verification detail, ID vs Profession credential | `2035:109172`, `2036:134318` | 1.43%: the flagged card (Passport vs Medical License) | 1 screen switched on check type |
+| Verification detail, pending vs marked verified | `2035:109172`, `2036:139490` | 1.36%: the action card becomes "Marked as verified!" | states of one screen |
+| Verification detail, Flagged vs Profile Details tab | `2035:109172`, `2035:110335` | 2.50% | 2 tabs of one screen |
+| Finance Overview: All / Participant Earning / Participant Payouts / Study Payments / Client Refunds | `2051:154238`, `163894`, `165267`, `165906`, `166552` | 2.46% to 2.80%, rows 430-1077 only (the table) | 1 screen, 5 sub-tabs |
+| Finance Refunds tab | `2051:167524` | 5.68% | 2nd tab of the same screen |
+| Refund detail, to confirm vs confirmed | `2051:169194`, `2051:170363` | 5.24% / 5.46% vs Overview; to each other only the action band | 1 screen, 2 states |
+| Pricing & Rewards: Fees / Gamification | `2051:176489`, `2058:194308` | 4.28% | 1 screen, 2 tabs |
+| Edit Clients Fees / Edit Participants Fees | `2056:192920`, `2058:193936` | 3.68%, 2.83% vs the overview | 2 edit screens |
+| Support New / Ongoing / Closed | `2036:159859`, `2044:49967`, `2044:50380` | 3.14%, 3.67% | 1 screen, 3 tabs |
+| Ticket: new / ongoing / completed | `2045:51486`, `2045:52936`, `2045:53435` | 4.18%, 5.31% | 1 screen, 3 states |
+| Clients Active / Deactivated | `2049:118695`, `2049:118738` | not diffed yet; same names and sizes as the Participants pair | 1 screen, 2 tabs (to confirm in turn 12) |
+
+### The count
+
+| Module | Visible frames | Unique screens (pages + panels + modals) |
+|---|---|---|
+| Onboarding (Sign In, Reset Password, Check Email, Set New Password, Password updated) | 5 | 5 |
+| Dashboard | 5 | 1 |
+| Studies list | 3 | 1 |
+| Review a new study (6 tabs, 6 Study-tab type variants, Request changes panel, Published live modal) | 13 | 3 |
+| Manage (6 type sections + Completed Study Flow, 110 visible) | 110 | about 22: Overview, Manage Study, Matched/Invited, Recruited (+ booked-slot state), Results, Pay states, respondent result (answers for survey/diary; scheduled + completed for session types), activity, profile panel, rate panel, Download Sessions Results, Pause, Invite to apply?, Sent, Mark [individual] as No-show, Mark back as Completed, Marked Completed, Group mark all completed, After Started, Screener CTAs |
+| Participants list + Advanced Filters, Reviews, Invite To Study, Sent | 6 | 5 |
+| Participant profile + Transaction Details, two Earnings Filters, Payout Details, Deactivate 1/2 and 2/2, deactivated, reactivated | 22 | 9 |
+| Participant verifications: list, detail (ID / Profession / Reported), Mark verified, confirm, verified, Reject report, rejected, Restrict (3), Deactivate (3) | 32 | about 13 |
+| Client verifications: list (Pending / History), detail, the same five modals | 11 | 3 + modals shared with participants |
+| Support: list, ticket, Create Ticket, Mark Resolved?, Resolved | 9 | 5 |
+| Clients: list, profile (About, Studies Ongoing/Completed, Payments), two invoice panels | 9 | 4 |
+| Finance: overview, refund detail, three Transaction Details panels, Confirm Client Refund?, refund confirmed | 13 | 6 |
+| Pricing & Rewards: overview, Edit Clients Fees, Edit Participants Fees, Edit Tiers, Edit Trust Score, Edit Reward Points, Changes published | 8 | 7 |
+| Sub-Admin: list + activities, Create Profile, Profile, Edit Profile | 4 | 3 |
+| My Account: Profile, Edit Profile, Sub-Admin Profile, Change Password, Logout, Password updated | 6 | 6 |
+| **Total** | **251 visible** | **about 95** |
+
+Roughly **95 unique screens from 251 visible frames**. The single largest
+collapse is Manage: six study-type sections of 16 to 26 frames each are one flow
+switched on type, exactly as in the client build.
+
+---
+
+## Where frames of one screen disagree
+
+Each is drawn both ways in the file. Figma governs, so each screen matches its
+own frame; these are listed so nobody "fixes" one into the other silently.
+
+1. **The admin's name.** "Peter Davian" on the long Dashboard (`1851:115853`) and
+   the Review frames; "Peter Devian" everywhere else, including My Account. My
+   Account gives his email as `maya.thompson@humanlayer.com`.
+2. **The wrong nav item lit.** Studies Ongoing (`1874:72973`) and every Review
+   frame (`1982:104845` and the rest) light **Dashboard**, not Studies. The
+   client verification detail (`2051:145410`) lights **Participants >
+   Verifications**, not Clients.
+3. **Dashboard counts.** All tab: Identity Verification **16**, second row "Jane
+   D. / Selfie liveness check passed". Onboarding tab: Identity Verification
+   **2**, second row "Jenny Keens / Automatic ID match didn't matched". The
+   Support tab groups by Participants / Client; the All tab lists "New Support
+   Tickets".
+4. **Study Overview.** Survey Overview (`1932:106948`) carries an About Client
+   card and Qualified "1000 /1200 applied"; the paused Overview (`1952:75945`)
+   has no client card and "35 /60 applied".
+5. **Review header.** The card says "About goal-tracking methods", Video Call; the
+   breadcrumb says "Social media posts designing apps"; the header stays Video
+   Call while the Study tab shows Survey, Diary and the rest.
+6. **Frame names.** `1984:114217` "2.1.0 About - New Study" is the Screener tab.
+   `2051:143182` "Participants - Verifications" holds client verifications.
+   `2051:170969` in Finance is named "Samuel's Profession Credentials has been
+   verified!" (check its content before building it).
+7. **Participant profile.** Header "Software Engineer", About tab "Occupation:
+   General Physician". The Saved sub-tab is headed "Invites To Schedule"; the
+   Reward Points sub-tab is headed "Saved Payment Methods".
+8. **Verification detail.** Samuel Lee is **50, Silver** on the Flagged tab
+   (`2035:109172`) and **95, Platinum** on Profile Details (`2035:110335`).
+   Breadcrumbs read "Onboarding / Samuel Lee" and "Verifications / Samuel Lee"
+   for the same screen.
+9. **Trust Score values, view vs edit.** Gamification (`2058:194308`) shows No
+   Show **-4** and Cancelled Session **-4**; Edit Trust Score (`2058:196166`)
+   shows No Show **-2** and Cancelled Session **-2**.
+10. **Edit Tiers** (`2058:195439`) labels the three tier fields "Withdrawal",
+    "Reward Points Value" and "Platinum Tier" (values 50, 70, 90).
+
+## Against the signed Trust and Rewards policy
+
+The policy (`docs/Trust-and-Rewards-Policy.html`) outranks Figma on scores,
+tiers, points, redemption and the certificate. Where Pricing & Rewards draws a
+different number, the screen still matches Figma in stage one; stage two seeds
+the policy's values and the conflict is reported, never decided silently.
+
+| Item | Figma | Policy |
+|---|---|---|
+| Cancelled session | -4 on Gamification, -2 on Edit | **-2** |
+| No show | -4 on Gamification, -2 on Edit | **-4** |
+| Study completion points | **50** ("Per study, upto 10 per year") | **25** |
+| "Points have no expiry and can be redeemed anytime." | drawn | not in the policy |
+| Study completion trust | "+10" (Earned For) | +1 a study, up to 10 a year, so +10 is the yearly cap |
+| Onboarding +50, ratings +40 max, 5/4/3/2/1 stars +4/+3/+1/-2/-3, Late show up -2, Fraud -20, tiers 50/70/90, 100 points = $1, minimum 1,000, referral 200, being referred 100, full profile 50, streak 50 | match | match |
+
+Fees the policy does not cover: Withdrawal **$1.99** (the respondent app charges
+$2 flat), Platform fee $100, Moderation fee $10, Recruitment fee $25 base with
+add-ons.
+
+---
+
+## Roles
+
+The designs show two kinds of user:
+
+- **Master Admin**: Peter Devian, the account card in the sidebar and My Account.
+  Sees every module.
+- **Sub-admins**, created by the master admin (Sub-Admin, `2060:197775`). Each has
+  a designation and **per-module access toggles**: Dashboard, Studies,
+  Participants, Clients, Support, Finance, Pricing & Rewards, Sub-Admin (Create
+  Profile, `2062:201923`). Designations drawn: Studies Manager, Community Manager,
+  Finance Manager, Support Executive, System Admin, Research Lead. Status Active
+  or Inactive. Every sub-admin action is logged in an Activities table (module
+  path, date, action by).
+
+No frame shows the console as a sub-admin with modules hidden; the nav is always
+the master admin's.
+
+---
+
+## Build order
+
+One section per turn, compare loop on every screen, push after each screen.
+
+| # | Turn |
+|---|---|
+| 1 | Shell and primitives: sidebar (12 variants), title bar, segmented tabs, underline tabs, table, chips, badges, 600 panel, 460 modal, success modal, plus a `/kitchen-sink`. Then Onboarding: Sign In, Reset Password, Check Email, Set New Password, Password updated |
+| 2 | Dashboard, all five tab states |
+| 3 | Studies list (To Review, Ongoing, Completed) |
+| 4 | Review a new study: six tabs, the Study tab's six type variants, Request changes, Published live |
+| 5 | Manage shell: study header and tab strip, Overview, Manage Study, the paused and "Congrats!" banners, Pause Study |
+| 6 | Manage recruiting: Matched / Invited, Recruited, Respondent Profile panel, Invite to apply?, Sent, Screener CTAs |
+| 7 | Manage results: Results, respondent result (answers / scheduled / completed), activity, rate panel, no-show and completed modals, Download Sessions Results, After Started |
+| 8 | Manage pay states and the Completed Study Flow |
+| 9 | Participants list and its panels |
+| 10 | Participant profile: About, Studies (5), Wallet (4), deactivated, and its panels and modals |
+| 11 | Participant verifications: list, detail (ID, Profession, Reported), all modals |
+| 12 | Clients list, client profile, invoices, client verifications |
+| 13 | Support: list, ticket in three states, Create Ticket, resolve |
+| 14 | Finance: overview, refunds, refund detail, transaction panels, refund confirmation |
+| 15 | Pricing & Rewards: overview, five edit screens, published |
+| 16 | Sub-Admin and My Account |
+| 17 | Sweep: every route renders (healthcheck), every control does something (click audit), every signed-off screen re-diffed |
+
+---
+
+## Frame inventory
+
+Every section and frame on page `1794:64316`, from `get_metadata`, with sizes.
+`page` is a 1440 frame, `panel` 600, `modal` 460. Hidden frames are marked.
+
+### Onboarding — section `1849:111735`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| Check Email | `1849:111820` | 1440x960 | page |
+| Reset Password | `1849:111913` | 1440x960 | page |
+| Set New Password | `1849:112001` | 1440x960 | page |
+| Sign In | `1849:112091` | 1440x960 | page |
+| Password has been updated! | `1849:112267` | 460x423 | modal |
+
+### Dashboard — section `1850:115647`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| Dashboard | `1851:115853` | 1440x1912 | page |
+| Dashboard | `1872:70720` | 1440x960 | page |
+| Dashboard | `1872:71323` | 1440x960 | page |
+| Dashboard | `1872:71711` | 1440x960 | page |
+| Dashboard | `1872:72123` | 1440x960 | page |
+
+### Studies — section `1874:72972`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| Studies | `1874:72973` | 1440x960 | page |
+| Studies | `1906:19984` | 1440x960 | page |
+| Studies | `1978:97400` | 1440x960 | page |
+
+#### Completed Study Flow — section `1932:96425`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| 2.1 Study Overview - Studies | `1932:96426` | 1440x1299 | page |
+| Results | `1932:96711` | 1440x1575 | page |
+| Pay while ongoing **(hidden)** | `1932:96864` | 1440x991 | page |
+| Pay - Due as completed | `1932:97043` | 1440x1097 | page |
+| Qualified - Recruited respondent | `1932:97240` | 1440x1365 | page |
+| Completed respondent result | `1932:97554` | 1440x1365 | page |
+| Activity of respondent | `1932:97868` | 1440x1365 | page |
+| Rate Ferry L. | `1932:98073` | 600x705 | panel |
+| RATED | `1932:98139` | 600x503 | panel |
+
+#### Manage - Survey Study — section `1932:106947`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| 2.1 Study Overview - Studies | `1932:106948` | 1440x960 | page |
+| Manage Study | `1932:107082` | 1440x1401 | page |
+| Auto-Matched | `1932:107233` | 1440x1401 | page |
+| Invited - Auto-Matched | `1932:107375` | 1440x1401 | page |
+| Recruited | `1932:107511` | 1440x1273 | page |
+| Results | `1932:107613` | 1440x1642 | page |
+| Pay - Due as completed | `1932:107773` | 1440x1053 | page |
+| Recruited respondent result | `1932:108302` | 1440x1365 | page |
+| Completed respondent result | `1932:108609` | 1440x1365 | page |
+| Activity of respondent | `1932:108923` | 1440x1365 | page |
+| Respondent Profile Details | `1932:109128` | 600x913 | panel |
+| Respondent Profile Details | `1932:109286` | 600x913 | panel |
+| Rate Ferry L. | `1932:109444` | 600x705 | panel |
+
+##### Edit Survey Study — section `1932:109519` **(hidden)**
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| 2.1.0 About - New Study **(hidden)** | `1932:109520` | 1440x1593 | page |
+| 2.1.1 Audience - New Study **(hidden)** | `1932:109642` | 1440x1756 | page |
+| 2.1.2 Screener - New Study **(hidden)** | `1932:109831` | 1440x2296 | page |
+| Created Survey_Study- New Study **(hidden)** | `1932:110232` | 1440x1388 | page |
+| Create Survey_Study - New Study **(hidden)** | `1932:110379` | 1440x1502 | page |
+| Payment & Publish - New Study **(hidden)** | `1932:110673` | 1440x980 | page |
+| Published - New Study **(hidden)** | `1932:110806` | 1440x980 | page |
+| Invite to apply? | `1932:110861` | 460x269 | modal |
+| Sent | `1932:110882` | 460x225 | modal |
+| Screener CTAs | `1932:110903` | 870x406 | overlay |
+| Pause Study | `1952:76517` | 600x404 | panel |
+| Paused Study - Study Details | `1952:75945` | 1440x960 | page |
+
+#### Manage - Group Video Call (Self-Managed) — section `1952:76684`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| 2.1 Study Overview - Studies | `1952:76685` | 1440x960 | page |
+| Manage Study | `1952:76819` | 1440x1401 | page |
+| Auto-Matched | `1952:76970` | 1440x1401 | page |
+| Invited - Auto-Matched | `1952:77106` | 1440x1401 | page |
+| Recruited | `1952:77242` | 1440x1176 | page |
+| Recruited | `1952:77337` | 1440x1272 | page |
+| Results | `1952:77477` | 1440x1688 | page |
+| Pay while ongoing | `1952:77992` | 1440x1126 | page |
+| Payment **(hidden)** | `1952:78171` | 1440x991 | page |
+| Pay - Due as completed **(hidden)** | `1952:78343` | 1440x1097 | page |
+| Recruited respondent result | `1952:78522` | 1440x1365 | page |
+| Recruited - activity | `1952:78829` | 1440x1365 | page |
+| Scheduled Study respondents | `1952:79052` | 1440x1472 | page |
+| Study Result - completed | `1952:79377` | 1440x1204 | page |
+| Activities of respondent | `1952:79703` | 1440x1365 | page |
+| Respondent Profile Details | `1952:80117` | 600x913 | panel |
+| Rate Sarah | `1952:80275` | 600x707 | panel |
+| Download Sessions Results | `1952:80341` | 600x256 | panel |
+| Mark all as No-show **(hidden)** | `1952:80380` | 460x335 | modal |
+| Mark [individual] as No-show | `1952:80402` | 460x322 | modal |
+| Group-session - mark all completed | `1952:80442` | 1190x205 | overlay |
+
+#### Manage - Video Call Individual 1:1 (Self-Managed) — section `1952:80461`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| 2.1 Study Overview - Studies | `1952:80462` | 1440x960 | page |
+| Manage Study | `1952:80603` | 1440x1401 | page |
+| Auto-Matched | `1952:80761` | 1440x1401 | page |
+| Invited - Auto-Matched | `1952:80897` | 1440x1401 | page |
+| Recruited | `1952:81033` | 1440x1176 | page |
+| Recruited | `1952:81128` | 1440x1272 | page |
+| Results | `1952:81223` | 1440x1575 | page |
+| Pay | `1952:81376` | 1440x991 | page |
+| Payment **(hidden)** | `1952:81555` | 1440x991 | page |
+| Pay - Due as completed **(hidden)** | `1952:81727` | 1440x1097 | page |
+| Recruited respondent result | `1952:81906` | 1440x1365 | page |
+| Scheduled Study respondent | `1952:82213` | 1440x1108 | page |
+| Study Result - completed | `1952:82396` | 1440x1275 | page |
+| Activity of respondent | `1952:82580` | 1440x1365 | page |
+| Respondent Profile Details | `1952:82803` | 600x913 | panel |
+| Rate Ferry L. | `1952:82961` | 600x708 | panel |
+| Mark [individual] as No-show | `1952:83027` | 460x338 | modal |
+| Marked Completed | `1952:83058` | 870x432 | overlay |
+| $350 paid successfully! **(hidden)** | `1952:83095` | 460x423 | modal |
+
+#### Manage - Diary Study (Self-Managed) — section `1961:179867`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| 2.1 Study Overview - Studies | `1961:179868` | 1440x960 | page |
+| Manage Study | `1961:180002` | 1440x1401 | page |
+| Auto-Matched | `1961:180153` | 1440x1401 | page |
+| Invited - Auto-Matched | `1961:180289` | 1440x1401 | page |
+| Recruited | `1961:180425` | 1440x1176 | page |
+| Results | `1961:180520` | 1440x1575 | page |
+| Pay while ongoing | `1961:180673` | 1440x1026 | page |
+| Recruited respondent result | `1961:181198` | 1440x1365 | page |
+| Completed respondent result | `1961:181505` | 1440x1365 | page |
+| Activity of respondent | `1961:181797` | 1440x1365 | page |
+| Respondent Profile Details | `1961:182044` | 600x913 | panel |
+| Rate Ferry L. | `1961:182202` | 600x697 | panel |
+
+#### Manage - In-Person_Individual (Self-Managed) — section `1961:182277`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| 2.1 Study Overview - Studies | `1961:182278` | 1440x960 | page |
+| Manage Study | `1961:182412` | 1440x1401 | page |
+| Auto-Matched | `1961:182563` | 1440x1401 | page |
+| Invited - Auto-Matched | `1961:182699` | 1440x1401 | page |
+| Recruited | `1961:182835` | 1440x1176 | page |
+| Recruited | `1961:182930` | 1440x1272 | page |
+| Results | `1961:183025` | 1440x1575 | page |
+| Pay while ongoing | `1961:183186` | 1440x1119 | page |
+| Payment **(hidden)** | `1961:183365` | 1440x991 | page |
+| Pay - Due as completed **(hidden)** | `1961:183537` | 1440x1097 | page |
+| Recruited respondent result | `1961:183716` | 1440x1365 | page |
+| Scheduled Study respondent | `1961:184023` | 1440x1252 | page |
+| Study Result - completed | `1961:184231` | 1440x1252 | page |
+| Activity of respondent | `1961:184419` | 1440x1365 | page |
+| Respondent Profile Details | `1961:184666` | 600x913 | panel |
+| Rate Ferry L. | `1961:184824` | 600x720 | panel |
+| After Started state | `1961:184899` | 846x423 | overlay |
+
+#### Manage - In-person Group (Self-Managed) — section `1961:184932`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| 2.1 Study Overview - Studies | `1961:184933` | 1440x960 | page |
+| Manage Study | `1961:185067` | 1440x1401 | page |
+| Auto-Matched | `1961:185218` | 1440x1401 | page |
+| Invited - Auto-Matched | `1961:185354` | 1440x1401 | page |
+| Recruited | `1961:185490` | 1440x1176 | page |
+| Recruited | `1961:185585` | 1440x1272 | page |
+| Results | `1961:185731` | 1440x1688 | page |
+| Pay while ongoing | `1961:186246` | 1440x1050 | page |
+| Recruited respondent result | `1961:186604` | 1440x1365 | page |
+| Scheduled Study respondent | `1961:186911` | 1440x1774 | page |
+| Study Result - completed | `1961:187259` | 1440x1774 | page |
+| Activity of respondent | `1961:187587` | 1440x1365 | page |
+| Respondent Profile Details | `1961:188001` | 600x913 | panel |
+| Rate Sarah | `1961:188159` | 600x720 | panel |
+| Download Sessions Results | `1961:188226` | 600x256 | panel |
+| Mark [individual] as No-show | `1961:188283` | 460x338 | modal |
+| Mark back [individual] as Completed from No-show | `1974:100123` | 460x338 | modal |
+| Recruited - activity | `1961:188305` | 1440x1146 | page |
+
+#### Review & approve new requested studies — section `1982:104844`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| About | `1982:104845` | 1440x960 | page |
+| Audience | `1984:114713` | 1440x960 | page |
+| 2.1.0 About - New Study | `1984:114217` | 1440x960 | page |
+
+##### Study (All types) — section `1984:135107`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| Study - Video Call | `1984:119698` | 1440x960 | page |
+| Study - Survey | `1984:122634` | 1440x960 | page |
+| Study - Group Video Call | `1984:129204` | 1440x960 | page |
+| Study - In-Person | `1984:130558` | 1440x960 | page |
+| Study - In-Person Group | `1984:132092` | 1440x1001 | page |
+| Study - Diary Study | `1984:134413` | 1440x960 | page |
+| Published live! | `1982:109978` | 460x423 | modal |
+| Request changes | `1982:110039` | 600x404 | panel |
+| Payment | `1984:120589` | 1440x960 | page |
+| Revisions History | `1984:122012` | 1440x960 | page |
+
+### Loose frame
+
+| Payment & Publish - New Study **(hidden)** | `1982:106033` | 1440x980 | page |
+
+### AI — section `1906:6573` **(hidden)**
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| 2.0 Studies — Ongoing **(hidden)** | `1896:1965` | 1440x960 | page |
+| 2.0 Studies — Completed **(hidden)** | `1896:2659` | 1440x960 | page |
+| 2.1 Study Overview — Ongoing **(hidden)** | `1896:3107` | 1440x960 | page |
+| 2.2 Manage Study **(hidden)** | `1896:3539` | 1440x960 | page |
+| 2.2 Edit Study **(hidden)** | `1896:3954` | 1440x960 | page |
+| 2.3 Matched **(hidden)** | `1896:4366` | 1440x960 | page |
+| 2.4 Moderation Queue **(hidden)** | `1896:4780` | 1440x960 | page |
+| 2.4 Screener Review **(hidden)** | `1896:5237` | 1440x960 | page |
+| 2.5 Recruited **(hidden)** | `1896:5635` | 1440x960 | page |
+| 2.6 Results **(hidden)** | `1896:6109` | 1440x960 | page |
+| 2.7 Pay **(hidden)** | `1896:6524` | 1440x960 | page |
+| 2.8 Completed Study Overview **(hidden)** | `1896:6921` | 1440x960 | page |
+| 2.9 Paused Study Overview **(hidden)** | `1896:7322` | 1440x960 | page |
+| Popup — Study actions **(hidden)** | `1896:7698` | 300x250 | overlay |
+| Popup — Study filters **(hidden)** | `1896:7711` | 330x300 | overlay |
+| Dialog — Pause study **(hidden)** | `1896:7728` | 460x265 | modal |
+| Dialog — Complete study **(hidden)** | `1896:7735` | 460x290 | modal |
+| Dialog — Qualify participant **(hidden)** | `1896:7742` | 460x285 | modal |
+| Dialog — Disqualify participant **(hidden)** | `1896:7749` | 460x305 | modal |
+| Dialog — Save study changes **(hidden)** | `1896:7759` | 460x285 | modal |
+| Toast — Study link copied **(hidden)** | `1896:7766` | 360x92 | overlay |
+| Toast — Draft created **(hidden)** | `1896:7771` | 360x92 | overlay |
+| Dialog — Invite participant **(hidden)** | `1897:3818` | 460x255 | modal |
+| Toast — Participant invited **(hidden)** | `1897:3830` | 360x92 | overlay |
+
+### Assets — section `1857:131507`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| Sidebard | `1857:127510` | 2772x1004 | page |
+
+### Participants - All Participants — section `1992:101340`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| Participants - Active | `1992:101341` | 1440x960 | page |
+| Participants - Deactivated | `2003:134529` | 1440x960 | page |
+| Active - Participant profile page | `2017:148911` | 1440x1561 | page |
+| Deactivated - Participant profile page | `2024:178894` | 1440x1561 | page |
+| Participant profile page | `2017:150996` | 1440x1008 | page |
+| Participant profile page | `2017:152230` | 1440x1008 | page |
+| Participant profile page **(hidden)** | `2017:152956` | 1440x1008 | page |
+| Participant profile page | `2017:153500` | 1440x1008 | page |
+| Participant profile page | `2017:155171` | 1440x1008 | page |
+| Participant profile page | `2017:155992` | 1440x1702 | page |
+| Participant profile page | `2020:160313` | 1440x1186 | page |
+| Participant profile page | `2021:165139` | 1440x1260 | page |
+| Participant profile page | `2022:177272` | 1440x1260 | page |
+| Participant profile page | `2022:166544` | 1440x1727 | page |
+| Advanced Filters | `2003:133781` | 600x597 | panel |
+| Reviews | `1992:103368` | 600x721 | panel |
+| Invite To Study | `1992:103508` | 600x517 | panel |
+| Sent | `1992:103806` | 460x225 | modal |
+| Transaction Details | `2021:165045` | 460x389 | modal |
+| Earnings Filters pop-up | `2021:164690` | 460x394 | modal |
+| Earnings Filters pop-up | `2022:167856` | 460x455 | modal |
+| Payout Details | `2022:166340` | 460x615 | modal |
+| Deactivate partiipant account? 1/2 | `2022:178767` | 460x502 | modal |
+| Deactivate partiipant account? 1/2 | `2022:178788` | 460x445 | modal |
+| Deactivate partiipant account? 1/2 | `2024:179610` | 460x486 | modal |
+| Deactivate partiipant account? 1/2 | `2024:179633` | 460x445 | modal |
+| Samuel’s account has been reactivated! | `2024:179769` | 460x450 | modal |
+| Your account has been deactivated! | `2024:179800` | 460x472 | modal |
+
+### Participants - Verifications — section `2022:168588`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| Participants - Active | `2022:168589` | 1440x1736 | page |
+| Participants - Active | `2036:142437` | 1440x1736 | page |
+
+#### ID — section `2036:111504`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| ID not verified | `2035:109172` | 1440x1561 | page |
+| ID not verified | `2035:110335` | 1440x1588 | page |
+| Mark Identity Verified | `2036:135710` | 460x502 | modal |
+| Mark Identity as Verified ? | `2036:135726` | 460x225 | modal |
+| Samuel’s Identity has been verified! | `2036:135744` | 460x419 | modal |
+| Marked Verified | `2036:139490` | 1440x1561 | page |
+| Rejected | `2036:139831` | 1440x1561 | page |
+| Reject This Report of Maya? | `2051:153898` | 460x413 | modal |
+| Maya’s Report has bee rejected! | `2051:153924` | 460x472 | modal |
+
+#### Profession Credential — section `2036:134317`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| ID not verified | `2036:134318` | 1440x1561 | page |
+| ID not verified | `2036:134380` | 1440x1588 | page |
+| Mark Profession Verified | `2036:135589` | 460x502 | modal |
+| Mark Profession as Verified ? | `2036:135605` | 460x247 | modal |
+| Samuel’s Profession Credentials has been verified! | `2036:135623` | 460x450 | modal |
+| Marked Verified | `2036:140390` | 1440x1561 | page |
+| Rejected | `2036:140464` | 1440x1561 | page |
+| Reject This Report of Maya? | `2051:153971` | 460x413 | modal |
+| Maya’s Report has bee rejected! | `2051:153997` | 460x472 | modal |
+| Restrict Maya’s Account | `2036:146119` | 460x473 | modal |
+| Restrict Maya’s Account? | `2036:146135` | 460x247 | modal |
+| Reject This Report of Maya? | `2036:158926` | 460x391 | modal |
+| Maya’s Account has bee restricted! | `2036:146153` | 460x441 | modal |
+| Maya’s Report has bee rejected! | `2036:158944` | 460x419 | modal |
+| ID not verified | `2036:144297` | 1440x960 | page |
+| ID not verified | `2036:145055` | 1440x960 | page |
+| ID not verified | `2036:145444` | 1440x960 | page |
+| ID not verified | `2036:145744` | 1440x1646 | page |
+| Deactivate partiipant account? 1/2 | `2036:158775` | 460x502 | modal |
+| Deactivate partiipant account? 1/2 | `2036:158791` | 460x445 | modal |
+| Your account has been deactivated! | `2036:158809` | 460x472 | modal |
+
+### Participants - Verifications — section `2051:143182`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| Clients - verifications | `2051:143183` | 1440x960 | page |
+| Clients - Verification completed | `2051:150538` | 1440x960 | page |
+
+#### Profession Credential — section `2051:145338`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| ID not verified | `2051:145339` | 1440x960 | page |
+| ID not verified | `2051:145410` | 1440x1199 | page |
+| Mark Profession Verified | `2051:145747` | 460x502 | modal |
+| Mark Profession as Verified ? | `2051:145763` | 460x247 | modal |
+| Samuel’s Profession Credentials has been verified! | `2051:145781` | 460x450 | modal |
+| Marked Verified | `2051:145795` | 1440x960 | page |
+| Rejected | `2051:145873` | 1440x960 | page |
+| Reject This Report of Maya? | `2051:153825` | 460x413 | modal |
+| Maya’s Report has bee rejected! | `2051:153851` | 460x472 | modal |
+
+### Support — section `2036:160943`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| Support - Active | `2036:159859` | 1440x960 | page |
+| Support - Active | `2044:49967` | 1440x1252 | page |
+| Support - Active | `2044:50380` | 1440x1252 | page |
+| New - User created | `2045:51486` | 1440x960 | page |
+| Ongoing - Team created | `2045:52936` | 1440x960 | page |
+| Completed- User created | `2045:53435` | 1440x960 | page |
+| Mark Resolved? | `2045:52841` | 460x269 | modal |
+| Ticket Is Resolved And Closed! | `2045:52876` | 460x419 | modal |
+| Create Ticket | `2045:115768` | 600x470 | panel |
+
+### Clients — section `2045:115869`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| Clients - Active | `2049:118695` | 1440x960 | page |
+| Clients- Deactivated | `2049:118738` | 1440x960 | page |
+| About- Client profile page | `2051:129453` | 1440x1193 | page |
+| About- Client profile page | `2051:137137` | 1440x1303 | page |
+| Studies - Client profile page | `2051:132253` | 1440x960 | page |
+| Studies - Client profile page | `2051:134144` | 1440x1176 | page |
+| Studies - Client profile page | `2051:135099` | 1440x1569 | page |
+| Invoice Details (INV-1024366) - Mobile App Usability Testing | `2051:130623` | 600x931 | panel |
+| Invoice Details - To Pay | `2051:130751` | 600x931 | panel |
+
+### Finance — section `2051:154237`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| Finance | `2051:154238` | 1440x1218 | page |
+| Finance | `2051:167524` | 1440x1218 | page |
+| Finance | `2051:169194` | 1440x1218 | page |
+| Finance | `2051:170363` | 1440x1218 | page |
+| Finance | `2051:165906` | 1440x1218 | page |
+| Finance | `2051:166552` | 1440x1218 | page |
+| Finance | `2051:165267` | 1440x1218 | page |
+| Finance | `2051:163894` | 1440x1218 | page |
+| Confirm Client Refund? | `2051:170322` | 460x321 | modal |
+| Samuel’s Profession Credentials has been verified! | `2051:170969` | 460x441 | modal |
+| Transaction Details | `2051:171000` | 600x507 | panel |
+| Transaction Details | `2051:171394` | 600x471 | panel |
+| Transaction Details | `2051:171506` | 600x565 | panel |
+
+### Pricing & Rewards — section `2051:177074`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| Pricing & Rewards | `2051:176489` | 1440x1218 | page |
+| Pricing & Rewards | `2058:194308` | 1440x1218 | page |
+| Edit Tiers | `2058:195439` | 1440x960 | page |
+| Edit Reward Points | `2058:197423` | 1440x960 | page |
+| Edit Trust Score | `2058:196166` | 1440x1158 | page |
+| Pricing & Rewards | `2056:192920` | 1440x1218 | page |
+| Pricing & Rewards | `2058:193936` | 1440x1218 | page |
+| Create Ticket **(hidden)** | `2058:193395` | 600x470 | panel |
+| Changes are published live! | `2058:193905` | 460x419 | modal |
+
+### Sub-Admin — section `2060:197774`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| Pricing & Rewards | `2060:197775` | 1440x1469 | page |
+| Create Profile | `2062:201923` | 1440x960 | page |
+| Edit Profile | `2065:203431` | 1440x960 | page |
+| Profile | `2065:203055` | 1440x960 | page |
+
+### My Account — section `2065:203731`
+
+| Frame | Node | Size | Kind |
+|---|---|---|---|
+| Edit Profile | `2065:205614` | 1440x960 | page |
+| Sub-Admin Profile | `2065:207638` | 1440x960 | page |
+| Profile | `2065:205670` | 1440x960 | page |
+| Change Password | `2065:206687` | 460x410 | modal |
+| Logout | `2065:206708` | 460x285 | modal |
+| Password has been updated! | `2065:206726` | 460x423 | modal |

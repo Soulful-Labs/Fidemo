@@ -1,0 +1,26 @@
+@import 'tailwindcss';
+@config '../tailwind.config.ts';
+
+/* Geist, self-hosted from the `geist` npm package, as every text variable in
+   the file names it (Body/Font, Title/Font, Heading/Font, Lables/Font). */
+@font-face {
+  font-family: 'Geist';
+  src: url('../node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #fdfdfc; /* BG/primary/bg-0 */
+  color: #201e19; /* Text/title */
+  font-family: 'Geist', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
