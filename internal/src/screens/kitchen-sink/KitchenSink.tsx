@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import AppShell from '../../app/AppShell'
+import StudyTypeTag from '../../components/app/StudyTypeTag'
 import Button, { IconButton } from '../../components/ui/Button'
 import Input, { PasswordInput, SearchInput, Select, TextArea } from '../../components/ui/Input'
 import { Checkbox, Chip, OptionTile, Radio, Toggle } from '../../components/ui/controls'
@@ -40,7 +41,7 @@ export default function KitchenSink() {
   const [sel, setSel] = useState('All Studies')
   const [tile, setTile] = useState('All')
   const [panel, setPanel] = useState(false)
-  const [modal, setModal] = useState<null | 'centred' | 'titled' | 'success'>(null)
+  const [modal, setModal] = useState<null | 'centred' | 'titled' | 'success' | 'success-green'>(null)
 
   return (
     <AppShell crumbs={[{ label: 'Kitchen Sink' }]} right={<IconButton label="Notifications"><BellIcon className="h-5 w-5" /></IconButton>}>
@@ -140,6 +141,12 @@ export default function KitchenSink() {
           <Button variant="tertiary" onClick={() => setModal('centred')}>Centred modal</Button>
           <Button variant="tertiary" onClick={() => setModal('titled')}>Titled modal</Button>
           <Button variant="tertiary" onClick={() => setModal('success')}>Success modal</Button>
+          <Button variant="tertiary" onClick={() => setModal('success-green')}>Success modal, green</Button>
+        </Section>
+
+        <Section title="Study type tags" note="32 tall; ringed on lists, filled on study screens">
+          {(['survey', 'video', 'video-group', 'in-person', 'in-person-group', 'diary'] as const).map((t) => <StudyTypeTag key={t} type={t} />)}
+          {(['survey', 'video', 'video-group', 'in-person', 'in-person-group', 'diary'] as const).map((t) => <StudyTypeTag key={t} type={t} filled />)}
         </Section>
       </div>
 
@@ -166,6 +173,8 @@ export default function KitchenSink() {
       </Modal>
       <SuccessModal open={modal === 'success'} onClose={() => setModal(null)} title="Password has been updated!"
         body="Your new password has been updated with your account which you can use to login from now." action="Go To Login" onAction={() => setModal(null)} />
+      <SuccessModal tone="green" open={modal === 'success-green'} onClose={() => setModal(null)} title="This study has been published live!"
+        body="It is live on the platform and showing to targeted participants." action="Done! View Details" onAction={() => setModal(null)} />
     </AppShell>
   )
 }

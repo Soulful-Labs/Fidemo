@@ -9,6 +9,7 @@ import CheckEmail from './screens/auth/CheckEmail'
 import SetNewPassword from './screens/auth/SetNewPassword'
 import Dashboard from './screens/dashboard/Dashboard'
 import Studies from './screens/studies/Studies'
+import ReviewStudy from './screens/studies/review/ReviewStudy'
 
 /** A module route not built yet: the shell, with the breadcrumb the frames give that module. */
 const later = (path: string, ...labels: string[]): RouteObject => ({
@@ -29,7 +30,7 @@ const routes: RouteObject[] = [
   { path: '/kitchen-sink', element: createElement(KitchenSink) },
   { path: '/dashboard', element: createElement(Dashboard) },
   { path: '/studies', element: createElement(Studies) },
-  later('/studies/review/:id', 'Studies', 'Review'),
+  { path: '/studies/review/:id', element: createElement(ReviewStudy) },
   later('/studies/:id', 'Studies', 'Ongoing'),
   later('/participants', 'All Participants'),
   later('/participants/verifications', 'Verifications'),

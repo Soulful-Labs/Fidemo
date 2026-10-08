@@ -86,8 +86,10 @@ export function Modal({ open, onClose, title, layout = 'centred', footer, childr
  * the Body 16 subtitle, 24 under it; then the 80px "Bottom Bar": a stroke-1
  * rule and one 48px button 16 in.
  */
-export function SuccessModal({ open, onClose, title, body, action, onAction }: {
+export function SuccessModal({ open, onClose, title, body, action, onAction, tone = 'yellow' }: {
   open: boolean; onClose: () => void; title: string; body: ReactNode; action: string; onAction: () => void
+  /** green: "This study has been published live!" (1982:109978) draws the badge in green. */
+  tone?: 'yellow' | 'green'
 }) {
   useEscape(open, onClose)
   if (!open) return null
@@ -95,7 +97,7 @@ export function SuccessModal({ open, onClose, title, body, action, onAction }: {
     <div role="presentation" onClick={onClose} className="fixed inset-0 z-50 flex items-center justify-center bg-text-title/25">
       <div role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()} className="flex w-modal flex-col overflow-hidden rounded-xl bg-bg-0">
         <div className="flex flex-col items-center px-4 pb-10 pt-10 text-center">
-          <SuccessBadge />
+          <SuccessBadge tone={tone} />
           <h2 className="pt-4 text-title-l leading-[35px] text-text-title">{title}</h2>
           <p className="max-w-[358px] pt-2 text-body-regular text-text-subtitle">{body}</p>
         </div>
@@ -108,12 +110,13 @@ export function SuccessModal({ open, onClose, title, body, action, onAction }: {
 }
 
 /** The badge: a 92px yellow-500 disc with a 4px brand-primary rim and a white tick, on a 160px yellow-100 disc. */
-export function SuccessBadge() {
+export function SuccessBadge({ tone = 'yellow' }: { tone?: 'yellow' | 'green' }) {
+  const green = tone === 'green'
   return (
-    <span className="flex h-40 w-40 items-center justify-center rounded-full bg-yellow-100">
-      <span className="flex h-[92px] w-[92px] items-center justify-center rounded-full border-4 border-brand-primary bg-yellow-500">
+    <span className={cn('flex h-40 w-40 items-center justify-center rounded-full', green ? 'bg-state-successBg' : 'bg-yellow-100')}>
+      <span className={cn('flex h-[92px] w-[92px] items-center justify-center rounded-full border-4', green ? 'border-state-successHover bg-state-success' : 'border-brand-primary bg-yellow-500')}>
         <svg viewBox="0 0 40 32" className="h-8 w-10" fill="none" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M4 17.5 14.5 27 36 5" className="stroke-yellow-700" strokeOpacity="0.45" strokeWidth="4" transform="translate(1.5 2)" />
+          <path d="M4 17.5 14.5 27 36 5" className={green ? 'stroke-state-successHover' : 'stroke-yellow-700'} strokeOpacity="0.45" strokeWidth="4" transform="translate(1.5 2)" />
           <path d="M4 17.5 14.5 27 36 5" className="stroke-bg" strokeWidth="4" />
         </svg>
       </span>

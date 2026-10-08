@@ -5,8 +5,8 @@ set-password
 kitchen-sink
 dashboard
 studies
-studies/review/st-1
-studies/st-1
+studies/review/st-goal
+studies/st-goal
 participants
 participants/verifications
 participants/p-1
@@ -29,3 +29,13 @@ finance/refunds
 finance/refunds/rf-1
 studies?tab=ongoing
 studies?tab=completed
+studies/review/st-goal?tab=audience
+studies/review/st-goal?tab=screener
+studies/review/st-goal?tab=study
+studies/review/st-goal?tab=payment
+studies/review/st-goal?tab=revisions
+studies/review/st-social?tab=study
+studies/review/st-fitness?tab=study
+studies/review/st-sleep?tab=study
+studies/review/st-travel?tab=study
+studies/review/st-pay?tab=study

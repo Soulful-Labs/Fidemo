@@ -291,44 +291,87 @@ Diffs at 1440: To Review 2.28%, Ongoing 2.00%, Completed 1.87%.
 
 ---
 
-## Review a new study (turn 4, IN PROGRESS: read, not built)
+## Review a new study (turn 4)
 
-Section `1982:104844` holds 13 frames, all visible: About `1982:104845`, Audience
-`1984:114713`, Screener `1984:114217` (misnamed "2.1.0 About - New Study"), the
-sub-section Study (All types) `1984:135107` with Video Call `1984:119698`, Survey
-`1984:122634`, Group Video Call `1984:129204`, In-Person `1984:130558`, In-Person
-Group `1984:132092` (1001 tall), Diary `1984:134413`; Payment `1984:120589`;
-Revisions History `1984:122012`; and two overlays: "This study has been published
-live!" `1982:109978` (460, "Done! View Details") and Request Changes `1982:110039`
-(600 panel: "Request changes and resubmit", a required text area, Cancel / Send).
+One screen (`/studies/review/:id`, `?tab=audience|screener|study|payment|revisions`),
+six tabs, the Study tab switched on the study's type, plus two overlays. Section
+`1982:104844` holds 13 frames, all visible: About `1982:104845`, Audience
+`1984:114713`, Screener `1984:114217` (misnamed "2.1.0 About - New Study"), Study in
+six types (`1984:119698` video, `122634` survey, `129204` group video, `130558`
+in-person, `132092` in-person group, 1001 tall, `134413` diary), Payment
+`1984:120589`, Revisions History `1984:122012`, "This study has been published live!"
+`1982:109978` (460) and Request Changes `1982:110039` (600 panel).
 
-Measured so far:
-- **This screen does not use the standard content inset.** The panel starts at
-  230,70 with a 16px gutter (246,86), not 254,94.
-- Header card 1178x94 on bgAlt-1 (Radius/L): 83x62 thumbnail, title, then the type
-  tag (filled bgAlt-2, no ring, unlike the list's ringed tag), "10" participants,
-  "$12,960", "Submitted: 30 Jul, 2026, 11:00 AM".
-- Left panel 802 wide (stroke-1 edge, Radius/L), tabs 44 tall with icons (widths
-  101, 125, 123, 100, 121, 183); content padded 16. Right client card 360 wide,
-  16 to the right: Jennifer Lee, Workspace and Metrics lists.
-- Title bar: "Studies / Review / Social media posts designing apps", right CTAs
-  "Request Changes" (secondary, 136x38) and "Approve to Publish" (success, 143x38).
-- The six type variants differ in the Study tab **and** in the header's type tag.
-- Payment draws Total Cost $16,510, Deposit Paid $3,000, Incentive $700 (Suggested:
-  $700), Platform Fee $100, Recruiting Fee $20 x 25 = $500, Incentives $100 x 25 =
-  $2,500, Moderation Fee $10 x 25 = $250, Less Incentive Deposit $100 x 30 = -$3000,
-  Net payable $13,510; the transaction line says "$20 x 30 participants" for the
-  $3,000 deposit. Header says $12,960.
-- Hidden on every tab: a "Review this study required / Sep 10, 2026, 11:00 AM"
-  banner with two CTAs and an icon button, "Rate John M for this study", and on
-  About "Study Management Control / Manage yourself (Self-managed)". Payment hides
-  "Less: Balance Incentive Refund $100 x 5 participants -$500" and "If not paid,
-  will be auto-debited from / Payment will due by completion till 1 week".
-- Every Review frame lights Dashboard in the nav (built: Studies) and names the
-  admin "Peter Davian".
+**Layout, measured.** This screen sits **16** inside the shell, not 24
+(`<AppShell className="p-4">`). Header card 1178 x 94 on bgAlt-1: 83 x 62 thumbnail,
+title, the type tag (filled), then ringed 32px pills for participants, cost and
+"Submitted:". Under it an 802 panel (stroke-1, Radius/L, at least 748 tall, grows
+with its content) with a 44px bg-1 tab strip (icon tabs 101, 125, 123, 100, 121, 183
+wide) beside the 360 client card. Title bar: three crumbs and the two CTAs, the right
+one ending 16 from the window edge.
 
-Remaining for turn 4: build the screen, the 11 tab states and both overlays, run
-the compare loop on each, answer the six questions in the report.
+**What each tab holds.** About: title, description, type, study time, thumbnail.
+Audience: targeting as pills in three groups. Screener: the questions with each
+answer's verdict (Correct / Incorrect / May Select / Must Select). Study: by type,
+availability (video, in-person + address), group sessions (group video, in-person
+group + address), the survey form, or the diary setup and days. Payment: overview,
+billing, transactions. Revisions History: what was sent back and when.
+
+**Actions drawn: two.** "Request Changes" opens the panel: one required-looking text
+area ("Describe the required changes in detail"), Cancel / Send. "Approve to Publish"
+opens the published dialog, "Done! View Details". There is no reject, no decline, no
+edit, and no note on approval. No frame shows what follows Send; the Revisions History
+tab draws a "Requested changes." entry, so Send lands there. "Done! View Details" goes
+to the study (`/studies/:id`). Nothing drawn shows the study leaving the To Review
+list or the client being notified, though the published dialog says it is "showing to
+targeted participants". **Everything in the tabs is read only**: values are drawn as
+text, pills and filled boxes with no edit affordance; the hidden layers confirm it
+(the weekly-hours toggles, add and delete icon buttons, and the diary "add" CTA are
+all switched off).
+
+**Type variants** change the Study tab and the header's type tag, nothing else. All
+six draw the same study, client, cost and breadcrumb.
+
+**Below the fold, unreadable.** Screener and Survey hold nine question blocks and
+Diary three days, but the 960 frames cut off after the fourth question (second day)
+and a clipped layer screenshots as 1x1. The five further question types (a long text,
+a slider with Price / Value / Description, a drag-to-rank list, a file upload and a
+matrix) have their labels inside instances, so their strings cannot be read. Built:
+what the frames show. "Survey Form: 10 Questions" over nine blocks, as drawn.
+
+**Money, as drawn (stage two must reconcile):**
+
+| Where | Figure |
+|---|---|
+| Header, and the list's Total Cost for this row | $12,960 |
+| Payment: Total Cost | $16,510 |
+| Billing lines: Platform $100 + Recruiting $500 + Incentives $2,500 + Moderation $250 | add to $3,350, not $16,510 |
+| Less incentive deposit $100 x 30 = -$3000, net payable | $13,510 (16,510 - 3,000) |
+| Transaction "Incentive Deposit Paid" $3,000 | captioned "$20 x 30 participants" (= $600) |
+| Participants | 10 (header, Audience), 25 (billing), 30 (deposit), 75 (the list) |
+| Incentive | "$700", "Suggested: $700" beside $100 a participant in billing |
+
+Against Pricing & Rewards: Platform fee $100 and Moderation fee $10 agree; Recruiting
+is $20 a participant here and $25 base there.
+
+Hidden on every tab: a "Review this study required / Sep 10, 2026, 11:00 AM" banner
+with two CTAs and an icon button, a stray "Rate John M for this study" block; on About
+"Study Management Control / Manage yourself (Self-managed)"; on Payment "Less: Balance
+Incentive Refund $100 x 5 participants -$500" and auto-debit text.
+
+Shared changes this turn: the title bar (right slot 16 from the edge; crumbs written
+"Label /"; without a stepper the crumbs take the free width), the success button's
+3px base, a green tone on the success dialog, the type tag's `filled` look and 14px
+sides, new icons. In the kitchen sink. Sign in, Dashboard and Studies re-swept:
+unchanged (0.50-0.75%, 1.57-3.07%, 1.87-2.28%).
+
+Diffs at 1440 (sidebar included, where the frames light Dashboard): About 3.08%,
+Audience 3.44%, Screener 3.85%, Study video 3.52%, survey 3.71%, group video 2.83%,
+in-person 4.04%, in-person group 3.97%, diary 3.57%, Payment 3.44%, Revisions 3.35%,
+published dialog 4.70%, Request Changes 2.42%.
+
+Not matched: the Receipt button does nothing yet (no receipt is drawn); icons are
+redrawn; the dialog and panel sit over a dimmed page, which no frame shows.
 
 ---
 

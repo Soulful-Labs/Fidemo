@@ -7,6 +7,8 @@ import type { Crumb } from './TitleBar'
 /**
  * Every console screen: the fixed 230px sidebar, the 70px title bar beside
  * it, and the content area 24px inside both (x 254, y 94), 1162 wide at 1440.
+ * The study screens (Review, 1982:104845) draw a 16px gutter instead: pass
+ * `className="p-4"`.
  */
 export default function AppShell({ crumbs, centre, right, children, className }: {
   crumbs: Crumb[]; centre?: ReactNode; right?: ReactNode; children?: ReactNode; className?: string

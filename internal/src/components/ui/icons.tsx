@@ -54,3 +54,21 @@ export const DotsIcon = (p: P) => (
 export const MailCheckIcon = (p: P) => (
   <svg {...base(p)}><path d="M21 12V7a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h7" /><path d="m3.5 6.5 7.3 5a2 2 0 0 0 2.4 0l7.3-5" /><path d="m15.5 18.5 2 2 4-4" /></svg>
 )
+
+/* Review a new study (turn 4): the tab icons and the small glyphs in its tags and rows. */
+export const InfoIcon = (p: P) => <svg {...base(p)}><circle cx="12" cy="12" r="8.5" /><path d="M12 11v5M12 8v.01" /></svg>
+export const AudienceIcon = (p: P) => (
+  <svg {...base(p)}><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" /><circle cx="12" cy="10" r="2.5" /><path d="M8 16.5c.8-1.6 2.2-2.5 4-2.5s3.2.9 4 2.5" /></svg>
+)
+export const ScreenerIcon = (p: P) => <svg {...base(p)}><rect x="3.5" y="4.5" width="17" height="15" rx="3.5" /><path d="M7.5 9.5h1M11.5 9.5h5M7.5 14.5h1M11.5 14.5h5" /></svg>
+export const ClipboardIcon = (p: P) => <svg {...base(p)}><rect x="5" y="4.5" width="14" height="16" rx="3" /><path d="M9 3.5h6v3H9zM9 11h6M9 15h6" /></svg>
+export const CardIcon = (p: P) => <svg {...base(p)}><rect x="3" y="5.5" width="18" height="13" rx="3.5" /><path d="M3 10h18M7 14.5h3" /></svg>
+export const HistoryIcon = (p: P) => <svg {...base(p)}><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3L4.5 9M4.5 5v4h4M12 8.5V12l2.5 1.5" /></svg>
+export const UsersIcon = (p: P) => <svg {...base(p)}><circle cx="9.5" cy="8.5" r="3" /><path d="M3.5 19c.6-3 2.9-4.8 6-4.8s5.4 1.800 6 4.8M15 6a3 3 0 0 1 0 5.500M17.500 14.800c1.600.700 2.700 2.100 3 4.200" /></svg>
+export const ReceiptIcon = (p: P) => <svg {...base(p)}><rect x="5" y="3.5" width="14" height="17" rx="2.500" /><path d="M12 7.500v9M14.200 9.700c-.400-.800-1.200-1.200-2.200-1.200-1.300 0-2.200.700-2.200 1.700 0 2.400 4.600 1.200 4.600 3.600 0 1-1 1.700-2.400 1.700-1.100 0-2-.500-2.400-1.300" /></svg>
+export const CalendarIcon = (p: P) => <svg {...base(p)}><rect x="4" y="5.500" width="16" height="15" rx="3" /><path d="M4 10h16M8.500 3.500v4M15.500 3.500v4M8.500 14h.01M12 14h.01M15.500 14h.01M8.500 17h.01M12 17h.01" /></svg>
+export const MailIcon = (p: P) => <svg {...base(p)}><rect x="3.500" y="5.500" width="17" height="13" rx="3" /><path d="m4.500 8 7.500 5 7.500-5" /></svg>
+export const VerifiedIcon = (p: P) => <svg {...base(p)}><circle cx="12" cy="12" r="8.500" /><path d="m8.500 12.300 2.400 2.400 4.800-5" /></svg>
+export const ClockIcon = (p: P) => <svg {...base(p)}><circle cx="12" cy="12" r="8.500" /><path d="M12 7.500V12l3 2" /></svg>
+export const PinIcon = (p: P) => <svg {...base(p)}><path d="M12 21s6.500-5.600 6.500-11a6.500 6.500 0 0 0-13 0c0 5.400 6.500 11 6.500 11Z" /><circle cx="12" cy="10" r="2.500" /></svg>
+export const DownloadIcon = (p: P) => <svg {...base(p)}><path d="M12 4v11M7.500 11l4.500 4.500 4.500-4.500M5 19.500h14" /></svg>

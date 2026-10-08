@@ -33,13 +33,15 @@ export function StudyTypeIcon({ type, ...p }: { type: StudyType } & SVGProps<SVG
 }
 
 /**
- * "Study Types - Tags" (Studies list, 1978:97400): 32 tall, Radius/Full, a 1px
- * stroke-2 ring, 10 sides; the 16px type glyph in brand-secondary, 6, then
- * the label in Text-Regular subtitle.
+ * "Study Types - Tags" (Studies list, 1978:97400): 32 tall, Radius/Full, 14
+ * sides; the 16px type glyph in brand-secondary, 4, then the label in
+ * Text-Regular subtitle ("Video Call" is 110 wide). Ringed (1px stroke-2) on
+ * the list; `filled` (bgAlt-2, no ring) on the study screens (Review,
+ * 1982:104845).
  */
-export default function StudyTypeTag({ type, className }: { type: StudyType; className?: string }) {
+export default function StudyTypeTag({ type, filled, className }: { type: StudyType; filled?: boolean; className?: string }) {
   return (
-    <span className={cn('inline-flex h-8 items-center gap-1.5 whitespace-nowrap rounded-full border-1 border-stroke-2 px-2.5 text-text-regular text-text-subtitle', className)}>
+    <span className={cn('inline-flex h-8 items-center gap-1 whitespace-nowrap rounded-full text-text-regular text-text-subtitle', filled ? 'bg-bgAlt-2 px-[13px]' : 'border-1 border-stroke-2 px-3', className)}>
       <StudyTypeIcon type={type} className="h-4 w-4 text-brand-secondary" />
       {STUDY_TYPE_LABEL[type]}
     </span>

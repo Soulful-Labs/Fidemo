@@ -25,7 +25,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  * - tertiary: bg-0 with a 1px cta-tertiaryStroke ring (Cancel on pages, Copy).
  * - danger: the orange-red Restrict / Deactivate (#ea5a00 with a 3px
  *   #dc5500 base, bound to an sds variable on 2036:146119).
- * - success: the green Approve to Publish.
+ * - success: the green Approve to Publish, with a 3px successHover base (1982:104845).
  *
  * Sizes: lg 48 (forms, dialogs, panel footers), md 38 (title bar, rows, the
  * "Icon Buttons" size), sm 32. Corners are Radius/M (12).
@@ -35,7 +35,7 @@ const VARIANT: Record<ButtonVariant, string> = {
   secondary: 'bg-cta-secondary text-cta-secondaryText',
   tertiary: 'border-1 border-cta-tertiaryStroke bg-bg-0 text-text-title',
   danger: 'border-b-[3px] border-state-destructiveEdge bg-state-destructive text-bg-0',
-  success: 'bg-state-success text-bg',
+  success: 'border-b-[3px] border-state-successHover bg-state-success text-bg',
   ghost: 'text-text-title',
 }
 const DISABLED = 'cursor-not-allowed opacity-50'
