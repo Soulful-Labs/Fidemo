@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import AppShell from '../../../app/AppShell'
+import PanelTabs from '../../../components/app/PanelTabs'
 import StudyTypeTag from '../../../components/app/StudyTypeTag'
 import Button from '../../../components/ui/Button'
 import { AudienceIcon, CalendarIcon, CardIcon, ClipboardIcon, HistoryIcon, InfoIcon, ReceiptIcon, ScreenerIcon, UsersIcon } from '../../../components/ui/icons'
 import { SuccessModal } from '../../../components/ui/Overlay'
-import { cn } from '../../../lib/cn'
 import { QUESTIONS, REVIEW, SCREENER_LABELS } from '../../../mock/review'
 import { STUDY_ROWS } from '../../../mock/studies'
 import { AboutTab, AudienceTab } from './AboutAudience'
@@ -68,15 +68,7 @@ export default function ReviewStudy() {
 
       <div className="flex gap-4 pt-4">
         <section className="min-h-[748px] min-w-0 flex-1 overflow-hidden rounded-lg border-1 border-stroke-1">
-          <div role="tablist" className="flex h-11 border-b-1 border-stroke-input bg-bg-1">
-            {TABS.map(({ key, label, Icon, width }) => (
-              <button key={key} role="tab" type="button" aria-selected={key === tab} onClick={() => setTab(key)}
-                className={cn('-mb-px flex items-center justify-center gap-2 border-b-1 text-body-regular', width,
-                  key === tab ? 'border-brand-primary text-brand-primary' : 'border-transparent text-text-body hover:text-text-subtitle')}>
-                <Icon className="h-4 w-4" />{label}
-              </button>
-            ))}
-          </div>
+          <PanelTabs tabs={TABS} value={tab} onChange={(k) => setTab(k as Tab)} />
           <div role="tabpanel" className="p-4">
             {tab === 'about' && <AboutTab type={type} />}
             {tab === 'audience' && <AudienceTab />}

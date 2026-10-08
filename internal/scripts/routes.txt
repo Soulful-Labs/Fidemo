@@ -39,3 +39,15 @@ studies/review/st-fitness?tab=study
 studies/review/st-sleep?tab=study
 studies/review/st-travel?tab=study
 studies/review/st-pay?tab=study
+studies/st-social
+studies/st-fitness
+studies/st-pay
+studies/st-sleep
+studies/st-travel
+studies/st-goal?tab=manage
+studies/st-social?tab=manage
+studies/st-fitness?tab=manage
+studies/st-pay?tab=manage
+studies/st-sleep?tab=manage
+studies/st-travel?tab=manage
+studies/st-goal?state=paused

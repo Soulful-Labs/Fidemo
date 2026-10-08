@@ -72,3 +72,7 @@ export const VerifiedIcon = (p: P) => <svg {...base(p)}><circle cx="12" cy="12" 
 export const ClockIcon = (p: P) => <svg {...base(p)}><circle cx="12" cy="12" r="8.500" /><path d="M12 7.500V12l3 2" /></svg>
 export const PinIcon = (p: P) => <svg {...base(p)}><path d="M12 21s6.500-5.600 6.500-11a6.500 6.500 0 0 0-13 0c0 5.400 6.500 11 6.500 11Z" /><circle cx="12" cy="10" r="2.500" /></svg>
 export const DownloadIcon = (p: P) => <svg {...base(p)}><path d="M12 4v11M7.500 11l4.500 4.500 4.500-4.500M5 19.500h14" /></svg>
+
+/* Manage a study (turn 5). */
+export const CopyIcon = (p: P) => <svg {...base(p)}><rect x="8.500" y="8.500" width="11" height="11" rx="2.500" /><path d="M15.500 8.500V7a2.500 2.500 0 0 0-2.500-2.500H7A2.500 2.500 0 0 0 4.500 7v6A2.500 2.500 0 0 0 7 15.500h1.500" /></svg>
+export const ExternalIcon = (p: P) => <svg {...base(p)}><path d="M11 5.500H8A3.500 3.500 0 0 0 4.500 9v7A3.500 3.500 0 0 0 8 19.500h7a3.500 3.500 0 0 0 3.500-3.500v-3M13.500 4.500h6v6M19.500 4.500 11 13" /></svg>

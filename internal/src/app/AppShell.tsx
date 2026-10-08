@@ -16,7 +16,7 @@ export default function AppShell({ crumbs, centre, right, children, className }:
   return (
     <div className="min-h-full bg-bg-0">
       <Sidebar />
-      <div className="ml-nav flex min-h-full flex-col">
+      <div className="ml-nav flex min-h-screen flex-col">
         <TitleBar crumbs={crumbs} centre={centre} right={right} />
         <main className={cn('flex-1 p-6', className)}>{children}</main>
       </div>

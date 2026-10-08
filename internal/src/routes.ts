@@ -10,6 +10,7 @@ import SetNewPassword from './screens/auth/SetNewPassword'
 import Dashboard from './screens/dashboard/Dashboard'
 import Studies from './screens/studies/Studies'
 import ReviewStudy from './screens/studies/review/ReviewStudy'
+import ManageStudy from './screens/studies/manage/ManageStudy'
 
 /** A module route not built yet: the shell, with the breadcrumb the frames give that module. */
 const later = (path: string, ...labels: string[]): RouteObject => ({
@@ -31,7 +32,7 @@ const routes: RouteObject[] = [
   { path: '/dashboard', element: createElement(Dashboard) },
   { path: '/studies', element: createElement(Studies) },
   { path: '/studies/review/:id', element: createElement(ReviewStudy) },
-  later('/studies/:id', 'Studies', 'Ongoing'),
+  { path: '/studies/:id', element: createElement(ManageStudy) },
   later('/participants', 'All Participants'),
   later('/participants/verifications', 'Verifications'),
   later('/participants/verifications/:id', 'Verifications'),

@@ -43,6 +43,8 @@ export default {
         },
         // Secondary/green-* and Alpha/green-alpha/green-15.
         green: { 100: '#c3e9d9', 200: '#a7dfc6', alpha15: '#3fb98426' },
+        // Red/red-100 and Red/red-200: the paused banner (1952:75945).
+        red: { 100: '#fff0ed', 200: '#ffd1c7' },
         blue: { 600: '#42a4ed' },
         purple: { 600: '#9780fa' },
         // The file's --sds-color-background-* variables, by what they draw.
