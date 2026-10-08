@@ -291,6 +291,47 @@ Diffs at 1440: To Review 2.28%, Ongoing 2.00%, Completed 1.87%.
 
 ---
 
+## Review a new study (turn 4, IN PROGRESS: read, not built)
+
+Section `1982:104844` holds 13 frames, all visible: About `1982:104845`, Audience
+`1984:114713`, Screener `1984:114217` (misnamed "2.1.0 About - New Study"), the
+sub-section Study (All types) `1984:135107` with Video Call `1984:119698`, Survey
+`1984:122634`, Group Video Call `1984:129204`, In-Person `1984:130558`, In-Person
+Group `1984:132092` (1001 tall), Diary `1984:134413`; Payment `1984:120589`;
+Revisions History `1984:122012`; and two overlays: "This study has been published
+live!" `1982:109978` (460, "Done! View Details") and Request Changes `1982:110039`
+(600 panel: "Request changes and resubmit", a required text area, Cancel / Send).
+
+Measured so far:
+- **This screen does not use the standard content inset.** The panel starts at
+  230,70 with a 16px gutter (246,86), not 254,94.
+- Header card 1178x94 on bgAlt-1 (Radius/L): 83x62 thumbnail, title, then the type
+  tag (filled bgAlt-2, no ring, unlike the list's ringed tag), "10" participants,
+  "$12,960", "Submitted: 30 Jul, 2026, 11:00 AM".
+- Left panel 802 wide (stroke-1 edge, Radius/L), tabs 44 tall with icons (widths
+  101, 125, 123, 100, 121, 183); content padded 16. Right client card 360 wide,
+  16 to the right: Jennifer Lee, Workspace and Metrics lists.
+- Title bar: "Studies / Review / Social media posts designing apps", right CTAs
+  "Request Changes" (secondary, 136x38) and "Approve to Publish" (success, 143x38).
+- The six type variants differ in the Study tab **and** in the header's type tag.
+- Payment draws Total Cost $16,510, Deposit Paid $3,000, Incentive $700 (Suggested:
+  $700), Platform Fee $100, Recruiting Fee $20 x 25 = $500, Incentives $100 x 25 =
+  $2,500, Moderation Fee $10 x 25 = $250, Less Incentive Deposit $100 x 30 = -$3000,
+  Net payable $13,510; the transaction line says "$20 x 30 participants" for the
+  $3,000 deposit. Header says $12,960.
+- Hidden on every tab: a "Review this study required / Sep 10, 2026, 11:00 AM"
+  banner with two CTAs and an icon button, "Rate John M for this study", and on
+  About "Study Management Control / Manage yourself (Self-managed)". Payment hides
+  "Less: Balance Incentive Refund $100 x 5 participants -$500" and "If not paid,
+  will be auto-debited from / Payment will due by completion till 1 week".
+- Every Review frame lights Dashboard in the nav (built: Studies) and names the
+  admin "Peter Davian".
+
+Remaining for turn 4: build the screen, the 11 tab states and both overlays, run
+the compare loop on each, answer the six questions in the report.
+
+---
+
 ## The file, mapped
 
 15 top-level sections and one loose frame on the page, **294 frames, 251 visible,
