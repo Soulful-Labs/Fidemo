@@ -4,3 +4,6 @@ dist
 
 # stage two derivation checks
 .check/
+
+.vercel
+.env*
