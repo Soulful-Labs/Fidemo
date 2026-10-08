@@ -1,15 +1,10 @@
-import { useLocation } from 'react-router-dom'
+import AppShell from '../app/AppShell'
+import type { Crumb } from '../app/TitleBar'
 
-/** Stands in for every route until the first screen is built. */
-export default function Placeholder() {
-  const { pathname } = useLocation()
-  return (
-    <main className="flex min-h-full items-center justify-center bg-bg-0 p-6">
-      <div className="flex flex-col gap-2 rounded-lg border-1 border-stroke-input bg-bg-1 p-6">
-        <p className="text-label text-text-body">Not built yet</p>
-        <h1 className="text-title-l text-text-title">Focus Insite Admin Panel</h1>
-        <p className="text-text-regular text-text-subtitle">{pathname}</p>
-      </div>
-    </main>
-  )
+/**
+ * Stands in for a module screen until its turn in the build order. It sits in
+ * the real shell, so the nav and title bar can be checked on every route now.
+ */
+export default function Placeholder({ crumbs }: { crumbs: Crumb[] }) {
+  return <AppShell crumbs={crumbs} />
 }

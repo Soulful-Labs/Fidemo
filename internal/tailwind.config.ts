@@ -13,10 +13,8 @@ import type { Config } from 'tailwindcss'
  * without a lookup: `BG/primary/bg-1` -> `bg-bg-1`, `Text/subtitle` ->
  * `text-text-subtitle`, `Primary/yellow-500` -> `bg-yellow-500`.
  *
- * Only values the file defines as variables are here. Two shell values the
- * frames draw without a variable are measured and noted in CLAUDE.md, not added:
- * the sidebar's 1px right edge (#f0f0ef) and the frame's own page colour, which
- * renders as bg-0.
+ * Only values the file defines as variables are here, plus the two shell values
+ * the frames draw without one (`shell.*`, measured).
  */
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
@@ -51,6 +49,10 @@ export default {
         // Note: the Verifications frame (2035:109172) binds the red #e33a38 to
         // "positive-hover" and an amber #fcf2da to "positive-secondary"; they
         // are named here by colour, as the frames use them.
+        // The two shell values the frames draw without a variable, measured off the PNGs:
+        // the sidebar's right edge and the edge of its active pill (#f0f0ef), and the
+        // sub-item guide rail (#edebeb). Named here so no screen writes a raw hex.
+        shell: { edge: '#f0f0ef', rail: '#edebeb' },
         state: { success: '#14ae5c', successHover: '#009951', successBg: '#d3f8d7', danger: '#e33a38', warningBg: '#fcf2da' },
       },
       // Space/* and Element/*.
