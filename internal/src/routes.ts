@@ -9,6 +9,7 @@ import CheckEmail from './screens/auth/CheckEmail'
 import SetNewPassword from './screens/auth/SetNewPassword'
 import Dashboard from './screens/dashboard/Dashboard'
 import Participants from './screens/participants/Participants'
+import Profile from './screens/participants/profile/Profile'
 import Studies from './screens/studies/Studies'
 import ReviewStudy from './screens/studies/review/ReviewStudy'
 import ManageStudy from './screens/studies/manage/ManageStudy'
@@ -41,7 +42,7 @@ const routes: RouteObject[] = [
   { path: '/participants', element: createElement(Participants) },
   later('/participants/verifications', 'Verifications'),
   later('/participants/verifications/:id', 'Verifications'),
-  later('/participants/:id', 'All Participants'),
+  { path: '/participants/:id', element: createElement(Profile) },
   later('/clients', 'Clients'),
   later('/clients/verifications', 'Verifications'),
   later('/clients/verifications/:id', 'Verifications'),

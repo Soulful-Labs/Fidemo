@@ -53,7 +53,7 @@ export default function Participants() {
         <Select size="sm" className="w-[140px]" value={filters.gender} onChange={pick('gender')} options={FILTERS.gender} />
         <Select size="sm" className="w-[140px]" value={filters.tier} onChange={pick('tier')} options={FILTERS.tier} />
       </div>
-      <Table className="mt-3" rowHeight={52} rows={PARTICIPANTS} rowKey={(r) => r.id} onRowClick={(r) => navigate(`/participants/${r.id}`)}
+      <Table className="mt-3" rowHeight={52} rows={PARTICIPANTS} rowKey={(r) => r.id} onRowClick={(r) => navigate(`/participants/${r.id}${tab === 'deactivated' ? '?state=deactivated' : ''}`)}
         columns={columns(tab === 'active' ? 'Last Active' : 'Deactivated')} />
       <div className="pt-3"><Pagination page={1} pages={10} /></div>
       <AdvancedFilters open={advanced} onClose={() => setAdvanced(false)} />

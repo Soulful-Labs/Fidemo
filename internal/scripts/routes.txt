@@ -109,3 +109,13 @@ studies/st-social/respondents/r1?from=completed
 studies/st-social/respondents/r1?from=completed&tab=activity
 studies/st-social/respondents/r1?from=completed&tab=screener
 participants?tab=deactivated
+participants/p-1?state=deactivated
+participants/p-1?tab=studies
+participants/p-1?tab=studies&sub=scheduled
+participants/p-1?tab=studies&sub=applied
+participants/p-1?tab=studies&sub=history
+participants/p-1?tab=studies&sub=saved
+participants/p-1?tab=wallet
+participants/p-1?tab=wallet&sub=payouts
+participants/p-1?tab=wallet&sub=points
+participants/p-1?tab=wallet&sub=referrals
