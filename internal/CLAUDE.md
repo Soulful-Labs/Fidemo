@@ -983,6 +983,70 @@ Diffs at 1440: list 2.43% / 2.46%; About 6.27%, deactivated 6.11%; Studies 3.83%
 Details 6.19%, verified 2.76%, rejected 3.01%; invoice panels 6.00% / 12.93%. The
 verification dialogs are turn 11's. Nothing is cut off by its frame.
 
+## Support (turn 13)
+
+Section `2036:160943`: 9 frames, all visible, nothing loose: list New `2036:159859`,
+Ongoing `2044:49967`, Closed `2044:50380`; ticket "New - User created" `2045:51486`,
+"Ongoing - Team created" `2045:52936`, "Completed- User created" `2045:53435`; Mark
+Resolved? `2045:52841`, Ticket Is Resolved And Closed! `2045:52876`, Create Ticket
+`2045:115768`. Measured: Ongoing vs Closed list 2.35% (segment, heading, the dots and
+"You:"); ticket new vs ongoing 4.18%, new vs closed 5.31%, ongoing vs closed 6.03%
+(the title-bar button, the status, the thread, the composer).
+
+**List** (`/support`, `?tab=ongoing|closed`): segments New / Ongoing / Closed;
+"Pending Tickets 3", "Ongoing Tickets 4 messages", "Completed Tickets 628"; one search
+"Search by name or ticket number"; no filter. Columns: Support Ticket (subject over the
+last message, an orange dot when unread), From, Last Activity (sortable), Created On
+(sortable), Ticket Number, a chevron. New: three rows, no pagination, and "Create
+Ticket". **Nothing tells a participant's ticket from a client's**: no column, tag or
+filter. (The Dashboard's Support tab groups them "Participants" / "Client"; this list
+does not.) Hidden in the list frames: a Status column with a tag, a CTA column, an
+email input and a second CTA in the toolbar.
+
+**Ticket** (`/support/:id`, `?state=ongoing|closed`): number in the title bar with one
+button; a bar with back, subject, status (Open / Solved), an info button, "User
+profile", and on the team-created one "[Report/Verification]" (a placeholder label,
+as drawn). The user's first message is a "Ticket Info" card: Subject and Message, with
+an attachment. Timestamps are time of day under each message and one day heading. No
+category, no priority, no study or account link beyond those two chips (the study is
+only named inside the message text).
+- New: Ticket Info, attachment, composer; "Mark Resolved" greyed.
+- Ongoing: the team's message first, the user's replies, composer; "Mark Resolved" live.
+- Closed: the full thread, "Solved", "Re-open", no composer, "This ticket has been
+  resolved and closed - Sep 10, 2026, 04:26 PM".
+
+**Actions.** Live: reply (Send, attach), Mark Resolved ("Are you sure you want to mark
+this ticket as resolved? User won't be able to message further on this ticket." then
+"#FI-S562357 is marked as resolved and moved to closed section."), Re-open, Create
+Ticket (Subject, User Email Address, Message; "Create and Send"). Not drawn at all:
+assign, escalate, transfer, internal note, canned reply, priority.
+
+**Automatic first answer:** nothing drawn. No bot message, no FAQ suggestion, no
+"answered automatically" state, no hand-off marker. The phrase the brief bans does not
+appear in any Support frame. **Reply time:** nothing drawn: no SLA, timer, due time or
+"waiting since". **Who handled it:** not recorded. Team messages are unsigned (the
+closed list says "You:"); the resolution line carries a date and no name. Support is
+not the exception.
+
+Slips kept: the "From" names (Ronny McCoy ...) are the people speaking in the last
+message, which greet "Hi Jennifer"; two tickets share FI-S562357; ongoing and closed
+breadcrumbs both read "Ongoing /"; the list's later rows are office chatter (Team
+Outing, Budget Approval, New Hire Announcement); "Enter you message in detail"; the
+frames' title-bar breadcrumb layer is named after a study.
+
+Built choices: Send appends the message to the thread; Mark Resolved moves the page to
+its closed state and Re-open back to ongoing; Create and Send opens the ongoing ticket;
+User profile opens participant p-1 and "[Report/Verification]" the identity check;
+the info and attach buttons do nothing. Chat and View Support Chat on the participant
+and client verifications now open the ongoing ticket. Every ticket id shows the one
+thread drawn.
+
+No primitive changed. Everything signed off re-swept: unchanged.
+
+Diffs at 1440: list New 2.43%, Ongoing 4.13%, Closed 4.03%; ticket New 3.03%, Ongoing
+3.52%, Closed 4.34%; Mark Resolved? 7.01%, resolved 5.82%, Create Ticket 4.42%. Nothing
+is cut off by its frame; the closed ticket's frame is drawn scrolled to the bottom.
+
 ---
 
 ## The file, mapped
