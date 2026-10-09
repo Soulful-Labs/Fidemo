@@ -890,6 +890,99 @@ Diffs at 1440: lists 4.67% / 4.82%; identity flagged 1.90%, profile 3.22%, verif
 outcomes 5.77-9.73%, rejection forms 17.85% / 16.51%, deactivate form 10.84%. Nothing
 is cut off by its frame.
 
+## Clients (turn 12): list, profile, invoices, client verifications
+
+**Clients section `2045:115869`:** 9 frames, all visible: Active `2049:118695`,
+Deactivated `2049:118738`, About `2051:129453`, deactivated About `2051:137137`, Studies
+Ongoing `2051:132253`, Studies Completed `2051:134144`, a third frame named "Studies -
+Client profile page" that is the **Payments** tab `2051:135099`, and two invoice panels
+(`2051:130623` paid, `2051:130751` to pay). Loose: "Last active" `2051:132223` (really
+the options menu: Send E-mail, Deactivate Account) and "Ongoing Study options"
+`2051:134108` (Copy Study Link, Pause Study, Duplicate to Drafts).
+**Second "Participants - Verifications" section `2051:143182`:** 11 frames, all
+visible, all client business verification: list Pending `2051:143183`, History
+`2051:150538`; detail flagged `2051:145339`, Profile Details `2051:145410`, verified
+`2051:145795`, rejected `2051:145873`; five dialogs, all participant ones reused.
+
+Measured: Active vs Deactivated 0.92% (the segment, the count, the third dropdown, the
+last heading; the same ten rows). Ongoing vs Completed studies 0.67% plus four more
+rows. Verification flagged vs verified 2.17%, vs rejected 2.34%.
+
+**List** (`/clients`, `?tab=deactivated`): "126,872 active clients" / "10,572
+deactivated clients" (the same two numbers as the participants list). Search "Search
+clients by name, role, industry, or company..."; "Industry: All", "Location: All",
+"Last Active: All" / "Deactivated: All" (options not drawn). Columns Name (sortable),
+Role, Company, Industry, Location, Last Active / Deactivated (sortable). No row or bulk
+action.
+
+**Profile** (`/clients/:id`, `?tab=studies|payments`, `&sub=completed`,
+`?state=deactivated`). About: Account Details (work email, role, company, VAT (Tax)
+number, website, industry, location) and Reviews ("4.5 of 1,468 reviews", each with the
+client's own rating "To participant" under it, pagination to 80). Studies: Ongoing and
+Completed tables (Billed, Required, Completed, Created On / Completed On, a row menu).
+Payments: Due Payments $6,874 "of 5 studies", All Time Spent $25,890 "for 5 studies",
+Average Study Cost $3,876 "from 15 studies"; Pending Invoices and Completed Invoices
+(download, view); Saved Payment Methods, which draw **full card numbers and CVV**
+("2687 4242 3247 4242 ... CVV: 235"). **No team members appear anywhere**: one person
+per client account.
+
+**What the team can do.** Send E-mail; Deactivate Account (menu); Reactivate Account
+(banner on a deactivated client: "This account was deactivated as business verification
+could not be done. Can verify it manually and reactivate."); on a study row Copy Study
+Link, Pause Study, Duplicate to Drafts. No restrict, no approve on the profile. **No
+deactivate or reactivate dialog is drawn for a client**: the participant flow is reused
+here and still says "Samuel's account".
+
+**Business verification** (`/clients/verifications`, `?tab=history`; detail
+`/clients/verifications/:id`, `?tab=profile`). One queue, "87 pending verifications",
+Flagged For always "Business Verification"; reasons "VAT number for business
+registration could not be found" or "Website and VAT number ...". What is checked: the
+VAT (Tax) number and the company website the client typed, against records. No
+document is uploaded or shown. Decisions: Reject, Mark Verified, Chat; each with a
+required statement, verify also with the password. After: "Marked as verified! An OCR
+error, manually verified and matched with record." or "Rejected the Business
+registration verification. Did not submitted the VAT number document for verification
+as required."; History shows a rejected client as "Could not verify the business, hence
+deactivated." **The gate, as drawn:** only clients whose automatic check failed reach
+this queue; nothing shows a client waiting for approval before running studies, and no
+frame blocks a pending client's studies. The frames light Participants >
+Verifications; built lighting Clients > Verifications.
+
+**Invoices against Pay and Review (reported).** The invoice panel repeats the Pay
+tab's breakdown exactly: fees $100 / $500 / $2,500 / $250, total $3,350, less deposit
+-$3000, net $350, "Due on Aug 10, 2026". The profile's Studies table bills the same
+studies $15,085 (goal-tracking), $10,085, $17,085, $12,085, $20,698, $24,684; the
+Studies list says $12,960, $23,490, $14,800, $18,230, $28,040, $24,560; Review says
+$16,510 for goal-tracking. The invoice tables list $750-$3,896 pending and
+$10,750-$24,833 completed, every row "INV-1024366 / Patient Trust in Telehealth". Due
+Payments $6,874 "of 5 studies" against five pending rows that add to $10,390. Required
+/ Completed here (40 / 37 ...) against 60 / 20 on the Studies list.
+
+**Ratings.** Both directions are drawn on the client's About tab: respondents'
+ratings of the client (stars, score, text, the 4.5 average) and the client's rating
+of each respondent ("To participant: Eliza D 5.0"). The header's Reviews button opens
+the participant panel "Reviews of Samuel Lee" (no client version is drawn).
+
+Slips kept: client headers carry a participant "Cert. ID"; the decided verification
+breadcrumbs read "Onboarding / Samuel Lee"; the section heading is "Profession
+Credential" and the dialogs say "Mark Profession Verified ... Samuel's profession
+credentials"; the banner card says the VAT number "could be found and matched" while
+flagging that it could not; both invoice panels are titled "Mobile App Usability
+Testing"; Completed studies use types found nowhere else (Focus Group, Interview,
+Poll, Case Study); the search says "participants" on the client queue; role "Hearth
+Researcher".
+
+Built choices: Send E-mail opens a mail link; the row menu items, Download, the
+invoice download and "Reason" do nothing; View Study opens the diary study; study rows
+open the managed study; a decision flips the page to its decided state.
+
+No primitive changed. Everything signed off re-swept: unchanged.
+
+Diffs at 1440: list 2.43% / 2.46%; About 6.27%, deactivated 6.11%; Studies 3.83% /
+4.47%; Payments 3.27%; verification list 4.37% / 4.43%; detail flagged 2.86%, Profile
+Details 6.19%, verified 2.76%, rejected 3.01%; invoice panels 6.00% / 12.93%. The
+verification dialogs are turn 11's. Nothing is cut off by its frame.
+
 ---
 
 ## The file, mapped
