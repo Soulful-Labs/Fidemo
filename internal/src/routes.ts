@@ -17,6 +17,8 @@ import Clients from './screens/clients/Clients'
 import { ClientVerificationDetail, ClientVerificationsList } from './screens/clients/ClientVerifications'
 import Support from './screens/support/Support'
 import TicketPage from './screens/support/TicketPage'
+import Finance from './screens/finance/Finance'
+import RefundDetail from './screens/finance/RefundDetail'
 import Studies from './screens/studies/Studies'
 import ReviewStudy from './screens/studies/review/ReviewStudy'
 import ManageStudy from './screens/studies/manage/ManageStudy'
@@ -56,9 +58,9 @@ const routes: RouteObject[] = [
   { path: '/clients/:id', element: createElement(ClientProfile) },
   { path: '/support', element: createElement(Support) },
   { path: '/support/:id', element: createElement(TicketPage) },
-  later('/finance', 'Finance'),
-  later('/finance/refunds', 'Finance', 'Refunds'),
-  later('/finance/refunds/:id', 'Refunds'),
+  { path: '/finance', element: createElement(Finance) },
+  { path: '/finance/refunds', element: createElement(Finance, { refunds: true }) },
+  { path: '/finance/refunds/:id', element: createElement(RefundDetail) },
   later('/pricing', 'Pricing & Rewards'),
   later('/sub-admin', 'Sub-Admin'),
   later('/account', 'Master Admin - Account'),
