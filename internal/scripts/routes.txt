@@ -12,7 +12,6 @@ participants/verifications
 participants/p-1
 clients
 clients/verifications
-clients/verifications/c-1
 clients/c-1
 support
 finance
@@ -131,3 +130,13 @@ participants/verifications/rp-1
 participants/verifications/rp-1h
 participants/verifications/rp-2h
 participants/verifications/rp-3h
+clients?tab=deactivated
+clients/c-1?state=deactivated
+clients/c-1?tab=studies
+clients/c-1?tab=studies&sub=completed
+clients/c-1?tab=payments
+clients/verifications?tab=history
+clients/verifications/cv-1
+clients/verifications/cv-1?tab=profile
+clients/verifications/cv-1h
+clients/verifications/cv-2h

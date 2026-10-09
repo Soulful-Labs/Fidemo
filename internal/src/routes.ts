@@ -12,6 +12,9 @@ import Participants from './screens/participants/Participants'
 import Profile from './screens/participants/profile/Profile'
 import VerificationDetail from './screens/participants/verifications/VerificationDetail'
 import VerificationsList from './screens/participants/verifications/VerificationsList'
+import ClientProfile from './screens/clients/ClientProfile'
+import Clients from './screens/clients/Clients'
+import { ClientVerificationDetail, ClientVerificationsList } from './screens/clients/ClientVerifications'
 import Studies from './screens/studies/Studies'
 import ReviewStudy from './screens/studies/review/ReviewStudy'
 import ManageStudy from './screens/studies/manage/ManageStudy'
@@ -45,10 +48,10 @@ const routes: RouteObject[] = [
   { path: '/participants/verifications', element: createElement(VerificationsList) },
   { path: '/participants/verifications/:id', element: createElement(VerificationDetail) },
   { path: '/participants/:id', element: createElement(Profile) },
-  later('/clients', 'Clients'),
-  later('/clients/verifications', 'Verifications'),
-  later('/clients/verifications/:id', 'Verifications'),
-  later('/clients/:id', 'Active'),
+  { path: '/clients', element: createElement(Clients) },
+  { path: '/clients/verifications', element: createElement(ClientVerificationsList) },
+  { path: '/clients/verifications/:id', element: createElement(ClientVerificationDetail) },
+  { path: '/clients/:id', element: createElement(ClientProfile) },
   later('/support', 'Support'),
   later('/support/:id', 'Support'),
   later('/finance', 'Finance'),

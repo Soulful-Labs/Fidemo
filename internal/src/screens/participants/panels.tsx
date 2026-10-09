@@ -32,7 +32,7 @@ export function AdvancedFilters({ open, onClose }: { open: boolean; onClose: () 
   )
 }
 
-const Stars = ({ value, size = 'h-5 w-5' }: { value: number; size?: string }) => (
+export const Stars = ({ value, size = 'h-5 w-5' }: { value: number; size?: string }) => (
   <span className="flex gap-0.5">
     {[1, 2, 3, 4, 5].map((n) => <StarIcon key={n} className={cn(size, n <= Math.ceil(value) ? 'fill-yellow-500 text-yellow-500' : 'text-text-body')} />)}
   </span>
