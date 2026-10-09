@@ -80,9 +80,9 @@ export function ClientVerificationDetail() {
               <div className="flex shrink-0 gap-3">
                 <Button variant="tertiary" className="bg-yellow-40 px-5 text-state-danger!" leftIcon={<CloseIcon className="h-5 w-5" />} onClick={() => setFlow({ kind: 'reject-verification', step: 'form' })}>Reject</Button>
                 <Button variant="tertiary" className="bg-yellow-40 px-5 text-state-success!" leftIcon={<VerifiedIcon className="h-5 w-5" />} onClick={() => setFlow({ kind: 'verify-profession', step: 'form' })}>Mark Verified</Button>
-                <Button className="px-5" leftIcon={<SupportIcon className="h-5 w-5" />} onClick={() => navigate('/support/tk-1')}>Chat</Button>
+                <Button className="px-5" leftIcon={<SupportIcon className="h-5 w-5" />} onClick={() => navigate('/support/tk-1?state=ongoing')}>Chat</Button>
               </div>
-            ) : <Button variant="tertiary" className="bg-bg-1 px-5" leftIcon={<SupportIcon className="h-5 w-5" />} onClick={() => navigate('/support/tk-1')}>View Support Chat</Button>}
+            ) : <Button variant="tertiary" className="bg-bg-1 px-5" leftIcon={<SupportIcon className="h-5 w-5" />} onClick={() => navigate('/support/tk-1?state=ongoing')}>View Support Chat</Button>}
           </section>
           {!pending && (
             <div className="rounded-md border-1 border-stroke-1 bg-bg-0 p-4 text-text-regular leading-5">

@@ -15,6 +15,8 @@ import VerificationsList from './screens/participants/verifications/Verification
 import ClientProfile from './screens/clients/ClientProfile'
 import Clients from './screens/clients/Clients'
 import { ClientVerificationDetail, ClientVerificationsList } from './screens/clients/ClientVerifications'
+import Support from './screens/support/Support'
+import TicketPage from './screens/support/TicketPage'
 import Studies from './screens/studies/Studies'
 import ReviewStudy from './screens/studies/review/ReviewStudy'
 import ManageStudy from './screens/studies/manage/ManageStudy'
@@ -52,8 +54,8 @@ const routes: RouteObject[] = [
   { path: '/clients/verifications', element: createElement(ClientVerificationsList) },
   { path: '/clients/verifications/:id', element: createElement(ClientVerificationDetail) },
   { path: '/clients/:id', element: createElement(ClientProfile) },
-  later('/support', 'Support'),
-  later('/support/:id', 'Support'),
+  { path: '/support', element: createElement(Support) },
+  { path: '/support/:id', element: createElement(TicketPage) },
   later('/finance', 'Finance'),
   later('/finance/refunds', 'Finance', 'Refunds'),
   later('/finance/refunds/:id', 'Refunds'),

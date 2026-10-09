@@ -116,9 +116,9 @@ export default function VerificationDetail() {
               <div className="flex shrink-0 gap-3">
                 <Button variant="tertiary" className="bg-yellow-40 px-5 text-state-danger!" leftIcon={<CloseIcon className="h-5 w-5" />} onClick={() => start('reject-verification')}>Reject</Button>
                 <Button variant="tertiary" className="bg-yellow-40 px-5 text-state-success!" leftIcon={<VerifiedIcon className="h-5 w-5" />} onClick={() => start(isId ? 'verify-id' : 'verify-profession')}>Mark Verified</Button>
-                <Button className="px-5" leftIcon={<SupportIcon className="h-5 w-5" />} onClick={() => navigate('/support/tk-1')}>Chat</Button>
+                <Button className="px-5" leftIcon={<SupportIcon className="h-5 w-5" />} onClick={() => navigate('/support/tk-1?state=ongoing')}>Chat</Button>
               </div>
-            ) : <Button variant="tertiary" className="bg-bg-1 px-5" leftIcon={<SupportIcon className="h-5 w-5" />} onClick={() => navigate('/support/tk-1')}>View Support Chat</Button>}
+            ) : <Button variant="tertiary" className="bg-bg-1 px-5" leftIcon={<SupportIcon className="h-5 w-5" />} onClick={() => navigate('/support/tk-1?state=ongoing')}>View Support Chat</Button>}
           </section>
           {outcome === 'verified' && <Note tone="good" title="Marked as verified!" when="Oct 5, 2026">An OCR error, manually verified and matched with record.</Note>}
           {outcome === 'rejected' && <Note tone="bad" title="Rejected the Passport ID verification." when="Oct 30, 2026">{isId ? 'Did not submitted the document as required.' : 'Did not submitted the License document for verification as required.'}</Note>}

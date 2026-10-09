@@ -140,3 +140,7 @@ clients/verifications/cv-1
 clients/verifications/cv-1?tab=profile
 clients/verifications/cv-1h
 clients/verifications/cv-2h
+support?tab=ongoing
+support?tab=closed
+support/tk-1?state=ongoing
+support/tk-1?state=closed
