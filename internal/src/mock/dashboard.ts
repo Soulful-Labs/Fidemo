@@ -64,7 +64,7 @@ const screenerRows: ActionRow[] = [
   { id: 'st-pay', title: 'How do you make your digital payments mostly?', lead: '32 screeners', detail: [PENDING], thumb: '/img/studies/digital-payments.png', when: '5 Sep, 10:16 AM', to: '/studies/st-pay' },
 ]
 
-const lucas: ActionRow = { id: 'tk-1', title: 'Lucas Mayfield', meta: 'Participant', detail: ['Study reward pending'], when: '8 hr ago', to: '/support/tk-1?state=ongoing' }
+const lucas: ActionRow = { id: 'tk-1', title: 'Lucas Mayfield', meta: 'Participant', detail: ['Study reward pending'], when: '8 hr ago', to: '/support/tk-1' }
 const james: ActionRow = { id: 'tk-2', title: 'James Alva', meta: 'Client', detail: ['Unable to access the transcripts of sessions'], when: '1 hr ago', to: '/support/tk-2' }
 
 const noShowRows: ActionRow[] = [
