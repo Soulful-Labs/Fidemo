@@ -667,6 +667,65 @@ in-person 2.42%, in-person group 2.60%. Completed: Overview 4.09%, Results 4.29%
 Payments 3.12%, respondent result 5.42%, activity 3.92%, screener 5.93%; Rated panel
 6.69%. Nothing is cut off by its frame.
 
+## Participants: the All Participants list (turn 9)
+
+Section `1992:101340` holds 28 frames (27 visible) and 9 loose instances. This turn:
+"Participants - Active" `1992:101341`, "Participants - Deactivated" `2003:134529`,
+Advanced Filters `2003:133781`, Reviews `1992:103368`, Invite To Study `1992:103508`,
+Sent `1992:103806`. Loose, and what they really are: "Last active" `2003:133961`
+(Today, Last 7 days, This Month, Last 30 days, Last 3 months), "profession verified"
+`2003:134036` (All, Profession Verified), "gender" `2003:134101` (All, Male, Female,
+Other), "Tiers" `2003:134356` (checkboxes: All Tiers, Platinum (90+ score), Gold (70 to
+90 score), Silver (up to 70 score)); and two more named "Last active" that are action
+menus: `2022:175927` (Invite To Study, Send E-mail, Deactivate Account) and
+`2024:179609` (Send E-mail, Reactivate Account). Three "My Studies / Scheduled / Type
+Filter" instances belong to the profile. The rest of the section is the profile and
+its modals (turn 10).
+
+**The list** (`/participants`, `?tab=deactivated`): segments Active / Deactivated
+(280); the count ("126,872 active participants" / "10,572 deactivated participants");
+a 38px toolbar: search 370 ("Search participants by name or role..."), "Advanced
+Filters" 150, "Last Active: All" 150, "Profession verified" 164, "Gender: All" 140,
+"Tier: All" 140; ten 52px rows; pagination to 10. Columns: Name (24px photo; sortable)
+200, Role 250, Industry 160, Score & Tier (sortable) 150, Gender (sortable) 100,
+Location 160, Last Active / Deactivated (sortable). The two frames differ 0.88%: the
+segment, the count and that one heading; the same ten people and dates on both.
+
+**Actions.** None drawn on a row or in bulk: no checkbox, no menu, no button. A row
+opens the profile (`/participants/:id`, turn 10). The two action menus have no trigger
+in the list frames; they belong on the profile. Hidden in both list frames: a 206 x 48
+CTA and a 240 x 48 tab group in the toolbar, and the title bar's CTA and icon button.
+
+**Marking.** Deactivated people are a separate segment, with no tag on the row.
+Restricted, flagged and reported people are not marked or separable here at all: no
+status column, no filter. (Reported accounts live under Verifications, turn 11.)
+Certificate state does not appear. No column or mark shows who on the team acted on
+anyone.
+
+**Against the policy.** Tier bands in the filter (Silver up to 70, Gold 70 to 90,
+Platinum 90+) match the policy's 50 / 70 / 90, and all ten rows sit in the right band.
+Nothing disagrees.
+
+**Panels.** Advanced Filters opens from its button: Roles, Domain, Location, Language,
+each a dropdown with chips; Cancel / Save. Reviews ("Reviews of Samuel Lee", read only)
+and Invite To Study ("Invite Roma To Study", three studies, Cancel / Send Invite, then
+"Invitation has been sent!") are built but open from the profile, so until turn 10
+they are reachable only from the kitchen sink. Restrict is not opened from this list.
+
+Slips kept: the title bar's breadcrumb layer is named after a study but reads "All
+Participants"; the invite panel is for "Roma", its confirmation for "Ferry L."; the
+reviews of Samuel Lee talk about Luke, Sarah, John and Mia; all three invite studies
+are tagged Healthcare.
+
+Built choices: the four dropdowns carry their drawn options but do not filter; the
+Tier menu is checkboxes in Figma and a single-choice dropdown here; Advanced Filters'
+dropdowns have no options (none are drawn); search does not filter.
+
+No primitive changed. Everything signed off re-swept: unchanged.
+
+Diffs at 1440: Active 2.92%, Deactivated 2.95%, Advanced Filters 6.19%, Reviews 7.66%,
+Invite To Study 8.97%, Sent 4.90%. Nothing is cut off by its frame.
+
 ---
 
 ## The file, mapped
