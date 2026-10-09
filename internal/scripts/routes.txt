@@ -108,3 +108,4 @@ studies/st-social?state=completed&tab=payments
 studies/st-social/respondents/r1?from=completed
 studies/st-social/respondents/r1?from=completed&tab=activity
 studies/st-social/respondents/r1?from=completed&tab=screener
+participants?tab=deactivated

@@ -5,6 +5,7 @@ import PanelTabs from '../../components/app/PanelTabs'
 import Pill from '../../components/app/Pill'
 import StudyTypeTag from '../../components/app/StudyTypeTag'
 import TierTag, { ProfessionVerified } from '../../components/app/TierTag'
+import { InviteToStudy, ReviewsPanel } from '../participants/panels'
 import RespondentProfile from '../studies/manage/RespondentProfile'
 import { GroupCompletionBar, ScreenerBar } from '../studies/respondent/bars'
 import { SessionCard } from '../studies/respondent/content'
@@ -48,6 +49,7 @@ export default function KitchenSink() {
   const [tile, setTile] = useState('All')
   const [panel, setPanel] = useState(false)
   const [profile, setProfile] = useState<null | 'open' | 'invited'>(null)
+  const [panelP, setPanelP] = useState<null | 'reviews' | 'invite'>(null)
   const [modal, setModal] = useState<null | 'centred' | 'titled' | 'success' | 'success-green'>(null)
 
   return (
@@ -177,6 +179,11 @@ export default function KitchenSink() {
           <div className="w-full"><GroupCompletionBar /></div>
         </Section>
 
+        <Section title="Participant panels" note="Reviews and Invite To Study open from the profile (turn 10)">
+          <Button variant="tertiary" data-ks="reviews" onClick={() => setPanelP('reviews')}>Reviews</Button>
+          <Button variant="tertiary" data-ks="invite" onClick={() => setPanelP('invite')}>Invite To Study</Button>
+        </Section>
+
         <Section title="Study type tags" note="32 tall; ringed on lists, filled on study screens">
           {(['survey', 'video', 'video-group', 'in-person', 'in-person-group', 'diary'] as const).map((t) => <StudyTypeTag key={t} type={t} />)}
           {(['survey', 'video', 'video-group', 'in-person', 'in-person-group', 'diary'] as const).map((t) => <StudyTypeTag key={t} type={t} filled />)}
@@ -209,6 +216,8 @@ export default function KitchenSink() {
       <SuccessModal tone="green" open={modal === 'success-green'} onClose={() => setModal(null)} title="This study has been published live!"
         body="It is live on the platform and showing to targeted participants." action="Done! View Details" onAction={() => setModal(null)} />
       <RespondentProfile open={profile !== null} invited={profile === 'invited'} onClose={() => setProfile(null)} onInvite={() => setProfile(null)} />
+      <ReviewsPanel open={panelP === 'reviews'} onClose={() => setPanelP(null)} />
+      <InviteToStudy open={panelP === 'invite'} onClose={() => setPanelP(null)} />
     </AppShell>
   )
 }

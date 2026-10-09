@@ -8,6 +8,7 @@ import ResetPassword from './screens/auth/ResetPassword'
 import CheckEmail from './screens/auth/CheckEmail'
 import SetNewPassword from './screens/auth/SetNewPassword'
 import Dashboard from './screens/dashboard/Dashboard'
+import Participants from './screens/participants/Participants'
 import Studies from './screens/studies/Studies'
 import ReviewStudy from './screens/studies/review/ReviewStudy'
 import ManageStudy from './screens/studies/manage/ManageStudy'
@@ -37,7 +38,7 @@ const routes: RouteObject[] = [
   { path: '/studies/:id', element: createElement(ManageStudy) },
   { path: '/studies/:id/respondents/:rid', element: createElement(RespondentPage) },
   { path: '/studies/:id/sessions/:sid', element: createElement(SessionPage) },
-  later('/participants', 'All Participants'),
+  { path: '/participants', element: createElement(Participants) },
   later('/participants/verifications', 'Verifications'),
   later('/participants/verifications/:id', 'Verifications'),
   later('/participants/:id', 'All Participants'),
