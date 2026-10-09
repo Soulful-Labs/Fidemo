@@ -83,14 +83,16 @@ export function RespondentCard({ name, onRate }: { name: string; onRate?: () => 
  * duration, industry), then a panel of icon tabs with an optional bar pinned
  * under its content, and an optional card beside it.
  */
-export default function DetailShell({ study, tabs, tab, onTab, bar, aside, close, children }: {
+export default function DetailShell({ study, tabs, tab, onTab, bar, aside, close, closed, children }: {
+  /** Reached from a completed study: the crumb reads "Completed". */
+  closed?: boolean
   /** The applied respondent's frames leave 12 under the header; every other frame 16. */
   close?: boolean
   study: ManagedStudy; tabs: PanelTab[]; tab: string; onTab: (k: string) => void; bar?: ReactNode; aside?: ReactNode; children: ReactNode
 }) {
   return (
     <AppShell className={cn('flex flex-col', close ? 'gap-3' : 'gap-4', study.tight && 'p-4')}
-      crumbs={[{ label: 'Studies', to: '/studies' }, { label: 'Ongoing', to: `/studies/${study.id}` }, { label: study.title }]}>
+      crumbs={[{ label: 'Studies', to: '/studies' }, { label: closed ? 'Completed' : 'Ongoing', to: `/studies/${study.id}${closed ? '?state=completed' : ''}` }, { label: study.title }]}>
       <header className="flex gap-4 rounded-lg bg-bgAlt-1 p-4">
         <img src={study.image} alt="" className="h-[69px] w-[92px] rounded-sm object-cover" />
         <div className="flex flex-col gap-3">

@@ -11,7 +11,7 @@ import type { ManagedStudy } from '../../../mock/manage'
  * rule; a body 16 in, 20 from the rule. The frames leave 10 to 14 more under
  * the last three bodies, passed as `body`.
  */
-function Block({ Icon, title, head, body, extra, children }: {
+export function Block({ Icon, title, head, body, extra, children }: {
   Icon: ComponentType<SVGProps<SVGSVGElement>>; title: string; head: string; body: string; extra?: ReactNode; children: ReactNode
 }) {
   return (
@@ -34,6 +34,21 @@ const Field = ({ label, children }: { label: string; children: ReactNode }) => (
 const Value = ({ children }: { children: ReactNode }) => <p className="text-body-regular leading-[22px] text-text-title">{children}</p>
 const ICON = { users: UsersIcon, pin: PinIcon }
 
+/** The audience criteria as ringed pills, shared with the completed study's Overview. */
+export const AudiencePills = ({ roles }: { roles: string }) => (
+  <div className="flex flex-wrap gap-3">
+    {audiencePills(roles).map((p, i) => {
+      const Icon = p.icon ? ICON[p.icon] : null
+      return <Pill key={i} label={p.label} icon={Icon && <Icon className="h-4 w-4" />}>{p.value}</Pill>
+    })}
+  </div>
+)
+export const EstimatedAudience = () => (
+  <span className="flex h-7 items-center gap-1 rounded-full bg-bgAlt-2 px-2.5 text-text-regular text-text-title">
+    <span className="text-text-subtitle">Estimated Audience:</span>{F.estimatedAudience}<InfoIcon className="h-4 w-4 text-text-subtitle" />
+  </span>
+)
+
 /**
  * Manage Study (1952:76819): the study as it was approved, in four blocks 12
  * apart. About (title, description, study time, thumbnail), Audience (the
@@ -54,15 +69,8 @@ export default function ManageTab({ study }: { study: ManagedStudy }) {
         </div>
       </Block>
       <Block Icon={AudienceIcon} title="Audience" head="h-[52px]" body="pb-[26px]"
-        extra={<span className="flex h-7 items-center gap-1 rounded-full bg-bgAlt-2 px-2.5 text-text-regular text-text-title">
-          <span className="text-text-subtitle">Estimated Audience:</span>{F.estimatedAudience}<InfoIcon className="h-4 w-4 text-text-subtitle" />
-        </span>}>
-        <div className="flex flex-wrap gap-3">
-          {audiencePills(study.roles).map((p, i) => {
-            const Icon = p.icon ? ICON[p.icon] : null
-            return <Pill key={i} label={p.label} icon={Icon && <Icon className="h-4 w-4" />}>{p.value}</Pill>
-          })}
-        </div>
+        extra={<EstimatedAudience />}>
+        <AudiencePills roles={study.roles} />
       </Block>
       <Block Icon={ScreenerIcon} title="Screener" head="h-12" body="pb-[30px]">
         <Pill label="Screening:">{F.screening}</Pill>

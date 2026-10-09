@@ -113,3 +113,31 @@ export function DownloadSessions({ open, onClose }: { open: boolean; onClose: ()
     </SidePanel>
   )
 }
+
+const Fixed = ({ label, value }: { label: string; value: number }) => (
+  <div className="border-t-1 border-stroke-input py-3">
+    <p className="text-text-regular leading-5 text-text-title">{label}</p>
+    <div className="flex gap-1 pt-1">{[1, 2, 3, 4, 5].map((n) => <StarIcon key={n} className={cn('h-6 w-6', n <= value ? 'fill-yellow-500 text-yellow-500' : 'text-text-body')} />)}</div>
+  </div>
+)
+
+/** "RATED" (1932:98139, the 600 panel, 503 tall): the rating already given, read only. No way to change it is drawn. */
+export function RatedPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
+  return (
+    <SidePanel open={open} onClose={onClose} title={<>Rate John M <span className="font-normal text-text-subtitle">for GLP-1 Care Plans, Oncologist View</span></>}>
+      <div className="flex items-center gap-3">
+        <span className="flex h-10 w-10 items-center justify-center rounded-sm bg-bg-3 text-title-s text-text-subtitle">F</span>
+        <div><p className="text-text-regular leading-5 text-text-title">John M</p><p className="pt-0.5 text-body-medium leading-[22px] text-text-title">Physiology Therapist, Orthopedic</p></div>
+      </div>
+      <div className="mt-3 rounded-lg bg-bg-1 px-4 pb-2 pt-4">
+        <p className="pb-3 text-body-regular leading-[22px] text-text-subtitle">You have rated on Aug 24, 20206</p>
+        <Fixed label="Expertise" value={5} /><Fixed label="Reliability" value={5} /><Fixed label="Communication" value={4} />
+        <div className="border-t-1 border-stroke-input py-3">
+          <p className="text-text-regular leading-5 text-text-title">Review</p>
+          <p className="pt-1 text-body-regular leading-[22px] text-text-subtitle">Was an really insightful session with John! would highly recommend her.</p>
+        </div>
+      </div>
+      <div className="h-1" />
+    </SidePanel>
+  )
+}

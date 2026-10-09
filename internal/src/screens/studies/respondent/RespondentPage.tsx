@@ -42,6 +42,7 @@ export default function RespondentPage() {
   const status = applications('').find((a) => a.id === rid)?.status
   const screener: ScreenerState = status === 'Qualified' ? 'settled' : status === 'Disqualified' ? 'disqualified' : 'todo'
   const finished = stage === 'finished'
+  const closed = params.get('from') === 'completed'
   const session = study.type === 'video' || study.type === 'in-person'
   const inPerson = study.type === 'in-person'
 
@@ -52,10 +53,10 @@ export default function RespondentPage() {
   if (tab === 'screener' && stage === 'applied' && rid.startsWith('a')) bar = <ScreenerBar initial={screener} />
   if (tab === 'result' && finished) bar = session
     ? <CompletionBar label={inPerson ? 'Completion Confirmation' : 'Final Completion Confirmation'} state={completion} onChange={setCompletion} onNoShow={() => setAsking(true)} />
-    : <CompletedBar />
+    : <CompletedBar closed={closed} />
 
   return (
-    <DetailShell close={stage === 'applied'} study={study} tabs={keys.map((k) => DETAIL_TABS[k])} tab={tab} onTab={(k) => setParams({ tab: k }, { replace: true })} bar={bar}
+    <DetailShell closed={closed} close={stage === 'applied'} study={study} tabs={keys.map((k) => DETAIL_TABS[k])} tab={tab} onTab={(k) => setParams({ tab: k, ...(closed && { from: 'completed' }) }, { replace: true })} bar={bar}
       aside={<RespondentCard name={name} onRate={finished ? () => setRating(true) : undefined} />}>
       {tab === 'screener' && <Answers answers={ANSWERS} />}
 

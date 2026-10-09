@@ -6,7 +6,7 @@ import { Rule } from './parts'
 
 interface Line { label: string; detail?: string; amount: string; info?: boolean }
 
-const BillLine = ({ line, bold }: { line: Line; bold?: boolean }) => (
+export const BillLine = ({ line, bold }: { line: Line; bold?: boolean }) => (
   <div className="flex items-start justify-between text-text-regular leading-5 text-text-title">
     <div className="flex flex-col gap-1">
       <p className={cn('flex items-center gap-1', bold && 'text-text-medium')}>
@@ -18,7 +18,7 @@ const BillLine = ({ line, bold }: { line: Line; bold?: boolean }) => (
   </div>
 )
 
-const Mastercard = () => (
+export const Mastercard = () => (
   <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden="true">
     <circle cx="5" cy="8" r="5" className="fill-state-danger" /><circle cx="11" cy="8" r="5" className="fill-yellow-500" fillOpacity="0.9" />
   </svg>

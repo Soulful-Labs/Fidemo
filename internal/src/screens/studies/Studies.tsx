@@ -55,7 +55,7 @@ export default function Studies() {
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState('All Studies')
 
-  const open = (r: StudyRow) => navigate(tab === 'review' ? `/studies/review/${r.id}` : `/studies/${r.id}`)
+  const open = (r: StudyRow) => navigate(tab === 'review' ? `/studies/review/${r.id}` : tab === 'completed' ? `/studies/${r.id}?state=completed` : `/studies/${r.id}`)
 
   const columns: Record<Tab, Column<StudyRow>[]> = {
     review: [

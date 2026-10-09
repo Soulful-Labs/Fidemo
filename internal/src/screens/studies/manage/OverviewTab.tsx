@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import Button from '../../../components/ui/Button'
 import { CopyIcon, ExternalIcon, MailIcon } from '../../../components/ui/icons'
 import { Avatar } from '../../../components/ui/Tag'
+import { cn } from '../../../lib/cn'
 import { FIGURES as F, MANAGE_CLIENT as C } from '../../../mock/manage'
 import type { ManagedStudy } from '../../../mock/manage'
 
@@ -35,10 +36,10 @@ const Field = ({ label, children }: { label: string; children: ReactNode }) => (
 )
 
 /** About Client (304 wide on bg-1): who owns the study, four facts, and a way to their profile. */
-function ClientCard() {
+export function ClientCard({ className }: { className?: string }) {
   const navigate = useNavigate()
   return (
-    <aside className="w-[304px] shrink-0 self-start rounded-lg bg-bg-1 p-3 text-text-regular leading-5">
+    <aside className={cn('w-[304px] shrink-0 self-start rounded-lg bg-bg-1 p-3 text-text-regular leading-5', className)}>
       <h3 className="text-text-body">About Client</h3>
       <div className="flex items-center gap-2 pt-3">
         <Avatar src={C.avatar} name={C.name} size={48} />

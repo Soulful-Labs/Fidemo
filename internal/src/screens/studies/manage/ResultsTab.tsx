@@ -8,7 +8,7 @@ import { Pagination } from '../../../components/ui/Table'
 import type { ManagedStudy } from '../../../mock/manage'
 import { CERTIFICATE as C, RESULTS, RESULT_SESSIONS, resultRows } from '../../../mock/results'
 import type { ResultRow } from '../../../mock/results'
-import { DownloadSessions, RatePanel } from '../respondent/dialogs'
+import { DownloadSessions, RatePanel, RatedPanel } from '../respondent/dialogs'
 import { Tile } from './OverviewTab'
 
 /**
@@ -22,15 +22,18 @@ import { Tile } from './OverviewTab'
  * types count Completed and Avg. Trust Score and group the table by session,
  * each with "View Result". In-person types call the summary "Notes Summaries".
  */
-export default function ResultsTab({ study }: { study: ManagedStudy }) {
+export default function ResultsTab({ study, completed }: { study: ManagedStudy; completed?: boolean }) {
   const navigate = useNavigate()
   const group = study.type === 'video-group' || study.type === 'in-person-group'
-  const spec = RESULTS[study.type]
+  const base = RESULTS[study.type]
+  /** The completed survey (1932:96711) draws 30 /30 required, 11 /30 completed and three pages. */
+  const spec = completed ? { ...base, tiles: [['Completed', '30', '/30 required'], ['Avg. Trust Score', '92'], ['Rated By You', '11', '/30 completed']] as typeof base.tiles } : base
+  const [rated, setRated] = useState(false)
   const rows = resultRows(group)
   const [rating, setRating] = useState<ResultRow | null>(null)
   const [downloading, setDownloading] = useState(false)
   const grid = group ? 'grid-cols-[180px_280px_160px_160px_1fr_150px]' : 'grid-cols-[180px_360px_180px_180px_1fr]'
-  const open = (r: ResultRow) => navigate(`/studies/${study.id}/respondents/${r.id}`)
+  const open = (r: ResultRow) => navigate(`/studies/${study.id}/respondents/${r.id}${completed ? '?from=completed' : ''}`)
 
   const Row = ({ r }: { r: ResultRow }) => (
     <div role="row" onClick={() => open(r)} className={`grid ${grid} h-[70px] cursor-pointer items-center border-t-1 border-stroke-1 text-text-regular text-text-title hover:bg-bgAlt-1`}>
@@ -41,14 +44,14 @@ export default function ResultsTab({ study }: { study: ManagedStudy }) {
       <span className="flex items-center gap-2 px-4">{r.score}<TierTag tier={r.tier} /></span>
       <span className={group ? 'flex justify-end px-3' : 'flex px-0'}>
         {r.rated
-          ? <span className="flex h-[38px] items-center rounded-md border-1 border-cta-tertiaryStroke px-3 text-text-medium">Rated</span>
+          ? <button type="button" onClick={(e) => { e.stopPropagation(); setRated(true) }} className="flex h-[38px] items-center rounded-md border-1 border-cta-tertiaryStroke px-3 text-text-medium">Rated</button>
           : <Button size="md" className="px-3" leftIcon={<StarIcon className="h-5 w-5" />} onClick={(e) => { e.stopPropagation(); setRating(r) }}>Rate Now</Button>}
       </span>
     </div>
   )
 
   return (
-    <div className={study.tight ? 'pt-3' : undefined}>
+    <div className={study.tight && !completed ? 'pt-3' : undefined}>
       <div className="flex gap-3">
         {spec.tiles.map(([label, value, rest]) => <Tile key={label} label={label} value={value} rest={rest} />)}
         <div className="ml-1 flex h-[77px] w-[438px] shrink-0 items-center justify-between rounded-md bg-bg-1 px-4">
@@ -82,7 +85,7 @@ export default function ResultsTab({ study }: { study: ManagedStudy }) {
           </Fragment>
         )) : rows.map((r) => <Row key={r.id} r={r} />)}
       </div>
-      <div className="pt-3"><Pagination page={1} pages={2} /></div>
+      <div className="pt-3"><Pagination page={1} pages={completed ? 3 : 2} /></div>
 
       <section className="mt-6 flex items-start gap-4 rounded-lg bg-bgAlt-1 p-4">
         <span aria-hidden="true" className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-1 border-stroke-3 bg-bg-0">
@@ -98,6 +101,7 @@ export default function ResultsTab({ study }: { study: ManagedStudy }) {
       </section>
 
       <RatePanel person={rating} onClose={() => setRating(null)} />
+      <RatedPanel open={rated} onClose={() => setRated(false)} />
       <DownloadSessions open={downloading} onClose={() => setDownloading(false)} />
     </div>
   )

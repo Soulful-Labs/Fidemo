@@ -1,18 +1,20 @@
 import { useState } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import AppShell from '../../../app/AppShell'
 import PanelTabs from '../../../components/app/PanelTabs'
 import { MANAGED } from '../../../mock/manage'
 import { CongratsBanner, PausedBanner } from './Banners'
+import CompletedStudy from './CompletedStudy'
 import ManageTab from './ManageTab'
 import MatchedTab from './MatchedTab'
 import OverviewTab from './OverviewTab'
 import PauseStudy from './PauseStudy'
+import PayTab from './PayTab'
 import RecruitedTab from './RecruitedTab'
 import ResultsTab from './ResultsTab'
 import StudyHeader from './StudyHeader'
 
-/** The strip on every managed study. Pay is turn 8. */
+/** The strip on every managed study. */
 const TABS = [
   { key: 'overview', label: 'Overview', width: 'w-[101px]' },
   { key: 'manage', label: 'Manage Study', width: 'w-[139px]' },
@@ -35,7 +37,6 @@ type Tab = (typeof TABS)[number]['key']
  */
 export default function ManageStudy() {
   const { id } = useParams()
-  const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const [pausing, setPausing] = useState(false)
   const study = MANAGED.find((s) => s.id === id) ?? MANAGED[0]!
@@ -55,11 +56,17 @@ export default function ManageStudy() {
     }, { replace: true })
   }
 
+  if (params.get('state') === 'completed') {
+    const t = params.get('tab')
+    return <CompletedStudy study={study} tab={t === 'results' || t === 'payments' ? t : 'overview'}
+      onTab={(k) => setParams({ state: 'completed', ...(k !== 'overview' && { tab: k }) }, { replace: true })} />
+  }
+
   return (
     <AppShell className={study.tight && !paused ? 'flex flex-col gap-3 p-4 pb-6' : 'flex flex-col gap-3 pb-8'}
       crumbs={[{ label: 'Studies', to: '/studies' }, { label: 'Ongoing', to: '/studies?tab=ongoing' }, { label: study.title }]}>
       {congrats && <CongratsBanner />}
-      {paused && <PausedBanner onResume={() => go({ paused: false })} onComplete={() => navigate('/studies?tab=completed')} />}
+      {paused && <PausedBanner onResume={() => go({ paused: false })} onComplete={() => setParams({ state: 'completed' }, { replace: true })} />}
       <StudyHeader study={study} onPause={() => setPausing(true)} />
       <section className="flex-1 overflow-hidden rounded-lg border-1 border-stroke-1">
         <PanelTabs tabs={TABS} value={tab} onChange={(k) => go({ tab: k as Tab })} />
@@ -67,6 +74,7 @@ export default function ManageStudy() {
           {tab === 'overview' && <OverviewTab study={study} paused={paused} />}
           {tab === 'manage' && <ManageTab study={study} />}
           {tab === 'matched' && <MatchedTab study={study} invited={invited} onSegment={(v) => go({ invited: v })} />}
+          {tab === 'pay' && <PayTab study={study} />}
           {tab === 'results' && <ResultsTab study={study} />}
           {tab === 'recruited' && <RecruitedTab study={study} view={view} onView={(v) => go({ view: v })} />}
         </div>

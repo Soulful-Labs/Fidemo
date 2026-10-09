@@ -95,6 +95,6 @@ export function GroupCompletionBar() {
 }
 
 /** Under a finished survey or diary (1932:108609): nothing to decide, only the outcome. */
-export const CompletedBar = () => (
-  <Bar tone="good" muted title="Marked as completed!" line="The diary study has been successfully completed by John."><SmallOutcome good>Completed</SmallOutcome></Bar>
-)
+export const CompletedBar = ({ closed }: { closed?: boolean }) => closed
+  ? <Bar tone="good" muted title="Marked as completed" line="The survey study has been successfully completed by the respondent."><SmallOutcome good>Completed</SmallOutcome></Bar>
+  : <Bar tone="good" muted title="Marked as completed!" line="The diary study has been successfully completed by John."><SmallOutcome good>Completed</SmallOutcome></Bar>
