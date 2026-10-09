@@ -23,7 +23,6 @@ dashboard?tab=onboarding
 dashboard?tab=studies
 dashboard?tab=support
 dashboard?tab=manage
-participants/verifications/iv-1
 support/tk-1
 finance/refunds
 finance/refunds/rf-1
@@ -119,3 +118,16 @@ participants/p-1?tab=wallet
 participants/p-1?tab=wallet&sub=payouts
 participants/p-1?tab=wallet&sub=points
 participants/p-1?tab=wallet&sub=referrals
+participants/verifications?tab=reported
+participants/verifications/iv-1
+participants/verifications/iv-1?tab=profile
+participants/verifications/iv-1h
+participants/verifications/iv-3h
+participants/verifications/pc-2
+participants/verifications/pc-2?tab=profile
+participants/verifications/pc-2h
+participants/verifications/pc-2h?state=rejected
+participants/verifications/rp-1
+participants/verifications/rp-1h
+participants/verifications/rp-2h
+participants/verifications/rp-3h

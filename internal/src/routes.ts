@@ -10,6 +10,8 @@ import SetNewPassword from './screens/auth/SetNewPassword'
 import Dashboard from './screens/dashboard/Dashboard'
 import Participants from './screens/participants/Participants'
 import Profile from './screens/participants/profile/Profile'
+import VerificationDetail from './screens/participants/verifications/VerificationDetail'
+import VerificationsList from './screens/participants/verifications/VerificationsList'
 import Studies from './screens/studies/Studies'
 import ReviewStudy from './screens/studies/review/ReviewStudy'
 import ManageStudy from './screens/studies/manage/ManageStudy'
@@ -40,8 +42,8 @@ const routes: RouteObject[] = [
   { path: '/studies/:id/respondents/:rid', element: createElement(RespondentPage) },
   { path: '/studies/:id/sessions/:sid', element: createElement(SessionPage) },
   { path: '/participants', element: createElement(Participants) },
-  later('/participants/verifications', 'Verifications'),
-  later('/participants/verifications/:id', 'Verifications'),
+  { path: '/participants/verifications', element: createElement(VerificationsList) },
+  { path: '/participants/verifications/:id', element: createElement(VerificationDetail) },
   { path: '/participants/:id', element: createElement(Profile) },
   later('/clients', 'Clients'),
   later('/clients/verifications', 'Verifications'),

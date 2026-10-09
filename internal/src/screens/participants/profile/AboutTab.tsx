@@ -7,21 +7,21 @@ import { ACCOUNT, METRICS, PERSON, PERSONAL, PROFESSIONAL, RATINGS, TOPICS, VERI
 
 const BAR = { green: ['bg-brand-secondary', 'text-brand-secondary'], blue: ['bg-blue-600', 'text-blue-600'], purple: ['bg-purple-600', 'text-purple-600'], yellow: ['bg-yellow-500', 'text-brand-primary'] }
 
-const Card = ({ title, children }: { title: string; children: ReactNode }) => (
+export const Card = ({ title, children }: { title: string; children: ReactNode }) => (
   <section className="rounded-lg bg-bg-1 p-4">
     <h2 className="border-b-1 border-stroke-input pb-3 text-body-regular leading-[22px] text-text-subtitle">{title}</h2>
     <div className="flex flex-col gap-3 pt-3.5">{children}</div>
   </section>
 )
-const Field = ({ label, value }: { label: string; value: string }) => (
+export const Field = ({ label, value }: { label: string; value: string }) => (
   <div><p className="text-text-regular leading-5 text-text-subtitle">{label}</p><p className={cn('pt-1 text-body-regular leading-[22px]', value === 'N/A' ? 'text-text-body' : 'text-text-title')}>{value}</p></div>
 )
-const File = ({ thumb, name, meta }: { thumb: string; name: string; meta: string }) => (
+export const File = ({ thumb, name, meta }: { thumb: string; name: string; meta: string }) => (
   <div className="flex h-[52px] items-center gap-2 rounded-md border-1 border-stroke-1 bg-bg-0 p-1.5 text-text-regular leading-5">
     <img src={thumb} alt="" className="h-10 w-[54px] rounded-xs object-cover" /><div><p className="text-text-title">{name}</p><p className="text-text-subtitle">{meta}</p></div>
   </div>
 )
-const Check = ({ children }: { children: string }) => (
+export const Check = ({ children }: { children: string }) => (
   <span className="inline-flex h-7 items-center gap-1 self-start rounded-full border-1 border-stroke-3 px-2.5 text-text-regular text-state-success"><VerifiedIcon className="h-4 w-4" />{children}</span>
 )
 
