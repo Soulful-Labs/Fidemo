@@ -1047,6 +1047,80 @@ Diffs at 1440: list New 2.43%, Ongoing 4.13%, Closed 4.03%; ticket New 3.03%, On
 3.52%, Closed 4.34%; Mark Resolved? 7.01%, resolved 5.82%, Create Ticket 4.42%. Nothing
 is cut off by its frame; the closed ticket's frame is drawn scrolled to the bottom.
 
+## Finance (turn 14)
+
+Section `2051:154237`: 13 frames, all visible, plus two loose menus. Overview with
+five transaction tabs: All `2051:154238`, Participant Earning `2051:163894`,
+Participant Payouts `2051:165267`, Study Payments `2051:165906`, Client Refunds
+`2051:166552`; Refunds `2051:167524`; refund detail to confirm `2051:169194`,
+confirmed `2051:170363`; Confirm Client Refund? `2051:170322`; the confirmation
+`2051:170969`, which is named "Samuel's Profession Credentials has been verified!" but
+draws "Client Refund Confirmed!"; three Transaction Details panels (`2051:171000`
+earning, `2051:171394` payout, `2051:171506` study payment). Loose: "Tiers"
+`2065:207945` (really the type filter: checkboxes All transactions, Participant
+Earning, Participant Payouts, Study Payments, Client Refunds) and "Last active"
+`2065:208135` (All Time, Last 7 days, Last 30 days, Last 90 days, Last 6 months).
+Measured: the five tabs differ 2.46-2.80% (all below y 429: the underline, the type
+dropdown, the columns, the rows); Refunds 5.68%; to-confirm vs confirmed 1.70%.
+
+**Overview** (`/finance`, `?tx=earning|payouts|payments|refunds`): "Finance Overview /
+Quick all-time insights of key financial metrics running across the platform". Tiles:
+Clients Spent $18,560,637 (12.6% vs last year), Participants Earned $8,623,419
+(34.8%), Gross Revenue $10,873,400 (22.6%), Refunds Pending $38,956 (24 underfilled
+studies). Clients Spent less Participants Earned is $9,937,218, not the Gross Revenue
+drawn. Then "Transactions": a search, "All Types" (All tab only), "All Time", and a
+table of ten with pagination. Columns: Date, Transaction, Type, To, From, Amount on
+All; one of To / From on the others. Types, as the money moves:
+- Participant Earning: HumanLayer to a participant, per study ($150-$250).
+- Participant Payout(s): "Bank Withdrawal To **** 1263", HumanLayer to a participant.
+- Study Payment: a client to HumanLayer ($4,350-$12,350).
+- Client Refund(s): HumanLayer to a client, "Study Deposit".
+The "From" party is always "HumanLayer" (the respondent brand, not Focus Insite).
+
+**Payouts.** Listed, and only listed. A payout row opens Transaction Details (paid
+to, $350, date, transaction id, "Bank Withdrawal To **** 1263", Download). No
+approve, hold, release, retry or status. Nothing in the console approves a payout.
+
+**Refunds** (`/finance/refunds`; detail `/finance/refunds/:id`, `?state=confirmed`):
+"Pending Refund Confirmations", 24 pending, $38,956; Date, Study (type and name),
+Client, Target, Shortfall, Billed, Refund, "Review". This is the Dashboard's "Refunds
+for unfilled studies" case. Raised by the platform from the shortfall ("5 participants
+underfilled"); the team confirms. Detail: "Confirm client refund / Once confirmed, the
+transaction of $1,400 will be initiated to be refunded the balance amount against the
+client payment."; Payment Overview (Refund Amount $1,400, Deposit Paid $16,000, Total
+Billed $14,400); Billing to "Refund Receivable -$1,400"; Transactions. Confirm: "Confirm
+a $1,400 refund to Jennifer W at Soulfullabs for the underfilled participants of
+Business Finance Operations study? This action will be recorded against transaction
+INV-22041." then "Client Refund Confirmed! ... Client will receive the funds within 5-7
+working days." No undo, no reject, no edit of the amount. The platform pays: refunds
+to clients and payouts to participants; nothing says how either is settled beyond
+"Bank Withdrawal To **** 1263" and "5-7 working days".
+
+**Figures against other screens.** The refund detail's fee lines are the Pay tab's
+($100, $500, $2,500, $250) but total $14,400, and the deposit is "$100 x 30
+participants" = -$16,000 (the Pay tab: -$3000). Deposit Paid $16,000 is captioned
+"$20 x 30 participants". The list says Billed $14,400 and Refund $1,600 for this study;
+the detail $1,400. Refund Paid: "$280 x 5 participants" = $1,400. Target 150 /
+Shortfall 20 in the list, "5 participants underfilled" in the detail. Every
+Transaction Details panel shows $350 to Jennifer Winter.
+
+**Who did what.** No team member's name on any row, refund, confirmation or receipt.
+"This action will be recorded against transaction INV-22041" records the transaction,
+not the person. Finance is not the exception.
+
+Built choices: the type and period dropdowns carry their drawn options and change
+nothing; Review and a refund row open the detail; a Client Refund row opens Refunds;
+Download, Receipt and the study link inside a panel do nothing or open the study;
+confirming flips the detail to its confirmed state. Hidden in the detail: "Less:
+Balance Incentive Refund -$500", "($5000 + $2000 )".
+
+No primitive changed. Everything signed off re-swept: unchanged.
+
+Diffs at 1440: All 4.90%, Earning 4.76%, Payouts 4.47%, Study Payments 4.71%, Client
+Refunds 5.06%, Refunds 3.90%, to confirm 3.63%, confirmed 3.79%; Confirm Client
+Refund? 9.73%, confirmed dialog 4.73%; Transaction Details 9.05% / 9.06% / 8.78%.
+Nothing is cut off by its frame.
+
 ---
 
 ## The file, mapped
