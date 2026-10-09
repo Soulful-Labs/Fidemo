@@ -726,6 +726,81 @@ No primitive changed. Everything signed off re-swept: unchanged.
 Diffs at 1440: Active 2.92%, Deactivated 2.95%, Advanced Filters 6.19%, Reviews 7.66%,
 Invite To Study 8.97%, Sent 4.90%. Nothing is cut off by its frame.
 
+## Participants: the profile (turn 10)
+
+One screen (`/participants/:id`, `?tab=studies|wallet`, `&sub=...`,
+`?state=deactivated`), three segments, ten states, plus a deactivated banner. Frames:
+About `2017:148911`, deactivated About `2024:178894`; Studies: Invites To Schedule
+`2017:150996`, Scheduled `2017:152230`, Applied `2017:153500`, History `2017:155171`,
+Saved `2017:155992` (`2017:152956` hidden, a duplicate); Wallet: Earnings `2020:160313`,
+Payouts `2021:165139`, Reward Points `2022:166544`, Referrals `2022:177272`. Dialogs:
+Transaction Details `2021:165045`, two "Filters" (`2021:164690` Category + Price,
+`2022:167856` Type + Points), Payout Details `2022:166340`, Deactivate Account
+`2022:178767` then "Deactivate Samuel's account?" `2022:178788` then deactivated
+`2024:179800`; Reactivate Account `2024:179610`, "Reactivate Samuel's account?"
+`2024:179633`, reactivated `2024:179769`. Loose menus: the options menu (Invite To
+Study, Send E-mail, Deactivate Account; deactivated: Send E-mail, Reactivate Account),
+two period menus (All Time, This Month, Last Month, Last 3 Months, Last 6 Months) and
+a sort menu (New First, Old First, Low Amount, High Amount).
+
+Measured: Studies sub-tabs differ 1.20-1.84% (the underline, the table); Earnings vs
+Referrals 3.05%; deactivated vs active About 5.43% (the banner pushes the page down
+90px). The header and segments are identical in all eleven.
+
+**Header.** Photo, name, role, place, "Cert. ID: HL-R-9F2A-3K7P", "95% profile
+completed", "Profession Verified"; 95, Platinum, Reviews, copy link, options; "Last
+active on Oct 5, 2026".
+
+**What the team can do.** Reviews (read), Invite To Study, Send E-mail, Deactivate
+Account, Reactivate Account. Deactivate: a form ("User will receive the deactivation
+email with your given reason and won't be able to access until you activate it
+back.", Reason*, the team member's password), a confirmation, then "Samuel's account
+has been deactivated now and he cannot use anymore. He can contact us back to appeal
+and access his account." Reactivate mirrors it, so deactivation is undoable.
+**Restrict is not on this screen**, nor is flag, report, or any note field. No control
+changes a score, tier, certificate, balance, points or study status: no override of
+any kind is drawn.
+
+**Deactivated** adds a banner ("Account is deactivated. This account was deactivated
+as passport ID verification could not be done. Can verify it manually and reactivate.
+Oct 1, 2026", buttons "Reason" and "Reactivate Account") and swaps the menu. It names
+no one: not who deactivated, not whether it was a person or the system. Nothing else
+on the page changes. There is no activity log of team actions anywhere on the profile.
+
+**Trust and policy (reported, not reconciled).** The profile says 95 Platinum on every
+tab; the list row for the same man says 90 Platinum; the verification detail (turn
+11) draws him at 50 Silver on one tab and 95 Platinum on another. No score history is
+drawn, only four ratings and three metrics. Points History against the policy: Study
++50 (policy 25), Streak +100 (policy 50), Referral +25 (policy 200), "Bonus - Joined
+by referral" +100 (policy 100), "Full profile completion" +50 (policy 50). Redeem
+History: "1500 points redeemed" shows -1000; all redemptions are at or above the 1,000
+minimum. Payout Details: "Processing Fees $2" (policy and respondent app $2; Pricing
+and Rewards draws $1.99). Earnings lists "Redeem - 10000 Reward Points ... $100",
+which is the policy's 100 points to $1.
+
+**Against the study screens.** History draws statuses In Process, Paid, Rejected, No
+Show, In Review; the study side knows Applied, Qualified, Disqualified and completed /
+no-show. Prices here ($100-$200) against "Rewarded the incentive $250" and "Incentive:
+$700" there. Occupation is "General Physician" on About and "Software Engineer" in the
+header; the same person is "Human Resource Manager" on a study's respondent page.
+No-shows appear only as one History status; ratings only as percentages and Reviews.
+
+Slips kept: the Reward Points tab is headed "Saved Payment Methods"; both account
+forms say "confirm deactivation"; the email is jonathanmorgan@gmail.com; "Invite Roma",
+"Ferry L. has been invited".
+
+Built choices: Send E-mail opens a mail link; "Reason", "Download Receipt PDF", the
+filter dialogs' Apply and the period / sort menus change nothing; study rows are not
+links (none is drawn as one); Reviews and Invite To Study now open from the header.
+
+No primitive changed. Everything signed off re-swept: unchanged.
+
+Diffs at 1440: About 3.58%, deactivated 3.83%; Studies 3.66 / 2.03 / 3.90 / 3.75 /
+4.04%; Wallet: Earnings 4.65%, Payouts 5.10%, Reward Points 4.15%, Referrals 3.63%.
+Dialogs: Deactivate form 12.58%, confirm 5.64%, done 8.56%, Reactivate form 13.05%,
+Transaction 5.41%, Filters 5.42% / 8.31%, Payout 8.51%. The reactivate confirmation and
+outcome were not diffed. Nothing is cut off by its frame.
+
 ---
 
 ## The file, mapped
