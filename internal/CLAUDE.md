@@ -801,6 +801,95 @@ Dialogs: Deactivate form 12.58%, confirm 5.64%, done 8.56%, Reactivate form 13.0
 Transaction 5.41%, Filters 5.42% / 8.31%, Payout 8.51%. The reactivate confirmation and
 outcome were not diffed. Nothing is cut off by its frame.
 
+## Participant verifications (turn 11)
+
+Section `2022:168588`: 32 frames, all visible, in two sub-sections ("ID" `2036:111504`,
+"Profession Credential" `2036:134317`) plus the two list frames and one loose menu
+(`2035:109101`, named "Last active": Invite To Study, Send E-mail, Deactivate Account;
+no trigger is drawn on these screens). 14 pages, 18 dialogs.
+
+**List** (`/participants/verifications`, `?tab=reported`): segments Onboarding /
+Reported. Each is a pending table and a History table, both with a search ("Search
+participants by name or role..."), one dropdown and pagination to 10.
+- Onboarding `2022:168589`: "87 pending verifications"; Name, Role, Date, Flagged For
+  (Identity Verification or Profession Credential, both in the one queue), Reason;
+  dropdown "Flagged for All". History: Completed, Verification Remarks, Result
+  (Verified / Rejected).
+- Reported `2036:142437`: "65 pending applications"; adds Reported By ("System (Algo)"
+  or a person); Flagged For: AI/Bot Activity, Abusive Behaviour, Spam Apply, Wrong
+  Match; dropdown "Reported By All". History results: Rejected (drawn green),
+  Restricted, Deactivated. **This is the queue the Dashboard's "Flagged/reported
+  accounts" group leads to.** The two differ 4.42%.
+
+**Detail** (`/participants/verifications/:id`; `iv-*` identity, `pc-*` profession,
+`rp-*` report; an id ending `h` opens decided; `?tab=profile`). Measured against
+identity-flagged `2035:109172`: profession 1.43% (the card and what is under it),
+verified 1.36%, rejected 1.43% (the card and one note), Profile Details 2.50%.
+- Identity: "Passport / Uploaded passport file could not be verified with the govt.
+  records. Verify it manually." with Reject, Mark Verified, Chat; the two uploaded
+  files, each with a view button; "ID Could not be verified with records!"; and
+  "Selfie Verification: Selfie photo verified".
+- Profession: "Medical License / ... could not be verified with the official
+  records."; Occupation, License/Certificate Number, the red tag, Work Functions,
+  Experience.
+- Report: "Reported For / AI/Bot Activity / Study answers were found AI-generated"
+  with Reject Report, Restrict Account, Deactivate Account. Decided: View Study,
+  "Reported By Robert Andrew", and a note. `2036:145744` stacks four reports: three
+  restrictions (15 days 1st, 15 days 2nd, 30 days 3rd) then "Deactivated the account."
+- Decided verification: the card greys, the buttons become "View Support Chat", and a
+  note: "Marked as verified! An OCR error, manually verified and matched with record.
+  Oct 5, 2026" or "Rejected the Passport ID verification. Did not submitted the
+  document as required. Oct 30, 2026".
+
+**Decisions.** Mark Verified: a form (Verification Statement*, the team member's
+password), "Mark Identity as Verified ?", then "Samuel's Identity has been verified!
+Identity is now verified and Samuel's account is now fully active to participate in
+studies." (profession: "... will be displayed on Samuel's profile publicly."). Reject:
+one dialog with Rejection Statement*, "necessary action will be taken with impacting
+this client's account". Reject Report: "cannot be undone later". Restrict: statement
+and password, "restricted to participate, withdraw earnings & rewards, for 15 days as
+for the 1st time". Deactivate: the profile's three-step flow. No "ask again", no
+escalate; Chat is the only way to ask for a better document. No undo is drawn for any
+decision. None names the team member who decided; notes carry a date only.
+
+**Selfie.** The console only shows a result line, "Selfie photo verified", with a 24px
+thumbnail; on Profile Details also "Human Verified". No selfie image to compare, no
+liveness detail, no control. The respondent app captures none (legal review open).
+
+**Certificate and score.** No frame says a certificate is issued by a decision. A
+"Cert. ID: HL-R-9F2A-3K7P" is already in the header of people still unverified, and
+Maya carries Samuel's id. No decision dialog mentions the Trust Score.
+
+**Samuel Lee's score, frame by frame:** 50 Silver on `2035:109172` (identity,
+Flagged), `2036:139490` (marked verified), `2036:139831` (rejected), `2036:140390` and
+`2036:140464` (profession verified / rejected); **95 Platinum on `2035:110335`**
+(identity, Profile Details: the only one). On his profile `2017:148911` he is 95
+Platinum; on the Participants list `1992:101341` 90 Platinum. All verification frames
+say "60% profile completed"; the profile says 95%. Maya Johnson is 50 Silver on every
+frame but `2036:145744`, where she is 62 Silver. 50 is the policy floor, the score a
+new participant starts with.
+
+Other slips kept: every detail breadcrumb ends "Samuel Lee", Maya's included, and two
+read "All Participants /" (built: Onboarding / Reported); the profession frames draw
+Maya while pending and Samuel once decided; "Rejected the Passport ID verification."
+on a licence; the verification rejection says "Jennifer's Business Verification has
+been rejected!" and "this client's account"; "has bee restricted", "has bee rejected",
+"oucome"; a second "Work Functions" on the pending profession frame; Samuel carries
+"Profession Verified" while his identity is unverified.
+
+Built choices: Chat and View Support Chat open a support ticket; Go To Full Profile
+opens the participant; View Study and the documents' view buttons do nothing; the
+decision flips the page to its decided state; a History row opens the decided state.
+
+Shared: `Card`, `Field`, `File`, `Check` exported from the profile's About tab and
+reused. No primitive changed. Everything signed off re-swept: unchanged.
+
+Diffs at 1440: lists 4.67% / 4.82%; identity flagged 1.90%, profile 3.22%, verified
+2.04%, rejected 2.14%; profession 2.04 / 3.16 / 2.02 / 2.20%; reports 1.75 / 1.67 /
+1.76 / 2.98%. Dialogs: verify forms 13.27% / 5.33%, confirms 5.15 / 5.13 / 4.66%,
+outcomes 5.77-9.73%, rejection forms 17.85% / 16.51%, deactivate form 10.84%. Nothing
+is cut off by its frame.
+
 ---
 
 ## The file, mapped
