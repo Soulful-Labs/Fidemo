@@ -595,6 +595,78 @@ Finished: survey 5.38%, diary 5.78%, video 4.59%, in-person 4.71%. Booked: video
 2.80%; activity 3.71% / 3.72%. Dialogs 8.8-13.2%, rate panels 4.41% / 3.51%, Download
 Sessions 7.74%. Nothing is cut off by its frame.
 
+## Manage a study (turn 8): Pay, and the completed study
+
+Frames: the Pay frame in each of the six sections ("Pay - Due as completed"
+`1932:107773` survey, "Pay while ongoing" `1952:77992` / `1961:180673` / `1961:183186` /
+`1961:186246`, "Pay" `1952:81376`), identical but for the study header; and the
+Completed Study Flow section `1932:96425` (survey only): Overview `1932:96426`, Results
+`1932:96711`, "Pay - Due as completed" `1932:97043`, three respondent pages, "Rate
+Ferry L." `1932:98073`, "RATED" `1932:98139`. Loose there: "Ongoing Study options"
+`1932:98210` (200 x 92: Copy Study Link, Download All Data) and `1932:98217` (186 x 169,
+misnamed: a study-type filter with checkboxes All, Survey, Video Call, Group Video
+Call; the map had it as 160 x 191).
+
+**Pay** (`?tab=pay`): "Payment Overview": $350 on a yellow-30 card, "Payment Due by Aug
+10, 2026", "If not paid, will be auto-debited from •••• 4242"; Deposit Paid $3,000;
+Total Cost $3,850. Billing: Platform Fee $100, Recruiting Fee $20 x 25 = $500,
+Incentives $100 x 25 = $2,500, Moderation Fee $10 x 25 = $250, Total cost $3,350, Less:
+Incentive Deposit $100 x 30 = -$3000, Net payable cost $350. Transactions: Incentive
+Deposit Paid $3,000, "Aug 5, 2026, 10:24 AM", "$20 x 30 participants", Receipt. **It is
+the client's bill, read only. The only control is Receipt. No respondent payout is
+listed, approved or released here**, and nowhere else in Manage.
+
+**The figures disagree as drawn:** the Total Cost tile says $3,850 and the list says
+$3,350 (the tile is 3,350 + 500, the hidden refund line); "$20 x 30" captions a $3,000
+deposit; billing counts 25 participants against a target of 30. Against Review's
+Payment tab for the same study (goal-tracking): Total Cost $16,510 / net $13,510 there,
+$3,850 / $350 here; the fee lines, the deposit and the "$20 x 30" caption are the same;
+Review adds "Incentive $700 (Suggested: $700)" and "AutoPay On", absent here. The
+Studies list says $12,960.
+
+**Completed study** (`/studies/:id?state=completed`, `&tab=results|payments`; reached
+from Studies > Completed and from "Mark as completed"). A shorter header (156 x 117
+image, status "Completed", no figures), a two-item menu, and three underline tabs with
+no panel: Overview (Success 100%, Completed 30 /30 required, Qualified 35 /60 applied,
+Closed 15th Aug; description; share link; Duration; Audience, Screener and Study
+blocks; About Client), Results (as the running one, 30 /30 required, 11 /30 completed,
+three pages), Payments (Total Paid $3,350; "Total cost paid", "Paid: Incentive Deposit
+-$3000", "Paid: Due Payment -$350"; two receipts, "Incentive Deposit - Paid" and
+"Billed Invoice - Paid $350"). Gone: Manage Study, Matched, Recruited, the pause and
+duplicate menu items. Still possible: copy the link, download all data, download
+results, the certificate and receipts, rate a respondent, read a rating ("RATED": "You
+have rated on Aug 24, 20206").
+
+**Pay states drawn:** due while running (visible, all six); paid, on the completed
+study (visible). Hidden: "Pay while ongoing" on the completed flow (Payment Due $1,000,
+Total Cost $4,000, "As on today, 11 Aug, 2026"); "Pay - Due as completed" with "Payment
+Due by 12 Aug, 2026"; and "Payment" in group video, video 1:1 and in-person: the
+client's checkout ("Marked completed on 10 August, 2026, 10:00 PM", "Invoice
+Breakdown", "3% merchant processing fee applies when using a credit card.") with "$350
+paid successfully!" `1952:83095`. Those are the client's own pay screens. Nothing drawn
+moves a study between states from the console: the client pays, or is auto-debited.
+
+**Refunds:** not raised here. Every Pay frame hides one line, "Less: Balance Incentive
+Refund / $100 x 5 participants / -$500". Refunds are in Finance (turn 14); nothing
+links this tab to it.
+
+Slips kept: the survey frame's "Payment Due byAug 10, 2026"; `1932:97043` lights
+"Results" over the Payments content (built: lit by route); the completed respondent bar
+says "The survey study has been successfully completed by the respondent."; the activity
+banner "Rate Ferry" / "Rate John".
+
+Built choices: "Mark as completed" on a paused study now opens the completed study;
+"Download All Data", Download and Receipt do nothing; the type-filter popover is not
+wired (the list's "All Studies" dropdown still shows one option); only the survey is
+drawn completed, the other five use the same layout unchecked.
+
+No primitive changed. Everything signed off re-swept: unchanged.
+
+Diffs at 1440: Pay survey 2.67%, group video 2.44%, video 1:1 3.26%, diary 2.78%,
+in-person 2.42%, in-person group 2.60%. Completed: Overview 4.09%, Results 4.29%,
+Payments 3.12%, respondent result 5.42%, activity 3.92%, screener 5.93%; Rated panel
+6.69%. Nothing is cut off by its frame.
+
 ---
 
 ## The file, mapped
