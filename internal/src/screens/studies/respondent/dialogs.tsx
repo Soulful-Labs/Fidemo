@@ -20,10 +20,10 @@ export function NoShowDialog({ open, group, onClose, onConfirm }: { open: boolea
   return (
     <Modal open={open} onClose={onClose} layout="titled" title={`Mark ${first} as No-show`}
       footer={<><Button variant="tertiary" className="text-state-danger!" onClick={onConfirm}>Mark as No-Show</Button><Button onClick={onClose}>Cancel</Button></>}>
-      <div className="flex flex-col gap-3">
-        <h3 className="text-title-m leading-7 text-text-title">Didn’t {full} attend?</h3>
+      <div className="flex flex-col gap-4">
+        <h3 className="text-title-m leading-[26px] text-text-title">Didn’t {full} attend?</h3>
         <p className="text-text-regular leading-5 text-text-title">Are you sure <strong className="font-semibold">{full} has not attended</strong> the study session that failed to attend the study and want to mark them absent as no-show?</p>
-        <p className="mt-1 rounded-md bg-red-50 px-3 py-2.5 text-text-regular leading-5 text-state-danger">
+        <p className="rounded-md bg-red-50 px-3 py-3 text-text-regular leading-5 text-state-danger">
           {group ? 'This will not allow Jenna to get paid for this study.' : 'This will not allow John to get paid for this study and will be confirmed  by our team further from Jenna as well.'}
         </p>
       </div>
@@ -36,10 +36,10 @@ export function MarkBackDialog({ open, onClose, onConfirm }: { open: boolean; on
   return (
     <Modal open={open} onClose={onClose} layout="titled" title="Mark Jenna as Completed"
       footer={<><Button variant="tertiary" onClick={onClose}>Cancel</Button><Button onClick={onConfirm}>Mark Completed</Button></>}>
-      <div className="flex flex-col gap-3">
-        <h3 className="text-title-m leading-7 text-text-title">Had Jenna T. completed?</h3>
+      <div className="flex flex-col gap-4">
+        <h3 className="text-title-m leading-[26px] text-text-title">Had Jenna T. completed?</h3>
         <p className="text-text-regular leading-5 text-text-title">Are you sure <strong className="font-semibold">Jenna T. has is verified to have completed</strong> the study session?</p>
-        <p className="mt-1 rounded-md bg-state-successBg px-3 py-2.5 text-text-regular leading-5 text-state-success">This will mark Jenna as completed and will get paid the reward incentive. This cannot be undone.</p>
+        <p className="rounded-md bg-state-successBg px-3 py-3 text-text-regular leading-5 text-state-success">This will mark Jenna as completed and will get paid the reward incentive. This cannot be undone.</p>
       </div>
     </Modal>
   )
