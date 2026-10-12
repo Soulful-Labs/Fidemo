@@ -1121,6 +1121,86 @@ Refunds 5.06%, Refunds 3.90%, to confirm 3.63%, confirmed 3.79%; Confirm Client
 Refund? 9.73%, confirmed dialog 4.73%; Transaction Details 9.05% / 9.06% / 8.78%.
 Nothing is cut off by its frame.
 
+## Pricing & Rewards (turn 15)
+
+Rule 9 does not apply here: the signed policy outranks Figma on scores, tiers, points
+and the certificate. Built exactly as drawn; every disagreement is listed, none fixed.
+
+Section `2051:177074`: 9 frames (8 visible) and one loose menu. Fees `2051:176489`,
+Gamification `2058:194308`; Edit Clients Fees `2056:192920`, Edit Participants Fees
+`2058:193936` (both named "Pricing & Rewards"), Edit Tiers `2058:195439`, Edit Trust
+Score `2058:196166`, Edit Reward Points `2058:197423`; "Changes are published live!"
+`2058:193905`, which draws "Clients Fees are updated!". Hidden: Create Ticket
+`2058:193395`, a stray copy of the Support panel. Loose: "Tiers" `2058:193797`, really
+the add-on parameter menu (Survey study, Video Call study, In-person study, Diary
+study, Roles, Skills).
+
+**Routes.** `/pricing`, `?tab=gamification`; `/pricing/client-fees`,
+`/pricing/participant-fees`, `/pricing/tiers`, `/pricing/trust-score`,
+`/pricing/reward-points`.
+
+**Settings, as drawn.**
+- Clients: Platform Fees $100 (one-time per study); Moderation Fees $10 (per completed
+  participant); Recruitment Fees $25 base, +$25 for Study Type: Video Call, In-Person,
+  Diary Study / Roles, +$20 for Skills (per completed participant).
+- Participants: Withdrawal $1.99 per withdrawal; Reward Points Value $1 "For 100
+  Reward Coins"; Minimum Points To Redeem 1000 (edit form only).
+- Tiers: Silver 50, Gold 70, Platinum 90, "Equal or above trust score".
+- Trust Score, Earned For: Onboarding +50, Study Completion +10, Participation Ratings
+  +40 (5-star +4, 4-star +3, 3-star +1). Deducted For: 2-star -2, 1-star -3, No Show,
+  Late Show Up -2, Cancelled Session, Fraud -20.
+- Reward Points: Referral 200, Being Referred 100, Study Completion 50, Full Profile
+  Completion 50, Streak Completion 50.
+
+**Against the signed policy.**
+
+| Setting | Figma | Policy | Frame |
+|---|---|---|---|
+| Points, study completion | 50 | 25 | `2058:194308`, `2058:197423` |
+| No show | -4 view, **-2 edit** | -4 | edit `2058:196166` disagrees |
+| Cancelled session | **-4 view**, -2 edit | -2 | view `2058:194308` disagrees |
+| "Points have no expiry and can be redeemed anytime." | stated | not stated; redemption needs 1,000 points | `2058:197423` |
+| Points, study completion: "Per study, upto 10 per year" | a yearly cap on points | no cap on points (the cap is on Trust Score) | `2058:194308`, `2058:197423` |
+| Certificate | no setting at all | "Unlocks at 40" | all |
+| Withdrawal fee | $1.99 | not in the policy (respondent app: $2) | `2051:176489`, `2058:193936` |
+| Study completion, trust | "+10" | +1 a study, up to 10 a year | agrees as a cap; reads as per study |
+Agree: Onboarding 50, ratings +4 / +3 / +1 / -2 / -3 and +40 max, Late show up -2,
+Fraud -20, tiers 50 / 70 / 90, Referral 200, Being referred 100, Full profile 50,
+Streak 50, 100 points = $1, minimum 1,000, last 10 ratings, 50-100 range. The policy
+writes every score as a percentage; Figma as bare numbers.
+
+**View against edit.** No Show -4 / -2; Cancelled Session -4 / -2; "For 100 Reward
+Coins" / "For = 100 Reward Coins"; Minimum Points To Redeem only on the edit form; the
+edit form heads the star deductions "Participation Ratings" and adds "Counts For Last
+10 studies"; tier note "Equal or above trust score" / "... to reach this tier".
+
+**Edit flow.** Each group's Edit button opens a full screen: Cancel / Save Changes.
+Every field is a free text input: no minimum, maximum, step or validation drawn, on
+tiers, points, the money rate or anything else. No reason, no password, no approval, no
+"are you sure". Save opens one dialog: "Clients Fees are updated! The updated pricing
+are published live and will be applied to new studies." So changes are immediate and
+apply to new studies only; that sentence is the only word on running studies, and it
+is drawn once, for client fees. No history of past values, no "last changed", no name.
+Nothing limits who may edit beyond the Sub-Admin module toggle (turn 16).
+
+**Labelling errors.** Edit Tiers labels Silver "Withdrawal" and Gold "Reward Points
+Value". Edit Participants Fees' breadcrumb reads "Fees / Participants"; Edit Trust
+Score's breadcrumb layer is named "Fees / Edit Tiers". "Reward Coins" where everything
+else says Reward Points. "One-rime". "Being Referred: Refer someone who joins" and
+"Referral: When someone refers users to join" have their notes swapped. The published
+dialog says "Clients Fees" whatever was saved. "The updated pricing are".
+
+Built choices: Save opens that one dialog on all five screens, then returns to the
+tab; Create and the add-on edit / delete buttons change nothing but the form's own
+open state; the parameter dropdown adds a chip. Inputs are editable but nothing is
+stored: the overview always shows the drawn values.
+
+No primitive changed. Everything signed off re-swept: unchanged.
+
+Diffs at 1440: Fees 1.99%, Gamification 3.55%, Edit Clients Fees 3.17%, Edit
+Participants Fees 1.41%, Edit Tiers 1.61%, Edit Trust Score 3.23%, Edit Reward Points
+2.73%, the published dialog 5.24%. Nothing is cut off by its frame.
+
 ---
 
 ## The file, mapped
