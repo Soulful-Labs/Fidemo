@@ -69,6 +69,9 @@ export function starsForRating(state: RatingState): Stars {
 
 export const clampTrust = (score: number): number => Math.min(TRUST.MAX, Math.max(TRUST.MIN, Math.round(score)))
 
+/** A score after one change, kept within the policy's 50 to 100. */
+export const applyTrustDelta = (score: number, delta: number): number => clampTrust(score + delta)
+
 /** "Adding a credential does not change the Trust Score, whether the user has one or not." */
 export const CREDENTIAL_TRUST_DELTA = 0
 

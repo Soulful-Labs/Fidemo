@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import EmptyState from '../../components/app/EmptyState'
 import { activeFilterCount, applyFilters } from '../../lib/studyFilters'
-import { isExplorable } from '../../lib/studyState'
+import { isExplorable } from '../../lib/labels'
 import { useStore } from '../../mock/store'
 import type { StudyFilters } from '../../mock/storeTypes'
 import ActiveFilters from './ActiveFilters'

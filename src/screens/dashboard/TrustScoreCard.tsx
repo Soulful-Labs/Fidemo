@@ -3,7 +3,7 @@ import ProgressBar from '../../components/app/ProgressBar'
 import ScoreDial from '../../components/app/ScoreDial'
 import TierChip from '../../components/app/TierChip'
 import { cn } from '../../lib/cn'
-import { TIERS, nextTier, tierFor } from '../../lib/rules'
+import { TIERS, nextTier, tierFor } from '@shared/rules'
 import { useStore } from '../../mock/store'
 
 /**

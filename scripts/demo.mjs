@@ -71,7 +71,7 @@ const tap = async (finder) => {
   const box = await evaluate(`(() => { const el = ${finder}; if (!el) return null; el.scrollIntoView({ block: 'center' }); const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 } })()`)
   if (!box) throw new Error('no element for: ' + finder)
   const hit = await evaluate(`(() => { const el = ${finder}; const top = document.elementFromPoint(${box.x}, ${box.y}); return el.contains(top) || top?.contains(el) ? 'ok' : 'covered by ' + (top?.tagName + '.' + (top?.className || '').toString().slice(0, 40)) })()`)
-  if (hit !== 'ok') throw new Error(`${finder} is ${hit}`)
+  if (hit !== 'ok') throw new Error(`${finder} is ${hit} — overlay says: ${await evaluate(`(document.querySelector('.fixed.inset-0') || {}).textContent?.slice(0, 160) ?? ''`)}`)
   await s('Input.dispatchMouseEvent', { type: 'mousePressed', x: box.x, y: box.y, button: 'left', clickCount: 1 })
   await s('Input.dispatchMouseEvent', { type: 'mouseReleased', x: box.x, y: box.y, button: 'left', clickCount: 1 })
 }
@@ -152,6 +152,14 @@ await step(1, 'Sign up, verify OTP, fill all three profile steps, accept consent
   await click('Continue')
   await click('Save & Continue')
   expect(await path() === '/onboarding/welcome', 'expected /onboarding/welcome')
+  // Policy section 2: the certificate is issued the moment the ID passes, and the app celebrates it. Close it, as a person would.
+  let cert = false
+  for (let i = 0; i < 10 && !cert; i++) { await sleep(200); cert = await evaluate(`document.body.textContent.includes('Human Certificate')`) }
+  expect(cert, 'the certificate was not issued when the ID passed')
+  // While it plays, the first tap skips to the end; Done then closes it.
+  const open = () => evaluate(`Boolean(document.querySelector('[aria-label="Human Certificate"]'))`)
+  for (let i = 0; i < 3 && await open(); i++) await click('Done', 900)
+  expect(!(await open()), 'the certificate celebration did not close')
 })
 
 await step(2, 'Explore Studies, filter to Video Call, open a study, read the client rating', async () => {
@@ -286,6 +294,14 @@ await step(10, 'Redeem 1000 points, see the wallet rise and points fall', async 
 })
 
 await step(11, 'Withdraw, see the balance drop and a Processing payout appear', async () => {
+  // Workflow 49: past $600 earned in a year, a tax form is needed before any withdrawal.
+  // Whether the seed crosses that line depends on today's date (its dates are relative),
+  // so when it does, file the form first. The upload control only reads a file name,
+  // so this calls the same action the control calls.
+  if (await store('st.user.taxFormRequired')) {
+    await evaluate('__hl.taxFormDone()'); await sleep(300)
+    expect(!(await store('st.user.taxFormRequired')), 'tax form not recorded')
+  }
   const w = await store('st.user.walletBalance'), n = await store('st.payouts.length')
   await nav('/wallet/withdraw')
   await type('input[aria-label="Amount to withdraw"]', '100')

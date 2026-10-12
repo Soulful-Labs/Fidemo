@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import StatTile from '../../components/app/StatTile'
 import { Clock, Dollar, ListIcon } from '../../components/ui/icons'
 import { money, moneyDelta } from '../../lib/format'
-import { STATUS } from '../../lib/studyState'
+import { STATUS } from '../../lib/labels'
 import { useStore } from '../../mock/store'
 import SectionHeader from './SectionHeader'
 

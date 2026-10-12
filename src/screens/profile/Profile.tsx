@@ -8,7 +8,7 @@ import TierChip from '../../components/app/TierChip'
 import Button from '../../components/ui/Button'
 import Modal from '../../components/ui/Modal'
 import { ChevronRight } from '../../components/ui/icons'
-import { tierFor } from '../../lib/rules'
+import { tierFor } from '@shared/rules'
 import { useStore } from '../../mock/store'
 import { CertificateIcon, ReferIcon, SettingsIcon, SignOutIcon, SupportIcon } from './profileIcons'
 

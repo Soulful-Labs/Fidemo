@@ -3,7 +3,7 @@ import PointsEarned from '../../app/PointsEarned'
 import RollingNumber from '../../components/motion/RollingNumber'
 import { PointsCoin } from '../../components/ui/icons'
 import { points } from '../../lib/format'
-import { POINTS } from '../../lib/rules'
+import { POINTS } from '@shared/rules'
 import type { PointsEntry } from '../../mock/types'
 import { Group, Play, Plays, Stage } from './LabBits'
 

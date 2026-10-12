@@ -8,7 +8,7 @@ import TabBar from '../../components/ui/TabBar'
 import TopBar from '../../components/ui/TopBar'
 import { ChevronDown, Search } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import { FAQS } from '../../mock/data'
+import { FAQS } from '../../mock/content'
 import SupportTickets from './SupportTickets'
 
 /** The four questions drawn as plain links above the FAQ list (979:74536). */

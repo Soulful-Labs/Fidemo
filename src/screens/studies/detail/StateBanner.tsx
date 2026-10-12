@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
 import { cn } from '../../../lib/cn'
 import { bookingLong, dateTime, money } from '../../../lib/format'
-import { POINTS, TRUST } from '../../../lib/rules'
+import { POINTS, TRUST } from '@shared/rules'
 import type { Study } from '../../../mock/types'
 import { BannerIcon } from './bannerIcons'
-import { outcomeFor } from '../../../lib/studyState'
+import { outcomeFor } from '../../../lib/labels'
 import { EarnedLine, RevealCard, useBannerReveal } from './BannerReveal'
 
 /** The attendance PIN used throughout the prototype (PRD 6.11). */

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import ProgressBar from '../../components/app/ProgressBar'
 import ScoreDial from '../../components/app/ScoreDial'
-import { RATING_DELTA, TIERS, TRUST } from '../../lib/rules'
+import { RATING_DELTA, TIERS, TRUST } from '@shared/rules'
 import { forgetSeen } from '../../lib/seen'
 import { Avatar } from '../profile/Profile'
 import { Group, Play, Plays, Stage } from './LabBits'

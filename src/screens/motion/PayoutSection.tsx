@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import RollingNumber from '../../components/motion/RollingNumber'
 import { money } from '../../lib/format'
-import { WITHDRAWAL_FEE } from '../../lib/rules'
+import { WITHDRAWAL_FEE } from '@shared/platform'
 import { useScreenPlayer } from './CompletionSection'
 import { Group, Play, Plays, Stage } from './LabBits'
 

@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import { Play, Star } from '../../components/ui/icons'
-import { LEARN_VIDEO_IMAGE } from '../../mock/data'
+import { LEARN_VIDEO_IMAGE } from '../../mock/content'
 import { useUI } from '../../app/ui'
 import { useStore } from '../../mock/store'
 import DashboardHeader from './DashboardHeader'

@@ -2,8 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import Button from '../../../components/ui/Button'
 import { Copy } from '../../../components/ui/icons'
 import { cn } from '../../../lib/cn'
-import { hasTakenPartWith } from '../../../lib/derive'
-import { REPEAT_RULE_COPY } from '../../../lib/eligibility'
+import { REPEAT_RULE_COPY } from '../../../lib/labels'
 import { useStore } from '../../../mock/store'
 import type { Study } from '../../../mock/types'
 
@@ -50,10 +49,11 @@ export function PremiumBanner({ study }: { study: Study }) {
  * affects eligibility: before applying, with whether it applies to you.
  */
 export function RepeatRuleRow({ study }: { study: Study }) {
-  const { studies } = useStore()
+  const { applyBlocker } = useStore()
   const copy = REPEAT_RULE_COPY[study.repeatRule]
-  const before = hasTakenPartWith(studies, study.client.id, study.id)
-  const blocked = study.repeatRule === 'exclude_previous' && before
+  /** The shared rule decides; this row only says it. */
+  const blocked = applyBlocker(study.id)?.kind === 'repeat'
+  const before = blocked || study.status === 'paid'
   return (
     <div className="flex flex-col gap-1 rounded-lg bg-bg-1 p-4">
       <p className={cn('text-body-medium', blocked ? 'text-state-danger' : 'text-text-title')}>{copy.label}</p>

@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { ApplyBlocker } from '../lib/eligibility'
+import type { ApplyBlocker } from '../lib/labels'
 
 interface UIValue {
   /** Names the screen that is not built yet, per hard rule 1. */

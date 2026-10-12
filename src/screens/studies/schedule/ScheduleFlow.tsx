@@ -9,7 +9,7 @@ import CtaBar from '../../../components/ui/CtaBar'
 import TopBar from '../../../components/ui/TopBar'
 import { Clock } from '../../../components/ui/icons'
 import { bookingLong, duration, money } from '../../../lib/format'
-import { canReschedule } from '../../../lib/rules'
+import { canReschedule } from '@shared/platform'
 import { useStore } from '../../../mock/store'
 import SchedulePicker, { SectionHeading } from './SchedulePicker'
 import type { Selection } from './SchedulePicker'
@@ -75,10 +75,8 @@ export default function ScheduleFlow() {
   const proceed = () => navigate(isCall ? `${base}/agreement` : `${base}/review`)
   const confirm = () => {
     if (!selection.date || !selection.slot) return
-    scheduleStudy(study.id, {
-      date: selection.date, slot: selection.slot, locationId: selection.locationId,
-      rescheduleCount: isReschedule ? (study.booking?.rescheduleCount ?? 0) + 1 : 0,
-    }, isReschedule)
+    /** The platform counts reschedules and refuses a taken slot or a third move, with a reason. */
+    if (!scheduleStudy(study.id, { date: selection.date, slot: selection.slot, locationId: selection.locationId, rescheduleCount: 0 })) return
     navigate(`${base}/done`, { replace: true })
   }
 

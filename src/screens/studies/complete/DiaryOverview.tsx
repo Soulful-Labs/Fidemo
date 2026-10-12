@@ -7,7 +7,7 @@ import CtaBar from '../../../components/ui/CtaBar'
 import TopBar from '../../../components/ui/TopBar'
 import { Check, ChevronRight } from '../../../components/ui/icons'
 import { cn } from '../../../lib/cn'
-import { diaryComplete } from '../../../lib/rules'
+import { diaryComplete } from '@shared/platform'
 import { useStore } from '../../../mock/store'
 import { TIMINGS } from '../../../mock/timings'
 

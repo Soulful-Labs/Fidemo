@@ -5,7 +5,7 @@ import EmptyState from '../../components/app/EmptyState'
 import TopBar from '../../components/ui/TopBar'
 import { cn } from '../../lib/cn'
 import { dateLong } from '../../lib/format'
-import type { TrustHistoryEntry } from '../../lib/derive'
+import type { TrustHistoryEntry } from '@shared/derive'
 import { useStore } from '../../mock/store'
 import TypeFilter from '../studies/TypeFilter'
 

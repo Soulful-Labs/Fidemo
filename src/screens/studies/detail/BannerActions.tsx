@@ -1,5 +1,5 @@
 import Button from '../../../components/ui/Button'
-import { canReschedule } from '../../../lib/rules'
+import { canReschedule } from '@shared/platform'
 import type { Study } from '../../../mock/types'
 import { WarningIcon } from './bannerIcons'
 

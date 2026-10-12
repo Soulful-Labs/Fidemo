@@ -5,7 +5,7 @@ import TierChip from '../../components/app/TierChip'
 import Button from '../../components/ui/Button'
 import { ChevronRight, ShieldCheck } from '../../components/ui/icons'
 import { DUR, EASE, SPRING, fadeUp } from '../../lib/motion'
-import { TRUST } from '../../lib/rules'
+import { TRUST } from '@shared/rules'
 import { useStore } from '../../mock/store'
 
 /**

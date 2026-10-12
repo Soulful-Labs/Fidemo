@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import ScoreDial from '../../components/app/ScoreDial'
 import ProgressBar from '../../components/app/ProgressBar'
-import { TIERS, TRUST, applyTrustDelta } from '../../lib/rules'
+import { TIERS, TRUST, applyTrustDelta } from '@shared/rules'
 import { Group, Play, Plays, Stage } from './LabBits'
 
 const DEDUCTIONS = [

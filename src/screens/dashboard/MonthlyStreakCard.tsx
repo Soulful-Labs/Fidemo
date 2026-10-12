@@ -1,6 +1,6 @@
 import Stepper from '../../components/ui/Stepper'
 import { Flame, PointsCoin } from '../../components/ui/icons'
-import { POINTS } from '../../lib/rules'
+import { POINTS } from '@shared/rules'
 import { useStore } from '../../mock/store'
 import SectionHeader from './SectionHeader'
 

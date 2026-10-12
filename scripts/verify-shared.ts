@@ -118,6 +118,7 @@ check('refund: confirmed once, refused twice', p.confirmRefund('st-uf-1', team).
 check('a completed study cannot be paused', !p.moveStudy('st-sleep', 'paused', client).ok)
 check('paying a balance clears the Billing pill', billing(st().studies.find((s) => s.id === 'st-sleep')!).outstanding > 0 && p.payBalance('st-sleep').ok && billing(st().studies.find((s) => s.id === 'st-sleep')!).outstanding === 0)
 p.reset()
+check('a patch without an email keeps the email', p.updatePerson(DEMO_PERSON_ID, { name: 'Jonathan Reeve', email: undefined }).ok && st().people.find((x) => x.id === DEMO_PERSON_ID)!.email === 'jonathan.reeve@example.com')
 check('reset puts everything back', !st().studies.some((s) => s.id === id) && refundsPending(st()).length === 2)
 
 // A simulated client decides on the timer.

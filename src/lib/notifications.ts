@@ -1,6 +1,13 @@
-import { paidAt } from '../../lib/derive'
-import { dateTime } from '../../lib/format'
-import type { AppNotification, Payout, PayoutMethod, PointsEntry, Referral, Study, Ticket } from '../types'
+import { dateTime } from './format'
+import type { AppNotification, Payout, PayoutMethod, PointsEntry, Referral, Study, Ticket } from '../mock/types'
+
+/**
+ * The returning account's notification history, written once from its own
+ * record on the shared platform when that account is (re)seeded. Everything
+ * after that arrives live from shared/store.ts.
+ */
+/** When a study was paid, from its timeline. */
+const paidAt = (study: Study) => study.timeline.find((t) => t.label === 'Paid')?.at ?? study.timeline.at(-1)?.at ?? study.endsAt
 
 const DAY = 86_400_000
 const shift = (iso: string, minutes: number) => new Date(new Date(iso).getTime() + minutes * 60_000).toISOString()

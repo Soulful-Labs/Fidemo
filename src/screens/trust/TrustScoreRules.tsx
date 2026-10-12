@@ -3,7 +3,7 @@ import StarRating from '../../components/app/StarRating'
 import TopBar from '../../components/ui/TopBar'
 import { ShieldCheck } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import { RATING_DELTA, TRUST } from '../../lib/rules'
+import { TRUST, trustForStars } from '@shared/rules'
 
 /** Pills read "+4%" / "-2%" as drawn; the values are the policy's. */
 const pill = (value: number) => (
@@ -51,7 +51,7 @@ export default function TrustScoreRules() {
               <p key={stars} className="flex items-center gap-2 text-text-regular text-text-title">
                 <StarRating value={stars} size="sm" />
                 {stars}-star rating
-                <span className="ml-auto">{pill(RATING_DELTA[stars])}</span>
+                <span className="ml-auto">{pill(trustForStars(stars))}</span>
               </p>
             ))}
           </div>

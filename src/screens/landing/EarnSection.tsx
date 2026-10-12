@@ -5,7 +5,7 @@ import { TIER_LABEL } from '../../components/app/TierChip'
 import Tilt from '../../components/motion/Tilt'
 import { PointsCoin, ShieldCheck } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import { CERTIFICATE, POINTS, REDEEM, TIERS } from '../../lib/rules'
+import { CERTIFICATE, POINTS, REDEEM, TIERS } from '@shared/rules'
 import Marquee from './Marquee'
 import { Coin, CountUp, Heading, Section, at } from './shared'
 

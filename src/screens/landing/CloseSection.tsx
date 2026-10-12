@@ -2,14 +2,14 @@ import { useNavigate } from 'react-router-dom'
 import { useUI } from '../../app/ui'
 import StudyCard from '../../components/app/StudyCard'
 import Button from '../../components/ui/Button'
-import { STUDIES } from '../../mock/data'
+import { useStore } from '../../mock/store'
 import type { Study } from '../../mock/types'
 import { Heading, Section, at } from './shared'
 
 /** One of the app's own seeded studies, shown as it would be listed in Explore. An example, and labelled as one. */
-const SEED = STUDIES.find((s) => s.id === 'st-02')!
+const SAMPLE_ID = 'st-02'
 /** The card clamps a description to two lines; the seed's own runs longer, so here it is the same sentence, shortened to fit whole. */
-const SAMPLE: Study = { ...SEED, status: 'available', saved: false, description: 'A short survey on inclusive teaching practices.' }
+const sample = (seed: Study): Study => ({ ...seed, status: 'available', saved: false, description: 'A short survey on inclusive teaching practices.' })
 
 /**
  * The close: proof and the way in. The proof is the same StudyCard every list
@@ -21,6 +21,10 @@ const SAMPLE: Study = { ...SEED, status: 'available', saved: false, description:
 export default function CloseSection() {
   const navigate = useNavigate()
   const { openComingSoon } = useUI()
+  const { studies } = useStore()
+  const seed = studies.find((x) => x.id === SAMPLE_ID) ?? studies[0]
+  const SAMPLE = seed && sample(seed)
+  if (!SAMPLE) return null
   return (
     <Section id="close" className="gap-3">
       <Heading>What a study looks like</Heading>

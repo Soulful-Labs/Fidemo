@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import StudyCard from '../../components/app/StudyCard'
-import { isExplorable } from '../../lib/studyState'
+import { isExplorable } from '../../lib/labels'
 import { useStore } from '../../mock/store'
 import { useUI } from '../../app/ui'
 import SectionHeader, { ViewAll } from './SectionHeader'

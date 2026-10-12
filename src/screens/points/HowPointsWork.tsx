@@ -1,7 +1,7 @@
 import { useAppNav } from '../../app/useAppNav'
 import TopBar from '../../components/ui/TopBar'
 import { PointsCoin } from '../../components/ui/icons'
-import { POINTS, REDEEM } from '../../lib/rules'
+import { POINTS, REDEEM } from '@shared/rules'
 
 function Person() {
   return (

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import StudyCard from '../../components/app/StudyCard'
-import { STATUS } from '../../lib/studyState'
+import { STATUS } from '../../lib/labels'
 import type { StudyStatus } from '../../mock/types'
 import { ALL_STATUSES, withStatus } from './fixtures'
 import Section, { Row } from './Section'

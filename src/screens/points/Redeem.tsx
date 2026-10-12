@@ -10,7 +10,7 @@ import TopBar from '../../components/ui/TopBar'
 import { Clock, PointsCoin } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { money, points as fmt } from '../../lib/format'
-import { canRedeem, pointsToUsd } from '../../lib/rules'
+import { canRedeem, pointsToUsd } from '@shared/rules'
 import { useStore } from '../../mock/store'
 import { TIMINGS } from '../../mock/timings'
 

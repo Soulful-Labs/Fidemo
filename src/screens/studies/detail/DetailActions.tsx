@@ -1,6 +1,6 @@
 import Button from '../../../components/ui/Button'
 import CtaBar from '../../../components/ui/CtaBar'
-import { STATUS } from '../../../lib/studyState'
+import { STATUS } from '../../../lib/labels'
 import type { Study } from '../../../mock/types'
 import { resumeLabel } from '../complete/DiaryOverview'
 import { completeBlocker } from '../../../lib/session'

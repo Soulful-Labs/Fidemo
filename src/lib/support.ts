@@ -1,4 +1,4 @@
-import { FAQS } from '../mock/seed/account'
+import { FAQS } from '../mock/content'
 import type { Ticket } from '../mock/types'
 
 /**

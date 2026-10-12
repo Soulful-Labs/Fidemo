@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
 import { CSS, play } from '../../lib/motion'
-import { TIERS } from '../../lib/rules'
+import { TIERS } from '@shared/rules'
 import RollingNumber from '../motion/RollingNumber'
 import { useArrival } from '../motion/useArrival'
 

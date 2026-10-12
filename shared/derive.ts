@@ -372,6 +372,39 @@ export function clientRating(state: PlatformState, clientId: string): { rating: 
   return { rating: reviews.length ? Math.round((sum(reviews, (r) => r.stars) / reviews.length) * 10) / 10 : 0, reviewCount: reviews.length }
 }
 
+/**
+ * Workflow 15, 17, 57: what stands in front of applying, in the order the
+ * workflow applies it. Null when the person can go straight to the screener.
+ * shared/store.ts startApplication enforces the same three.
+ */
+export function applyBlocker(state: PlatformState, studyId: string, personId: string): 'verify' | 'premium' | 'repeat' | null {
+  const study = studyById(state, studyId)
+  const person = personById(state, personId)
+  if (!study || !person) return null
+  if (!person.onboarded || person.identity.state !== 'verified') return 'verify'
+  if (study.premium && person.profession.state !== 'verified') return 'premium'
+  const p = participationOf(study, personId)
+  // A client who has already invited this person has waived their own repeat rule.
+  if (study.repeatRule === 'exclude' && p?.state !== 'invited' && hasTakenPartWith(state, personId, study.clientId, study.id)) return 'repeat'
+  return null
+}
+
+/** A booked session that has not started yet cannot be completed by the participant. */
+export const sessionNotStarted = (booking: Pick<Booking, 'date' | 'slot'> | undefined, now: Date = new Date()): boolean =>
+  Boolean(booking) && sessionStartOf(booking!) > now
+
+/** The moment a booked session starts: the booked day at the slot's time. */
+export function sessionStartOf(booking: Pick<Booking, 'date' | 'slot'>): Date {
+  const d = new Date(booking.date)
+  const m = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(booking.slot.trim())
+  if (m) {
+    let h = Number(m[1]) % 12
+    if (m[3]!.toUpperCase() === 'PM') h += 12
+    d.setHours(h, Number(m[2]), 0, 0)
+  }
+  return d
+}
+
 /** Workflow 57: has this person taken part in a study for this client before? */
 export const hasTakenPartWith = (state: PlatformState, personId: string, clientId: string, exceptStudyId?: string): boolean =>
   state.studies.some((s) => s.clientId === clientId && s.id !== exceptStudyId && participationOf(s, personId)?.state === 'completed')

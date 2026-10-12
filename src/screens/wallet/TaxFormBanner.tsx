@@ -1,5 +1,5 @@
 import FileField from '../../components/app/FileField'
-import { TAX_FORM_THRESHOLD } from '../../lib/derive'
+import { TAX_FORM_THRESHOLD } from '@shared/platform'
 import { money } from '../../lib/format'
 import { useStore } from '../../mock/store'
 

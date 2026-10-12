@@ -1,6 +1,6 @@
 import Button from '../../components/ui/Button'
 import { Copy, PointsCoin, Share } from '../../components/ui/icons'
-import { POINTS } from '../../lib/rules'
+import { POINTS } from '@shared/rules'
 import { referralLink } from '../../lib/profile'
 import { useStore } from '../../mock/store'
 

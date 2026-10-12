@@ -3,7 +3,7 @@ import { TIER_LABEL } from '../../components/app/TierChip'
 import Tag from '../../components/ui/Tag'
 import TopBar from '../../components/ui/TopBar'
 import { cn } from '../../lib/cn'
-import { TIERS, tierFor } from '../../lib/rules'
+import { TIERS, tierFor } from '@shared/rules'
 import { useStore } from '../../mock/store'
 
 /**

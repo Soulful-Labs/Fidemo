@@ -4,7 +4,6 @@ import StarRating from '../../../components/app/StarRating'
 import TopBar from '../../../components/ui/TopBar'
 import { Star } from '../../../components/ui/icons'
 import { dateLong } from '../../../lib/format'
-import { clientReviews } from '../../../mock/data'
 import { useStore } from '../../../mock/store'
 
 /**
@@ -15,7 +14,7 @@ import { useStore } from '../../../mock/store'
 export default function ClientRatings() {
   const { clientId } = useParams()
   const { back } = useAppNav()
-  const { studies } = useStore()
+  const { studies, clientReviews } = useStore()
   const client = studies.find((s) => s.client.id === clientId)?.client
   const reviews = clientReviews(clientId ?? '')
 

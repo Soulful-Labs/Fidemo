@@ -46,6 +46,9 @@ export const priceStudy = (type: StudyType, incentivePer: number): StudyRates =>
   moderationPer: FEES.MODERATION,
 })
 
+/** The flat withdrawal fee on its own, as the respondent screens print it. */
+export const WITHDRAWAL_FEE = FEES.WITHDRAWAL
+
 export const netWithdrawal = (amount: number): number => Math.max(0, amount - FEES.WITHDRAWAL)
 
 export function canWithdraw(amount: number, balance: number): { ok: boolean; reason?: string } {

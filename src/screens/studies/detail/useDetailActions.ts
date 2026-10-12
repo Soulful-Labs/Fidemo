@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../../../mock/store'
 import { useUI } from '../../../app/ui'
-import { applyBlocker } from '../../../lib/eligibility'
 import { completeBlocker } from '../../../lib/session'
 import type { Study } from '../../../mock/types'
 
@@ -22,7 +21,7 @@ export function openSession(study: Study) {
 /** Detail screen actions, derived from status like everything else. */
 export function useDetailActions(study?: Study, onLocations?: () => void) {
   const navigate = useNavigate()
-  const { completeStudy, toast, user, studies } = useStore()
+  const { completeStudy, toast, applyBlocker } = useStore()
   const { openMatchScore, openGate } = useUI()
   const inPerson = study?.type === 'in_person' || study?.type === 'in_person_group'
 
@@ -34,7 +33,7 @@ export function useDetailActions(study?: Study, onLocations?: () => void) {
       case 'available':
       case 'invited_to_apply': {
         // Workflow 15, 17 and 57 gate Apply before anything else.
-        const blocker = applyBlocker(study, user, studies)
+        const blocker = applyBlocker(study.id)
         if (blocker) { openGate(blocker); break }
         // In-person studies show their locations first (PRD 6.8).
         if (inPerson && study.locations?.length && onLocations) onLocations()

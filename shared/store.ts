@@ -9,12 +9,13 @@
  * reads and writes the same platform: a change made in one app is picked up
  * by the others through the storage event, without a reload.
  */
-import { billing, diaryReady, hasTakenPartWith, openAvailability, personById, personFigures, profileCompletion, restrictionCount } from './derive'
+import { billing, diaryReady, hasTakenPartWith, sessionNotStarted, openAvailability, personById, personFigures, profileCompletion, restrictionCount } from './derive'
 import { canMoveParticipation, canMoveStudy, isLive, participationOf } from './lifecycle'
 import {
   DECISION_UNDO_MS, DEMO_SESSION_CODE, RESTRICTION_DAYS, TIMINGS, canReschedule, canWithdraw, isSessionType, priceStudy,
 } from './platform'
 import { canRedeem, starsForRating } from './rules'
+import { sessionStartOf as sessionStart } from './derive'
 import { EMPTY_PROFILE } from './seed/people'
 import { SEED_VERSION, buildSeed } from './seed'
 import type {
@@ -153,6 +154,18 @@ export function createPlatform(options: Options = {}) {
         return yes()
       })
     },
+
+    /**
+     * Demo and test only: moves a booked session in time without the
+     * availability or reschedule checks, so a walk-through can complete a
+     * session without waiting for the clock. No screen calls it.
+     */
+    moveSessionTime: (studyId: string, personId: string, date: string, slot: string) => move((s) => {
+      const hit = find(s, studyId, personId)
+      if (!hit?.p.booking) return no('There is no booked session to move')
+      hit.p.booking = { ...hit.p.booking, date, slot }
+      return yes()
+    }),
 
     // ------------------------------------------------------------ studies
 
@@ -431,6 +444,7 @@ export function createPlatform(options: Options = {}) {
       const session = isSessionType(study.type)
       if (session && p.state !== 'scheduled' && p.state !== 'no_show') return no('A session has to be booked before it can be completed')
       if (session && actor.kind === 'participant' && !p.code?.byParticipant) return no('Enter the session code first')
+      if (session && actor.kind === 'participant' && sessionNotStarted(p.booking, clock())) return no('Your session has not started yet. Complete the study once it has run.')
       if (session && actor.kind !== 'participant' && !(p.code?.byClient && p.code?.byParticipant)) return no('No code, no payment. Both sides have to enter the session code.')
       if (!diaryReady(study, p)) return no(`At least ${study.diary?.minDays} of ${study.diary?.totalDays} days must be filled`)
       const moved = shift(p, 'completed')
@@ -554,7 +568,8 @@ export function createPlatform(options: Options = {}) {
       const person = personById(s, personId)
       if (!person) return no('No such account')
       const { profile, identityVerified, licenseVerified, ...rest } = patch
-      Object.assign(person, rest)
+      /** A field left out of the patch is left alone: an absent value never overwrites a stored one. */
+      Object.assign(person, Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined)))
       if (profile) person.profile = { ...person.profile, ...profile }
       if (profile?.address) person.location = profile.address
       /** The automatic ID check passes in the demo (workflow 15). A credential added to the profile is taken as checked against the register (workflow 17). */
@@ -707,7 +722,7 @@ export function createPlatform(options: Options = {}) {
     updateClient: (clientId: string, patch: Partial<Pick<Client, 'name' | 'role' | 'company' | 'industry' | 'location' | 'vat' | 'website'>>) => move((s) => {
       const client = s.clients.find((c) => c.id === clientId)
       if (!client) return no('No such client')
-      Object.assign(client, patch)
+      Object.assign(client, Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined)))
       /** Workflow 3: a new client's business details are checked; the automatic check passes in the demo. */
       if (client.business.state === 'not_started' && client.vat && client.website) client.business = { state: 'verified' }
       return yes()
@@ -822,17 +837,7 @@ export function createPlatform(options: Options = {}) {
   return api
 }
 
-/** The moment a booked session starts: the booked day at the slot's time. */
-export function sessionStart(booking: Pick<Booking, 'date' | 'slot'>): Date {
-  const d = new Date(booking.date)
-  const m = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(booking.slot.trim())
-  if (m) {
-    let h = Number(m[1]) % 12
-    if (m[3]!.toUpperCase() === 'PM') h += 12
-    d.setHours(h, Number(m[2]), 0, 0)
-  }
-  return d
-}
+export { sessionStartOf as sessionStart } from './derive'
 
 export type Platform = ReturnType<typeof createPlatform>
 

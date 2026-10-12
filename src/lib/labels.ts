@@ -1,14 +1,11 @@
+/**
+ * What the respondent screens call each status and each refusal. Words only:
+ * the states, the moves and the rules behind them are shared/lifecycle.ts,
+ * shared/derive.ts and shared/store.ts.
+ */
 import type { StudyStatus } from '../mock/types'
 import type { TagTone } from '../components/ui/Tag'
-
-/**
- * The study state machine, in one place. The card actions, the status tag and
- * the My Studies tab a study appears in are all derived from status and nothing
- * else, per the brief.
- *
- * The numeric business rules (Trust Score, points, fees) arrive with the store
- * in turn 4.
- */
+import type { Study } from '../mock/types'
 
 export type MyStudiesTab = 'invites' | 'scheduled' | 'drafts' | 'applied' | 'history'
 
@@ -87,4 +84,40 @@ export function statusesForTab(tab: MyStudiesTab): StudyStatus[] {
 /** Explore shows what is open to apply for, plus outstanding invitations. */
 export function isExplorable(status: StudyStatus): boolean {
   return status === 'available' || status === 'invited_to_apply'
+}
+
+/** Why a person cannot apply to a study right now, and what to do about it. */
+export interface ApplyBlocker {
+  kind: 'verify' | 'premium' | 'repeat'
+  title: string
+  body: string
+  action?: { label: string; to: string }
+}
+
+/** The words for each verdict shared/derive.ts applyBlocker can give. */
+export function applyBlockerCopy(kind: ApplyBlocker['kind'] | null, clientName: string): ApplyBlocker | null {
+  switch (kind) {
+    case null: return null
+    case 'verify': return {
+      kind, title: 'Finish verification to apply',
+      body: 'Applying needs a completed profile and a verified government ID. It takes about 2 minutes and is done once, then reused for every study.',
+      action: { label: 'Verify now', to: '/onboarding/about' },
+    }
+    case 'premium': return {
+      kind, title: 'Premium study, locked',
+      body: 'Premium studies are the highest paid on the platform and need a verified professional credential, such as a medical or nursing licence, checked against the public register.',
+      action: { label: 'Add a credential', to: '/profile/edit?tab=professional' },
+    }
+    case 'repeat': return {
+      kind, title: 'Fresh participants only',
+      body: `${clientName} has set this study to exclude anyone who has taken part in one of their studies before, and you have. Other studies from this client may still be open to you.`,
+    }
+  }
+}
+
+/** Copy for the repeat rule row on Study Details (workflow 57). */
+export const REPEAT_RULE_COPY: Record<Study['repeatRule'], { label: string; note: string }> = {
+  allow: { label: 'Repeat participants welcome', note: 'You can take part even if you have done a study for this client before.' },
+  prefer_fresh: { label: 'Fresh participants preferred', note: 'People who have not worked with this client are ranked first, but you can still apply.' },
+  exclude: { label: 'First-time participants only', note: 'Anyone who has taken part in a study for this client before is excluded.' },
 }

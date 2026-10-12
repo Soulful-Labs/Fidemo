@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import TierUpgrade from '../../app/TierUpgrade'
 import type { Tier } from '../../app/tierParts'
-import { RATING_DELTA, TIERS, TRUST } from '../../lib/rules'
+import { RATING_DELTA, TIERS, TRUST } from '@shared/rules'
 import { Group, Play, Plays } from './LabBits'
 
 /** One completed study with a 5 star rating: what usually carries someone over a line. */
