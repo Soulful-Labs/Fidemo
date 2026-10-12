@@ -149,3 +149,9 @@ finance?tx=payouts
 finance?tx=payments
 finance?tx=refunds
 finance/refunds/rf-1?state=confirmed
+pricing?tab=gamification
+pricing/client-fees
+pricing/participant-fees
+pricing/tiers
+pricing/trust-score
+pricing/reward-points

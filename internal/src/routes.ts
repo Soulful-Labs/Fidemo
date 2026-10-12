@@ -19,6 +19,8 @@ import Support from './screens/support/Support'
 import TicketPage from './screens/support/TicketPage'
 import Finance from './screens/finance/Finance'
 import RefundDetail from './screens/finance/RefundDetail'
+import EditPricing from './screens/pricing/EditScreens'
+import Pricing from './screens/pricing/Pricing'
 import Studies from './screens/studies/Studies'
 import ReviewStudy from './screens/studies/review/ReviewStudy'
 import ManageStudy from './screens/studies/manage/ManageStudy'
@@ -61,7 +63,8 @@ const routes: RouteObject[] = [
   { path: '/finance', element: createElement(Finance) },
   { path: '/finance/refunds', element: createElement(Finance, { refunds: true }) },
   { path: '/finance/refunds/:id', element: createElement(RefundDetail) },
-  later('/pricing', 'Pricing & Rewards'),
+  { path: '/pricing', element: createElement(Pricing) },
+  { path: '/pricing/:what', element: createElement(EditPricing) },
   later('/sub-admin', 'Sub-Admin'),
   later('/account', 'Master Admin - Account'),
   { path: '*', element: createElement(Navigate, { to: '/dashboard', replace: true }) },
