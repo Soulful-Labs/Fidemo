@@ -48,7 +48,7 @@ const sessionScript = (signedIn) => signedIn
 // The client app is desktop: 1440 wide, as every Figma frame is drawn.
 const WIDTH = 1440
 const HEIGHT = 1000
-const base = process.env.BASE_URL ?? 'http://localhost:5175'
+const base = process.env.BASE_URL ?? 'http://localhost:5175/internal'
 
 const candidates = [
   process.env.CHROME,
@@ -129,7 +129,7 @@ async function capture(s, job) {
     // The guard sends a session-less render to /signin, so check we landed
     // where we asked and try again rather than capture the wrong screen.
     const { result } = await s('Runtime.evaluate', { expression: 'location.pathname', returnByValue: true })
-    const asked = '/' + route.replace(/^\/+/, '').split('?')[0]
+    const asked = new URL(base).pathname.replace(/\/$/, '') + '/' + route.replace(/^\/+/, '').split('?')[0]
     if (!signedIn || result.value === asked || asked === '/') break
     if (attempt === 2) console.error(`[${route}] landed on ${result.value} after 3 tries`)
   }

@@ -12,7 +12,7 @@ import { spawn } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-const base = process.env.BASE_URL ?? 'http://localhost:5175'
+const base = process.env.BASE_URL ?? 'http://localhost:5175/internal'
 const args = process.argv.slice(2)
 
 const chrome = [
@@ -115,7 +115,7 @@ async function main() {
     // A confirmation screen is legitimately short and may carry a single
     // button, so only a page with nothing on it at all is a fault.
     if (out.empty && out.controls === 0) faults.push('page is empty')
-    if (out.path !== '/' + route.replace(/^\/+/, '').split('?')[0]) faults.push(`landed on ${out.path}`)
+    if (out.path !== new URL(base).pathname.replace(/\/$/, '') + '/' + route.replace(/^\/+/, '').split('?')[0]) faults.push(`landed on ${out.path}`)
     // React key and prop warnings are errors worth naming; a failed asset is not.
     const real = [...new Set(errors)].filter((e) => !/favicon|net::ERR/.test(e))
     if (real.length > 0) faults.push(...real.map((e) => 'console: ' + e))

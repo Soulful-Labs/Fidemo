@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:all": "npm run build && npm --prefix client run build && npm --prefix internal run build && node scripts/assemble.mjs",
+    "serve:all": "node scripts/serve-all.mjs",
     "preview": "vite preview",
     "lint": "eslint .",
     "verify": "npm run verify:shared",

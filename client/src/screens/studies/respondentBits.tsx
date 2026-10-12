@@ -147,8 +147,10 @@ export function PinCard({ variant, pin, name, onShared }: {
 }
 
 /** The booked session, in the three states the frames draw it in. */
-export function SessionCard({ state, session }: {
+export function SessionCard({ state, session, onStart, onFinish }: {
   state: 'booked' | 'running' | 'done'
+  onStart?: () => void
+  onFinish?: () => void
   /** The booking on this participation: who, when and where. */
   session?: { title: string; date: string; time: string; address?: string }
 }) {
@@ -171,11 +173,11 @@ export function SessionCard({ state, session }: {
             <MapPin className={cn('h-4 w-4', glyph)} />{session.address}
           </p>
         )}
-        {state === 'booked' && <Button size="none" className="mt-2 h-12 w-full" onClick={() => toast('Interview started')}>{SESSION.cta}</Button>}
+        {state === 'booked' && <Button size="none" className="mt-2 h-12 w-full" onClick={() => { onStart?.(); toast('Interview started') }}>{SESSION.cta}</Button>}
       </div>
       {state === 'running' && (
         <div className="flex flex-col items-end gap-3">
-          <Button size="none" className="h-12 w-[110px]" onClick={() => toast('Interview finished')}>Finish</Button>
+          <Button size="none" className="h-12 w-[110px]" onClick={() => { onFinish?.(); toast('Interview finished') }}>Finish</Button>
           <span className="flex h-12 items-center gap-2 rounded-sm border-1 border-stroke-input bg-bg-0 px-4 text-title-s text-text-title">
             <Clock className="h-5 w-5 text-text-subtitle" />{SESSION.running}
           </span>

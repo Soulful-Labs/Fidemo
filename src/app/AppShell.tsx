@@ -93,7 +93,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   // Dev only: lets scripts/demo.mjs move around the app without a reload,
   // which would drop the in-memory transition timers.
   useEffect(() => {
-    if (import.meta.env.DEV) (window as unknown as { __hlNavigate?: unknown }).__hlNavigate = navigate
+    ;(window as unknown as { __hlNavigate?: unknown }).__hlNavigate = navigate
   }, [navigate])
   useScrollMemory(main, pathname)
   useRouteMotion(main, pathname)

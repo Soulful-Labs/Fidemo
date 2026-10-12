@@ -1,3 +1,27 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "installCommand": "npm install && npm --prefix client install && npm --prefix internal install",
+  "buildCommand": "npm run build:all",
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/client/(.*)",
+      "destination": "/client/index.html"
+    },
+    {
+      "source": "/client",
+      "destination": "/client/index.html"
+    },
+    {
+      "source": "/internal/(.*)",
+      "destination": "/internal/index.html"
+    },
+    {
+      "source": "/internal",
+      "destination": "/internal/index.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }

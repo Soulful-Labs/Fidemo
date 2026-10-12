@@ -313,9 +313,10 @@ const StoreContext = createContext<StoreValue | null>(null)
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const value = useStoreValue()
-  // Dev only: a handle for driving state in the browser, used by the
-  // verification scripts and the acceptance demo.
-  if (import.meta.env.DEV) (window as unknown as { __hl?: unknown }).__hl = value
+  // A handle for driving state in the browser, used by the verification
+  // scripts and the acceptance demo. Kept in the built app too, so the demo
+  // runs against the one-origin deployment; every value behind it is mock data.
+  ;(window as unknown as { __hl?: unknown }).__hl = value
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
 }
 

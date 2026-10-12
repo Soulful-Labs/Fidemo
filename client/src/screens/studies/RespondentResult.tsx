@@ -9,7 +9,7 @@ import NoShowModal from './NoShowModal'
 import { ActivityList, DayBar, NotesCard, PinCard, QARow, SessionCard } from './respondentBits'
 import { CheckCircle, Clock, Close, DiaryBookIcon, NoteIcon, SurveyIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import { DIARY_DAYS, SCREENER_ANSWERS } from '../../mock/respondent'
+import { DIARY_DAYS, answersOf } from '../../mock/respondent'
 import { clockTime, longDay, monthDayYearTime } from '@shared/format'
 import { sessionStart } from '@shared/store'
 import { useToast } from '../../components/ui/Toast'
@@ -51,7 +51,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
   const toast = useToast()
   const { id, rid } = useParams()
   const nav = useNavigate()
-  const [params] = useSearchParams()
+  const [params, setParams] = useSearchParams()
   const s = useStudy(id)
   const { moveRespondent, enterCode, state: world } = useStudies()
   const [rate, setRate] = useState(params.get('rate') === '1' || params.get('rate') === 'rated')
@@ -64,10 +64,20 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
   const session = s.type !== 'survey' && s.type !== 'diary'
   /** The recruited state is judged on the screener alone; the completed one has a result. */
   const done = params.get('state') === 'recruited' ? false
-    : state === 'completed' || state === 'rated' || state === 'no_show' || params.get('state') === null
-  /** booked -> running -> finished, the three states the frames draw the slot in. */
-  const slot = (params.get('session') ?? 'booked') as 'booked' | 'running' | 'finished'
+    : params.get('state') === 'completed' || state === 'completed' || state === 'rated' || state === 'no_show'
+      // A booked session has a result page: the slot, the PIN, then the verdict once it has been sat.
+      || (session && state === 'scheduled')
+  /**
+   * booked -> running -> finished, the three states the frames draw the slot
+   * in. The booking's own time decides it; Start Interview and Finish move it
+   * on for this page (a frame can still force one with `?session=`).
+   */
+  const begins = person?.participation.booking ? sessionStart(person.participation.booking).getTime() : undefined
+  const now = Date.now()
+  const timed = begins === undefined || now < begins ? 'booked' : now < begins + s.durationMins * 60_000 ? 'running' : 'finished'
+  const slot = (params.get('session') ?? timed) as 'booked' | 'running' | 'finished'
   const running = slot !== 'booked'
+  const phase = (to: 'running' | 'finished') => setParams((p) => { p.set('session', to); return p }, { replace: true })
   /** A session study is only rated once its slot has been sat. */
   const rated = session ? running : done
   const crumbTab = done ? 'Results' : 'Recruited'
@@ -142,7 +152,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                 </div>
               )}
 
-              {tab === 'screener' && SCREENER_ANSWERS.map((qa, i) => (
+              {tab === 'screener' && answersOf(s, person?.participation).map((qa, i) => (
                 <QARow key={i} n={i + 1} qa={qa} first={i === 0} />
               ))}
 
@@ -156,10 +166,10 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
               {tab === 'result' && session && (
                 <div className="flex flex-1 flex-col gap-3 px-4 pb-4 pt-5">
                   {running
-                    ? <SessionCard state={slot === 'finished' ? 'done' : 'running'} session={sessionInfo} />
+                    ? <SessionCard state={slot === 'finished' ? 'done' : 'running'} session={sessionInfo} onFinish={() => phase('finished')} />
                     : (
                       <div className="grid grid-cols-2 gap-3">
-                        <SessionCard state="booked" session={sessionInfo} />
+                        <SessionCard state="booked" session={sessionInfo} onStart={() => phase('running')} />
                         <PinCard variant="session" {...pinProps} />
                       </div>
                     )}

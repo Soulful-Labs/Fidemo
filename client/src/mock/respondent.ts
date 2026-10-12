@@ -1,3 +1,4 @@
+import type { Participation, Study } from '@shared/types'
 
 /** The invitation to rate, drawn in the rail and again across the Activity tab. */
 export const RATE_PROMPT = {
@@ -16,6 +17,19 @@ export type Answer =
 
 export interface QA { prompt: string; answer: Answer }
 
+/**
+ * The screener as this respondent answered it (shared participation). The
+ * pre-screener's answers are not kept, only that it was passed (workflow 28).
+ */
+export function answersOf(study: Pick<Study, 'preScreener' | 'screener'>, p?: Participation): QA[] {
+  const pre: QA[] = study.preScreener.map((q) => ({ prompt: q.prompt, answer: { kind: 'text', value: p?.prescreener === 'passed' ? 'Passed' : 'Not answered' } }))
+  const main: QA[] = study.screener.map((q) => {
+    const v = p?.answers?.[q.id]
+    return { prompt: q.prompt, answer: Array.isArray(v) ? { kind: 'bullets', values: v } : { kind: 'text', value: v || 'Not answered' } }
+  })
+  return [...pre, ...main]
+}
+
 const SITUATION = 'Which of the following best describes your current situation?'
 const TRACK = 'I regularly track experiences'
 const MULTI = ['I rarely or never record experiences over time', 'Track habits over multiple days for personal, work, or research purposes']
@@ -25,27 +39,6 @@ const MATRIX: Answer = {
   rows: [{ label: 'Step  A', choice: 2 }, { label: 'Step B', choice: 3 }, { label: 'Step B', choice: 4 }],
 }
 
-/** The screener the respondent answered, as the frame lists it back. */
-export const SCREENER_ANSWERS: QA[] = [
-  { prompt: SITUATION, answer: { kind: 'text', value: TRACK } },
-  { prompt: SITUATION, answer: { kind: 'bullets', values: MULTI } },
-  { prompt: SITUATION, answer: { kind: 'text', value: 'I regularly track experiences or habits' } },
-  { prompt: 'How many times do you test your glucose in a month?', answer: { kind: 'text', value: '4' } },
-  {
-    prompt: SITUATION,
-    answer: {
-      kind: 'text',
-      value: 'I regularly track experiences or habits over multiple days for personal, work, or research purposes. I occasionally note down experiences, but not in any regular way. Kept notes about daily routines or experiences',
-    },
-  },
-  { prompt: 'Average reading of glucose', answer: { kind: 'text', value: '125' } },
-  {
-    prompt: 'Order the frequency of visits since diagnosed from recent as first to old as last',
-    answer: { kind: 'ordered', values: ['0-2 times a month', '2-4 times a month', '4-6 times a month', '6-8 times a month'] },
-  },
-  { prompt: "Upload a picture of prescribed medicines you're taking currently", answer: { kind: 'file', name: 'IMG213546879.pdf', size: '5 MB' } },
-  { prompt: 'Rate the steps of process of testing your glucose at home', answer: MATRIX },
-]
 
 /** The diary result, which the frame groups under a day bar. */
 export const DIARY_DAYS: { label: string; answers: QA[] }[] = [

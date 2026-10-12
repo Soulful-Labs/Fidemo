@@ -17,7 +17,7 @@ import { spawn } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-const base = process.env.BASE_URL ?? 'http://localhost:5175'
+const base = process.env.BASE_URL ?? 'http://localhost:5175/internal'
 const args = process.argv.slice(2)
 
 const candidates = [

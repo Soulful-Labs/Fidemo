@@ -23,7 +23,7 @@ let wake: (() => void) | null = null
 export function fire(o: FireOptions) {
   if (prefersReduced()) return
   // Dev only: lets the frame-rate probe measure a moment without its confetti.
-  if (import.meta.env.DEV && (window as unknown as { __noConfetti?: boolean }).__noConfetti) return
+  if ((window as unknown as { __noConfetti?: boolean }).__noConfetti) return
   // Callers give window coordinates (getBoundingClientRect); confetti lives in the frame.
   const f = frameRect()
   const local: FireOptions = { ...o, x: o.x - f.left, y: o.y - f.top, floor: o.floor === undefined ? undefined : o.floor - f.top }
