@@ -79,44 +79,36 @@ export default function TicketChat() {
           </header>
 
           <div className="flex flex-1 flex-col gap-3 px-4 pb-4 pt-4">
-            <p className="pb-2 text-center text-text-regular text-text-subtitle">{t.day}</p>
+            <p className="pb-2 text-center text-text-regular text-text-subtitle">{record?.day ?? t.day}</p>
 
-            <Bubble mine at={t.info.at}
-              after={<span className="mt-1 h-[128px] w-[170px] rounded-md bg-[#20242c]" aria-label="Attachment" />}>
-              <p className="inline-flex items-center gap-2 text-text-regular text-text-subtitle">
-                <Info className="h-5 w-5" />{t.info.heading}
-              </p>
-              <p className="pt-3 text-text-regular leading-5 text-text-subtitle">{t.info.subjectLabel}</p>
-              <p className="text-text-regular leading-5 text-text-title">{t.info.subject}</p>
-              <p className="pt-3 text-text-regular leading-5 text-text-subtitle">{t.info.messageLabel}</p>
-              <p className="text-text-regular leading-5 text-text-title">{t.info.lines[0]}</p>
-              <p className="text-text-regular leading-5 text-text-title">&nbsp;</p>
-              <p className="text-text-regular leading-5 text-text-title">{t.info.lines[1]}</p>
-              <p className="text-text-regular leading-5 text-text-title">{t.info.lines[2]}</p>
-            </Bubble>
-
-            <Bubble at={t.reply.at}>
-              {t.reply.lines.map((l, i) => (
-                <p key={l} className={cn('text-text-regular leading-5 text-text-title', i > 0 && 'pt-5')}>{l}</p>
-              ))}
-              <span className="mt-3 inline-flex h-7 items-center gap-1.5 rounded-full border-1 border-cta-primary bg-bg-0 px-2.5 text-text-regular text-text-title">
-                <Star className="h-4 w-4 text-brand-primary" />{t.reply.badge}
-              </span>
-            </Bubble>
-
-            <Bubble mine at={t.answer.at}>
-              <p className="text-text-regular leading-5 text-text-title">{t.answer.text}</p>
-            </Bubble>
-
-            {/* What has actually been sent on this ticket. */}
-            {(record?.messages ?? []).filter((m) => m.from === 'client' && m.id.endsWith('-sent')).map((m) => (
+            {/* The thread is the ticket's own messages, from the shared platform:
+                what the client wrote, the automatic first answer, and the team's
+                replies from the console. The first message is drawn as the
+                Ticket Info card, as the frame draws it. */}
+            {(record?.messages ?? []).map((m, i) => (i === 0 && m.from === 'client' ? (
               <Bubble key={m.id} mine at={m.at}
                 after={m.attachment ? <span className="mt-1 h-[128px] w-[170px] rounded-md bg-[#20242c]" aria-label={m.attachment} /> : undefined}>
-                {m.lines.map((l, i) => (
-                  <p key={i} className="text-text-regular leading-5 text-text-title">{l}</p>
-                ))}
+                <p className="inline-flex items-center gap-2 text-text-regular text-text-subtitle">
+                  <Info className="h-5 w-5" />{t.info.heading}
+                </p>
+                <p className="pt-3 text-text-regular leading-5 text-text-subtitle">{t.info.subjectLabel}</p>
+                <p className="text-text-regular leading-5 text-text-title">{record?.subject}</p>
+                <p className="pt-3 text-text-regular leading-5 text-text-subtitle">{t.info.messageLabel}</p>
+                <p className="text-text-regular leading-5 text-text-title">{record?.message}</p>
               </Bubble>
-            ))}
+            ) : (
+              <Bubble key={m.id} mine={m.from === 'client'} at={m.at}
+                after={m.attachment ? <span className="mt-1 h-[128px] w-[170px] rounded-md bg-[#20242c]" aria-label={m.attachment} /> : undefined}>
+                {m.lines.map((l, k) => (
+                  <p key={k} className={cn('text-text-regular leading-5 text-text-title', k > 0 && 'pt-5')}>{l}</p>
+                ))}
+                {m.auto && (
+                  <span className="mt-3 inline-flex h-7 items-center gap-1.5 rounded-full border-1 border-cta-primary bg-bg-0 px-2.5 text-text-regular text-text-title">
+                    <Star className="h-4 w-4 text-brand-primary" />{t.reply.badge}
+                  </span>
+                )}
+              </Bubble>
+            )))}
           </div>
 
           {!solved && (

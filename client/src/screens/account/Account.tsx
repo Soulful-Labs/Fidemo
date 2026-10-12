@@ -4,14 +4,16 @@ import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import Toggle from '../../components/ui/Toggle'
 import Pagination from '../../components/client/Pagination'
-import { pageLabels, paginate } from '../../lib/derive'
+import { pageLabels, paginate } from '@shared/derive'
 import { ChangePasswordModal, DeactivateModal, LogoutModal, OutcomeModal } from './AccountModals'
 import { Check, CheckCircle, ChevronDown, ChevronRight, Star, StarFilled, Trash, UsersIcon, VerifiedMark } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import { CERTIFICATE, CLIENT_RATING, CLIENT_REVIEWS, EMAIL_PREFS, PROFILE_FIELDS } from '../../mock/account'
+import { CERTIFICATE, EMAIL_PREFS, PROFILE_FIELDS } from '../../mock/account'
+import { clientRating, clientReviews } from '@shared/derive'
+import { count } from '@shared/format'
+import { useClient, usePlatform } from '../../platform'
 import { useToast } from '../../components/ui/Toast'
 import { useSession } from '../../mock/session'
-import { useSeeded } from '../../mock/seeded'
 
 const NAV = [
   { key: 'profile', label: 'Profile' },
@@ -68,7 +70,19 @@ export default function Account() {
   }
   const tab = params.get('tab') ?? byPath[pathname] ?? 'profile'
   const { account, update } = useSession()
-  const allReviews = useSeeded(CLIENT_REVIEWS)
+  /**
+   * Rating & Reviews is the platform's record: what participants wrote about
+   * this client on their studies, each with the rating the client gave that
+   * participant back. The headline is the average of exactly these rows.
+   */
+  const world = usePlatform()
+  const client = useClient()
+  const CLIENT_RATING = { score: clientRating(world, client?.id ?? '').rating.toFixed(1), of: `of ${count(clientRating(world, client?.id ?? '').reviewCount)} reviews` }
+  const allReviews = clientReviews(world, client?.id ?? '').map((r) => ({
+    study: r.study, stars: r.stars, rating: r.stars.toFixed(1),
+    at: new Date(r.at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }), body: r.comment,
+    to: r.participant.name, toStars: r.participant.stars, toRating: r.participant.stars.toFixed(1), toBody: r.participant.comment,
+  }))
   const [reviewPage, setReviewPage] = useState(1)
   /** pageLabels counts pages, not rows, so it takes paginate's own total. */
   const reviewPages = paginate(allReviews, reviewPage)
@@ -188,7 +202,7 @@ export default function Account() {
                   </span>
                   <span className="flex flex-col gap-1">
                     <span className="text-body-medium text-text-title">{CERTIFICATE.banner}</span>
-                    <span className="text-text-regular text-text-subtitle">{CERTIFICATE.since}</span>
+                    <span className="text-text-regular text-text-subtitle">{client ? `Since ${new Date(client.joinedAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}` : ''}</span>
                   </span>
                 </div>
                 <div className="mt-3 flex flex-col gap-4 rounded-lg bg-bgAlt-1 p-4">

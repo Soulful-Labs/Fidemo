@@ -4,8 +4,8 @@ import Button from '../../components/ui/Button'
 import StudyTypeTag from '../../components/client/StudyTypeTag'
 import { Check, ChevronDown, ChevronRight, DiaryBookIcon, Download, Info, LinkIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import { BILLING, BILLING_TOTAL } from '../../mock/pay'
-import { ADD_CARD, INVOICE, MAKE_PAYMENT, PAID_MODAL, REMOVE_CARD } from '../../mock/payments'
+import { useBill } from '../../mock/pay'
+import { ADD_CARD, removeCardCopy } from '../../mock/payments'
 import { useToast } from '../../components/ui/Toast'
 import { useState } from 'react'
 import { useWorkspace } from '../../mock/workspace'
@@ -39,6 +39,7 @@ export function InvoiceDetailsPanel({
 }: { open: boolean; onClose: () => void; paid?: boolean; onPay?: () => void; studyId?: string }) {
   const nav = useNavigate()
   const toast = useToast()
+  const { BILLING, BILLING_TOTAL, INVOICE, study, card } = useBill(studyId)
   return (
     <SidePanel open={open} onClose={onClose} title={INVOICE.title} headerClassName="h-14"
       className="h-fit max-h-full" bodyClassName="flex flex-col gap-3 px-4 pb-4 pt-4"
@@ -49,13 +50,13 @@ export function InvoiceDetailsPanel({
 
       <div className="flex flex-col gap-2 rounded-lg border-1 border-stroke-input p-4">
         <span className="flex items-center justify-between gap-3">
-          <StudyTypeTag type="diary" icon={<DiaryBookIcon className="h-4 w-4" />} />
+          <StudyTypeTag type={study?.type ?? 'diary'} icon={study?.type === 'diary' ? <DiaryBookIcon className="h-4 w-4" /> : undefined} />
           <button type="button" onClick={() => nav(studyId ? `/studies/${studyId}` : '/studies')}
             className="inline-flex items-center gap-2 rounded-full border-1 border-stroke-input px-3 py-1.5 text-text-regular text-text-title">
             <LinkIcon className="h-4 w-4 text-text-subtitle" />View Study
           </button>
         </span>
-        <p className="text-body-medium text-text-title">{paid ? INVOICE.paidStudy : INVOICE.study}</p>
+        <p className="text-body-medium text-text-title">{INVOICE.study}</p>
         <p className="text-text-regular text-text-subtitle">{INVOICE.issued}</p>
       </div>
 
@@ -64,7 +65,7 @@ export function InvoiceDetailsPanel({
           <>
             <p className="text-body-large text-brand-secondary">{INVOICE.paidTitle}</p>
             <p className="flex items-center gap-2 text-body-medium text-text-title">
-              <CardMark />Mastercard <span className="text-text-body">&bull;</span> •••• 4242
+              <CardMark brand={card?.brand} />{card?.brand ?? 'Card'} <span className="text-text-body">&bull;</span> •••• {card?.last4 ?? ''}
             </p>
             <p className="text-text-regular text-text-subtitle">{INVOICE.paidAt}</p>
           </>
@@ -75,7 +76,7 @@ export function InvoiceDetailsPanel({
             <p className="flex flex-wrap items-center gap-2 text-text-regular text-text-title">
               {INVOICE.autoDebit}
               <span className="inline-flex h-8 items-center gap-2 rounded-full bg-bg-1 px-3 text-text-regular text-text-subtitle">
-                <CardMark />Mastercard <span className="text-text-body">&bull;</span> •••• 4242
+                <CardMark brand={card?.brand} />{card?.brand ?? 'Card'} <span className="text-text-body">&bull;</span> •••• {card?.last4 ?? ''}
               </span>
             </p>
           </>
@@ -124,9 +125,10 @@ export function InvoiceDetailsPanel({
 
 /** Make Payment (1666:127878): the invoice's own checkout, card already chosen. */
 export function MakePaymentPanel({
-  open, onClose, onPaid, onInvoice,
-}: { open: boolean; onClose: () => void; onPaid?: () => void; onInvoice?: () => void }) {
+  open, onClose, onPaid, onInvoice, studyId,
+}: { open: boolean; onClose: () => void; onPaid?: () => void; onInvoice?: () => void; studyId?: string }) {
   const toast = useToast()
+  const { MAKE_PAYMENT } = useBill(studyId)
   const { cards } = useWorkspace()
   const [pick, setPick] = useState(0)
   const card = cards[pick % Math.max(1, cards.length)]
@@ -152,8 +154,8 @@ export function MakePaymentPanel({
         <span className="flex flex-col gap-2">
           <span className="text-text-regular text-text-title">{MAKE_PAYMENT.from}</span>
           <span className="inline-flex h-8 items-center gap-3 rounded-full bg-bgAlt-1 px-3 text-text-regular text-text-subtitle">
-            <CardMark brand={card?.brand} />{card?.brand ?? 'Mastercard'} <span className="text-text-body">&bull;</span>
-            <span className="pl-4">{card?.last4 ?? '4242'}</span>
+            <CardMark brand={card?.brand} />{card?.brand ?? 'Card'} <span className="text-text-body">&bull;</span>
+            <span className="pl-4">{card?.last4 ?? ''}</span>
           </span>
         </span>
         <Button variant="tertiary" size="row" onClick={() => {
@@ -210,7 +212,8 @@ export function AddCardPanel({ open, onClose }: { open: boolean; onClose: () => 
 }
 
 /** $350 paid successfully! (1779:104245). */
-export function PaidModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function PaidModal({ open, onClose, studyId }: { open: boolean; onClose: () => void; studyId?: string }) {
+  const { PAID_MODAL } = useBill(studyId)
   return (
     <Modal open={open} onClose={onClose} title={PAID_MODAL.title} body={PAID_MODAL.body}
       footer={<Button fullWidth onClick={onClose}>Done</Button>}>
@@ -227,10 +230,12 @@ export function PaidModal({ open, onClose }: { open: boolean; onClose: () => voi
 export function RemoveCardModal({ open, onClose, onConfirm, last4 }: {
   open: boolean; onClose: () => void; onConfirm?: () => void; last4?: string
 }) {
+  const { cards } = useWorkspace()
+  const copy = removeCardCopy(cards.find((c) => c.last4 === last4)?.brand ?? 'Mastercard', last4 || (cards[0]?.last4 ?? ''))
   return (
     <Modal open={open} onClose={onClose} wide
-      title={last4 ? REMOVE_CARD.title.replace('4242', last4) : REMOVE_CARD.title}
-      body={REMOVE_CARD.body}
+      title={copy.title}
+      body={copy.body}
       footer={
         <>
           <Button variant="tertiary" className="flex-1" onClick={onClose}>Cancel</Button>

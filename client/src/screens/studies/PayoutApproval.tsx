@@ -3,9 +3,9 @@ import Button from '../../components/ui/Button'
 import { CheckCircle, Close, ShieldIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import Pagination from '../../components/client/Pagination'
-import { pageLabels, paginate, payoutList } from '../../lib/derive'
-import type { Study } from '../../mock/db'
-import { useStudies } from '../../mock/store'
+import { pageLabels, paginate, payoutList } from '@shared/derive'
+import type { ClientStudy as Study } from '../../platform'
+import { useStudies } from '../../platform'
 import { useToast } from '../../components/ui/Toast'
 
 /**
@@ -25,16 +25,16 @@ import { useToast } from '../../components/ui/Toast'
  * have to catch up with.
  */
 export default function PayoutApproval({ study }: { study: Study }) {
-  const { approvePayouts } = useStudies()
+  const { approvePayouts, state: world } = useStudies()
   const toast = useToast()
-  const rows = payoutList(study)
+  const rows = payoutList(world, study)
   const [picked, setPicked] = useState<string[]>(() => rows.filter((r) => r.codeConfirmed).map((r) => r.person.id))
   const [page, setPage] = useState(1)
   const shown = paginate(rows, page)
 
   if (rows.length === 0) return null
 
-  const outstanding = rows.filter((r) => !r.person.participation.payoutApproved)
+  const outstanding = rows.filter((r) => !r.person.participation.paidAt)
   const total = picked.reduce((n, id) => n + (rows.find((r) => r.person.id === id)?.amount ?? 0), 0)
   const toggle = (id: string) =>
     setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]))
@@ -74,7 +74,7 @@ export default function PayoutApproval({ study }: { study: Study }) {
           <tbody>
             {shown.rows.map((r) => {
               const on = picked.includes(r.person.id)
-              const locked = !r.codeConfirmed || r.person.participation.payoutApproved
+              const locked = !r.codeConfirmed || Boolean(r.person.participation.paidAt)
               return (
                 <tr key={r.person.id} className="border-b-1 border-stroke-input last:border-b-0">
                   <td className="h-row px-[18px]">
@@ -84,7 +84,7 @@ export default function PayoutApproval({ study }: { study: Study }) {
                         locked ? 'border-stroke-input bg-bg-1 text-text-disabled'
                           : on ? 'border-cta-primary bg-cta-primary text-cta-primaryText'
                             : 'border-cta-tertiaryStroke bg-bg-0')}>
-                      {(on || r.person.participation.payoutApproved) && <CheckCircle className="h-3.5 w-3.5" />}
+                      {(on || Boolean(r.person.participation.paidAt)) && <CheckCircle className="h-3.5 w-3.5" />}
                     </button>
                   </td>
                   <td className="h-row px-[18px] text-text-regular text-text-title">{r.person.name}</td>

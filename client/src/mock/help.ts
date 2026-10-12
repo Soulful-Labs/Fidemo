@@ -94,34 +94,6 @@ export interface Ticket {
   number: string
 }
 
-export const TICKETS: Ticket[] = [
-  {
-    id: 'fi-s562357-open', subject: 'Study results not accessible',
-    last: 'Ronny: Hi Jennifer, Thanks for reaching out! I would like to let you know that all the re…',
-    unread: true, status: 'Open', activity: 'Aug 10, 2026', created: 'Aug 10, 2026', number: 'FI-S562357',
-  },
-  {
-    id: 'fi-s562357', subject: 'Study results not accessible',
-    last: 'You: Hi, Thanks for reaching out! I would like to let you know that all the results will be th…',
-    status: 'Solved', activity: 'Aug 10, 2026', created: 'Aug 10, 2026', number: 'FI-S562357',
-  },
-  {
-    id: 'fi-s562358', subject: 'Data analysis ongoing',
-    last: "You: Hello! We're currently in the process of analyzing the data and it will be available sh…",
-    status: 'Solved', activity: 'Sep 15, 2026', created: 'Sep 15, 2026', number: 'FI-S562358',
-  },
-  {
-    id: 'fi-s562359', subject: 'Results published',
-    last: 'You: Good news! The study results have been published and can be accessed at our web…',
-    status: 'Solved', activity: 'Oct 5, 2026', created: 'Oct 5, 2026', number: 'FI-S562359',
-  },
-  {
-    id: 'fi-s562360', subject: 'Feedback collection phase',
-    last: 'You: Hi! We are collecting feedback on the study results from participants until the end o…',
-    status: 'Solved', activity: 'Oct 31, 2026', created: 'Oct 31, 2026', number: 'FI-S562360',
-  },
-]
-
 /** The thread (1663:104436). The first reply carries the frame's own badge. */
 export const THREAD = {
   subject: 'Study results not accessible',

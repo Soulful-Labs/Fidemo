@@ -3,12 +3,12 @@ import SidePanel from '../../components/ui/SidePanel'
 import Button from '../../components/ui/Button'
 import { CheckCircle } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import type { RatingState } from '../../lib/policy'
-import { RATING_STATE_STARS, TRUST_BY_STARS } from '../../lib/policy'
-import type { Study } from '../../mock/db'
-import { useStudies } from '../../mock/store'
+import type { RatingState } from '@shared/types'
+import { RATING_DELTA, starsForRating } from '@shared/rules'
+import type { ClientStudy as Study } from '../../platform'
+import { useStudies } from '../../platform'
 import { useToast } from '../../components/ui/Toast'
-import { recruit } from '../../lib/derive'
+import { recruit } from '@shared/derive'
 
 /**
  * Rate Ferry L. (1627:98286).
@@ -58,22 +58,23 @@ function StatePicker({ value, onPick }: { value: RatingState | null; onPick: (r:
 export default function RatePanel({
   open, onClose, study, personId, rated,
 }: { open: boolean; onClose: () => void; study: Study; personId?: string; rated?: boolean }) {
-  const { rate } = useStudies()
+  const { rate, state: world } = useStudies()
   const toast = useToast()
   const [value, setValue] = useState<RatingState | null>(null)
   const [review, setReview] = useState('')
 
-  const r = personId ? recruit(study, personId) : undefined
+  const r = personId ? recruit(world, study, personId) : undefined
   const name = r?.name ?? 'Ferry L.'
   const role = r?.role ?? 'Physiology Therapist, Orthopedic'
-  const given = r?.participation.rating
+  /** What the client pressed. Stars are stored (shared/rules.ts, starsForRating); the control has three states. */
+  const given = r?.participation.rating?.state
 
   const submit = () => {
     if (!value || !personId) return
     const res = rate(study.id, personId, value)
     if (!res.ok) { toast(res.why); return }
     /** The policy's own table, so the panel never invents a number. */
-    toast(`Rated ${STATES.find((s) => s.key === value)!.label}, ${TRUST_BY_STARS[RATING_STATE_STARS[value]] > 0 ? '+' : ''}${TRUST_BY_STARS[RATING_STATE_STARS[value]]} to their Trust Score`)
+    toast(`Rated ${STATES.find((s) => s.key === value)!.label}, ${RATING_DELTA[starsForRating(value)] > 0 ? '+' : ''}${RATING_DELTA[starsForRating(value)]} to their Trust Score`)
     onClose()
   }
 

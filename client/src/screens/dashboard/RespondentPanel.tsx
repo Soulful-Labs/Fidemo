@@ -4,9 +4,9 @@ import TierChip from '../../components/client/TierChip'
 import { Avatar } from '../../components/client/RespondentCard'
 import type { Respondent } from '../../components/client/RespondentCard'
 import { ChevronRight, Info, VerifiedMark } from '../../components/ui/icons'
-import { PROFILE } from '../../mock/dashboard'
 import { useToast } from '../../components/ui/Toast'
 import { useWorkspace } from '../../mock/workspace'
+import { useProfile } from '../../platform'
 
 /** One card of the panel body: a heading and its rows. */
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
@@ -45,8 +45,8 @@ export default function RespondentPanel({
   onReviews?: () => void; title?: string }) {
   const { panels, addToPanel } = useWorkspace()
   const toast = useToast()
-  if (!respondent) return null
-  const d = PROFILE
+  const d = useProfile(respondent?.id)
+  if (!respondent || !d) return null
 
   return (
     <SidePanel open={open} onClose={onClose} title={title ?? respondent.name} headerClassName="h-[50px]" bodyClassName="flex flex-col gap-3 p-4"
@@ -90,7 +90,7 @@ export default function RespondentPanel({
         <div className="flex w-[278px] shrink-0 flex-col gap-3 rounded-lg bg-bg-1 p-4">
           <h3 className="text-text-medium text-text-subtitle">Performance Ratings</h3>
           <div className="flex flex-col gap-4">
-          {d.ratings.map((r) => {
+          {d.ratingRows.map((r) => {
             const [bar, text] = r.tone.split(' ')
             return (
               <div key={r.label} className="flex flex-col gap-1">
@@ -112,7 +112,7 @@ export default function RespondentPanel({
 
       <Block title="About">
         <dl className="grid grid-cols-3 gap-x-4 gap-y-4">
-          {d.about.map((a) => (
+          {d.aboutRows.map((a) => (
             <div key={a.label} className="flex flex-col gap-1">
               <dt className="text-text-regular text-text-subtitle">{a.label}</dt>
               <dd className="text-text-regular text-text-title">{a.value}</dd>
@@ -133,7 +133,7 @@ export default function RespondentPanel({
 
       <Block title="Metrics">
         <dl className="grid grid-cols-3 gap-4">
-          {d.metrics.map((m) => (
+          {d.metricRows.map((m) => (
             <div key={m.label} className="flex flex-col gap-1">
               <dt className="text-text-regular text-text-subtitle">{m.label}</dt>
               <dd className="text-title-s text-brand-primary">{m.value}</dd>

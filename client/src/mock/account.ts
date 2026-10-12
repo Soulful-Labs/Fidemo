@@ -20,43 +20,9 @@ export const PROFILE_FIELDS = {
   },
 }
 
-/**
- * Rating & Reviews (1663:104635). The headline is the client's own score;
- * each row pairs a review with the rating the client gave that participant.
- */
-export const CLIENT_RATING = { score: '4.5', of: 'of 1,468 reviews' }
-
-export const CLIENT_REVIEWS = [
-  {
-    study: 'Digital patient consulting experience analysis', stars: 4, rating: '4.0', at: 'April 10, 2026',
-    body: 'It was great working with Luke. He was clear about the requirements, responsive throughout the project, and very easy to communicate with.',
-    to: 'Eliza D', toStars: 5, toRating: '5.0', toBody: 'The collaboration went smoothly, and I’d be happy to…',
-  },
-  {
-    study: 'Mobile app design review', stars: 5, rating: '5', at: 'April 10, 2026',
-    body: 'Working with Sarah was a pleasure.',
-    to: 'John M', toStars: 4.5, toRating: '4.5',
-  },
-  {
-    study: 'E-commerce website optimization', stars: 5, rating: '5', at: 'April 10, 2026',
-    body: 'John was fantastic to work with. He understood the project goals from the start and delivered exceptional results that exceeded our expectations. I’d definitely recommend him to others!',
-    to: 'Mark J', toStars: 5, toRating: '5.0',
-  },
-  {
-    study: 'Social media marketing campaign', stars: 5, rating: '5', at: 'April 10, 2026',
-    to: 'Henry L', toStars: 5, toRating: '5.0',
-  },
-  {
-    study: 'Social media marketing campaign', stars: 5, rating: '5', at: 'April 10, 2026',
-    body: 'Collaborating with Mia was delightful. She was proactive in her approach, and her insights into market trends helped shape a successful campaign. I look forward to partnering with her again!',
-    to: 'Henry L', toStars: 5, toRating: '5.0', toBody: 'Mia’s strategic thinking was crucial for achieving ou…',
-  },
-]
-
 /** Certificate (1663:104813). Every string on the screen. */
 export const CERTIFICATE = {
   banner: 'You are a verified business!',
-  since: 'Since July 2026',
   title: 'Human Layer Buyer Certificate',
   idLabel: 'Cert. ID:',
   id: 'HL-R-9F2A-3K7P',

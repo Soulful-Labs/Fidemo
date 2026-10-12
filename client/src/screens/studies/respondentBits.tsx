@@ -3,7 +3,7 @@ import { Calendar, CheckCircle, Clock, Copy, Download, Eye, MapPin } from '../..
 import { cn } from '../../lib/cn'
 import { copyText } from '../../lib/copy'
 import type { Answer, QA } from '../../mock/respondent'
-import { ACTIVITY, NOTES, SESSION, VERIFICATION_PIN } from '../../mock/respondent'
+import { NOTES, SESSION, VERIFICATION_PIN } from '../../mock/respondent'
 import { useToast } from '../../components/ui/Toast'
 
 /** The scale answer: a column per star, the chosen cell filled. */
@@ -118,7 +118,8 @@ export function PinCard({ variant, pin, name, onShared }: {
 }) {
   const wide = variant === 'activity'
   const toast = useToast()
-  const code = pin ?? VERIFICATION_PIN.pin
+  /** The code on this participation, from the platform. There is none until a session is booked. */
+  const code = pin ?? '——'
   const first = name?.split(' ')[0]
   const body = (wide ? VERIFICATION_PIN.activityBody : VERIFICATION_PIN.sessionBody)
     .replace('John M.', first ? `${first}.` : 'John M.')
@@ -146,7 +147,11 @@ export function PinCard({ variant, pin, name, onShared }: {
 }
 
 /** The booked session, in the three states the frames draw it in. */
-export function SessionCard({ state }: { state: 'booked' | 'running' | 'done' }) {
+export function SessionCard({ state, session }: {
+  state: 'booked' | 'running' | 'done'
+  /** The booking on this participation: who, when and where. */
+  session?: { title: string; date: string; time: string; address?: string }
+}) {
   const toast = useToast()
   /** Once it is over the frame greys the slot out and leaves a Completed chip. */
   const meta = state === 'done' ? 'text-text-subtitle' : 'text-text-title'
@@ -154,16 +159,16 @@ export function SessionCard({ state }: { state: 'booked' | 'running' | 'done' })
   return (
     <div className={cn('flex justify-between gap-4 rounded-lg bg-yellow-30 p-4', state === 'booked' && 'flex-col')}>
       <div className="flex flex-col gap-2">
-        <p className="text-body-large text-text-title">{SESSION.title}</p>
+        <p className="text-body-large text-text-title">{session?.title ?? ''}</p>
         <p className={cn('flex h-5 items-center gap-2 text-text-regular', meta)}>
-          <Calendar className={cn('h-4 w-4', glyph)} />{SESSION.date}
+          <Calendar className={cn('h-4 w-4', glyph)} />{session?.date ?? ''}
         </p>
         <p className={cn('flex h-5 items-center gap-2 text-text-regular', meta)}>
-          <Clock className={cn('h-4 w-4', glyph)} />{SESSION.time}
+          <Clock className={cn('h-4 w-4', glyph)} />{session?.time ?? ''}
         </p>
-        {state !== 'booked' && (
+        {state !== 'booked' && session?.address && (
           <p className={cn('flex h-5 items-center gap-2 text-text-regular', meta)}>
-            <MapPin className={cn('h-4 w-4', glyph)} />{SESSION.address}
+            <MapPin className={cn('h-4 w-4', glyph)} />{session.address}
           </p>
         )}
         {state === 'booked' && <Button size="none" className="mt-2 h-12 w-full" onClick={() => toast('Interview started')}>{SESSION.cta}</Button>}
@@ -214,12 +219,15 @@ export function NotesCard({ download, className }: { download?: boolean; classNa
 }
 
 /** Study activity: a checked list, some entries with their own bullets. */
-export function ActivityList() {
+export function ActivityList({ events }: {
+  /** What has happened on this participation, oldest first, from the platform. */
+  events: { label: string; at?: string; strong?: string; bullets?: { text: string; at: string }[] }[]
+}) {
   return (
     <>
       <h2 className="pt-[18px] text-title-s leading-[22px] text-text-title">Study activity</h2>
       <ol className="flex flex-col gap-4 pt-[9px]">
-        {ACTIVITY.map((a, i) => (
+        {events.map((a, i) => (
           <li key={i} className="flex gap-3">
             <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-brand-secondary" />
             <div className="flex flex-col">

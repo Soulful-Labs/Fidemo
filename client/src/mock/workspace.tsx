@@ -1,23 +1,26 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
+import { invoiceNumber, invoices, rankedPool, studiesOf, teamById, ticketsOf } from '@shared/derive'
+import { clockTime, dayOrToday, monthDayYear } from '@shared/format'
+import { TIMINGS } from '@shared/platform'
+import { platform } from '@shared/store'
+import type { PlatformState, SavedCard, Ticket as PlatformTicket } from '@shared/types'
+import { usePlatform } from '../platform'
 import { useSession } from './session'
-import { MY_PANELS, POOL_PEOPLE } from './pool'
+import { MY_PANELS } from './pool'
 import type { PanelCard } from './pool'
-import { TICKETS } from './help'
 import type { Ticket } from './help'
-import { CARDS } from './payments'
 import { NOTIFICATIONS } from './dashboard'
 import type { NotificationRow } from './dashboard'
 
 /**
- * Everything the client owns that is not a study: their micro-panels, their
- * support tickets, their saved cards and their notifications.
+ * Everything the client owns that is not a study.
  *
- * Each of these used to be a fixed array a screen read and a toast pretended
- * to change. Raising a ticket left the tickets list empty, creating a panel
- * left My Panels as it was, and paying an invoice changed nothing. They are
- * one state now, keyed by account exactly as the studies are, so a flow that
- * starts on one screen finishes on another.
+ * Tickets, saved cards and which invoices are paid are the platform's: they
+ * are read from the shared store and changed through it, so a ticket raised
+ * here is the ticket the console answers. Micro-panels and this app's own
+ * notification list are the only things still held here, because no other
+ * app has them; their members are people from the shared pool.
  */
 
 export interface Panel extends PanelCard {
@@ -29,26 +32,27 @@ export interface Panel extends PanelCard {
 export interface ChatMessage {
   id: string
   from: 'client' | 'support'
+  /** The automatic first answer (workflow 56), which the frame badges. */
+  auto?: boolean
   lines: string[]
   at: string
   attachment?: string
 }
 
 export interface TicketRecord extends Ticket {
+  message: string
+  day: string
   messages: ChatMessage[]
 }
 
-export interface SavedCard { brand: string; last4: string; expires: string; isDefault?: boolean }
+export type { SavedCard } from '@shared/types'
 
-interface Workspace {
-  panels: Panel[]
+interface Local { panels: Panel[]; notifications: NotificationRow[] }
+
+interface Ctx extends Local {
   tickets: TicketRecord[]
   cards: SavedCard[]
-  notifications: NotificationRow[]
   paidInvoices: string[]
-}
-
-interface Ctx extends Workspace {
   createPanel: (input: { title: string; domain: string; roles: string; memberIds?: string[]; criteria?: Panel['criteria'] }) => string
   updatePanel: (id: string, patch: Partial<Panel>) => void
   deletePanel: (id: string) => void
@@ -67,59 +71,58 @@ interface Ctx extends Workspace {
 
 const WorkspaceCtx = createContext<Ctx | null>(null)
 
-const now = () => new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
 const today = () => new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
 
-/** The seeded account's panels, with their members joined from the pool. */
-const seededPanels = (): Panel[] => MY_PANELS.map((p, i) => ({
-  ...p,
-  memberIds: POOL_PEOPLE.slice(0, 3 + i).map((x) => x.id),
-}))
+/** The seeded account's panels: the frame's five cards, holding the first few people the pool ranks. */
+const seededPanels = (state: PlatformState): Panel[] => {
+  const ids = rankedPool(state).map((p) => p.id)
+  return MY_PANELS.map((p, i) => ({ ...p, memberIds: ids.slice(0, 3 + i), members: `${3 + i} members` }))
+}
 
-const seededTickets = (): TicketRecord[] => TICKETS.map((t) => ({
-  ...t,
-  messages: [
-    { id: `${t.id}-1`, from: 'client', lines: [t.subject], at: '04:26 PM' },
-    { id: `${t.id}-2`, from: 'support', lines: ['Hey Jennifer thanks for reaching out!'], at: '04:26 PM' },
-  ],
-}))
-
-const EMPTY: Workspace = { panels: [], tickets: [], cards: [], notifications: [], paidInvoices: [] }
-const SEEDED = (): Workspace => ({
-  panels: seededPanels(),
-  tickets: seededTickets(),
-  cards: CARDS.map((c) => ({ brand: c.brand, last4: c.last4, expires: c.expires, isDefault: c.isDefault })),
-  notifications: NOTIFICATIONS,
-  paidInvoices: [],
-})
+/** A platform ticket as the Tickets table and the chat write it. */
+function ticketRow(state: PlatformState, t: PlatformTicket): TicketRecord {
+  const last = t.messages.at(-1)!
+  const who = last.from === 'user' ? 'You' : last.from === 'team' ? (teamById(state, last.by)?.name.split(' ')[0] ?? 'Support') : 'Assistant'
+  return {
+    id: t.id, subject: t.subject, message: t.message, number: t.id,
+    last: `${who}: ${last.text.slice(0, 90)}${last.text.length > 90 ? '…' : ''}`,
+    unread: t.status === 'open' && last.from !== 'user', status: t.status === 'open' ? 'Open' : 'Solved',
+    activity: dayOrToday(t.lastActivityAt), created: monthDayYear(t.createdAt), day: new Date(t.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'long' }),
+    messages: t.messages.map((m) => ({
+      id: m.id, from: m.from === 'user' ? 'client' as const : 'support' as const, auto: m.from === 'auto' || undefined,
+      lines: [m.text], at: clockTime(m.at), attachment: m.attachment,
+    })),
+  }
+}
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
+  const state = usePlatform()
   const { account } = useSession()
   const key = account?.email ?? ''
-  const [byAccount, setByAccount] = useState<Record<string, Workspace>>({})
-  const base = account?.seeded ? SEEDED() : EMPTY
-  const w = byAccount[key] ?? base
+  const clientId = account?.clientId ?? ''
+  const [byAccount, setByAccount] = useState<Record<string, Local>>({})
+  const w = useMemo<Local>(
+    () => byAccount[key] ?? (account?.seeded ? { panels: seededPanels(platform().getState()), notifications: NOTIFICATIONS } : { panels: [], notifications: [] }),
+    [byAccount, key, account?.seeded],
+  )
 
-  const patch = useCallback((fn: (cur: Workspace) => Workspace) => {
-    setByAccount((m) => {
-      const cur = m[key] ?? (account?.seeded ? SEEDED() : EMPTY)
-      return { ...m, [key]: fn(cur) }
-    })
-  }, [account?.seeded, key])
+  const patch = useCallback((fn: (cur: Local) => Local) => {
+    setByAccount((m) => ({ ...m, [key]: fn(m[key] ?? w) }))
+  }, [key, w])
+
+  const tickets = useMemo(() => ticketsOf(state, 'client', clientId).map((t) => ticketRow(state, t)), [state, clientId])
+  const client = state.clients.find((c) => c.id === clientId)
+  const mine = useMemo(() => studiesOf(state, clientId), [state, clientId])
+  const paidInvoices = useMemo(() => invoices(mine).filter((i) => i.paid).map((i) => i.number), [mine])
 
   const createPanel = useCallback<Ctx['createPanel']>((input) => {
     const id = `panel-${Date.now().toString(36)}`
     patch((cur) => ({
       ...cur,
       panels: [{
-        id,
-        title: input.title || 'Untitled micro-panel',
-        domain: input.domain || 'Healthcare',
-        roles: input.roles,
-        members: `${(input.memberIds ?? []).length} members`,
-        updated: `Updated on ${today()}`,
-        memberIds: input.memberIds ?? [],
-        criteria: input.criteria,
+        id, title: input.title || 'Untitled micro-panel', domain: input.domain || 'Healthcare', roles: input.roles,
+        members: `${(input.memberIds ?? []).length} members`, updated: `Updated on ${today()}`,
+        memberIds: input.memberIds ?? [], criteria: input.criteria,
       }, ...cur.panels],
     }))
     return id
@@ -146,63 +149,28 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     return { ok: true }
   }, [patch, w.panels])
 
+  /** Workflow 56: the ticket goes to the platform, the first answer is automatic, and a person follows from the console. */
   const raiseTicket = useCallback<Ctx['raiseTicket']>(({ subject, message }) => {
-    const n = Math.floor(100000 + Math.random() * 899999)
-    const id = `fi-s${n}`
-    patch((cur) => ({
-      ...cur,
-      tickets: [{
-        id,
-        subject: subject || 'Support request',
-        last: `You: ${message.slice(0, 80)}`,
-        status: 'Open',
-        activity: 'Just now',
-        created: today(),
-        number: `FI-S${n}`,
-        unread: false,
-        messages: [{ id: `${id}-1`, from: 'client', lines: [message], at: now() }],
-      }, ...cur.tickets],
-    }))
-    return id
-  }, [patch])
+    const made = platform().createTicket({ kind: 'client', id: clientId }, { subject, message })
+    if (!made.ok) return ''
+    setTimeout(() => platform().replyTicket(made.id, 'auto', 'Thanks for reaching out! Our team and assistants will review this and reach out to you shortly.'), TIMINGS.autoReply)
+    return made.id
+  }, [clientId])
 
   const replyToTicket = useCallback<Ctx['replyToTicket']>((id, text, attachment) => {
-    patch((cur) => ({
-      ...cur,
-      tickets: cur.tickets.map((t) => (t.id === id ? {
-        ...t,
-        last: `You: ${text.slice(0, 80)}`,
-        activity: 'Just now',
-        // `-sent` marks a reply the client typed, which is what the chat
-        // renders beyond the frame's seeded thread.
-        messages: [...t.messages, { id: `${id}-${t.messages.length + 1}-sent`, from: 'client' as const, lines: [text], at: now(), attachment }],
-      } : t)),
-    }))
-  }, [patch])
+    platform().replyTicket(id, 'user', text, { kind: 'client', id: clientId }, attachment)
+  }, [clientId])
 
-  const solveTicket = useCallback<Ctx['solveTicket']>((id) => {
-    patch((cur) => ({ ...cur, tickets: cur.tickets.map((t) => (t.id === id ? { ...t, status: 'Solved' as const } : t)) }))
-  }, [patch])
+  const solveTicket = useCallback<Ctx['solveTicket']>((id) => { platform().resolveTicket(id) }, [])
+  const addCard = useCallback<Ctx['addCard']>((card) => { platform().addCard(clientId, card) }, [clientId])
+  const removeCard = useCallback<Ctx['removeCard']>((last4) => { platform().removeCard(clientId, last4) }, [clientId])
+  const setDefaultCard = useCallback<Ctx['setDefaultCard']>((last4) => { platform().setDefaultCard(clientId, last4) }, [clientId])
 
-  const addCard = useCallback<Ctx['addCard']>((card) => {
-    patch((cur) => ({ ...cur, cards: [...cur.cards, { ...card, isDefault: cur.cards.length === 0 }] }))
-  }, [patch])
-
-  const removeCard = useCallback<Ctx['removeCard']>((last4) => {
-    patch((cur) => {
-      const left = cur.cards.filter((c) => c.last4 !== last4)
-      if (left.length > 0 && !left.some((c) => c.isDefault)) left[0] = { ...left[0]!, isDefault: true }
-      return { ...cur, cards: left }
-    })
-  }, [patch])
-
-  const setDefaultCard = useCallback<Ctx['setDefaultCard']>((last4) => {
-    patch((cur) => ({ ...cur, cards: cur.cards.map((c) => ({ ...c, isDefault: c.last4 === last4 })) }))
-  }, [patch])
-
+  /** Paying an invoice pays the balance on its study; the invoice is paid because the study no longer owes. */
   const payInvoice = useCallback<Ctx['payInvoice']>((number) => {
-    patch((cur) => ({ ...cur, paidInvoices: [...new Set([...cur.paidInvoices, number])] }))
-  }, [patch])
+    const study = mine.find((s) => invoiceNumber(s) === number)
+    if (study) platform().payBalance(study.id)
+  }, [mine])
 
   const markNotificationsRead = useCallback(() => {
     patch((cur) => ({ ...cur, notifications: cur.notifications.map((n) => ({ ...n, unread: false })) }))
@@ -213,12 +181,12 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   }, [patch])
 
   const value = useMemo<Ctx>(() => ({
-    ...w,
+    ...w, tickets, cards: client?.cards ?? [], paidInvoices,
     createPanel, updatePanel, deletePanel, addToPanel,
     raiseTicket, replyToTicket, solveTicket,
     addCard, removeCard, setDefaultCard, payInvoice,
     markNotificationsRead, markNotificationRead,
-  }), [w, createPanel, updatePanel, deletePanel, addToPanel, raiseTicket, replyToTicket,
+  }), [w, tickets, client?.cards, paidInvoices, createPanel, updatePanel, deletePanel, addToPanel, raiseTicket, replyToTicket,
     solveTicket, addCard, removeCard, setDefaultCard, payInvoice, markNotificationsRead, markNotificationRead])
 
   return <WorkspaceCtx.Provider value={value}>{children}</WorkspaceCtx.Provider>

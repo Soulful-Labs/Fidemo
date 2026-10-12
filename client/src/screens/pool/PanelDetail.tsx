@@ -8,12 +8,14 @@ import { AddToPanel } from './poolBits'
 import { SentModal } from './PoolModals'
 import { Calendar, Info, MoreVertical, UsersIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import { CRITERIA, FORECAST, PANEL_DETAIL, POOL_PEOPLE } from '../../mock/pool'
+import { CRITERIA, FORECAST, PANEL_DETAIL, useForecast, usePool } from '../../mock/pool'
+import { cohort } from '@shared/derive'
 import { useWorkspace } from '../../mock/workspace'
 import { useToast } from '../../components/ui/Toast'
 
 /** The forecast card the Panel Details tab puts beside the criteria. */
 function Forecast() {
+  const f = useForecast()
   return (
     <aside className="w-[468px] shrink-0 overflow-hidden rounded-lg border-1 border-stroke-input">
       <p className="inline-flex items-center gap-2 px-4 py-4 text-title-s leading-[22px] text-text-title">
@@ -25,22 +27,22 @@ function Forecast() {
             <UsersIcon className="h-4 w-4 text-text-subtitle" />{FORECAST.estimated}
           </span>
           <span className="text-title-l text-text-title">
-            {FORECAST.count} <span className="text-text-regular text-text-subtitle">{FORECAST.countSuffix}</span>
+            ~{f.count} <span className="text-text-regular text-text-subtitle">{FORECAST.countSuffix}</span>
           </span>
         </div>
       </div>
       <p className="px-4 pt-4 text-label uppercase tracking-[0.04em] text-text-body">TIER DISTRIBUTION</p>
       <div className="grid grid-cols-3 gap-3 px-4 pt-2">
-        {FORECAST.tiers.map((t) => (
+        {f.tiers.map((t) => (
           <div key={t.tier} className="flex flex-col items-center gap-2 rounded-md border-1 border-stroke-input py-3">
-            <span className="text-title-s text-text-title">{t.pct}</span>
+            <span className="text-title-s text-text-title">{t.pct}%</span>
             <TierChip tier={t.tier} />
-            <span className="text-text-regular text-text-subtitle">{t.members}</span>
+            <span className="text-text-regular text-text-subtitle">~{t.members} members</span>
           </div>
         ))}
       </div>
       <dl className="flex flex-col px-4 pt-4">
-        {FORECAST.rows.map((r) => (
+        {[{ label: 'Average Score', value: `${f.averageScore}%` }, ...FORECAST.rows].map((r) => (
           <div key={r.label} className="flex items-center justify-between gap-4 border-t-1 border-stroke-1 py-3">
             <dt className="text-text-regular text-text-subtitle">{r.label}</dt>
             <dd className="text-text-regular text-text-title">{r.value}</dd>
@@ -94,19 +96,23 @@ export default function PanelDetail({ featured }: { featured?: boolean }) {
   const tabKey = params.get('tab') ?? 'members'
   const tab = tabKey
   const { panels, addToPanel } = useWorkspace()
+  const { people: POOL_PEOPLE } = usePool()
   const toast = useToast()
   /** A panel the client built shows its own name, roles and members. */
   const own = featured ? undefined : panels.find((x) => x.id === panelId)
   const base = featured ? PANEL_DETAIL.featured : PANEL_DETAIL.mine
   const d = own
     ? { ...base, title: own.title, domain: own.domain, roles: own.roles || base.roles,
-        stats: base.stats.map((st) => (st.label === 'Panel Members'
-          ? { ...st, value: String(own.memberIds.length) } : st)) }
+        stats: base.stats }
     : base
   /** Members are the people in it; Eligible Matches are everyone else. */
   const members = own ? POOL_PEOPLE.filter((x) => own.memberIds.includes(x.id)) : POOL_PEOPLE
   const eligible = own ? POOL_PEOPLE.filter((x) => !own.memberIds.includes(x.id)) : POOL_PEOPLE
-  const shown = tabKey === 'members' ? members : eligible
+  const listed = tabKey === 'members' ? members : eligible
+  /** The frame draws twelve cards; the rest are behind Load more. */
+  const [limit, setLimit] = useState(12)
+  const shown = listed.slice(0, limit)
+  const c = cohort(members)
   const [sent, setSent] = useState(params.get('modal') === 'sent')
   const set = (k: string) => { const n = new URLSearchParams(params); n.set('tab', k); setParams(n) }
   const tabs = featured
@@ -142,7 +148,7 @@ export default function PanelDetail({ featured }: { featured?: boolean }) {
           </div>
           {'description' in d && <p className="text-text-regular text-text-subtitle">{d.description}</p>}
           <div className={cn('grid pt-1', featured ? 'grid-cols-[164px_166px_166px_162px_1fr]' : 'grid-cols-[164px_166px_166px_1fr]')}>
-            {d.stats.map((s) => (
+            {d.stats.map((st) => (st.label.includes('Members') ? { ...st, value: String(c.count) } : st.label === 'Avg. Score' ? { ...st, value: `${c.averageScore}%` } : st)).map((s) => (
               <div key={s.label} className="flex flex-col gap-1">
                 <span className="text-text-regular text-text-subtitle">{s.label}</span>
                 <span className={cn('text-title-s', 'accent' in s && s.accent ? 'text-brand-secondary' : 'text-text-title')}>{s.value}</span>
@@ -179,7 +185,7 @@ export default function PanelDetail({ featured }: { featured?: boolean }) {
                 </p>
               )}
               {shown.map((p) => (
-                <RespondentCard key={p.id} respondent={{ ...p, professionVerified: true }}
+                <RespondentCard key={p.id} respondent={p}
                   className="px-4 pb-2 pt-4"
                   saveable={tab === 'members'}
                   actions={tab === 'members'
@@ -189,6 +195,12 @@ export default function PanelDetail({ featured }: { featured?: boolean }) {
                         toast(res.ok ? `${p.name} added to ${d.title}` : res.why!)
                       }} />} />
               ))}
+                  {listed.length > shown.length && (
+                    <button type="button" onClick={() => setLimit((n) => n + 12)}
+                      className="col-span-full py-4 text-body-medium text-brand-primary hover:underline">
+                      Load more ({listed.length - shown.length} more)
+                    </button>
+                  )}
             </div>
           )}
         </div>

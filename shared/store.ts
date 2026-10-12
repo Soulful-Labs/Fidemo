@@ -772,12 +772,12 @@ export function createPlatform(options: Options = {}) {
       return yes({ id })
     }),
 
-    replyTicket: (ticketId: string, from: 'user' | 'team' | 'auto', text: string, actor: Actor = SYSTEM) => move((s) => {
+    replyTicket: (ticketId: string, from: 'user' | 'team' | 'auto', text: string, actor: Actor = SYSTEM, attachment?: string) => move((s) => {
       const t = s.tickets.find((x) => x.id === ticketId)
       if (!t) return no('No such ticket')
       if (t.status === 'closed') return no('This ticket has been resolved and closed')
       if (!text.trim()) return no('Write a message')
-      t.messages.push({ id: uid('m'), from, by: actor.kind === 'team' ? actor.id : undefined, text: text.trim(), at: iso() })
+      t.messages.push({ id: uid('m'), from, by: actor.kind === 'team' ? actor.id : undefined, text: text.trim(), attachment, at: iso() })
       t.lastActivityAt = iso()
       if (from === 'team') {
         log(s, actor, `Replied to ticket #${t.id}`, 'Support / Tickets / Reply')

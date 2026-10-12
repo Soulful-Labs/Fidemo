@@ -5,7 +5,7 @@ import './index.css'
 import routes from './routes'
 import { CreateProvider } from './mock/createStore'
 import ToastHost from './components/ui/Toast'
-import { StudyProvider } from './mock/store'
+import { PlatformClock } from './platform'
 import { SessionProvider } from './mock/session'
 import { WorkspaceProvider } from './mock/workspace'
 
@@ -18,13 +18,12 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <SessionProvider>
         <WorkspaceProvider>
-          <StudyProvider>
           <CreateProvider>
+            <PlatformClock />
             <ToastHost>
               <Routed />
             </ToastHost>
           </CreateProvider>
-          </StudyProvider>
         </WorkspaceProvider>
       </SessionProvider>
     </BrowserRouter>

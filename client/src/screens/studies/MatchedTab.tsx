@@ -10,8 +10,8 @@ import RespondentPanel from '../dashboard/RespondentPanel'
 import { StudyFrame } from '../../components/client/StudyFrame'
 import { SentModal } from '../pool/PoolModals'
 import { ChevronRight } from '../../components/ui/icons'
-import { useStudies, useStudy } from '../../mock/store'
-import { recruits } from '../../lib/derive'
+import { useStudies, useStudy } from '../../platform'
+import { recruits } from '@shared/derive'
 import { useToast } from '../../components/ui/Toast'
 
 /**
@@ -31,11 +31,11 @@ export default function MatchedTab() {
   // Matched and Invited are one tab with a switch; the route map names both.
   const [state, setState] = useState<'matched' | 'invited'>(pathname.endsWith('/invited') ? 'invited' : 'matched')
   const [tier, setTier] = useState('All')
-  const { moveRespondent } = useStudies()
+  const { moveRespondent, state: world } = useStudies()
   const toast = useToast()
   /** The frame draws nine cards; the rest are behind Load more. */
   const [shown, setShown] = useState(9)
-  const matched = recruits(s, state)
+  const matched = recruits(world, s, state)
     .filter((r) => tier === 'All' || r.tier === tier.toLowerCase())
     .sort((a, b) => b.score - a.score)
   const people = matched.slice(0, shown)

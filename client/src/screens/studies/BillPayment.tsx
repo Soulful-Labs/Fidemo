@@ -5,14 +5,14 @@ import Button from '../../components/ui/Button'
 import StudyTypeTag from '../../components/client/StudyTypeTag'
 import { Clock, DiaryBookIcon, Info, PaymentsIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import { BILL, BILLING, BILLING_TOTAL } from '../../mock/pay'
-import { useStudies } from '../../mock/store'
+import { useBill } from '../../mock/pay'
+import { useStudies } from '../../platform'
 import { useWorkspace } from '../../mock/workspace'
-import { invoices } from '../../lib/derive'
+import { invoices } from '@shared/derive'
 import { PaidModal } from '../payments/PaymentPanels'
 import type { BillingRow } from '../../mock/pay'
 import { useToast } from '../../components/ui/Toast'
-import { useStudy } from '../../mock/store'
+import { useStudy } from '../../platform'
 
 /** One invoice line, on the white card this screen draws it in. */
 function Line({ r, last }: { r: BillingRow; last?: boolean }) {
@@ -67,6 +67,7 @@ export default function BillPayment() {
   const { studies } = useStudies()
   const { payInvoice, paidInvoices } = useWorkspace()
   const [paid, setPaid] = useState(false)
+  const { BILL, BILLING, BILLING_TOTAL } = useBill(s.id)
   const c = BILL.card
 
   /** The invoice this study's balance settles, and whether it is already paid. */
@@ -88,7 +89,7 @@ export default function BillPayment() {
   return (
     <AppShell hideCreate crumbs={[
       { label: 'Studies', to: '/studies' },
-      { label: 'GLP-1 Care…' },
+      { label: s.title.length > 12 ? `${s.title.slice(0, 11)}…` : s.title, to: `/studies/${s.id}` },
       { label: BILL.crumb },
     ]}>
       <div className="min-h-[913px] rounded-lg bg-bg-0 p-4">
@@ -169,7 +170,7 @@ export default function BillPayment() {
           </div>
         </div>
       </div>
-      <PaidModal open={paid} onClose={() => { setPaid(false); nav(`/studies/${s.id}/pay`) }} />
+      <PaidModal open={paid} studyId={s.id} onClose={() => { setPaid(false); nav(`/studies/${s.id}/pay`) }} />
     </AppShell>
   )
 }

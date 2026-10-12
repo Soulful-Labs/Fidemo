@@ -4,7 +4,7 @@ import Button from '../../components/ui/Button'
 import { StudyFrame } from '../../components/client/StudyFrame'
 import { Edit, Info, PoolIcon, StudiesIcon } from '../../components/ui/icons'
 import { useParams } from 'react-router-dom'
-import { useStudy } from '../../mock/store'
+import { useStudy } from '../../platform'
 
 const FORM = (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">

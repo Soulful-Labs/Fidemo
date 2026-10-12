@@ -1,38 +1,10 @@
-import { PROFILE } from './dashboard'
-
-/** The profile rail beside a respondent's result (1627:97305). */
-export const RESPONDENT = {
-  id: 'ferry-l',
-  /** The breadcrumb and the Results row name the frames use. */
-  rowName: 'Ferry L',
-  name: 'John M',
-  first: 'John',
-  role: 'Human Resource Manager',
-  experience: '12 years experience',
-  location: 'New York, USA',
-  cert: 'Cert. ID: HL-R-9F2A-3K7P',
-  trustScore: 95,
-  tier: 'platinum' as const,
-  ratings: PROFILE.ratings,
-  about: [
-    { label: 'Education', value: 'MBBS, BHMS' },
-    { label: 'Gender', value: 'Male' },
-    { label: 'Age', value: '31 years' },
-  ],
-  verified: ['Government ID Verified', 'Live Photo Verified', 'Verified Professional', 'NPI cross checked'],
-  metrics: [
-    { label: 'Completed Studies', value: '100' },
-    { label: 'Earned', value: '$5K+' },
-    { label: 'Highest Streak', value: '24 weeks' },
-  ],
-}
 
 /** The invitation to rate, drawn in the rail and again across the Activity tab. */
 export const RATE_PROMPT = {
-  title: `Rate ${RESPONDENT.name} for this study`,
+  title: "Rate this respondent for this study",
   rail: 'Your rating helps you and other clients find better matching respondents.',
   wide: 'Rating your experience helps you and other clients find better matching respondents.',
-  cta: `Rate ${RESPONDENT.first}`,
+  cta: "Rate",
 }
 
 export type Answer =
@@ -102,37 +74,14 @@ export const DIARY_DAYS: { label: string; answers: QA[] }[] = [
   },
 ]
 
-/** Study activity (1627:97901). */
-export const ACTIVITY: { label: string; at?: string; strong?: string; bullets?: { text: string; at: string }[] }[] = [
-  { label: 'Applied to study', at: 'Aug 5, 2026, 10:42 PM' },
-  { label: 'Qualified and invited for the study', at: 'Aug 7, 2026, 10:42 PM' },
-  { label: 'Scheduled for ', strong: 'August 12, 2026, Wednesday, 10:00 AM, at Carolina, Texas, USA', at: 'Aug 7, 2026, 10:42 PM' },
-  {
-    label: 'Completed the study successfully.',
-    bullets: [
-      { text: 'Verified with PIN by John M (participant)', at: 'Aug 12, 2026, 10:05 AM' },
-      { text: 'Marked as completed by client (you)', at: 'Aug 12, 2026, 10:42 AM' },
-    ],
-  },
-  { label: 'Rewarded the incentive successfully.', at: 'Aug 15, 2026, 10:42 PM' },
-]
-
 export const VERIFICATION_PIN = {
   title: 'Verification PIN',
   activityBody: 'This PIN number is to be shared with John M. for their completion verification',
   sessionBody: 'Share this PIN number with John M. for their completion verification',
-  pin: '152438',
 }
 
-/** The booked session a session-type respondent is judged on (1627:102694). */
-export const SESSION = {
-  title: 'In-person interview of Liam K. and You',
-  date: 'August 12, 2026, Wednesday',
-  time: '10:00 AM - 11:00 AM',
-  address: 'A-123, Empire State, Hamburg Street 2, Carolina, Texas, USA - 10001',
-  cta: 'Start Interview',
-  running: '0:25:16',
-}
+/** The session card's own words. Who, when and where come from the booking. */
+export const SESSION = { cta: 'Start Interview', running: '0:25:16' }
 
 export const NOTES = {
   title: 'Add Notes',

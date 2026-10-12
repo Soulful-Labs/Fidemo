@@ -1,7 +1,9 @@
 import SidePanel from '../../components/ui/SidePanel'
 import Button from '../../components/ui/Button'
 import { Download } from '../../components/ui/icons'
-import { SESSION_FILES } from '../../mock/pay'
+import { sessionSeats } from '@shared/derive'
+import { slotDay } from '@shared/format'
+import type { Study } from '@shared/types'
 import { useToast } from '../../components/ui/Toast'
 
 /**
@@ -10,9 +12,11 @@ import { useToast } from '../../components/ui/Toast'
  * each session yields, Notes or Recordings + Transcript.
  */
 export default function DownloadSessionsPanel({
-  open, onClose, artefact = 'Notes',
-}: { open: boolean; onClose: () => void; artefact?: string }) {
+  open, onClose, artefact = 'Notes', study,
+}: { open: boolean; onClose: () => void; artefact?: string; study: Study }) {
   const toast = useToast()
+  /** The study's own sessions, each with the people who were booked into it. */
+  const SESSION_FILES = sessionSeats(study).map((x, i) => ({ title: `Session ${i + 1}`, at: `${slotDay(x.date)}, ${x.slot}`, participants: `${x.taken} participants` }))
   return (
     <SidePanel open={open} onClose={onClose} title="Download Sessions Results"
       headerClassName="h-14 border-b-1 border-bgAlt-2" bodyClassName="flex flex-col gap-[15px] p-4"

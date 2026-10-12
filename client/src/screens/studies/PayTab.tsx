@@ -4,10 +4,11 @@ import Button from '../../components/ui/Button'
 import { StudyFrame } from '../../components/client/StudyFrame'
 import { Download, Info, InvoiceIcon, MoneyMark } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
+import { useBill } from '../../mock/pay'
 import type { BillingRow } from '../../mock/pay'
 import { useToast } from '../../components/ui/Toast'
-import { useStudy } from '../../mock/store'
-import { billing } from '../../lib/derive'
+import { useStudy } from '../../platform'
+import { billing } from '@shared/derive'
 import PayoutApproval from './PayoutApproval'
 
 /** A figure beside the payment due tile. */
@@ -49,6 +50,8 @@ export default function PayTab() {
   const [params] = useSearchParams()
   const s = useStudy(id)
   const b = billing(s)
+  const { INVOICE, transactions } = useBill(s.id)
+  const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).replace(/ (\d{4})$/, ', $1')
   /**
    * Figma draws this tab in two states. It is not a toggle: the balance
    * becomes payable when the study is completed, and the net payable row
@@ -71,11 +74,11 @@ export default function PayTab() {
             <div className="mr-3 flex h-[79px] w-[547px] items-center justify-between rounded-md bg-yellow-30 px-4">
               <span className="flex flex-col gap-1">
                 <span className="text-text-regular text-text-subtitle">
-                  {due ? 'Payment Due by 12 Aug, 2026' : 'Payment Due'}
+                  {due && INVOICE.dueBy ? `Payment Due by ${INVOICE.dueBy}` : 'Payment Due'}
                 </span>
-                <span className="text-title-l text-text-title">{money(due ? b.net : b.due)}</span>
+                <span className="text-title-l text-text-title">{money(due ? b.outstanding : b.due)}</span>
               </span>
-              <Button size="none" className="h-12 w-[154px]" disabled={!due}
+              <Button size="none" className="h-12 w-[154px]" disabled={!due || b.outstanding <= 0}
                 leftIcon={<MoneyMark className="h-5 w-5" />}
                 onClick={() => nav(`/studies/${s.id}/payment`)}>
                 <span className="text-body-medium">Pay Balance</span>
@@ -88,7 +91,7 @@ export default function PayTab() {
           <div className="flex gap-6 pt-6">
             <div className="w-[547px]">
               <h3 className="text-title-s leading-[22px] text-text-title">
-                Billing {!due && <span className="text-text-regular text-text-subtitle">As on today, 11 Aug, 2026</span>}
+                Billing {!due && <span className="text-text-regular text-text-subtitle">As on today, {today}</span>}
               </h3>
               <div className="mt-4 overflow-hidden rounded-md bg-bg-1">
                 {b.lines.map((r) => <Row key={r.label} r={{ ...r, amount: money(r.amount) }} />)}
@@ -119,9 +122,8 @@ export default function PayTab() {
             <div className="flex-1">
               <h3 className="text-title-s leading-[22px] text-text-title">Transactions</h3>
               <div className="mt-4 flex flex-col gap-3">
-                {[{ label: 'Incentive Deposit Paid', amount: money(b.deposit),
-                    at: 'Aug 5, 2026, 10:24 AM', sub: `$${s.rates.incentivePer} x ${s.required} participants` }].map((t) => (
-                  <div key={t.label} className="flex justify-between gap-4 rounded-md border-1 border-stroke-input px-4 py-[14px]">
+                {transactions.map((t) => (
+                  <div key={t.label + t.at} className="flex justify-between gap-4 rounded-md border-1 border-stroke-input px-4 py-[14px]">
                     <span className="flex flex-col">
                       <span className="inline-flex items-center gap-2 text-text-regular leading-5 text-text-title">
                         <InvoiceIcon className="h-4 w-4 text-text-title" />{t.label}

@@ -10,9 +10,10 @@ import DownloadSessionsPanel from './DownloadSessionsPanel'
 import { ScoreCell, StatusPill, Th } from '../../components/client/RespondentTable'
 import { Calendar, ChevronRight, Clock, VideoIcon } from '../../components/ui/icons'
 import { useToast } from '../../components/ui/Toast'
-import { useStudy } from '../../mock/store'
-import { pageLabels, paginate, recruits } from '../../lib/derive'
-import { RESPONDENT_TAG } from '../../lib/lifecycle'
+import { slotOf, usePlatform, useStudy } from '../../platform'
+import { pageLabels, paginate, recruits, sessionSeats } from '@shared/derive'
+import { slotDay } from '@shared/format'
+import { CLIENT_TAG } from '@shared/lifecycle'
 
 /**
  * Recruited (1627:96535). The study type changes what this tab is: a survey
@@ -29,6 +30,7 @@ export default function RecruitedTab() {
   const { id } = useParams()
   const [params] = useSearchParams()
   const s = useStudy(id)
+  const world = usePlatform()
   const [downloads, setDownloads] = useState(params.get('panel') === 'downloads')
   const session = s.type !== 'survey' && s.type !== 'diary'
   const group = s.type === 'group_video_call' || s.type === 'in_person_group'
@@ -38,24 +40,21 @@ export default function RecruitedTab() {
   const [page, setPage] = useState(1)
   const booked = session && state === 'booked'
 
-  const all = recruits(s, 'recruited')
+  const all = recruits(world, s, 'recruited')
   const applications = all
-    .filter((r) => status === 'All' || RESPONDENT_TAG[r.state] === status)
+    .filter((r) => status === 'All' || CLIENT_TAG[r.state] === status)
     .filter((r) => tier === 'All' || r.tier === tier.toLowerCase())
   const shownApplications = paginate(applications, page)
-  const scheduled = all.filter((r) => r.state === 'scheduled' && r.participation.slot)
-  /** The group frames draw ten seats a session. */
-  const SEATS = 10
-  /** The frame puts Join Now on the session about to start, which is the first. */
-  const sessions = Object.values(
-    scheduled.reduce<Record<string, { key: string; day: string; time: string; people: typeof scheduled }>>((acc, r) => {
-      const slot = r.participation.slot!
-      const key = `${slot.day} ${slot.time}`
-      acc[key] = acc[key] ?? { key, day: slot.day, time: slot.time, people: [] }
-      acc[key].people.push(r)
-      return acc
-    }, {}),
-  )
+  const scheduled = all.filter((r) => r.state === 'scheduled' && r.participation.booking)
+  /**
+   * A group study's sessions are the study's own, each with its seats and the
+   * people booked into it; the seat count is no longer a constant.
+   */
+  const everyone = recruits(world, s)
+  const sessions = sessionSeats(s).map((x) => ({
+    key: x.id, day: slotDay(x.date), time: x.slot, seats: x.seats,
+    people: everyone.filter((r) => x.people.includes(r.id)),
+  }))
 
   return (
     <AppShell crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
@@ -95,7 +94,7 @@ export default function RecruitedTab() {
                       <Clock className="h-4 w-4 text-brand-primary" />{g.time}
                     </p>
                     <span className="inline-flex h-7 items-center self-start rounded-full bg-bgAlt-2 px-3 text-text-regular text-text-title">
-                      {g.people.length} / {SEATS} Seats
+                      {g.people.length} / {g.seats} Seats
                     </span>
                   </div>
                   <div className="flex flex-col items-end justify-between gap-6">
@@ -137,7 +136,7 @@ export default function RecruitedTab() {
                           <td className="h-[60px] px-[18px] pr-2">
                             <span className="flex items-center justify-between gap-4">
                               <span className="flex items-center gap-2 text-text-regular text-text-title">
-                                {r.participation.slot?.day} <span className="text-text-body">&bull;</span> {r.participation.slot?.time}
+                                {slotOf(r.participation)?.day} <span className="text-text-body">&bull;</span> {slotOf(r.participation)?.time}
                               </span>
                               {i === 0 && (
                                 <Button size="none" className="h-[38px] px-4" leftIcon={<VideoIcon className="h-4 w-4" />}
@@ -160,7 +159,7 @@ export default function RecruitedTab() {
                           </td>
                           <td className="h-row px-[18px] text-text-regular text-text-title">{r.role}</td>
                           <td className="h-row px-[18px]">
-                            <StatusPill status={RESPONDENT_TAG[r.state]} />
+                            <StatusPill status={CLIENT_TAG[r.state]} />
                           </td>
                           <td className="h-row px-[18px]"><ScoreCell score={r.score} tier={r.tier} /></td>
                         </tr>
@@ -175,7 +174,7 @@ export default function RecruitedTab() {
           )}
         </div>
       </StudyFrame>
-      <DownloadSessionsPanel open={downloads} onClose={() => setDownloads(false)}
+      <DownloadSessionsPanel study={s} open={downloads} onClose={() => setDownloads(false)}
         artefact={s.type === 'group_video_call' ? 'Recordings + Transcript' : 'Notes'} />
     </AppShell>
   )

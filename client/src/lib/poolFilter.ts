@@ -1,4 +1,5 @@
-import type { PoolFilters, PoolPerson } from '../mock/pool'
+import type { PoolPerson } from '@shared/derive'
+import type { PoolFilters } from '../mock/pool'
 
 /**
  * What the Pool's filter rail actually does.

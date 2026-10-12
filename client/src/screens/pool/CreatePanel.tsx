@@ -6,13 +6,14 @@ import Toggle from '../../components/ui/Toggle'
 import { ChevronLeft, Close, Info, UsersIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { DiscardModal } from './PoolModals'
-import { CRITERIA, FORECAST, FORECAST_BARS, POOL_FILTERS, POOL_OPTIONS } from '../../mock/pool'
+import { CRITERIA, FORECAST, FORECAST_BARS, POOL_FILTERS, useForecast, usePool } from '../../mock/pool'
 import Picker from '../../components/ui/Picker'
 import { useWorkspace } from '../../mock/workspace'
 import { useToast } from '../../components/ui/Toast'
 
 /** The live forecast beside the form; the tiers are bars here, not cards. */
 function Forecast({ approx }: { approx?: boolean }) {
+  const f = useForecast()
   return (
     <aside className="h-fit w-[496px] shrink-0 rounded-lg border-1 border-stroke-input">
       <p className="inline-flex items-center gap-2 px-4 py-4 text-title-s leading-[22px] text-text-title">
@@ -24,7 +25,7 @@ function Forecast({ approx }: { approx?: boolean }) {
             <UsersIcon className="h-4 w-4 text-text-subtitle" />{approx ? 'Estimated Approx.' : 'Estimated'}
           </span>
           <span className="text-title-l text-text-title">
-            ~1.5K <span className="text-text-regular text-text-subtitle">
+            ~{f.count.toLocaleString('en-US')} <span className="text-text-regular text-text-subtitle">
               {approx ? 'eligible respondents match criteria' : 'eligible members'}
             </span>
           </span>
@@ -33,19 +34,19 @@ function Forecast({ approx }: { approx?: boolean }) {
       <div className="mx-4 mt-4 rounded-md border-1 border-stroke-input p-4">
         <p className="text-label uppercase tracking-[0.04em] text-text-body">TIER DISTRIBUTION</p>
         <div className="flex flex-col gap-3 pt-3">
-          {FORECAST_BARS.map((t) => (
-            <span key={t.label} className="flex items-center gap-4">
-              <span className="w-[72px] shrink-0 text-text-regular text-text-title">{t.label}</span>
+          {f.tiers.map((t) => (
+            <span key={t.tier} className="flex items-center gap-4">
+              <span className="w-[72px] shrink-0 text-text-regular text-text-title">{FORECAST_BARS[t.tier].label}</span>
               <span className="h-1.5 flex-1 rounded-full bg-bg-3">
-                <span className={cn('block h-full rounded-full', t.bar)} style={{ width: `${t.pct}%` }} />
+                <span className={cn('block h-full rounded-full', FORECAST_BARS[t.tier].bar)} style={{ width: `${t.pct}%` }} />
               </span>
-              <span className="w-8 shrink-0 text-right text-text-regular text-text-title">{t.text}</span>
+              <span className="w-8 shrink-0 text-right text-text-regular text-text-title">{t.pct}%</span>
             </span>
           ))}
         </div>
       </div>
       <dl className="flex flex-col px-4 pb-1">
-        {FORECAST.rows.map((r) => (
+        {[{ label: 'Average Score', value: `${f.averageScore}%` }, ...FORECAST.rows].map((r) => (
           <div key={r.label} className="flex items-center justify-between gap-4 border-t-1 border-stroke-1 py-3">
             <dt className="text-text-regular text-text-subtitle">{r.label}</dt>
             <dd className="text-text-regular text-text-title">{r.value}</dd>
@@ -126,6 +127,7 @@ export default function CreatePanel({ edit }: { edit?: boolean }) {
   const [npiOnly, setNpiOnly] = useState(true)
   const go = (v: string) => { const n = new URLSearchParams(params); n.set('step', v); setParams(n) }
   const { createPanel, updatePanel, panels } = useWorkspace()
+  const { options: POOL_OPTIONS } = usePool()
   const nav = useNavigate()
   const toast = useToast()
   const existing = edit ? panels.find((p) => p.id === panelId) : undefined

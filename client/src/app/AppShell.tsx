@@ -8,7 +8,7 @@ import { cn } from '../lib/cn'
 import { useSession } from '../mock/session'
 import { useWorkspace } from '../mock/workspace'
 import { notificationRoute } from '../lib/notificationRoute'
-import { useStudies } from '../mock/store'
+import { useStudies } from '../platform'
 
 /** The left navigation, in the order drawn on every 1440 frame. */
 const NAV = [

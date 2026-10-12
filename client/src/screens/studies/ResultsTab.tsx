@@ -9,8 +9,9 @@ import { OverviewTile } from './StudyOverview'
 import { ChevronRight, Download, Star } from '../../components/ui/icons'
 import { CERTIFICATE, SUMMARIES } from '../../mock/results'
 import { useToast } from '../../components/ui/Toast'
-import { useStudy } from '../../mock/store'
-import { averageScore, counts, pageLabels, paginate, recruits } from '../../lib/derive'
+import { usePlatform, useStudy } from '../../platform'
+import { monthDayYear } from '@shared/format'
+import { averageScore, counts, pageLabels, paginate, recruits, studyCertificate } from '@shared/derive'
 import { useState } from 'react'
 
 /** The sealed stamp the certificate card is drawn with. */
@@ -39,17 +40,19 @@ export default function ResultsTab() {
   const { id } = useParams()
   const nav = useNavigate()
   const s = useStudy(id)
+  const world = usePlatform()
   const [tier, setTier] = useState('All')
   const [page, setPage] = useState(1)
   const c = counts(s)
+  const cert = studyCertificate(world, s)
   /** Step 50: everyone who finished, which is the results the client receives. */
-  const rows = recruits(s, 'results')
+  const rows = recruits(world, s, 'results')
     .filter((r) => r.state !== 'no_show')
     .filter((r) => tier === 'All' || r.tier === tier.toLowerCase())
   const shown = paginate(rows, page)
   const stats = [
     { label: 'Completed', value: String(c.completed), suffix: `/${s.required} required` },
-    { label: 'Avg. Trust Score', value: String(averageScore(s)) },
+    { label: 'Avg. Trust Score', value: String(averageScore(world, s)) },
     { label: 'Rated By You', value: String(c.rated), suffix: `/${c.completed} completed` },
   ]
 
@@ -100,7 +103,7 @@ export default function ResultsTab() {
                     <tr key={r.id} className="border-b-1 border-stroke-input last:border-b-0">
                       <td className="h-[70px] px-[18px] text-text-regular text-text-title">{r.name}</td>
                       <td className="h-[70px] px-[18px] text-text-regular text-text-title">{r.role}</td>
-                      <td className="h-[70px] px-[18px] text-text-regular text-text-title">{r.participation.completedAt}</td>
+                      <td className="h-[70px] px-[18px] text-text-regular text-text-title">{monthDayYear(r.participation.completedAt)}</td>
                       <td className="h-[70px] px-[18px]"><ScoreCell score={r.score} tier={r.tier} /></td>
                       <td className="h-[70px] px-[18px]">
                         {r.state === 'rated'
@@ -128,10 +131,10 @@ export default function ResultsTab() {
               <div className="flex flex-col gap-1">
                 <p className="text-label uppercase tracking-[0.04em] text-text-subtitle">{CERTIFICATE.label}</p>
                 <p className="text-title-s leading-[22px] text-text-title">
-                  {c.completed} of {c.completed} completions verified human
+                  {cert.verified} of {cert.total} completions verified human
                 </p>
                 <p className="max-w-[816px] text-text-regular text-text-subtitle">{CERTIFICATE.body}</p>
-                <p className="text-text-regular text-text-subtitle">{CERTIFICATE.meta}</p>
+                <p className="text-text-regular text-text-subtitle">CERT ID · {cert.id} · Issued {monthDayYear(cert.issuedAt)}</p>
               </div>
             </div>
             <Button variant="secondary" size="none" className="h-12 px-4" onClick={() => toast('Certificate downloaded')} leftIcon={<Download className="h-4 w-4" />}>

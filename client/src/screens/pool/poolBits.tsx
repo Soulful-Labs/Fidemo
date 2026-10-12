@@ -3,7 +3,7 @@ import Button from '../../components/ui/Button'
 import Select from '../../components/ui/Select'
 import { Calendar, Close, GoldMark, MoreVertical, PlatinumMark, Plus, SilverMark, UsersIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import { POOL_DEFAULT_FILTERS, POOL_FILTERS, POOL_OPTIONS } from '../../mock/pool'
+import { POOL_DEFAULT_FILTERS, POOL_FILTERS, usePool } from '../../mock/pool'
 import type { PanelCard, PoolFilters } from '../../mock/pool'
 import { useState } from 'react'
 import { useToast } from '../../components/ui/Toast'
@@ -126,6 +126,7 @@ function Picked({ label, placeholder, options, chips, onChange }: {
 export default function FilterRail({ value, onChange }: {
   value: PoolFilters; onChange: (next: PoolFilters) => void
 }) {
+  const { options: POOL_OPTIONS } = usePool()
   const toast = useToast()
   const f = POOL_FILTERS
   const set = <K extends keyof PoolFilters>(k: K, v: PoolFilters[K]) => onChange({ ...value, [k]: v })

@@ -358,6 +358,8 @@ export interface TicketMessage {
   /** The team member who wrote it. */
   by?: string
   text: string
+  /** A file sent with the message, by name. */
+  attachment?: string
   at: string
 }
 

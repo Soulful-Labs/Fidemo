@@ -4,8 +4,8 @@ import Tag from '../ui/Tag'
 import StudyTypeTag from './StudyTypeTag'
 import { Calendar, MoreVertical } from '../ui/icons'
 import { cn } from '../../lib/cn'
-import type { Study } from '../../mock/db'
-import { counts, progressPct, segments, statusTag } from '../../lib/derive'
+import type { ClientStudy as Study } from '../../platform'
+import { counts, progressPct, segments, statusTag } from '@shared/derive'
 
 /**
  * The bar and the figures used to be drawn off the frame and sat beside

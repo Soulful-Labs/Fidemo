@@ -42,8 +42,8 @@ payments?tab=completed
 notifications
 help
 help?tab=tickets
-help/tickets/fi-s562357
-help/tickets/fi-s562357?state=solved
+help/tickets/FI-S562510
+help/tickets/FI-S562358
 account
 account?tab=reviews
 account?tab=certificate

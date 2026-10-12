@@ -214,6 +214,16 @@ export function profileCompletion(person: Pick<Person, 'name' | 'phone' | 'profi
   return Math.round((done / PROFILE_FIELDS.length) * 100)
 }
 
+/** Age in whole years from a "DD / MM / YYYY" date of birth, or undefined. */
+export function ageFrom(dob: string, now: Date = new Date()): number | undefined {
+  const m = /^(\d{2})\s*\/\s*(\d{2})\s*\/\s*(\d{4})$/.exec(dob.trim())
+  if (!m) return undefined
+  const [, dd, mm, yyyy] = m.map(Number)
+  let age = now.getFullYear() - yyyy!
+  if (now.getMonth() + 1 < mm! || (now.getMonth() + 1 === mm && now.getDate() < dd!)) age -= 1
+  return age
+}
+
 /** A short stable code from the account, used by the certificate id and the referral link. */
 export function accountCode(email: string, length = 4): string {
   let h = hash(email.toLowerCase())
@@ -268,10 +278,17 @@ export function personFigures(state: PlatformState, personId: string, now: Date 
   const paid = entries.filter((e) => isPaid(e.p))
   const noShows = entries.filter((e) => e.p.state === 'no_show').length
   const score = trustScoreOf(state, personId, now)
-  const reviewed = paid.filter((e) => e.p.rating?.expertise)
-  const pct = (key: 'expertise' | 'reliability' | 'communication') =>
-    reviewed.length ? Math.round((sum(reviewed, (e) => e.p.rating![key] ?? 0) / (reviewed.length * 5)) * 100) : 0
-  const attempted = paid.length + noShows
+  /**
+   * A rating scores three dimensions when the client gave them; otherwise the
+   * rating's stars stand for all three, as do the ratings from before the seed.
+   */
+  const rated = entries.filter((e) => e.p.rating)
+  const pct = (key: 'expertise' | 'reliability' | 'communication') => {
+    const scores = [...(person?.prior.stars ?? []), ...rated.map((e) => e.p.rating![key] ?? e.p.rating!.stars)]
+    return scores.length ? Math.round((sum(scores, (x) => x) / (scores.length * 5)) * 100) : 0
+  }
+  const done = paid.length + (person?.prior.completedThisYear ?? 0)
+  const attempted = done + noShows
   const yearEarned = sum(earned.filter((r) => sameYear(r.at, now)), (r) => r.amount)
   return {
     walletBalance: Math.round((sum(rows, (r) => r.amount) - sum(person?.payouts ?? [], (p) => p.amount)) * 100) / 100,
@@ -288,9 +305,46 @@ export function personFigures(state: PlatformState, personId: string, now: Date 
     profileCompletion: person ? profileCompletion(person) : 0,
     ratings: {
       expertise: pct('expertise'), reliability: pct('reliability'), communication: pct('communication'),
-      successRate: attempted ? Math.round((paid.length / attempted) * 100) : 0,
+      successRate: attempted ? Math.round((done / attempted) * 100) : 0,
     },
     taxFormRequired: yearEarned >= TAX_FORM_THRESHOLD && !person?.taxFormDone,
+  }
+}
+
+/**
+ * What a client, or the team, is shown about one participant: who they are
+ * professionally, how they have performed, and what has been verified.
+ * Workflow 27: never a surname, an email or a phone number.
+ */
+export interface ProfileCard {
+  id: string; name: string; role: string; location: string; experienceYears: number
+  certificateId?: string
+  score: number; tier: Tier
+  ratings: PersonFigures['ratings']
+  about: { occupation: string; industry: string; education: string; gender: string; age?: number; interests: string }
+  /** The checks that have passed, in the frames' words. */
+  verified: string[]
+  completedStudies: number; earned: number; streaks: number
+}
+
+export function profileCard(state: PlatformState, personId: string, now: Date = new Date()): ProfileCard | undefined {
+  const p = personById(state, personId)
+  if (!p) return undefined
+  const f = personFigures(state, personId, now)
+  return {
+    id: p.id, name: shortName(p.name), role: p.profile.occupation, location: p.location,
+    experienceYears: Number.parseInt(p.profile.experience, 10) || 0,
+    certificateId: hasCertificate(p) ? certificateId(p.email) : undefined,
+    score: f.trustScore, tier: f.tier, ratings: f.ratings,
+    about: { occupation: p.profile.occupation, industry: p.profile.industry, education: p.profile.education, gender: p.profile.gender, age: ageFrom(p.profile.dob, now), interests: p.profile.topics.join(', ') },
+    verified: [
+      ...(p.profession.state === 'verified' ? ['Verified Professional'] : []),
+      ...(p.identity.state === 'verified' ? ['Government ID Verified'] : []),
+      ...(p.livePhoto ? ['Live Photo Verified'] : []),
+      ...(p.profession.state === 'verified' ? ['Register cross checked'] : []),
+    ],
+    completedStudies: f.completedStudies + p.prior.completedThisYear, earned: f.allTimeEarned,
+    streaks: streakMonths(entriesOf(state, personId)).length,
   }
 }
 
@@ -507,6 +561,17 @@ export function recruits(state: PlatformState, study: Study, tab?: 'matched' | '
 export const recruit = (state: PlatformState, study: Study, personId: string): Recruit | undefined =>
   recruits(state, study).find((r) => r.id === personId)
 
+/**
+ * The study verification certificate on Results: how many of the people who
+ * completed passed the identity check, and when the study's record was sealed.
+ */
+export function studyCertificate(state: PlatformState, study: Study, now: Date = new Date()) {
+  const done = study.participations.filter((p) => p.state === 'completed')
+  const verified = done.filter((p) => personById(state, p.personId)?.identity.state === 'verified').length
+  const id = `HL-C-${accountCode(study.id, 4)}-${accountCode(study.id + '#', 4)}`
+  return { verified, total: done.length, id, issuedAt: study.completedAt ?? now.toISOString() }
+}
+
 /** Results tab: "Avg. Trust Score", over the people who actually finished. */
 export function averageScore(state: PlatformState, study: Study): number {
   const done = recruits(state, study, 'results').filter((r) => r.participation.state === 'completed')
@@ -659,6 +724,14 @@ export function rankedPool(state: PlatformState, study?: Study, now: Date = new 
   const allowed = study ? applyRepeatRule(state, study, eligible) : eligible
   const rank = new Map(allowed.map((p, i) => [p.id, i]))
   return allowed.map((p) => poolPerson(state, p, now)).sort((a, b) => b.score - a.score || rank.get(a.id)! - rank.get(b.id)!)
+}
+
+/** What a set of pool people looks like as a cohort: how many, the tier split and the average score. */
+export function cohort(people: PoolPerson[]) {
+  const n = people.length
+  const of = (t: Tier) => people.filter((p) => p.tier === t).length
+  const split = (['silver', 'gold', 'platinum'] as const).map((tier) => ({ tier, members: of(tier), pct: n === 0 ? 0 : Math.round((of(tier) / n) * 100) }))
+  return { count: n, tiers: split, averageScore: n === 0 ? 0 : Math.round(sum(people, (p) => p.score) / n) }
 }
 
 /**

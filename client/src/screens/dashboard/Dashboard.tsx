@@ -8,13 +8,12 @@ import type { Respondent } from '../../components/client/RespondentCard'
 import StatTile from '../../components/client/StatTile'
 import Button from '../../components/ui/Button'
 import { CheckCircle, Clock, DollarCircle, ShieldIcon, UsersIcon } from '../../components/ui/icons'
-import { DASHBOARD_STUDY_IDS, GREETING, RECOMMENDED } from '../../mock/dashboard'
+import { DASHBOARD_STUDY_IDS, GREETING } from '../../mock/dashboard'
 import RespondentPanel from './RespondentPanel'
-import { useStudies } from '../../mock/store'
+import { useStudies } from '../../platform'
 import { useSession } from '../../mock/session'
-import { billing, dashboardStats, rankedPool, unpaidStudies } from '../../lib/derive'
-import { studyTab } from '../../lib/lifecycle'
-import { scoreOf, tierOf } from '../../mock/db'
+import { billing, dashboardStats, rankedPool, unpaidStudies } from '@shared/derive'
+import { studyTab } from '@shared/lifecycle'
 
 const TILE_ICON = [Clock, CheckCircle, UsersIcon, ShieldIcon, DollarCircle]
 
@@ -42,7 +41,7 @@ function Blank({ line, cta, onClick }: { line: string; cta: string; onClick: () 
 export default function Dashboard({ empty = false }: { empty?: boolean }) {
   const navigate = useNavigate()
   const [profile, setProfile] = useState<Respondent | null>(null)
-  const { studies: all } = useStudies()
+  const { studies: all, state: world } = useStudies()
   const { account } = useSession()
   const live = empty ? [] : all.filter((s) => studyTab(s.state) === 'ongoing')
   /** The frame puts these three first; the rest follow in their own order. */
@@ -53,17 +52,13 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
     .slice(0, 3)
   /** Step 53: "The client's screen shows a red alert on login while incentives are unpaid." */
   const unpaid = empty ? [] : unpaidStudies(all)
-  const owed = unpaid.reduce((n, st) => n + billing(st).net, 0)
-  const d = dashboardStats(empty ? [] : all)
+  const owed = unpaid.reduce((n, st) => n + billing(st).outstanding, 0)
+  const d = dashboardStats(world, empty ? [] : all)
   /**
    * Step 24: the pool ranked by score and tier. The frame's own nine cards,
    * with their scores and tiers derived from the policy rather than printed.
    */
-  const pool = rankedPool()
-  const recommended = RECOMMENDED.map((r) => {
-    const p = pool.find((x) => x.id === r.id)
-    return p ? { ...r, score: scoreOf(p), tier: tierOf(p) } : r
-  })
+  const recommended: Respondent[] = rankedPool(world).slice(0, 9)
   const stats = [
     { label: 'Ongoing Studies', value: String(d.ongoing), tint: 'yellow' as const },
     { label: 'Completed Studies', value: String(d.completed), tint: 'yellow' as const },

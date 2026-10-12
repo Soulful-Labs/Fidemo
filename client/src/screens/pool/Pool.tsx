@@ -10,7 +10,8 @@ import { DeleteModal, SentModal } from './PoolModals'
 import FilterRail, { PanelTile } from './poolBits'
 import { Close, Plus, Search } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import { FEATURED_CATEGORIES, FEATURED_PANELS, POOL_DEFAULT_FILTERS, POOL_PEOPLE, POOL_SEARCH, POOL_TOTAL } from '../../mock/pool'
+import { FEATURED_CATEGORIES, FEATURED_PANELS, POOL_DEFAULT_FILTERS, POOL_SEARCH, usePool } from '../../mock/pool'
+import type { PoolPerson } from '../../mock/pool'
 import { matchesPool, poolChips } from '../../lib/poolFilter'
 import { useWorkspace } from '../../mock/workspace'
 import { useToast } from '../../components/ui/Toast'
@@ -29,6 +30,7 @@ export default function Pool() {
   const featured = params.get('sub') === 'featured'
   /** Featured panels are public; a client's own panels are theirs. */
   const { panels: mine, deletePanel } = useWorkspace()
+  const { people: POOL_PEOPLE, total: POOL_TOTAL } = usePool()
   const [filters, setFilters] = useState(params.get('filters') !== 'hidden')
   /** The rail, the search box and the chips above the grid are one state. */
   const [f, setF] = useState({ ...POOL_DEFAULT_FILTERS })
@@ -37,7 +39,7 @@ export default function Pool() {
   const [category, setCategory] = useState('All')
   const [deleting, setDeleting] = useState<string | null>(null)
   /** Whose profile the panel is showing. */
-  const [viewing, setViewing] = useState<(typeof POOL_PEOPLE)[number] | null>(null)
+  const [viewing, setViewing] = useState<PoolPerson | null>(null)
   const [saving, setSaving] = useState<{ id: string; name: string } | null>(null)
   const panelCards = (featured ? FEATURED_PANELS : mine)
     .filter((c) => category === 'All' || c.domain === category)
@@ -46,6 +48,8 @@ export default function Pool() {
       return !q || `${c.title} ${c.domain} ${c.roles ?? ''} ${c.description ?? ''}`.toLowerCase().includes(q)
     })
   const people = POOL_PEOPLE.filter((p) => matchesPool(p, f))
+  /** The frame draws twelve cards; the rest of the pool is behind Load more. */
+  const [limit, setLimit] = useState(12)
   const chips = poolChips(f)
   /** The four 600px panels the pool cards open. */
   const [panel, setPanel] = useState(params.get('panel') ?? '')
@@ -123,13 +127,19 @@ export default function Pool() {
                   </p>
                 )}
                 <div className={cn('grid gap-3 pt-4', filters ? 'grid-cols-2' : 'grid-cols-3')}>
-                  {people.map((p) => (
-                    <RespondentCard key={p.id} respondent={{ ...p, professionVerified: true }} className="px-4 pb-2 pt-4"
+                  {people.slice(0, limit).map((p) => (
+                    <RespondentCard key={p.id} respondent={p} className="px-4 pb-2 pt-4"
                       onSave={() => { setSaving({ id: p.id, name: p.name }); setPanel('save') }}
                       onView={() => { setViewing(p); setPanel('profile') }}
                       actions={<Button variant="tertiary" size="none" className="h-11 flex-1"
-                        onClick={() => setPanel('invite')}>Invite To Study</Button>} />
+                        onClick={() => { setViewing(p); setPanel('invite') }}>Invite To Study</Button>} />
                   ))}
+                  {people.length > Math.min(limit, people.length) && (
+                    <button type="button" onClick={() => setLimit((n) => n + 12)}
+                      className="col-span-full py-4 text-body-medium text-brand-primary hover:underline">
+                      Load more ({people.length - Math.min(limit, people.length)} more)
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -187,11 +197,11 @@ export default function Pool() {
         )}
       </div>
 
-      <RespondentPanel open={panel === 'profile'} respondent={{ ...(viewing ?? POOL_PEOPLE[0]), professionVerified: true }}
+      <RespondentPanel open={panel === 'profile'} respondent={viewing ?? POOL_PEOPLE[0]!}
         onClose={() => setPanel('')} onReviews={() => setPanel('reviews')}
         onInvite={() => setPanel('invite')} />
       <ReviewsPanel open={panel === 'reviews'} onClose={() => setPanel('')} onBack={() => setPanel('profile')} />
-      <InvitePanel open={panel === 'invite'} onClose={() => setPanel('')} onSent={() => setPanel('sent')} />
+      <InvitePanel open={panel === 'invite'} name={viewing?.name.split(' ')[0]} personId={viewing?.id} onClose={() => setPanel('')} onSent={() => setPanel('sent')} />
       <SentModal open={panel === 'sent'} onClose={() => setPanel('')} />
       <DeleteModal open={deleting !== null} onClose={() => setDeleting(null)}
         onConfirm={() => { if (deleting) deletePanel(deleting); setDeleting(null) }} />

@@ -5,7 +5,9 @@ import StudyTypeTag from '../../components/client/StudyTypeTag'
 import { Avatar } from '../../components/client/RespondentCard'
 import { Check, ChevronLeft, DiaryBookIcon, Star, StarFilled } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import { INVITE_STUDIES, REVIEWS, SAVE_TARGETS } from '../../mock/pool'
+import { REVIEWS, SAVE_TARGETS } from '../../mock/pool'
+import { useStudies } from '../../platform'
+import { isLive } from '@shared/lifecycle'
 import { useToast } from '../../components/ui/Toast'
 import { useWorkspace } from '../../mock/workspace'
 
@@ -94,16 +96,29 @@ export function ReviewsPanel({ open, onClose, onBack, respondent }: {
 }
 
 /** Invite To Study (1645:163182): pick which live study the invitation is for. */
-export function InvitePanel({ open, onClose, name = 'Roma', onSent }: { open: boolean; onClose: () => void; name?: string; onSent?: () => void }) {
+export function InvitePanel({ open, onClose, name = 'Roma', personId, onSent }: { open: boolean; onClose: () => void; name?: string; personId?: string; onSent?: () => void }) {
+  const { studies, moveRespondent } = useStudies()
+  const toast = useToast()
+  /** The client's own live studies: the only ones an invitation can be for. */
+  const INVITE_STUDIES = studies.filter((s) => isLive(s.state))
   /** The frame draws the first study chosen; now it is a choice. */
-  const [study, setStudy] = useState(INVITE_STUDIES[0]!.id)
+  const [picked, setStudy] = useState('')
+  const study = picked || INVITE_STUDIES[0]?.id || ''
+  /** Workflow 26, 27: the invitation is a real move on the shared platform, refused with a reason if it cannot be sent. */
+  const send = () => {
+    if (personId && study) {
+      const res = moveRespondent(study, personId, 'invited')
+      if (!res.ok) { toast(res.why); return }
+    }
+    ;(onSent ?? onClose)()
+  }
   return (
     <SidePanel open={open} onClose={onClose} title={`Invite ${name} To Study`} headerClassName="h-14"
       bodyClassName="flex flex-col gap-3 p-4"
       footer={
         <div className="flex gap-3 [&_button]:h-12 [&_button]:flex-1 [&_button]:text-body-medium">
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => (onSent ?? onClose)()}>Send Invite</Button>
+          <Button disabled={INVITE_STUDIES.length === 0} onClick={send}>Send Invite</Button>
         </div>
       }>
       <div className="flex flex-col gap-1">
@@ -120,7 +135,7 @@ export function InvitePanel({ open, onClose, name = 'Roma', onSent }: { open: bo
             <span className="flex items-center gap-2">
               <StudyTypeTag type={s.type} icon={s.type === 'diary' ? <DiaryBookIcon className="h-4 w-4" /> : undefined} />
               <span className="inline-flex h-8 items-center rounded-full border-1 border-stroke-input px-3 text-text-regular text-text-subtitle">
-                {s.domain}
+                {s.industry}
               </span>
             </span>
           </span>

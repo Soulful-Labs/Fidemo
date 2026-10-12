@@ -4,7 +4,7 @@ import Tag from '../components/ui/Tag'
 import { NotificationItem } from './dashboard/NotificationsPanel'
 import { useWorkspace } from '../mock/workspace'
 import { notificationRoute } from '../lib/notificationRoute'
-import { useStudies } from '../mock/store'
+import { useStudies } from '../platform'
 import { useNavigate } from 'react-router-dom'
 
 /**

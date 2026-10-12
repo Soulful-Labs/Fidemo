@@ -1,3 +1,8 @@
+import { useMemo } from 'react'
+import { billing, counts, invoiceNumber, progressPct } from '@shared/derive'
+import { clockTime, dayLongMonthYear, dayMonthYear, money, monthDayYear, monthDayYearTime } from '@shared/format'
+import { useClient, useStudies } from '../platform'
+
 /** A line of the billing card (1627:96779). `sub` is the working under it. */
 export interface BillingRow {
   label: string
@@ -6,74 +11,81 @@ export interface BillingRow {
   info?: boolean
 }
 
-export const BILLING: BillingRow[] = [
-  { label: 'Platform Fee', amount: '$100' },
-  { label: 'Recruiting Fee', amount: '$500', sub: '$20 x 25 participants', info: true },
-  { label: 'Incentives', amount: '$2,500', sub: '$100 x 25 participants', info: true },
-  { label: 'Moderation Fee', amount: '$250', sub: '$10 x 25 participants', info: true },
-]
-
-/** The two rows under the rule, which the frames draw as one block. */
-export const BILLING_TOTAL = {
-  total: { label: 'Total cost', amount: '$3,350' },
-  less: { label: 'Less: Incentive Deposit', amount: '-$3000', sub: '$100 x 30 participants', info: true },
-  net: { label: 'Net payable cost', amount: '$350' },
-}
-
-export const TRANSACTIONS = [
-  { label: 'Incentive Deposit Paid', amount: '$3,000', at: 'Aug 5, 2026, 10:24 AM', sub: '$20 x 30 participants' },
-]
-
 /**
- * Pay while ongoing (1627:96779) and Pay, due as completed (1627:97128) are
- * one tab in two states. Only these five things change between the frames.
+ * Everything the billing card, the invoice panel, Make Payment, Bill Payment
+ * and the "paid" dialog write about one study's money. All of it comes from
+ * shared/derive.ts `billing`, so the same study cannot show two totals. Only
+ * the labels and the checkout's sample card form are this app's own.
  */
-export const PAY_STATE = {
-  ongoing: {
-    dueLabel: 'Payment Due',
-    due: '$1,000',
-    totalCost: '$4,000',
-    billingAs: 'As on today, 11 Aug, 2026',
-    payable: false,
-    net: false,
-  },
-  due: {
-    dueLabel: 'Payment Due by 12 Aug, 2026',
-    due: '$350',
-    totalCost: '$3,850',
-    billingAs: undefined,
-    payable: true,
-    net: true,
-  },
+export function useBill(studyId?: string) {
+  const { studies } = useStudies()
+  const client = useClient()
+  return useMemo(() => {
+    const study = studies.find((x) => x.id === studyId) ?? studies.find((x) => x.state === 'completed') ?? studies[0]
+    const b = study ? billing(study) : undefined
+    const c = study ? counts(study) : undefined
+    const card = client?.cards.find((x) => x.isDefault) ?? client?.cards[0]
+    const number = study ? invoiceNumber(study) : ''
+    const due = b ? (b.outstanding > 0 ? b.outstanding : Math.max(0, b.net)) : 0
+    const balance = study?.payments.find((x) => x.kind === 'balance')
+    const dueBy = study?.completedAt ? new Date(new Date(study.completedAt).getTime() + 7 * 86_400_000).toISOString() : undefined
+    const BILLING: BillingRow[] = (b?.lines ?? []).map((l) => ({ label: l.label, amount: money(l.amount), sub: l.sub, info: l.info }))
+    return {
+      study, card,
+      BILLING,
+      BILLING_TOTAL: {
+        total: { label: 'Total cost', amount: money(b?.total ?? 0) },
+        less: { label: 'Less: Incentive Deposit', amount: `-${money(b?.deposit ?? 0)}`, sub: study ? `$${study.rates.incentivePer} x ${study.required} participants` : '', info: true },
+        net: { label: 'Net payable cost', amount: money(b?.net ?? 0) },
+      },
+      INVOICE: {
+        title: `Invoice Details (${number}) - ${study?.title ?? ''}`,
+        number: `Invoice Number: ${number}`,
+        study: study?.title ?? '',
+        issued: study?.completedAt ? `Marked completed and invoice issued on ${dayLongMonthYear(study.completedAt)}, ${clockTime(study.completedAt)}` : '',
+        amount: money(due),
+        due: dueBy ? `Due on ${monthDayYear(dueBy)}` : '',
+        dueBy: dueBy ? dayMonthYear(dueBy) : '',
+        autoDebit: 'If not paid manually, will be auto-debited from',
+        paidTitle: `Paid ${money(balance?.amount ?? 0)} successfully!`,
+        paidAt: monthDayYearTime(balance?.at),
+        net: { label: 'Net Total Paid', amount: money(balance?.amount ?? due) },
+      },
+      MAKE_PAYMENT: { toPay: 'To Pay', amount: money(due), link: 'Invoice Details', from: 'From saved card', change: 'Change method', cta: `Pay ${money(due)}` },
+      PAID_MODAL: { title: `${money(balance?.amount ?? due)} paid successfully!`, body: 'Your payment has been done and this study has been completed.' },
+      BILL: {
+        ...BILL_COPY,
+        completed: String(c?.completed ?? 0), completedOf: `/${study?.required ?? 0}`,
+        qualified: String(c?.everQualified ?? 0), qualifiedOf: `/${c?.everApplied ?? 0}`,
+        progress: `${study ? progressPct(study) : 0}%`,
+        markedAt: study?.completedAt ? `Marked completed on ${dayLongMonthYear(study.completedAt)}, ${clockTime(study.completedAt)}` : 'Not marked completed yet',
+        card: { ...BILL_COPY.card, name: client?.name ?? '', cta: `Pay ${money(due)}` },
+      },
+      /** The deposit and the balance as the Transactions list writes them. */
+      transactions: (study?.payments ?? []).map((x) => ({
+        label: x.kind === 'deposit' ? 'Incentive Deposit Paid' : x.kind === 'balance' ? 'Balance Paid' : 'Refund Received',
+        amount: money(x.amount), at: monthDayYearTime(x.at),
+        sub: x.kind === 'deposit' && study ? `$${study.rates.incentivePer} x ${study.required} participants` : `Invoice ${number}`,
+      })),
+    }
+  }, [studies, studyId, client])
 }
 
 /** Bill Payment (1627:96956): the checkout Pay Balance opens. */
-export const BILL = {
+const BILL_COPY = {
   crumb: 'Bill Payment',
   status: 'Billing',
-  completed: '25', completedOf: '/30',
-  qualified: '35', qualifiedOf: '/60',
-  progress: '83%',
-  markedAt: 'Marked completed on 10 August, 2026, 10:00 PM',
   heading: 'Invoice Breakdown',
   card: {
     title: 'Payment',
     number: '2548 2698 5420 0008',
     expiry: '05 / 2036',
     cvv: '672',
-    name: 'Jennifer Lee',
     address: 'Kelly-Bay, NYC',
     zip: '023548',
-    cta: 'Pay $350',
   },
   notes: [
     { text: '3% merchant processing fee applies when using a credit card. ', link: 'Learn about payment options' },
     { text: 'You are only charged for participants that complete your research.' },
   ] as { text: string; link?: string }[],
 }
-
-/** Download Sessions Results (1627:110569 in-person, 1627:107040 video). */
-export const SESSION_FILES = [
-  { title: 'Session 1', at: 'Aug 20, Fri, 12:00 PM ET', participants: '4 participants' },
-  { title: 'Session 2', at: 'Aug 20, Fri, 12:00 PM ET', participants: '6 participants' },
-]

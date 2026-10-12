@@ -1,17 +1,3 @@
-import type { Respondent } from '../components/client/RespondentCard'
-
-/**
- * Seeded from the Dashboard frame (826:85021). Every figure here is the one
- * the frame prints; nothing on this screen is calculated. Stage two derives
- * them from the studies.
- */
-export const DASHBOARD_STATS: { label: string; value: string; tint: 'yellow' | 'green' | 'purple' | 'blue' }[] = [
-  { label: 'Ongoing Studies', value: '4', tint: 'yellow' },
-  { label: 'Completed Studies', value: '72', tint: 'yellow' },
-  { label: 'Total Respondents Hired', value: '1,786', tint: 'green' },
-  { label: 'Avg. Trust Score', value: '91', tint: 'purple' },
-  { label: 'Avg. Session Incentive', value: '$124.8', tint: 'blue' },
-]
 
 /** The frame greets John; the account card in the navigation is Jennifer Lee. */
 export const GREETING = {
@@ -21,18 +7,6 @@ export const GREETING = {
 
 /** The three studies the frame puts under Ongoing Studies, in its order. */
 export const DASHBOARD_STUDY_IDS = ['st-goal', 'st-sleep', 'st-pay']
-
-export const RECOMMENDED: Respondent[] = [
-  { id: 'r-ferry', name: 'Ferry L.', role: 'Physiology Therapist, Orthopedic', score: 95, tier: 'platinum', professionVerified: true },
-  { id: 'r-sophie', name: 'Sophie A.', role: 'Clinical Psychologist', score: 89, tier: 'gold', professionVerified: true },
-  { id: 'r-ella', name: 'Ella M.', role: 'Nutritionist', score: 87, tier: 'gold' },
-  { id: 'r-tom', name: 'Tom H.', role: 'Cardiologist', score: 95, tier: 'platinum' },
-  { id: 'r-liam', name: 'Liam T.', role: 'Orthopedic Surgeon', score: 93, tier: 'platinum', professionVerified: true },
-  { id: 'r-david', name: 'David P.', role: 'Gastroenterologist', score: 94, tier: 'platinum' },
-  { id: 'r-james', name: 'James K.', role: 'Pediatrician', score: 91, tier: 'platinum', professionVerified: true },
-  { id: 'r-ava', name: 'Ava R.', role: 'Dermatologist', score: 90, tier: 'platinum', professionVerified: true },
-  { id: 'r-nina', name: 'Nina C.', role: 'Radiologist', score: 68, tier: 'silver' },
-]
 
 export interface NotificationRow {
   id: string
@@ -89,40 +63,3 @@ export const NOTIFICATIONS: NotificationRow[] = [
     ago: '4 hours ago', action: 'View Message',
   },
 ]
-
-export interface RespondentProfile {
-  id: string
-  meta: string
-  trustScore: number
-  ratings: { label: string; value: string; tone: string }[]
-  about: { label: string; value: string }[]
-  verified: string[]
-  metrics: { label: string; value: string }[]
-}
-
-/** Respondent Profile Details (1704:141690), as the frame fills it for Ferry L. */
-export const PROFILE: RespondentProfile = {
-  id: 'r-ferry',
-  meta: 'New York, USA   •   10 years experience   •   Cert. ID: HL-R-9F2A-3K7P',
-  trustScore: 95,
-  ratings: [
-    { label: 'Expertise', value: '98%', tone: 'bg-brand-secondary text-brand-secondary' },
-    { label: 'Reliability', value: '100%', tone: 'bg-blue-600 text-blue-600' },
-    { label: 'Communication', value: '94%', tone: 'bg-purple-600 text-purple-600' },
-    { label: 'Success Rate', value: '89%', tone: 'bg-cta-primary text-brand-primary' },
-  ],
-  about: [
-    { label: 'Occupation', value: 'Physician' },
-    { label: 'Industry', value: 'Healthcare, Pharma' },
-    { label: 'Education', value: 'MBBS, BHMS' },
-    { label: 'Gender & Age', value: 'Male   •   31 years' },
-    { label: 'Experience', value: '10 years' },
-    { label: 'Other Interests', value: 'Psychology, Neurology' },
-  ],
-  verified: ['Verified Professional', 'Government ID Verified', 'Live Photo Verified', 'NPI cross checked'],
-  metrics: [
-    { label: 'Completed Studies', value: '100' },
-    { label: 'Earned', value: '$5K+' },
-    { label: 'Highest Streak', value: '3 months' },
-  ],
-}

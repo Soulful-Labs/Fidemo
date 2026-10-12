@@ -6,7 +6,7 @@ import { Clock, Info, PaymentsIcon, PoolIcon, StudiesIcon, SurveyIcon } from '..
 import { useDraft } from '../../mock/createStore'
 import CreateShell from './CreateShell'
 import BreakdownPanel from './BreakdownPanel'
-import { useStudies } from '../../mock/store'
+import { useStudies } from '../../platform'
 import { AddCardPanel } from '../payments/PaymentPanels'
 import { useWorkspace } from '../../mock/workspace'
 
@@ -104,7 +104,7 @@ export default function Publish() {
         : draft.type,
       required: Number(draft.participants) || 0,
       incentive: draft.incentive,
-      duration: `${draft.duration} mins`,
+      duration: Number(draft.duration) || 0,
     })
     navigate('/studies/create/published')
   }

@@ -6,8 +6,9 @@ import Tabs from '../../components/ui/Tabs'
 import { AddCardPanel, CardMark, InvoiceDetailsPanel, MakePaymentPanel, PaidModal, RemoveCardModal } from './PaymentPanels'
 import { DollarCircle, Download, Eye, InvoiceIcon, MoneyMark, Plus } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import { invoices, paymentStats } from '../../lib/derive'
-import { useStudies } from '../../mock/store'
+import { invoices, paymentStats } from '@shared/derive'
+import { monthDayYear } from '@shared/format'
+import { useStudies } from '../../platform'
 import { useToast } from '../../components/ui/Toast'
 import { useWorkspace } from '../../mock/workspace'
 import type { SavedCard } from '../../mock/workspace'
@@ -56,16 +57,13 @@ export default function Payments() {
   const set = (k: string) => { const n = new URLSearchParams(params); n.set('tab', k); setParams(n) }
 
   const { studies } = useStudies()
-  const { cards, removeCard, setDefaultCard, payInvoice, paidInvoices } = useWorkspace()
-  const all = invoices(studies).map((i) => (paidInvoices.includes(i.number) ? { ...i, paid: true, amount: 0 } : i))
-  const base = paymentStats(studies)
-  const outstanding = all.filter((i) => !i.paid)
-  const ps = { ...base, due: outstanding.reduce((n, i) => n + i.amount, 0), dueStudies: outstanding.length }
+  const { cards, removeCard, setDefaultCard, payInvoice } = useWorkspace()
+  /** Step 53: one invoice per completed study, pending until its study no longer owes. */
+  const all = invoices(studies)
+  const ps = paymentStats(studies)
   const money = (n: number) => `$${n.toLocaleString('en-US')}`
-  /** Step 53: one invoice per completed study, pending until it is settled. */
-  const rows = invoices(studies)
-    .map((i) => (paidInvoices.includes(i.number) ? { ...i, paid: true, amount: 0 } : i))
-    .filter((i) => (done ? i.paid : !i.paid))
+  const rows = all.filter((i) => (done ? i.paid : !i.paid))
+  const open = all.find((r) => r.number === paying)
   const stats = [
     { label: 'Due Payments', value: money(ps.due), suffix: `of ${ps.dueStudies} studies`, tint: true },
     { label: 'All Time Spent', value: money(ps.spent), suffix: `for ${ps.spentStudies} studies` },
@@ -121,7 +119,7 @@ export default function Payments() {
                 <tr key={r.number} className="border-b-1 border-stroke-input last:border-b-0">
                   <td className="h-[70px] px-[16px] text-text-regular text-text-subtitle">{r.number}</td>
                   <td className="h-[70px] px-[16px] text-text-regular text-text-title">{r.study}</td>
-                  <td className="h-[70px] px-[16px] text-text-regular text-text-title">{r.date}</td>
+                  <td className="h-[70px] px-[16px] text-text-regular text-text-title">{done ? monthDayYear(r.paidAt ?? r.date) : monthDayYear(new Date(new Date(r.date).getTime() + 7 * 86_400_000).toISOString())}</td>
                   <td className={cn('h-[70px] px-[16px] text-text-title', done ? 'text-body-medium' : 'text-body-regular')}>{money(r.amount)}</td>
                   <td className="h-[70px] px-[16px]">
                     <span className="flex items-center justify-end gap-3">
@@ -129,7 +127,7 @@ export default function Payments() {
                         className="flex h-9 w-9 items-center justify-center rounded-sm border-1 border-stroke-input text-text-subtitle hover:text-text-title">
                         <Download className="h-[18px] w-[18px]" />
                       </button>
-                      <button type="button" aria-label="View invoice" onClick={() => setPanel(done ? 'paid' : 'topay')}
+                      <button type="button" aria-label="View invoice" onClick={() => { setPaying(r.number); setPanel(done ? 'paid' : 'topay') }}
                         className="flex h-9 w-9 items-center justify-center rounded-sm border-1 border-stroke-input text-text-subtitle hover:text-text-title">
                         <Eye className="h-[18px] w-[18px]" />
                       </button>
@@ -160,12 +158,12 @@ export default function Payments() {
 
       <InvoiceDetailsPanel open={panel === 'topay' || panel === 'paid'} paid={panel === 'paid'}
         onClose={() => setPanel('')} onPay={() => setPanel('make')}
-        studyId={rows.find((r) => r.number === paying)?.studyId} />
-      <MakePaymentPanel open={panel === 'make'} onClose={() => setPanel('')}
-        onPaid={() => { if (paying) payInvoice(paying); setPaying(null); setPanel('done') }}
+        studyId={open?.studyId} />
+      <MakePaymentPanel open={panel === 'make'} onClose={() => setPanel('')} studyId={open?.studyId}
+        onPaid={() => { if (paying) payInvoice(paying); setPanel('done') }}
         onInvoice={() => setPanel('topay')} />
       <AddCardPanel open={panel === 'addcard'} onClose={() => setPanel('')} />
-      <PaidModal open={panel === 'done'} onClose={() => setPanel('')} />
+      <PaidModal open={panel === 'done'} studyId={open?.studyId} onClose={() => { setPanel(''); setPaying(null) }} />
       <RemoveCardModal open={removing !== null} onClose={() => setRemoving(null)}
         last4={removing ?? ''}
         onConfirm={() => { if (removing) removeCard(removing); setRemoving(null) }} />

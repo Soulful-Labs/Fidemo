@@ -1,5 +1,8 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
+import { clientById } from '@shared/derive'
+import { DEMO_CLIENT_EMAIL, DEMO_CLIENT_ID } from '@shared/seed'
+import { platform } from '@shared/store'
 
 /**
  * Who is signed in.
@@ -27,6 +30,8 @@ export interface Account {
   name: string
   role: string
   company: string
+  /** This account's record on the shared platform: its studies, tickets and cards hang off it. */
+  clientId?: string
   /** The demo account is the only one with data behind it. */
   seeded: boolean
   /** False until the onboarding flow has been walked to the end. */
@@ -40,15 +45,20 @@ export interface Account {
   cardLast4?: string
 }
 
+/** The demo sign-in. Who she is, her company and her card are the shared seed's; only the password lives here. */
 export const DEMO_ACCOUNT: Account = {
-  email: 'jennifer@soulfullabs.com',
+  email: DEMO_CLIENT_EMAIL,
   password: 'demo1234',
-  name: 'Jennifer Lee',
-  role: 'Product Manager',
-  company: 'Soulful Labs',
+  clientId: DEMO_CLIENT_ID,
+  name: '', role: '', company: '',
   seeded: true,
   onboarded: true,
-  cardLast4: '4242',
+}
+
+/** An account with the name, role and company the platform holds for it. */
+function withClient(a: Account): Account {
+  const c = a.clientId ? clientById(platform().getState(), a.clientId) : undefined
+  return c ? { ...a, name: c.name, role: c.role, company: c.company, vat: c.vat, website: c.website, industry: c.industry, location: c.location, cardLast4: c.cards.find((x) => x.isDefault)?.last4 ?? a.cardLast4 } : a
 }
 
 const KEY = 'fi-client-session'
@@ -99,10 +109,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => { write(store) }, [store])
 
-  const account = useMemo(
-    () => store.accounts.find((a) => a.email === store.current) ?? null,
-    [store],
-  )
+  const world = useSyncExternalStore(platform().subscribe, platform().getState)
+  const account = useMemo(() => {
+    const found = store.accounts.find((a) => a.email === store.current)
+    return found ? withClient(found) : null
+    // `world` is read through withClient; the account follows the platform.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store, world])
 
   const signIn = useCallback<Ctx['signIn']>((email, password) => {
     const found = store.accounts.find((a) => a.email.toLowerCase() === email.trim().toLowerCase())
@@ -122,9 +135,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     if (FREE_DOMAINS.includes(domain)) {
       return { ok: false, why: 'Please use your work email address' }
     }
+    /** A new client is a new record on the platform, so the console's Clients list has them too. */
+    const made = platform().signUpClient({ name: name.trim() || 'New client', email: clean })
     const fresh: Account = {
       email: clean, password, name: name.trim() || 'New client', role: '', company: '',
-      seeded: false, onboarded: false,
+      clientId: made.ok ? made.id : undefined, seeded: false, onboarded: false,
     }
     setStore((s) => ({ accounts: [...s.accounts, fresh], current: fresh.email }))
     return { ok: true }
@@ -133,11 +148,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(() => setStore((s) => ({ ...s, current: null })), [])
 
   const update = useCallback<Ctx['update']>((patch) => {
+    const mine = store.accounts.find((a) => a.email === store.current)?.clientId
+    const { name, role, company, vat, website, industry, location } = patch
+    if (mine) platform().updateClient(mine, Object.fromEntries(Object.entries({ name, role, company, vat, website, industry, location }).filter(([, v]) => v !== undefined)))
     setStore((s) => ({
       ...s,
       accounts: s.accounts.map((a) => (a.email === s.current ? { ...a, ...patch } : a)),
     }))
-  }, [])
+  }, [store.accounts, store.current])
 
   const finishOnboarding = useCallback(() => update({ onboarded: true }), [update])
 

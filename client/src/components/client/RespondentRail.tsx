@@ -1,7 +1,8 @@
 import Button from '../ui/Button'
 import TierChip from './TierChip'
 import { Star, VerifiedMark, Info } from '../ui/icons'
-import { RATE_PROMPT, RESPONDENT } from '../../mock/respondent'
+import { RATE_PROMPT } from '../../mock/respondent'
+import { useProfile } from '../../platform'
 
 /** A section of the rail, under the hairline that separates it from the one above. */
 function Block({ title, children }: { title?: string; children: React.ReactNode }) {
@@ -51,11 +52,11 @@ export default function RespondentRail({ rate, onRate, person }: {
    * the participant list actually carries come from `person`; the rest stays
    * the frame's detail, because a Person does not hold it.
    */
-  person?: { name: string; role: string; score: number; tier: 'silver' | 'gold' | 'platinum' }
+  person?: { id: string; name: string; role: string; score: number; tier: 'silver' | 'gold' | 'platinum' }
 }) {
-  const r = person
-    ? { ...RESPONDENT, name: person.name, role: person.role, trustScore: person.score, tier: person.tier }
-    : RESPONDENT
+  /** Everything the rail says about this person is the platform's record of them. */
+  const r = useProfile(person?.id)
+  if (!r) return null
   return (
     <aside className="flex h-fit w-[304px] shrink-0 self-start flex-col overflow-hidden rounded-lg border-1 border-stroke-input bg-bg-0">
       {rate && <RatePrompt onRate={onRate} name={person?.name} />}
@@ -80,7 +81,7 @@ export default function RespondentRail({ rate, onRate, person }: {
         </p>
         <h3 className="pt-1 text-text-regular text-text-subtitle">Performance Ratings</h3>
         <div className="flex flex-col gap-3">
-          {r.ratings.map((x) => {
+          {r.ratingRows.map((x) => {
             const [bar, text] = x.tone.split(' ')
             return (
               <div key={x.label} className="flex flex-col gap-1">
@@ -101,7 +102,7 @@ export default function RespondentRail({ rate, onRate, person }: {
 
       <Block title="About">
         <dl className="flex flex-col gap-2">
-          {r.about.map((a) => (
+          {r.aboutRows.filter((a) => a.label !== 'Occupation' && a.label !== 'Industry').map((a) => (
             <div key={a.label} className="flex items-center justify-between gap-3">
               <dt className="text-text-regular text-text-subtitle">{a.label}</dt>
               <dd className="text-text-regular text-text-title">{a.value}</dd>
@@ -122,7 +123,7 @@ export default function RespondentRail({ rate, onRate, person }: {
 
       <Block title="Metrics">
         <dl className="flex flex-col gap-2">
-          {r.metrics.map((m) => (
+          {r.metricRows.map((m) => (
             <div key={m.label} className="flex items-center justify-between gap-3">
               <dt className="text-text-regular text-text-subtitle">{m.label}</dt>
               <dd className="text-text-regular text-text-title">{m.value}</dd>

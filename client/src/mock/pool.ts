@@ -1,55 +1,30 @@
-import type { Tier } from '../lib/studyTypes'
-import { PEOPLE, scoreOf, tierOf } from './db'
+import { useMemo } from 'react'
+import { cohort, rankedPool } from '@shared/derive'
+import type { PoolPerson } from '@shared/derive'
+import { usePlatform } from '../platform'
 
-/** A respondent card in the Pool and in a panel's member list (1645:161430). */
-export interface PoolPerson {
-  id: string
-  name: string
-  role: string
-  score: number
-  tier: Tier
-  /** What the filter rail narrows on. */
-  domain: string
-  gender: 'Male' | 'Female' | 'Other'
-  location: string
-  language: string
-  lastActiveWeeks: number
-}
-
-/** Attributes per pool member, so the rail has something real to filter. */
-const ATTRS: Record<string, Pick<PoolPerson, 'domain' | 'gender' | 'location' | 'language' | 'lastActiveWeeks'>> = {
-  'tom-h': { domain: 'Fitness & Nutrition', gender: 'Male', location: 'New York, US', language: 'English', lastActiveWeeks: 1 },
-  'sofia-p': { domain: 'Healthcare', gender: 'Female', location: 'New York, US', language: 'English', lastActiveWeeks: 2 },
-  'yara-m': { domain: 'Healthcare', gender: 'Female', location: 'Boston, US', language: 'English', lastActiveWeeks: 3 },
-  'daniel-l': { domain: 'Pharma', gender: 'Male', location: 'New York, US', language: 'Spanish', lastActiveWeeks: 5 },
-  'alice-f': { domain: 'Fitness & Nutrition', gender: 'Female', location: 'Chicago, US', language: 'English', lastActiveWeeks: 2 },
-  'clara-j': { domain: 'Fitness & Nutrition', gender: 'Female', location: 'New York, US', language: 'English', lastActiveWeeks: 1 },
-  'xander-b': { domain: 'Healthcare', gender: 'Male', location: 'New York, US', language: 'English', lastActiveWeeks: 4 },
-  'zach-k': { domain: 'Fitness & Nutrition', gender: 'Male', location: 'Austin, US', language: 'English', lastActiveWeeks: 8 },
-  'brian-d': { domain: 'Healthcare', gender: 'Male', location: 'New York, US', language: 'English', lastActiveWeeks: 6 },
-  'victor-s': { domain: 'Fitness & Nutrition', gender: 'Male', location: 'Miami, US', language: 'Spanish', lastActiveWeeks: 10 },
-  'uma-r': { domain: 'Healthcare', gender: 'Female', location: 'Boston, US', language: 'Hindi', lastActiveWeeks: 14 },
-  'wendy-t': { domain: 'Pharma', gender: 'Female', location: 'Chicago, US', language: 'English', lastActiveWeeks: 20 },
-}
+export type { PoolPerson } from '@shared/derive'
 
 /**
- * The twelve the Pool frame draws, now taken from the one person list with
- * the score and tier derived by the policy rather than printed beside it.
- * Step 24 ranks by score and tier, which is the order they come back in.
+ * The participant pool is the platform's, not this app's: everyone verified
+ * and active, ranked by score and tier (workflow 24), with the score and
+ * tier computed by the policy. This file now holds only the Pool screens'
+ * own copy and the micro-panel cards.
  */
-const POOL_IDS = [
-  'tom-h', 'sofia-p', 'yara-m', 'daniel-l', 'alice-f', 'clara-j',
-  'xander-b', 'zach-k', 'brian-d', 'victor-s', 'uma-r', 'wendy-t',
-]
-
-export const POOL_PEOPLE: PoolPerson[] = POOL_IDS
-  .map((id) => PEOPLE.find((p) => p.id === id)!)
-  .map((p) => ({ id: p.id, name: p.name, role: p.role, score: scoreOf(p), tier: tierOf(p), ...ATTRS[p.id]! }))
+export function usePool(): { people: PoolPerson[]; total: number; options: { roles: string[]; domain: string[]; location: string[]; language: string[] } } {
+  const state = usePlatform()
+  return useMemo(() => {
+    const people = rankedPool(state)
+    const uniq = (f: (p: PoolPerson) => string) => [...new Set(people.map(f).filter(Boolean))].sort()
+    return {
+      people, total: people.length,
+      /** What each picker offers, taken from the pool itself so nothing is dead. */
+      options: { roles: uniq((p) => p.role.split(',')[0]!.trim()), domain: uniq((p) => p.domain), location: uniq((p) => p.location), language: uniq((p) => p.language) },
+    }
+  }, [state])
+}
 
 export const POOL_SEARCH = 'Describe your required audience to search and filter or search by name, role, score, tiers, industry, etc.'
-/** The pool the rail filters. The frame writes 260 behind its twelve cards. */
-export const POOL_TOTAL = POOL_PEOPLE.length
-
 /** The filter rail, in the order the frame stacks it. */
 export const POOL_FILTERS = {
   tiers: ['Any', 'Silver', 'Gold', 'Platinum'],
@@ -60,14 +35,6 @@ export const POOL_FILTERS = {
   domain: { label: 'DOMAIN', placeholder: 'Select domains' },
   location: { label: 'LOCATION', placeholder: 'Select city, country' },
   language: { label: 'LANGUAGE', placeholder: 'Select languages' },
-}
-
-/** What each picker offers, taken from the pool itself so nothing is dead. */
-export const POOL_OPTIONS = {
-  roles: [...new Set(POOL_PEOPLE.map((p) => p.role.split(',')[0]!.trim()))].sort(),
-  domain: [...new Set(POOL_PEOPLE.map((p) => p.domain))].sort(),
-  location: [...new Set(POOL_PEOPLE.map((p) => p.location))].sort(),
-  language: [...new Set(POOL_PEOPLE.map((p) => p.language))].sort(),
 }
 
 /**
@@ -169,34 +136,27 @@ export const CRITERIA = [
 export const FORECAST = {
   title: 'Micropanel Forecast',
   estimated: 'Estimated',
-  count: '~75',
   countSuffix: 'eligible respondents match criteria',
-  tiers: [
-    { tier: 'silver' as Tier, pct: '50%', members: '~30 members' },
-    { tier: 'gold' as Tier, pct: '40%', members: '~23 members' },
-    { tier: 'platinum' as Tier, pct: '10%', members: '~7 members' },
-  ],
+  /**
+   * The count, the tier split and the average score are computed from the
+   * pool (useForecast). These three are a forecast nothing on the platform
+   * can produce yet, so they stay as the frame writes them.
+   */
   rows: [
-    { label: 'Average Score', value: '86%' },
     { label: 'Recommended Incentive', value: '$100-200' },
     { label: 'Estimated Time To Fill', value: '5-7 days' },
     { label: 'Expected Rebook Rate', value: '74%' },
   ],
 }
 
-/** The same forecast as the Create form draws it: bars, not cards. */
-export const FORECAST_BARS = [
-  { label: 'Silver', pct: 50, text: '50%', bar: 'bg-[#9fb8c8]' },
-  { label: 'Gold', pct: 42, text: '42%', bar: 'bg-cta-primary' },
-  { label: 'Platinum', pct: 8, text: '8%', bar: 'bg-[#9139f6]' },
-]
+/** How the Create form draws the tier split: bars, not cards. */
+export const FORECAST_BARS = { silver: { label: 'Silver', bar: 'bg-[#9fb8c8]' }, gold: { label: 'Gold', bar: 'bg-cta-primary' }, platinum: { label: 'Platinum', bar: 'bg-[#9139f6]' } }
 
-/** Invite To Study (1645:163182) lists the client's active studies. */
-export const INVITE_STUDIES = [
-  { id: 'goals', title: 'About goal-tracking methods', type: 'video_call' as const, domain: 'Healthcare', image: '/img/goals.jpg' },
-  { id: 'sleep', title: 'Share about your sleep cycle', type: 'in_person' as const, domain: 'Healthcare', image: '/img/sleep.jpg' },
-  { id: 'payments', title: 'How do you make your digital payments mostly?', type: 'diary' as const, domain: 'Healthcare', image: '/img/card.jpg' },
-]
+/** The forecast for a cohort: everyone in the pool, or the people given. */
+export function useForecast(ids?: string[]) {
+  const { people } = usePool()
+  return useMemo(() => cohort(ids ? people.filter((p) => ids.includes(p.id)) : people), [people, ids])
+}
 
 /** Save to micro-panel (1651:177206) lists the panels to save into. */
 export const SAVE_TARGETS = [

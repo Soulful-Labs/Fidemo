@@ -9,12 +9,14 @@ import NoShowModal from './NoShowModal'
 import { ActivityList, DayBar, NotesCard, PinCard, QARow, SessionCard } from './respondentBits'
 import { CheckCircle, Clock, Close, DiaryBookIcon, NoteIcon, SurveyIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import { DIARY_DAYS, RESPONDENT, SCREENER_ANSWERS } from '../../mock/respondent'
+import { DIARY_DAYS, SCREENER_ANSWERS } from '../../mock/respondent'
+import { clockTime, longDay, monthDayYearTime } from '@shared/format'
+import { sessionStart } from '@shared/store'
 import { useToast } from '../../components/ui/Toast'
-import { useStudy } from '../../mock/store'
-import type { Study } from '../../mock/db'
-import { useStudies } from '../../mock/store'
-import { recruit, recruits } from '../../lib/derive'
+import { useStudy } from '../../platform'
+import type { ClientStudy as Study } from '../../platform'
+import { useStudies } from '../../platform'
+import { recruit, recruits } from '@shared/derive'
 
 type Tab = 'screener' | 'result' | 'activity'
 
@@ -51,12 +53,12 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
   const nav = useNavigate()
   const [params] = useSearchParams()
   const s = useStudy(id)
-  const { moveRespondent, enterCode } = useStudies()
+  const { moveRespondent, enterCode, state: world } = useStudies()
   const [rate, setRate] = useState(params.get('rate') === '1' || params.get('rate') === 'rated')
   const [noShow, setNoShow] = useState<'one' | 'all' | null>((params.get('noshow') as 'one' | 'all') ?? null)
 
   /** Whose result this is. Everything on the screen follows their state. */
-  const person = recruit(s, rid ?? '') ?? recruits(s, 'results')[0]
+  const person = recruit(world, s, rid ?? '') ?? recruits(world, s, 'results')[0]
   const state = person?.state
 
   const session = s.type !== 'survey' && s.type !== 'diary'
@@ -82,6 +84,19 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
   }
   const pinProps = { pin: person?.participation.code?.value, name: person?.name, onShared: shared }
 
+  /** The booking on this participation: who, when and where. */
+  const booking = person?.participation.booking
+  const starts = booking ? sessionStart(booking) : undefined
+  const venue = s.locations?.find((l) => l.id === booking?.locationId)
+  const sessionInfo = booking && starts ? {
+    title: `${s.type === 'in_person' || s.type === 'in_person_group' ? 'In-person interview' : 'Video call'} of ${person?.name} and You`,
+    date: longDay(booking.date),
+    time: `${booking.slot} - ${clockTime(new Date(starts.getTime() + s.durationMins * 60_000).toISOString())}`,
+    address: venue?.address,
+  } : undefined
+  /** What has happened on this participation, as the platform recorded it. */
+  const events = (person?.participation.events ?? []).map((e) => ({ label: e.label, at: monthDayYearTime(e.at) }))
+
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
     { key: 'screener', label: 'Screener', icon: <SurveyIcon className="h-4 w-4" /> },
     ...(done ? [{ key: 'result' as Tab, label: 'Study Result', icon: <NoteIcon className="h-4 w-4" /> }] : []),
@@ -90,17 +105,17 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
 
   // The person you opened, not the frame's seeded one: a constant here sent
   // every tab switch to the same respondent whoever you had opened.
-  const to = (t: Tab) => `/studies/${s.id}/respondent/${person?.id ?? rid ?? RESPONDENT.id}${t === 'screener' ? '' : `/${t}`}`
+  const to = (t: Tab) => `/studies/${s.id}/respondent/${person?.id ?? rid ?? ''}${t === 'screener' ? '' : `/${t}`}`
     + (done ? '' : '?state=recruited')
 
   return (
     <AppShell crumbs={[
       { label: 'Studies', to: '/studies' },
-      { label: 'GLP-1 Care…' },
+      { label: s.title.length > 12 ? `${s.title.slice(0, 11)}…` : s.title, to: `/studies/${s.id}` },
       { label: crumbTab, to: `/studies/${s.id}/${done ? 'results' : 'recruited'}` },
       // The person you opened. The frames name John M here and someone else
       // in the row that opens it; a live build cannot show both.
-      { label: person?.name ?? (session ? RESPONDENT.name : RESPONDENT.rowName) },
+      { label: person?.name ?? '' },
     ]}>
       <div className={cn('rounded-lg bg-bg-0 p-4', session ? 'min-h-[1173px]' : 'min-h-[1286px]')}>
         <div className="flex flex-col gap-3">
@@ -122,7 +137,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
               {tab === 'activity' && (
                 <div className="flex flex-col px-4 pb-4 pt-5">
                   {done && <RatePrompt name={person?.name} wide onRate={() => setRate(true)} />}
-                  <ActivityList />
+                  <ActivityList events={events} />
                   <div className="pt-[14px]"><PinCard variant="activity" {...pinProps} /></div>
                 </div>
               )}
@@ -141,10 +156,10 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
               {tab === 'result' && session && (
                 <div className="flex flex-1 flex-col gap-3 px-4 pb-4 pt-5">
                   {running
-                    ? <SessionCard state={slot === 'finished' ? 'done' : 'running'} />
+                    ? <SessionCard state={slot === 'finished' ? 'done' : 'running'} session={sessionInfo} />
                     : (
                       <div className="grid grid-cols-2 gap-3">
-                        <SessionCard state="booked" />
+                        <SessionCard state="booked" session={sessionInfo} />
                         <PinCard variant="session" {...pinProps} />
                       </div>
                     )}
@@ -195,7 +210,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                     <>
                       <p className="flex flex-col">
                         <span className="text-text-medium text-brand-secondary">Marked as completed!</span>
-                        <span className="text-text-regular text-text-subtitle">The diary study has been successfully completed by {person?.name.split(' ')[0] ?? RESPONDENT.first}.</span>
+                        <span className="text-text-regular text-text-subtitle">The diary study has been successfully completed by {person?.name.split(' ')[0] ?? 'the respondent'}.</span>
                       </p>
                       <span className="flex h-11 items-center gap-2 rounded-sm bg-green-50 px-4 text-text-medium text-brand-secondary">
                         <CheckCircle className="h-4 w-4" />Completed
@@ -239,7 +254,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
             </section>
 
             <RespondentRail rate={rated} onRate={() => setRate(true)}
-              person={person && { name: person.name, role: person.role, score: person.score, tier: person.tier }} />
+              person={person && { id: person.id, name: person.name, role: person.role, score: person.score, tier: person.tier }} />
           </div>
         </div>
       </div>

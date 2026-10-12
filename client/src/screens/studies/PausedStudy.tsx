@@ -4,8 +4,8 @@ import Button from '../../components/ui/Button'
 import { Copy } from '../../components/ui/icons'
 import { StudyFrame } from '../../components/client/StudyFrame'
 import { useToast } from '../../components/ui/Toast'
-import { useStudies, useStudy } from '../../mock/store'
-import { counts, progressPct } from '../../lib/derive'
+import { useStudies, useStudy } from '../../platform'
+import { counts, progressPct } from '@shared/derive'
 import { copyText } from '../../lib/copy'
 
 /** The Overview tiles, in the warm tint the frame draws them in. */
