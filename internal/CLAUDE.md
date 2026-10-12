@@ -1305,6 +1305,33 @@ Logout 3.36%, updated 4.62%. Nothing is cut off by its frame.
 
 ---
 
+## Rules invented in this build, needing sign-off
+
+No signed document states these. Each is the build's reading of the designs,
+kept on purpose, and each needs a yes from the business before it is real.
+
+| Rule | Where | What it does | Why it was read this way |
+|---|---|---|---|
+| Restriction ladder: 15 days, then 15, then 30, then deactivation | `shared/platform.ts` RESTRICTION_DAYS | Each upheld report restricts the account for longer; the fourth deactivates | The Restrict dialog says "for 15 days as for the 1st time" and `2036:145744` stacks 15, 15, 30 then "Deactivated the account." No document sets the ladder |
+| "No code, no payment" | `shared/store.ts` complete; console Mark Completed (`internal/src/mock/attendance.ts`) | Mark Completed is refused, with that reason, when the participant never entered their session code. The team supplies the client's half from the PIN on the session page | The attendance design is two steps ("Verified with PIN by ... (participant)", then "Marked as completed by client") and the PIN is drawn on the session page. Accepted 12 Oct 2026 as the right reading; no document says it |
+
+### The two rating paths are not equivalent
+
+Both store stars, and the policy's table (5 +4, 4 +3, 3 +1, 2 -2, 1 -3) scores them.
+
+- **Client app:** a three-state control (excellent, good, poor), mapped by
+  `starsForRating` in `shared/rules.ts` to 5, 4 and 2. 3 and 1 star are unreachable.
+- **Console:** the Rate panel draws three five-star scores (expertise,
+  reliability, communication). `starsFromDimensions` stores their rounded
+  average, so every value from 1 to 5 is reachable.
+
+So the same participant can earn a +1 or a -3 from the team but never from a
+client. Accepted 12 Oct 2026; whether that is intended is a question for Jim,
+not something to fix in code. A participation can be rated once; a second
+rating is refused.
+
+---
+
 ## The file, mapped
 
 15 top-level sections and one loose frame on the page, **294 frames, 251 visible,
