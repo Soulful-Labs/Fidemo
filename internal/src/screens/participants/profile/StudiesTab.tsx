@@ -4,8 +4,7 @@ import Table from '../../../components/ui/Table'
 import type { Column } from '../../../components/ui/Table'
 import { UnderlineTabs } from '../../../components/ui/Tabs'
 import { cn } from '../../../lib/cn'
-import { APPLIED, HISTORY, SAVED, SCHEDULED_ONE, SIX } from '../../../mock/profile'
-import type { StudyLine, StudyStatus } from '../../../mock/profile'
+import type { ProfileView, StudyLine, StudyStatus } from '../../../mock/profile'
 
 export type StudySub = 'invites' | 'scheduled' | 'applied' | 'history' | 'saved'
 export const STUDY_SUBS = [{ key: 'invites', label: 'Invites To Schedule' }, { key: 'scheduled', label: 'Scheduled' }, { key: 'applied', label: 'Applied' }, { key: 'history', label: 'History' }, { key: 'saved', label: 'Saved' }]
@@ -39,7 +38,8 @@ const Heading = ({ children }: { children: string }) => <h3 className="pb-2 pt-4
  * (2017:155992) has no filter and stacks five tables under their own
  * headings. Read only: no row action is drawn, and rows are not links.
  */
-export default function StudiesTab({ sub, onSub }: { sub: StudySub; onSub: (s: StudySub) => void }) {
+export default function StudiesTab({ sub, onSub, view }: { sub: StudySub; onSub: (s: StudySub) => void; view: ProfileView }) {
+  const { INVITES, SCHEDULED, APPLIED, HISTORY, SAVED } = view
   return (
     <div>
       <UnderlineTabs items={STUDY_SUBS} value={sub} onChange={(k) => onSub(k as StudySub)} />
@@ -47,13 +47,13 @@ export default function StudiesTab({ sub, onSub }: { sub: StudySub; onSub: (s: S
         <SearchInput size="sm" placeholder="Search studies..." />
         {sub !== 'saved' && <Select size="sm" className="w-[134px] shrink-0" value="All" options={['All']} />}
       </div>
-      {sub === 'invites' && <T rows={SIX} cols={COLS.invites} />}
-      {sub === 'scheduled' && <T rows={SCHEDULED_ONE} cols={COLS.scheduled} />}
+      {sub === 'invites' && <T rows={INVITES} cols={COLS.invites} />}
+      {sub === 'scheduled' && <T rows={SCHEDULED} cols={COLS.scheduled} />}
       {sub === 'applied' && <T rows={APPLIED} cols={COLS.applied} />}
       {sub === 'history' && <T rows={HISTORY} cols={COLS.history} />}
       {sub === 'saved' && (
         <div className="-mt-4">
-          <Heading>Invites To Schedule</Heading><T rows={SIX} cols={COLS.invites} />
+          <Heading>Invites To Schedule</Heading><T rows={SAVED.invites} cols={COLS.invites} />
           <Heading>Scheduled</Heading><T rows={SAVED.scheduled} cols={COLS.scheduled} />
           <Heading>Drafts</Heading><T rows={SAVED.drafts} cols={COLS.drafts} />
           <Heading>Applied</Heading><T rows={SAVED.applied} cols={COLS.applied} />

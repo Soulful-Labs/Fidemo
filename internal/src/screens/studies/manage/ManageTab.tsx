@@ -1,7 +1,6 @@
 import type { ComponentType, ReactNode, SVGProps } from 'react'
 import Pill from '../../../components/app/Pill'
 import { AudienceIcon, ClipboardIcon, InfoIcon, PinIcon, ScreenerIcon, UsersIcon } from '../../../components/ui/icons'
-import { FIGURES as F, audiencePills } from '../../../mock/manage'
 import { cn } from '../../../lib/cn'
 import type { ManagedStudy } from '../../../mock/manage'
 
@@ -35,17 +34,17 @@ const Value = ({ children }: { children: ReactNode }) => <p className="text-body
 const ICON = { users: UsersIcon, pin: PinIcon }
 
 /** The audience criteria as ringed pills, shared with the completed study's Overview. */
-export const AudiencePills = ({ roles }: { roles: string }) => (
+export const AudiencePills = ({ pills }: { pills: ManagedStudy['audience'] }) => (
   <div className="flex flex-wrap gap-3">
-    {audiencePills(roles).map((p, i) => {
+    {pills.map((p, i) => {
       const Icon = p.icon ? ICON[p.icon] : null
       return <Pill key={i} label={p.label} icon={Icon && <Icon className="h-4 w-4" />}>{p.value}</Pill>
     })}
   </div>
 )
-export const EstimatedAudience = () => (
+export const EstimatedAudience = ({ value }: { value: string }) => (
   <span className="flex h-7 items-center gap-1 rounded-full bg-bgAlt-2 px-2.5 text-text-regular text-text-title">
-    <span className="text-text-subtitle">Estimated Audience:</span>{F.estimatedAudience}<InfoIcon className="h-4 w-4 text-text-subtitle" />
+    <span className="text-text-subtitle">Estimated Audience:</span>{value}<InfoIcon className="h-4 w-4 text-text-subtitle" />
   </span>
 )
 
@@ -69,16 +68,16 @@ export default function ManageTab({ study }: { study: ManagedStudy }) {
         </div>
       </Block>
       <Block Icon={AudienceIcon} title="Audience" head="h-[52px]" body="pb-[26px]"
-        extra={<EstimatedAudience />}>
-        <AudiencePills roles={study.roles} />
+        extra={<EstimatedAudience value={study.figures.estimatedAudience} />}>
+        <AudiencePills pills={study.audience} />
       </Block>
       <Block Icon={ScreenerIcon} title="Screener" head="h-12" body="pb-[30px]">
-        <Pill label="Screening:">{F.screening}</Pill>
+        <Pill label="Screening:">{study.figures.screening}</Pill>
       </Block>
       <Block Icon={ClipboardIcon} title="Study" head="h-12" body="pb-[30px]">
         <div className="flex gap-2">
           <Pill label={study.summary[0]}>{study.summary[1]}</Pill>
-          <Pill label="Incentive:">{F.incentive}</Pill>
+          <Pill label="Incentive:">{study.figures.incentive}</Pill>
         </div>
       </Block>
     </div>

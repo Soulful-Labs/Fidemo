@@ -61,3 +61,13 @@ export const count = (n: number): string => n.toLocaleString('en-US')
 
 /** "1 study", "5 studies" */
 export const plural = (n: number, one: string, many = `${one}s`): string => `${count(n)} ${n === 1 ? one : many}`
+
+/** "15 min ago", "2 hr ago", then "5 Sep, 10:16 AM" once it is more than a day old. */
+export function ago(iso?: string, now: Date = new Date()): string {
+  if (!iso) return ''
+  const mins = Math.round((now.getTime() - new Date(iso).getTime()) / 60_000)
+  if (mins < 60) return `${Math.max(1, mins)} min ago`
+  if (mins < 24 * 60) return `${Math.round(mins / 60)} hr ago`
+  const d = new Date(iso)
+  return `${d.getDate()} ${d.toLocaleDateString('en-US', { month: 'short' })}, ${clockTime(iso)}`
+}

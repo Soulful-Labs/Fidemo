@@ -9,11 +9,11 @@ import { SidePanel } from '../../../components/ui/Overlay'
  * area for what the client must change, and Cancel / Send. This is the only
  * place on the review where the team writes anything.
  */
-export default function RequestChanges({ open, onClose, onSend }: { open: boolean; onClose: () => void; onSend: () => void }) {
+export default function RequestChanges({ open, onClose, onSend }: { open: boolean; onClose: () => void; onSend: (text: string) => void }) {
   const [text, setText] = useState('')
   return (
     <SidePanel open={open} onClose={onClose} title="Request Changes"
-      footer={<><Button variant="secondary" onClick={onClose}>Cancel</Button><Button onClick={onSend}>Send</Button></>}>
+      footer={<><Button variant="secondary" onClick={onClose}>Cancel</Button><Button disabled={!text.trim()} onClick={() => onSend(text)}>Send</Button></>}>
       <h3 className="text-title-l leading-[31px] text-text-title">Request changes and resubmit</h3>
       <p className="pt-3 text-body-regular text-text-subtitle">Add the required changes to request from client</p>
       <TextArea className="pb-5 pt-4 [&_textarea]:h-[110px]" label="Request Changes" rows={4} placeholder="Describe the required changes in detail" value={text} onChange={(e) => setText(e.target.value)} />

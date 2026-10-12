@@ -1,6 +1,6 @@
 import { Fragment, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
-import { MANAGED } from '../../../mock/manage'
+import { useManagedStudy } from '../../../mock/manage'
 import { applications } from '../../../mock/recruiting'
 import { ANSWERS, DIARY_ANSWERS, SHORT_ACTIVITY, sessionActivity } from '../../../mock/results'
 import { CompletedBar, CompletionBar, ScreenerBar } from './bars'
@@ -28,7 +28,7 @@ const PIN_COMPLETION = 'Share this PIN number with John M. for their completion 
 export default function RespondentPage() {
   const { id, rid = '' } = useParams()
   const [params, setParams] = useSearchParams()
-  const study = MANAGED.find((s) => s.id === id) ?? MANAGED[0]!
+  const study = useManagedStudy(id)
   const group = study.type === 'video-group' || study.type === 'in-person-group'
   const stage = group || rid.startsWith('a') ? 'applied' : rid.startsWith('b') ? 'booked' : 'finished'
   const name = group ? 'Sarah K' : 'John M'

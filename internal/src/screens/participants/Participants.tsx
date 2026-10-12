@@ -8,7 +8,7 @@ import { ListIcon } from '../../components/ui/icons'
 import Table, { Pagination } from '../../components/ui/Table'
 import type { Column } from '../../components/ui/Table'
 import { SegmentedTabs } from '../../components/ui/Tabs'
-import { COUNTS, FILTERS, PARTICIPANTS } from '../../mock/participants'
+import { FILTERS, useParticipants } from '../../mock/participants'
 import type { Participant } from '../../mock/participants'
 import { AdvancedFilters } from './panels'
 
@@ -39,12 +39,18 @@ export default function Participants() {
   const [filters, setFilters] = useState({ lastActive: FILTERS.lastActive[0]!, profession: FILTERS.profession[0]!, gender: FILTERS.gender[0]!, tier: FILTERS.tier[0]! })
   const [advanced, setAdvanced] = useState(false)
   const pick = (k: keyof typeof filters) => (v: string) => setFilters((f) => ({ ...f, [k]: v }))
+  const { rows, count } = useParticipants(tab)
+  const [page, setPage] = useState(1)
+  /** Search narrows by name or role; the table pages at ten. */
+  const found = rows.filter((r) => !query.trim() || `${r.name} ${r.role}`.toLowerCase().includes(query.trim().toLowerCase()))
+  const pages = Math.max(1, Math.ceil(found.length / 10))
+  const shown = found.slice((Math.min(page, pages) - 1) * 10, Math.min(page, pages) * 10)
 
   return (
     <AppShell crumbs={[{ label: 'All Participants' }]}>
       <SegmentedTabs className="w-[280px]" segmentClassName="flex-1 min-w-0" value={tab} onChange={(k) => setParams(k === 'active' ? {} : { tab: k }, { replace: true })}
         items={[{ key: 'active', label: 'Active' }, { key: 'deactivated', label: 'Deactivated' }]} />
-      <p className="pt-4 text-body-regular leading-[22px] text-text-body">{COUNTS[tab]}</p>
+      <p className="pt-4 text-body-regular leading-[22px] text-text-body">{count}</p>
       <div className="flex items-center gap-2 pt-4">
         <SearchInput size="sm" className="mr-2 w-[370px]" placeholder="Search participants by name or role..." value={query} onChange={(e) => setQuery(e.target.value)} />
         <Button variant="tertiary" size="md" data-adv="" className="w-[150px] rounded-sm px-0" leftIcon={<ListIcon className="h-4 w-4" />} onClick={() => setAdvanced(true)}>Advanced Filters</Button>
@@ -53,9 +59,9 @@ export default function Participants() {
         <Select size="sm" className="w-[140px]" value={filters.gender} onChange={pick('gender')} options={FILTERS.gender} />
         <Select size="sm" className="w-[140px]" value={filters.tier} onChange={pick('tier')} options={FILTERS.tier} />
       </div>
-      <Table className="mt-3" rowHeight={52} rows={PARTICIPANTS} rowKey={(r) => r.id} onRowClick={(r) => navigate(`/participants/${r.id}${tab === 'deactivated' ? '?state=deactivated' : ''}`)}
+      <Table className="mt-3" rowHeight={52} rows={shown} rowKey={(r) => r.id} onRowClick={(r) => navigate(`/participants/${r.id}`)}
         columns={columns(tab === 'active' ? 'Last Active' : 'Deactivated')} />
-      <div className="pt-3"><Pagination page={1} pages={10} /></div>
+      <div className="pt-3"><Pagination page={Math.min(page, pages)} pages={pages} onChange={setPage} /></div>
       <AdvancedFilters open={advanced} onClose={() => setAdvanced(false)} />
     </AppShell>
   )

@@ -3,7 +3,7 @@ import AppShell from '../../app/AppShell'
 import Pill from '../../components/app/Pill'
 import { SegmentedTabs } from '../../components/ui/Tabs'
 import { cn } from '../../lib/cn'
-import { DEDUCTED_VIEW, EARNED, EARNED_STARS, POINTS, TIERS_VIEW } from '../../mock/pricing'
+import { DEDUCTED_VIEW, EARNED, EARNED_STARS, POINTS, TIERS_VIEW, FEE } from '../../mock/pricing'
 import { Head, Value } from './parts'
 
 const Rows = ({ title, rows, sub }: { title: string; rows: string[][]; sub?: string[][] }) => (
@@ -46,13 +46,13 @@ export default function Pricing() {
       ) : (
         <div className="flex flex-col gap-6 pt-6">
           <section><Head title="Clients" note="Configure study pricing by industry or other filters, and the charges" action="Edit Fees" onEdit={() => navigate('/pricing/client-fees')} />
-            <div className="grid grid-cols-2 gap-3"><Value label="Platform Fees" value="$100" note="One-time per study" /><Value label="Moderation Fees" value="$10" note="One-time per completed participant" /></div>
+            <div className="grid grid-cols-2 gap-3"><Value label="Platform Fees" value={FEE.platform} note="One-time per study" /><Value label="Moderation Fees" value={FEE.moderation} note="One-time per completed participant" /></div>
             <Value className="mt-3" label="Recruitment Fees" note="One-time per completed participant">
-              <p className="flex items-baseline gap-2 pt-2 text-title-m leading-7 text-text-title">$25<span className="text-text-regular text-text-subtitle">Base</span></p>
-              <div className="flex gap-2 pt-2"><AddOn amount="+$25" pills={[['Study Type:', 'Video Call, In-Person, Diary Study'], [undefined, 'Roles']]} /><AddOn amount="+$20" pills={[[undefined, 'Skills']]} /></div>
+              <p className="flex items-baseline gap-2 pt-2 text-title-m leading-7 text-text-title">{FEE.recruitmentBase}<span className="text-text-regular text-text-subtitle">Base</span></p>
+              <div className="flex gap-2 pt-2"><AddOn amount={FEE.typeAddOn} pills={[['Study Type:', 'Video Call, In-Person, Diary Study'], [undefined, 'Roles']]} /><AddOn amount={FEE.skillsAddOn} pills={[[undefined, 'Skills']]} /></div>
             </Value></section>
           <section><Head title="Participants" note="Manage charges and rewards for participants" action="Edit Fees" onEdit={() => navigate('/pricing/participant-fees')} />
-            <div className="grid grid-cols-2 gap-3"><Value label="Withdrawal" value="$1.99" note="One-time charge per withdrawal" /><Value label="Reward Points Value" value="$1" note="For 100 Reward Coins" /></div></section>
+            <div className="grid grid-cols-2 gap-3"><Value label="Withdrawal" value={FEE.withdrawal} note="One-time charge per withdrawal" /><Value label="Reward Points Value" value={FEE.pointValue} note="For 100 Reward Coins" /></div></section>
         </div>
       )}
     </AppShell>

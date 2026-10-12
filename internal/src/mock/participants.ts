@@ -1,30 +1,48 @@
+import { useMemo } from 'react'
+import { clientById, personById, shortName, tierOf, trustScoreOf } from '@shared/derive'
+import { isLive } from '@shared/lifecycle'
+import { count, dayOrToday } from '@shared/format'
+import type { Person, PlatformState } from '@shared/types'
 import type { StudyType } from '../components/app/StudyTypeTag'
 import type { Tier } from '../components/app/TierTag'
+import { consoleType, studyPictures, usePlatform } from '../platform'
 
 /**
- * All Participants as drawn (Active 1992:101341, Deactivated 2003:134529).
- * Both tabs draw the same ten people and the same dates; only the count line
- * and the last column's heading change.
+ * All Participants (Active 1992:101341, Deactivated 2003:134529), read from
+ * the shared platform: every person, their score and tier from the policy,
+ * active or deactivated as the platform holds them.
  */
 export interface Participant { id: string; photo: string; name: string; role: string; industry: string; score: string; tier: Tier; gender: string; location: string; date: string }
 
-const row = (n: number, name: string, role: string, industry: string, score: string, tier: Tier, gender: string, location: string, date: string): Participant =>
-  ({ id: `p-${n}`, photo: `/img/participants/p${n}.png`, name, role, industry, score, tier, gender, location, date })
+const TIER_NAME: Record<'silver' | 'gold' | 'platinum', Tier> = { silver: 'Silver', gold: 'Gold', platinum: 'Platinum' }
 
-export const PARTICIPANTS: Participant[] = [
-  row(1, 'Samuel Lee', 'Software Engineer', 'IT', '90', 'Platinum', 'Male', 'San Francisco, USA', 'Oct 1, 2026'),
-  row(2, 'Robert Mayfield', 'Assistant Accountant', 'Consultancy', '78', 'Gold', 'Male', 'Miami, USA', 'Today'),
-  row(3, 'Jenny Vance', 'Physician, Therapist', 'Healthcare', '65', 'Silver', 'Female', 'Miami, USA', 'Oct 4, 2026'),
-  row(4, 'Angela Patel', 'Project Manager', 'Marketing', '75', 'Gold', 'Female', 'New York, USA', 'Oct 3, 2026'),
-  row(5, 'Michael Chen', 'Data Analyst', 'Finance', '85', 'Gold', 'Male', 'Los Angeles, USA', 'Sep 30, 2026'),
-  row(6, 'Sophia Garcia', 'UX Designer', 'IT', '98', 'Platinum', 'Female', 'Austin, USA', 'Sep 28, 2026'),
-  row(7, 'David Johnson', 'Sales Executive', 'Retail', '95', 'Platinum', 'Male', 'Chicago, USA', 'Oct 2, 2026'),
-  row(8, 'Emily Davis', 'Content Writer', 'Media', '60', 'Silver', 'Female', 'Seattle, USA', 'Oct 4, 2026'),
-  row(9, 'James Wilson', 'Network Administrator', 'IT', '88', 'Gold', 'Male', 'Boston, USA', 'Oct 2, 2026'),
-  row(10, 'Linda Thompson', 'HR Specialist', 'Consultancy', '67', 'Silver', 'Female', 'Denver, USA', 'Oct 1, 2026'),
-]
+/** The ten portraits the frames were drawn with, five of each; a person keeps the same one on every screen. */
+const MEN = [1, 2, 5, 7, 9], WOMEN = [3, 4, 6, 8, 10]
+const hash = (s: string) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 0)
+export const photoFor = (p: Pick<Person, 'id' | 'photo' | 'profile'>): string => {
+  if (p.photo) return p.photo
+  const pool = p.profile.gender === 'Female' ? WOMEN : MEN
+  return `/img/participants/p${pool[hash(p.id) % pool.length]}.png`
+}
 
-export const COUNTS = { active: '126,872 active participants', deactivated: '10,572 deactivated participants' }
+export const tierName = (state: PlatformState, id: string): Tier => TIER_NAME[tierOf(state, id)]
+
+export const participantRow = (state: PlatformState, p: Person): Participant => ({
+  id: p.id, photo: photoFor(p), name: p.name, role: p.profile.occupation, industry: p.profile.industry,
+  score: String(trustScoreOf(state, p.id)), tier: tierName(state, p.id), gender: p.profile.gender, location: p.location,
+  date: dayOrToday(p.status === 'deactivated' ? p.statusNote?.at : p.lastActiveAt),
+})
+
+export function useParticipants(tab: 'active' | 'deactivated') {
+  const state = usePlatform()
+  return useMemo(() => {
+    const rows = state.people
+      .filter((p) => (tab === 'deactivated' ? p.status === 'deactivated' : p.status !== 'deactivated'))
+      .sort((a, b) => (tab === 'deactivated' ? (b.statusNote?.at ?? '').localeCompare(a.statusNote?.at ?? '') : b.lastActiveAt.localeCompare(a.lastActiveAt)))
+      .map((p) => participantRow(state, p))
+    return { rows, count: `${count(rows.length)} ${tab} participants` }
+  }, [state, tab])
+}
 
 /** The four dropdowns' menus, drawn loose on the section canvas (2003:133961, 2003:134036, 2003:134101, 2003:134356). */
 export const FILTERS = {
@@ -42,17 +60,33 @@ export const ADVANCED = [
   { label: 'Language', placeholder: 'Select languages', chips: ['English'] },
 ]
 
-/** Reviews of Samuel Lee (1992:103368). The names inside the reviews are not his, as drawn. */
-export const REVIEWS = [
-  { study: 'Digital patient consulting experience analysis', stars: 4, score: '4.0', date: 'April 10, 2026', text: 'It was great working with Luke. He was clear about the requirements, responsive throughout the project, and very easy to communicate with. The collaboration went smoothly, and I’d be happy to work with him again on future projects. Thanks!', client: 'Google Labs', back: 5, backScore: '5.0', reply: 'The collaboration went smoothly, and I’d be happy to work with him again.' },
-  { study: 'Mobile app design review', stars: 5, score: '5', date: 'April 10, 2026', text: 'Working with Sarah was a pleasure. She brought innovative ideas to the table and was open to feedback, making the design process very collaborative. I’m looking forward to our next project together!', client: 'Tech Innovations', back: 4.5, backScore: '4.5', reply: 'Her creativity and willingness to adapt to changes were impressive.' },
-  { study: 'E-commerce website optimization', stars: 5, score: '5', date: 'April 10, 2026', text: 'John was fantastic to work with. He understood the project goals from the start and delivered exceptional results that exceeded our expectations. I’d definitely recommend him to others!', client: 'Retail Solutions', back: 5, backScore: '5.0', reply: 'His expertise in user experience made a real difference.' },
-  { study: 'Social media marketing campaign', stars: 5, score: '5', date: 'April 10, 2026', text: 'Collaborating with Mia was delightful. She was proactive in her approach, and her insights into market trends helped shape a successful campaign. I look forward to partnering with her again!', client: 'Marketing Gurus', back: 4.5, backScore: '4.5', reply: 'Mia’s strategic thinking was crucial for the campaign.' },
-]
+/**
+ * Reviews of one participant: what each client said of them on a study, and
+ * under it what they said of the client back. From the participations.
+ */
+export function useParticipantReviews(personId?: string) {
+  const state = usePlatform()
+  return useMemo(() => {
+    const person = personId ? personById(state, personId) : undefined
+    const rows = state.studies.flatMap((s) => s.participations.filter((p) => p.personId === personId && p.rating).map((p) => {
+      const back = p.clientReview ? Math.round((p.clientReview.reliability + p.clientReview.communication) / 2) : 0
+      return {
+        study: s.title, stars: p.rating!.stars, score: p.rating!.stars.toFixed(1), at: p.rating!.at,
+        date: new Date(p.rating!.at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+        text: p.rating!.comment ?? '', client: clientById(state, s.clientId)?.company ?? '',
+        back, backScore: back ? back.toFixed(1) : '', reply: p.clientReview?.comment ?? '',
+      }
+    })).sort((a, b) => b.at.localeCompare(a.at))
+    return { name: person?.name ?? '', rows }
+  }, [state, personId])
+}
 
-/** Invite To Study (1992:103508): three active studies; every one is tagged Healthcare. */
-export const INVITE_STUDIES: { id: string; title: string; type: StudyType; thumb: string }[] = [
-  { id: 'st-goal', title: 'About goal-tracking methods', type: 'video', thumb: '/img/participants/study1.png' },
-  { id: 'st-sleep', title: 'Share about your sleep cycle', type: 'in-person', thumb: '/img/participants/study2.png' },
-  { id: 'st-pay', title: 'How do you make your digital payments mostly?', type: 'diary', thumb: '/img/participants/study3.png' },
-]
+/** Invite To Study: the live studies an invitation can be for. */
+export function useInviteStudies() {
+  const state = usePlatform()
+  return useMemo(() => state.studies.filter((s) => isLive(s.state)).slice(0, 12).map((s) => ({
+    id: s.id, title: s.title, type: consoleType(s.type) as StudyType, thumb: studyPictures(s.id, s.image).thumb, industry: s.industry,
+  })), [state])
+}
+
+export { shortName }

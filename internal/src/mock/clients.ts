@@ -1,74 +1,111 @@
+import { useMemo } from 'react'
+import {
+  billing, businessDecided, businessPending, clientById, clientRating, clientReviews, counts, invoices, paymentStats, studiesOf, studyById, teamById,
+} from '@shared/derive'
+import { count, dayMonthYear, dayOrToday, money, monthDayYear } from '@shared/format'
+import type { Client as PlatformClient, PlatformState } from '@shared/types'
 import type { StudyType } from '../components/app/StudyTypeTag'
+import { consoleType, studyPictures, usePlatform } from '../platform'
+import { billView } from './money'
 
 /**
- * Clients as drawn: the list (Active 2049:118695, Deactivated 2049:118738),
- * the profile (About 2051:129453, deactivated 2051:137137, Studies
- * 2051:132253 / 2051:134144, Payments 2051:135099), the invoice panels
- * (2051:130623 paid, 2051:130751 to pay) and client verifications (section
- * 2051:143182, mislabelled "Participants - Verifications").
+ * Clients (section 2045:115869) and client business verifications (section
+ * 2051:143182), read from the shared platform. Every figure, bill and
+ * invoice is shared/derive.ts.
  */
 export interface Client { id: string; photo: string; name: string; role: string; company: string; industry: string; location: string; date: string }
-const c = (n: number, name: string, role: string, company: string, industry: string, location: string, date: string): Client => ({ id: `c-${n}`, photo: `/img/clients/c${n}.png`, name, role, company, industry, location, date })
-export const CLIENTS: Client[] = [
-  c(1, 'Jennifer Lee', 'UX Researcher', 'SoulfulLabs', 'IT', 'San Francisco, USA', 'Oct 1, 2026'),
-  c(2, 'Robert Mayfield', 'UX Researcher', 'Google', 'Consultancy', 'Miami, USA', 'Today'),
-  c(3, 'Jenny Vance', 'Hearth Researcher', 'Microsoft', 'Healthcare', 'Miami, USA', 'Oct 4, 2026'),
-  c(4, 'Angela Patel', 'Project Manager', 'Amazon', 'Marketing', 'New York, USA', 'Oct 3, 2026'),
-  c(5, 'Michael Chen', 'Data Analyst', 'Linear', 'Finance', 'Los Angeles, USA', 'Sep 30, 2026'),
-  c(6, 'Sophia Garcia', 'Product Designer', 'BenQ', 'IT', 'Austin, USA', 'Sep 28, 2026'),
-  c(7, 'David Johnson', 'Sales Lead', 'HP', 'Retail', 'Chicago, USA', 'Oct 2, 2026'),
-  c(8, 'Emily Davis', 'Content Head', 'Dell', 'Media', 'Seattle, USA', 'Oct 4, 2026'),
-  c(9, 'James Wilson', 'Network Administrator', 'Apple', 'IT', 'Boston, USA', 'Oct 2, 2026'),
-  c(10, 'Linda Thompson', 'HR Specialist', 'JP Morgan', 'Consultancy', 'Denver, USA', 'Oct 1, 2026'),
-]
 
-export const ACCOUNT = [['Work Email', 'jenniferlee@soulfullabs.ai'], ['Role', 'UX Researcher'], ['Company Name', 'SoulfulLabs'], ['VAT (Tax) Number', 'EAS56893231459'],
-  ['Company Website', 'https://www.soulfullabs.ai'], ['Industry', 'IT & Consultation'], ['Location', 'NYC, New York, USA']]
+/** The ten portraits the frames were drawn with; a client keeps the same one on every screen. */
+export const clientPhoto = (state: PlatformState, id: string): string => {
+  const i = Math.max(0, state.clients.findIndex((c) => c.id === id))
+  return id === 'cl-soulful' ? '/img/clients/jennifer.png' : `/img/clients/c${(i % 10) + 1}.png`
+}
 
-/** Reviews on the client's About tab: what participants said of the client, and under each what the client said "To participant". */
-export const CLIENT_REVIEWS = [
-  { study: 'Digital patient consulting experience analysis', stars: 4, score: '4.0', text: 'It was great working with Luke. He was clear about the requirements, responsive throughout the project, and very easy to communicate with.', to: 'Eliza D', back: 5, backScore: '5.0', reply: 'The collaboration went smoothly, and I’d be happy to work again.' },
-  { study: 'Mobile app design review', stars: 5, score: '5', text: 'Working with Sarah was a pleasure.', to: 'John M', back: 4.5, backScore: '4.5', reply: '' },
-  { study: 'E-commerce website optimization', stars: 5, score: '5', text: 'John was fantastic to work with. He understood the project goals from the start and delivered exceptional results that exceeded our expectations. I’d definitely recommend him to others!', to: 'Mark J', back: 5, backScore: '5.0', reply: '' },
-  { study: 'Social media marketing campaign', stars: 5, score: '5', text: '', to: 'Henry L', back: 5, backScore: '5.0', reply: '' },
-  { study: 'Social media marketing campaign', stars: 5, score: '5', text: 'Collaborating with Mia was delightful. She was proactive in her approach, and her insights into market trends helped shape a successful campaign. I look forward to partnering with her again!', to: 'Henry L', back: 5, backScore: '5.0', reply: 'Mia’s strategic thinking was crucial for achieving the goals.' },
-]
+const row = (state: PlatformState, c: PlatformClient): Client => ({
+  id: c.id, photo: clientPhoto(state, c.id), name: c.name, role: c.role, company: c.company, industry: c.industry, location: c.location,
+  date: dayOrToday(c.status === 'deactivated' ? c.statusNote?.at : c.lastActiveAt),
+})
+
+export function useClients(tab: 'active' | 'deactivated') {
+  const state = usePlatform()
+  return useMemo(() => {
+    const rows = state.clients.filter((c) => (tab === 'deactivated' ? c.status === 'deactivated' : c.status !== 'deactivated'))
+      .sort((a, b) => b.lastActiveAt.localeCompare(a.lastActiveAt)).map((c) => row(state, c))
+    return { rows, count: `${count(rows.length)} ${tab} clients` }
+  }, [state, tab])
+}
 
 export interface ClientStudy { id: string; name: string; thumb: string; type: StudyType | string; billed: string; required: string; completed: string; date: string }
-const t = (n: string) => `/img/studies/${n}-40.png`
-const s = (id: string, name: string, thumb: string, type: StudyType | string, billed: string, required: string, completed: string, date: string): ClientStudy => ({ id, name, thumb: t(thumb), type, billed, required, completed, date })
-export const CLIENT_STUDIES: ClientStudy[] = [
-  s('st-goal', 'About goal-tracking methods', 'goal-tracking', 'video', '$15,085', '40', '37', '30 Jul, 2026'),
-  s('st-pay', 'How Do You Make Your Digital Payments Mostly?', 'digital-payments', 'diary', '$10,085', '56', '32', '25 Jul, 2026'),
-  s('st-sleep', 'Share About Your Sleep Cycle', 'sleep-cycle', 'in-person', '$17,085', '76', '57', '15 Jul, 2026'),
-  s('st-fitness', 'Fitness Tracker Apps Experience', 'fitness-tracker', 'video-group', '$12,085', '90', '68', '20 Jul, 2026'),
-  s('st-travel', 'Travel preferences and experiences', 'travel-preferences', 'in-person-group', '$20,698', '92', '88', '10 Jul, 2026'),
-  s('st-social', 'Social media posts designing apps', 'social-media', 'survey', '$24,684', '94', '56', '10 Jul, 2026'),
-]
-/** The Completed sub-tab adds four more, with study types the rest of the file never uses. */
-export const CLIENT_STUDIES_MORE: ClientStudy[] = [
-  s('x1', 'E-commerce website UI kits', 'social-media', 'Focus Group', '$32,150', '88', '48', '15 Aug, 2026'),
-  s('x2', 'Mobile app prototypes for health', 'social-media', 'Interview', '$18,900', '75', '50', '22 Sep, 2026'),
-  s('x3', 'Brand identity design packages', 'social-media', 'Poll', '$27,500', '92', '53', '30 Oct, 2026'),
-  s('x4', 'Interactive dashboard designs', 'social-media', 'Case Study', '$45,230', '97', '60', '05 Nov, 2026'),
-]
 
-export const PENDING_INVOICES = ['$2,750', '$3,896', '$1,244', '$1,750', '$750']
-export const COMPLETED_INVOICES = ['$10,750', '$14,851', '$10,896', '$24,833', '$16,740']
+/** One client: account details, reviews, studies, invoices and cards. */
+export function useClientView(id?: string) {
+  const state = usePlatform()
+  return useMemo(() => {
+    const c = (id && clientById(state, id)) || state.clients[0]!
+    const studies = studiesOf(state, c.id).filter((s) => s.state !== 'draft')
+    const studyRow = (s: (typeof studies)[number]): ClientStudy => ({
+      id: s.id, name: s.title, thumb: studyPictures(s.id, s.image).small, type: consoleType(s.type), billed: money(billing(s).totalCost),
+      required: String(s.required), completed: String(counts(s).completed), date: dayMonthYear(s.state === 'completed' ? s.completedAt : s.createdAt),
+    })
+    const all = invoices(studies)
+    const stats = paymentStats(studies)
+    const rating = clientRating(state, c.id)
+    const invoiceRow = (i: (typeof all)[number]) => ({ key: i.number, number: i.number, study: i.study, studyId: i.studyId, date: monthDayYear(i.paid ? i.paidAt ?? i.date : i.date), amount: money(i.amount) })
+    return {
+      client: c,
+      header: { name: c.name, role: c.role, place: c.location, photo: clientPhoto(state, c.id), lastActive: `Last active on ${monthDayYear(c.lastActiveAt)}`, email: c.email },
+      ACCOUNT: [['Work Email', c.email], ['Role', c.role || 'N/A'], ['Company Name', c.company || 'N/A'], ['VAT (Tax) Number', c.vat || 'N/A'],
+        ['Company Website', c.website || 'N/A'], ['Industry', c.industry || 'N/A'], ['Location', c.location || 'N/A']],
+      rating: { score: rating.rating.toFixed(1), of: `of ${count(rating.reviewCount)} reviews` },
+      REVIEWS: clientReviews(state, c.id).map((r) => ({
+        study: r.study, stars: r.stars, score: r.stars.toFixed(1), date: new Date(r.at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+        text: r.comment ?? '', to: r.participant.name, back: r.participant.stars, backScore: r.participant.stars.toFixed(1), reply: r.participant.comment ?? '',
+      })),
+      ONGOING: studies.filter((s) => s.state !== 'completed' && s.state !== 'cancelled').map(studyRow),
+      COMPLETED: studies.filter((s) => s.state === 'completed' || s.state === 'cancelled').map(studyRow),
+      PENDING: all.filter((i) => !i.paid).map(invoiceRow),
+      PAID: all.filter((i) => i.paid).map(invoiceRow),
+      stats: [
+        { label: 'Due Payments', value: money(stats.due), note: `of ${stats.dueStudies} studies`, tint: true },
+        { label: 'All Time Spent', value: money(stats.spent), note: `for ${stats.spentStudies} studies` },
+        { label: 'Average Study Cost', value: money(stats.average), note: `from ${stats.averageStudies} studies` },
+      ],
+      cards: c.cards,
+      deactivated: c.status === 'deactivated', statusNote: c.statusNote,
+    }
+  }, [state, id])
+}
 
-const M = '/img/verifications/m.png'
-const F = '/img/verifications/f.png'
-const VAT = 'VAT number for business registration could not be found'
-const BOTH = 'Website and VAT number for business registration could not be found'
+/** The invoice panel: one study's bill, paid or to pay. */
+export function useInvoice(studyId?: string) {
+  const state = usePlatform()
+  return useMemo(() => {
+    const s = studyId ? studyById(state, studyId) : undefined
+    if (!s) return undefined
+    return { study: s, type: consoleType(s.type), ...billView(s, clientById(state, s.clientId)) }
+  }, [state, studyId])
+}
+
+/** Client business checks: pending and decided. */
 export interface ClientCheck { id: string; photo: string; name: string; role: string; date: string; reason: string; result?: string }
-const v = (n: number, name: string, role: string, reason: string, photo = M): ClientCheck => ({ id: `cv-${n}`, photo, name, role, date: `Oct ${n}, 2026`, reason })
-export const CLIENT_PENDING: ClientCheck[] = [
-  v(1, 'Jennifer Lee', 'UX Researcher', VAT, '/img/clients/c1.png'), v(3, 'James Smith', 'DevOps Engineer', BOTH), v(4, 'Emily Davis', 'Data Analyst', VAT),
-  v(2, 'Maya Johnson', 'Physician', VAT, F), v(5, 'Michael Brown', 'Lead Nurse', VAT), v(6, 'Sophia Wilson', 'Lawyer', BOTH), v(7, 'Daniel Garcia', 'DevOps Engineer', BOTH),
-  v(8, 'Olivia Martinez', 'General Surgeon', VAT), v(9, 'Lucas Rodriguez', 'Business Analyst', VAT), v(10, 'Ava Hernandez', 'Content Writer', BOTH),
-]
-export const CLIENT_HISTORY: ClientCheck[] = [
-  v(1, 'Jennifer Lee', 'UX Researcher', VAT, '/img/clients/c1.png'), v(2, 'Maya Johnson', 'Physician', 'Could not verify the business, hence deactivated.', F), v(3, 'James Smith', 'UI/UX Designer', BOTH),
-  v(4, 'Emily Davis', 'Data Analyst', VAT), v(5, 'Michael Brown', 'Lead Nurse', VAT), v(6, 'Sophia Wilson', 'Lawyer', BOTH), v(7, 'Daniel Garcia', 'DevOps Engineer', VAT),
-  v(8, 'Olivia Martinez', 'General Surgeon', VAT), v(9, 'Lucas Rodriguez', 'Business Analyst', VAT), v(10, 'Ava Hernandez', 'Content Writer', BOTH),
-].map((r, i) => ({ ...r, id: `${r.id}h`, result: i === 1 ? 'Rejected' : 'Verified' }))
+
+export function useClientChecks() {
+  const state = usePlatform()
+  return useMemo(() => ({
+    CLIENT_PENDING: businessPending(state).map((c): ClientCheck => ({ id: `cv-${c.id}`, photo: clientPhoto(state, c.id), name: c.name, role: c.role, date: monthDayYear(c.business.flaggedAt), reason: c.business.reason ?? '' })),
+    CLIENT_HISTORY: businessDecided(state).map((c): ClientCheck => ({
+      id: `cv-${c.id}`, photo: clientPhoto(state, c.id), name: c.name, role: c.role, date: monthDayYear(c.business.decidedAt),
+      reason: c.business.state === 'rejected' ? 'Could not verify the business, hence deactivated.' : c.business.note ?? '', result: c.business.state === 'verified' ? 'Verified' : 'Rejected',
+    })),
+    count: `${count(businessPending(state).length)} pending verifications`,
+  }), [state])
+}
+
+export function useClientCase(id: string) {
+  const state = usePlatform()
+  return useMemo(() => {
+    const c = clientById(state, id.replace(/^cv-/, '')) ?? state.clients[0]!
+    const outcome = c.business.state === 'verified' ? 'verified' as const : c.business.state === 'rejected' ? 'rejected' as const : 'pending' as const
+    return { client: c, outcome, decidedBy: teamById(state, c.business.decidedBy)?.name, flaggedAt: monthDayYear(c.business.flaggedAt), decidedAt: monthDayYear(c.business.decidedAt) }
+  }, [state, id])
+}

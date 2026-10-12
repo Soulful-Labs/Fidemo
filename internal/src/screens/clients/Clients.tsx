@@ -4,7 +4,7 @@ import { SearchInput, Select } from '../../components/ui/Input'
 import Table, { Pagination } from '../../components/ui/Table'
 import type { Column } from '../../components/ui/Table'
 import { SegmentedTabs } from '../../components/ui/Tabs'
-import { CLIENTS } from '../../mock/clients'
+import { useClients } from '../../mock/clients'
 import type { Client } from '../../mock/clients'
 
 const columns = (last: string): Column<Client>[] => [
@@ -26,18 +26,19 @@ export default function Clients() {
   const [params, setParams] = useSearchParams()
   const off = params.get('tab') === 'deactivated'
   const last = off ? 'Deactivated' : 'Last Active'
+  const { rows, count } = useClients(off ? 'deactivated' : 'active')
   return (
     <AppShell crumbs={[{ label: 'Clients' }]}>
       <SegmentedTabs className="w-[280px]" segmentClassName="flex-1 min-w-0" value={off ? 'deactivated' : 'active'} onChange={(k) => setParams(k === 'active' ? {} : { tab: k }, { replace: true })}
         items={[{ key: 'active', label: 'Active' }, { key: 'deactivated', label: 'Deactivated' }]} />
-      <p className="pt-4 text-body-regular leading-[22px] text-text-body">{off ? '10,572 deactivated clients' : '126,872 active clients'}</p>
+      <p className="pt-4 text-body-regular leading-[22px] text-text-body">{count}</p>
       <div className="flex items-center gap-2 pt-4">
         <SearchInput size="sm" className="mr-2" placeholder="Search clients by name, role, industry, or company..." />
         <Select size="sm" className="w-[150px] shrink-0" value="Industry: All" options={['Industry: All']} />
         <Select size="sm" className="w-[150px] shrink-0" value="Location: All" options={['Location: All']} />
         <Select size="sm" className="w-[150px] shrink-0" value={`${last}: All`} options={[`${last}: All`]} />
       </div>
-      <Table className="mt-3" rowHeight={52} rows={CLIENTS} rowKey={(r) => r.id} onRowClick={(r) => navigate(`/clients/${r.id}${off ? '?state=deactivated' : ''}`)} columns={columns(last)} />
+      <Table className="mt-3" rowHeight={52} rows={rows} rowKey={(r) => r.id} onRowClick={(r) => navigate(`/clients/${r.id}`)} columns={columns(last)} />
       <div className="pt-3"><Pagination page={1} pages={10} /></div>
     </AppShell>
   )

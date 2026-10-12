@@ -20,8 +20,20 @@ const Warn = ({ red }: { red: boolean }) => (
  * 3. the outcome (2024:179800 / 2024:179769).
  * Both forms say "confirm deactivation" over the password, as drawn.
  */
-export function AccountFlow({ kind, step, onStep, onDone }: { kind: 'deactivate' | 'reactivate'; step: AccountStep; onStep: (s: AccountStep) => void; onDone: () => void }) {
+export function AccountFlow({ kind, step, onStep, onDone, onReason, name = 'Samuel' }: {
+  kind: 'deactivate' | 'reactivate'; step: AccountStep; onStep: (s: AccountStep) => void; onDone: () => void
+  /** Records the decision on the shared platform with its reason; a refusal is shown and the flow stays open. */
+  onReason?: (reason: string) => { ok: boolean; why?: string }
+  /** First name of the person, for the dialog titles. */
+  name?: string
+}) {
   const [reason, setReason] = useState('')
+  const [why, setWhy] = useState('')
+  const confirm = () => {
+    const res = onReason?.(reason) ?? { ok: true }
+    if (!res.ok) { setWhy(res.why ?? ''); onStep('form'); return }
+    setWhy(''); setReason(''); onStep('done')
+  }
   const off = kind === 'deactivate'
   const close = () => onStep(null)
   return (
@@ -35,6 +47,7 @@ export function AccountFlow({ kind, step, onStep, onDone }: { kind: 'deactivate'
             {off ? 'User will receive the deactivation email with your given reason and won’t be able to access until you activate it back.' : 'User will receive the reactivation email with your given reason and would be able to access it back.'}
           </p>
           <TextArea size="sm" rows={4} label="Reason*" placeholder="Describe the reason in detail" value={reason} onChange={(e) => setReason(e.target.value)} />
+          {why && <p className="-mt-3 text-text-regular text-state-danger">{why}</p>}
           <div className="flex flex-col gap-2">
             <p className="text-text-regular text-text-title">Enter your account password to confirm deactivation.</p>
             <PasswordInput size="sm" label="Password" placeholder="Enter password" />
@@ -42,14 +55,14 @@ export function AccountFlow({ kind, step, onStep, onDone }: { kind: 'deactivate'
         </div>
       </Modal>
       <Modal open={step === 'confirm'} onClose={close} className="[&>div>div]:max-w-[310px]"
-        footer={<><Button variant="tertiary" onClick={close}>Cancel</Button><Button onClick={() => onStep('done')}>{off ? 'Yes, Deactivate' : 'Yes, Reactivate'}</Button></>}>
+        footer={<><Button variant="tertiary" onClick={close}>Cancel</Button><Button onClick={confirm}>{off ? 'Yes, Deactivate' : 'Yes, Reactivate'}</Button></>}>
         <Warn red={off} />
-        <h2 className="pb-3 text-title-l leading-[31px] text-text-title [text-wrap:nowrap] -mx-10">{off ? 'Deactivate Samuel’s account?' : 'Reactivate Samuel’s account?'}</h2>
+        <h2 className="pb-3 text-title-l leading-[31px] text-text-title [text-wrap:nowrap] -mx-10">{off ? `Deactivate ${name}’s account?` : `Reactivate ${name}’s account?`}</h2>
         <p className="text-body-regular text-text-subtitle">{off ? 'User will receive the deactivation email with your given reason and won’t be able to access until you activate it back.' : 'User will receive the reactivation email with your given reason and would be able to access it back.'}</p>
       </Modal>
       <SuccessModal open={step === 'done'} onClose={onDone} onAction={onDone} action="Done" tone={off ? 'yellow' : 'green'}
-        title={off ? 'Samuel’s account has been deactivated!' : 'Samuel’s account has been reactivated!'}
-        body={off ? 'Samuel’s account has been deactivated now and he cannot use anymore. He can contact us back to appeal and access his account.' : 'Participant can login back to access their account.'} />
+        title={off ? `${name}’s account has been deactivated!` : `${name}’s account has been reactivated!`}
+        body={off ? `${name}’s account has been deactivated now and he cannot use anymore. He can contact us back to appeal and access his account.` : 'Participant can login back to access their account.'} />
     </>
   )
 }

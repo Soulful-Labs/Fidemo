@@ -5,7 +5,8 @@ import { ListIcon } from '../../../components/ui/icons'
 import Table, { Pagination } from '../../../components/ui/Table'
 import { UnderlineTabs } from '../../../components/ui/Tabs'
 import { cn } from '../../../lib/cn'
-import { EARNINGS, PAYOUTS, PERIODS, POINTS, REDEEMS, REFERRALS, SORTS } from '../../../mock/profile'
+import { PERIODS, SORTS } from '../../../mock/profile'
+import type { ProfileView } from '../../../mock/profile'
 import { EarningsFilters, PayoutDetails, PointsFilters, TransactionDetails } from './walletDialogs'
 
 export type WalletSub = 'earnings' | 'payouts' | 'points' | 'referrals'
@@ -31,7 +32,8 @@ const Balance = ({ label, value, total, green }: { label: string; value: string;
  * open the two Filters dialogs. Nothing here pays, reverses or adjusts.
  * The Reward Points frame is headed "Saved Payment Methods", as drawn.
  */
-export default function WalletTab({ sub, onSub }: { sub: WalletSub; onSub: (s: WalletSub) => void }) {
+export default function WalletTab({ sub, onSub, view }: { sub: WalletSub; onSub: (s: WalletSub) => void; view: ProfileView }) {
+  const { EARNINGS, PAYOUTS, POINTS, REDEEMS, REFERRALS } = view
   const [dialog, setDialog] = useState<null | 'tx' | 'payout' | 'earnFilter' | 'pointFilter'>(null)
   const close = () => setDialog(null)
   return (

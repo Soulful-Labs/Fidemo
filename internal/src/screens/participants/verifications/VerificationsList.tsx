@@ -5,7 +5,7 @@ import Table, { Pagination } from '../../../components/ui/Table'
 import type { Column } from '../../../components/ui/Table'
 import { SegmentedTabs } from '../../../components/ui/Tabs'
 import { cn } from '../../../lib/cn'
-import { ONBOARDING, ONBOARDING_HISTORY, REPORTED, REPORTED_HISTORY } from '../../../mock/verifications'
+import { useVerificationLists } from '../../../mock/verifications'
 import type { Pending } from '../../../mock/verifications'
 
 type Row = Pending & { result?: string }
@@ -39,11 +39,12 @@ export default function VerificationsList() {
   const [params, setParams] = useSearchParams()
   const reported = params.get('tab') === 'reported'
   const open = (r: Row) => navigate(`/participants/verifications/${r.id}`)
+  const { ONBOARDING, ONBOARDING_HISTORY, REPORTED, REPORTED_HISTORY, counts } = useVerificationLists()
   return (
     <AppShell className="pb-8" crumbs={[{ label: 'Verifications' }]}>
       <SegmentedTabs className="w-[280px]" segmentClassName="flex-1 min-w-0" value={reported ? 'reported' : 'onboarding'}
         onChange={(k) => setParams(k === 'reported' ? { tab: k } : {}, { replace: true })} items={[{ key: 'onboarding', label: 'Onboarding' }, { key: 'reported', label: 'Reported' }]} />
-      <h2 className="pb-2 pt-4 text-title-s leading-[25px] text-text-title">{reported ? '65 pending applications' : '87 pending verifications'}</h2>
+      <h2 className="pb-2 pt-4 text-title-s leading-[25px] text-text-title">{reported ? counts.reported : counts.onboarding}</h2>
       <Toolbar filter={reported ? 'Reported By All' : 'Flagged for All'} />
       {reported
         ? <Table rowHeight={52} rows={REPORTED as Row[]} rowKey={(r) => r.id} onRowClick={open} columns={[{ ...who, width: 180 }, col('role', 'Role', 206), col('date', 'Date', 124, { sortable: true }), by, col('flag', 'Flagged For', 170), col('reason', 'Reason', '1fr')]} />

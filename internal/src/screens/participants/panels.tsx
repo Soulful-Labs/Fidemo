@@ -6,7 +6,10 @@ import { Select } from '../../components/ui/Input'
 import { CheckIcon, StarIcon } from '../../components/ui/icons'
 import { Modal, SidePanel } from '../../components/ui/Overlay'
 import { cn } from '../../lib/cn'
-import { ADVANCED, INVITE_STUDIES, REVIEWS } from '../../mock/participants'
+import { ADVANCED, useInviteStudies, useParticipantReviews } from '../../mock/participants'
+import { platform } from '@shared/store'
+import { personById, shortName } from '@shared/derive'
+import { usePlatform } from '../../platform'
 
 /**
  * Advanced Filters (2003:133781, the 600 panel, 597 tall): Roles, Domain,
@@ -43,9 +46,11 @@ export const Stars = ({ value, size = 'h-5 w-5' }: { value: number; size?: strin
  * the client's stars, score, date and words, and under them what the
  * participant said back "To client". Read only; no footer.
  */
-export function ReviewsPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function ReviewsPanel({ open, onClose, personId }: { open: boolean; onClose: () => void; personId?: string }) {
+  const { name, rows: REVIEWS } = useParticipantReviews(personId)
   return (
-    <SidePanel open={open} onClose={onClose} title="Reviews of Samuel Lee">
+    <SidePanel open={open} onClose={onClose} title={`Reviews of ${name}`}>
+        {REVIEWS.length === 0 && <p className="px-2 pt-2 text-text-regular text-text-body">No client has rated them yet.</p>}
       <div className="flex flex-col gap-[18px] px-2 pb-5 pt-2 text-text-regular leading-5">
         {REVIEWS.map((r) => (
           <article key={r.study}>
@@ -66,15 +71,27 @@ export function ReviewsPanel({ open, onClose }: { open: boolean; onClose: () => 
  * is drawn selected, yellow-30 with a tick), then Cancel / Send Invite, which
  * confirms with "Invitation has been sent!" (1992:103806).
  */
-export function InviteToStudy({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [picked, setPicked] = useState('st-goal')
+export function InviteToStudy({ open, onClose, personId }: { open: boolean; onClose: () => void; personId?: string }) {
+  const INVITE_STUDIES = useInviteStudies()
+  const state = usePlatform()
+  const person = personId ? personById(state, personId) : undefined
+  const [chosen, setPicked] = useState('')
+  const picked = chosen || INVITE_STUDIES[0]?.id || ''
   const [sent, setSent] = useState(false)
+  const [why, setWhy] = useState('')
+  /** Workflow 26, 27: the invitation is a move on the shared platform, refused with a reason when it cannot be sent. */
+  const send = () => {
+    if (!personId) { setSent(true); return }
+    const res = platform().invite(picked, personId)
+    if (res.ok) { setWhy(''); setSent(true) } else setWhy(res.why)
+  }
   return (
     <>
-      <SidePanel open={open && !sent} onClose={onClose} title="Invite Roma To Study"
-        footer={<><Button variant="secondary" onClick={onClose}>Cancel</Button><Button onClick={() => setSent(true)}>Send Invite</Button></>}>
+      <SidePanel open={open && !sent} onClose={onClose} title={`Invite ${person?.name.split(' ')[0] ?? 'them'} To Study`}
+        footer={<><Button variant="secondary" onClick={onClose}>Cancel</Button><Button onClick={send}>Send Invite</Button></>}>
         <h3 className="text-body-medium leading-[22px] text-text-title">Select active studies</h3>
         <p className="pt-1 text-text-regular leading-5 text-text-body">An invitation will be sent to apply for selected studies</p>
+        {why && <p className="pt-1 text-text-regular text-state-danger">{why}</p>}
         <div className="flex flex-col gap-2 pb-2 pt-3">
           {INVITE_STUDIES.map((s) => {
             const on = s.id === picked
@@ -85,7 +102,7 @@ export function InviteToStudy({ open, onClose }: { open: boolean; onClose: () =>
                 <span className="flex min-w-0 flex-1 flex-col gap-2">
                   <span className="text-body-medium leading-[22px] text-text-title">{s.title}</span>
                   <span className="flex gap-2"><StudyTypeTag type={s.type} filled className="h-7 px-2.5" />
-                    <span className="flex h-7 items-center rounded-full border-1 border-stroke-3 px-2.5 text-text-regular text-text-subtitle">Healthcare</span></span>
+                    <span className="flex h-7 items-center rounded-full border-1 border-stroke-3 px-2.5 text-text-regular text-text-subtitle">{s.industry}</span></span>
                 </span>
                 {on && <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-primary text-bg-0"><CheckIcon className="h-5 w-5" /></span>}
               </button>
@@ -95,7 +112,7 @@ export function InviteToStudy({ open, onClose }: { open: boolean; onClose: () =>
       </SidePanel>
       <Modal open={open && sent} onClose={() => { setSent(false); onClose() }} title="Invitation has been sent!" className="[&>div>div]:max-w-none"
         footer={<Button onClick={() => { setSent(false); onClose() }}>Done!</Button>}>
-        <p className="text-body-regular text-text-subtitle">Ferry L. has been invited to apply for this study.</p>
+        <p className="text-body-regular text-text-subtitle">{person ? shortName(person.name) : 'They'} has been invited to apply for this study.</p>
       </Modal>
     </>
   )

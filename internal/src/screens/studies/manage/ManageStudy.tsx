@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import AppShell from '../../../app/AppShell'
 import PanelTabs from '../../../components/app/PanelTabs'
-import { MANAGED } from '../../../mock/manage'
+import { platform } from '@shared/store'
+import { useManagedStudy } from '../../../mock/manage'
+import { TEAM } from '../../../platform'
 import { CongratsBanner, PausedBanner } from './Banners'
 import CompletedStudy from './CompletedStudy'
 import ManageTab from './ManageTab'
@@ -39,24 +41,24 @@ export default function ManageStudy() {
   const { id } = useParams()
   const [params, setParams] = useSearchParams()
   const [pausing, setPausing] = useState(false)
-  const study = MANAGED.find((s) => s.id === id) ?? MANAGED[0]!
+  const study = useManagedStudy(id)
   const tab = (TABS.some((t) => t.key === params.get('tab')) ? params.get('tab') : 'overview') as Tab
-  const paused = params.get('state') === 'paused'
+  /** Paused and completed are the study's own state (shared/store.ts), not the URL. */
+  const paused = study.paused
   const congrats = !paused && (study.congrats ?? []).includes(tab)
   const invited = params.get('seg') === 'invited'
   const view = params.get('view') === 'applications' ? 'applications' : 'first'
 
-  const go = (next: { tab?: Tab; paused?: boolean; invited?: boolean; view?: 'first' | 'applications' }) => {
+  const go = (next: { tab?: Tab; invited?: boolean; view?: 'first' | 'applications' }) => {
     const t = next.tab ?? tab
-    const p = next.paused ?? paused
     setParams({
-      ...(t !== 'overview' && { tab: t }), ...(p && { state: 'paused' }),
+      ...(t !== 'overview' && { tab: t }),
       ...(t === 'matched' && (next.invited ?? (next.tab ? false : invited)) && { seg: 'invited' }),
       ...(t === 'recruited' && (next.view ?? (next.tab ? 'first' : view)) === 'applications' && { view: 'applications' }),
     }, { replace: true })
   }
 
-  if (params.get('state') === 'completed') {
+  if (study.completed || params.get('state') === 'completed') {
     const t = params.get('tab')
     return <CompletedStudy study={study} tab={t === 'results' || t === 'payments' ? t : 'overview'}
       onTab={(k) => setParams({ state: 'completed', ...(k !== 'overview' && { tab: k }) }, { replace: true })} />
@@ -66,7 +68,7 @@ export default function ManageStudy() {
     <AppShell className={study.tight && !paused ? 'flex flex-col gap-3 p-4 pb-6' : 'flex flex-col gap-3 pb-8'}
       crumbs={[{ label: 'Studies', to: '/studies' }, { label: 'Ongoing', to: '/studies?tab=ongoing' }, { label: study.title }]}>
       {congrats && <CongratsBanner />}
-      {paused && <PausedBanner onResume={() => go({ paused: false })} onComplete={() => setParams({ state: 'completed' }, { replace: true })} />}
+      {paused && <PausedBanner onResume={() => platform().moveStudy(study.id, 'recruiting', TEAM)} onComplete={() => { platform().moveStudy(study.id, 'completed', TEAM); setParams({}, { replace: true }) }} />}
       <StudyHeader study={study} onPause={() => setPausing(true)} />
       <section className="flex-1 overflow-hidden rounded-lg border-1 border-stroke-1">
         <PanelTabs tabs={TABS} value={tab} onChange={(k) => go({ tab: k as Tab })} />
@@ -79,7 +81,7 @@ export default function ManageStudy() {
           {tab === 'recruited' && <RecruitedTab study={study} view={view} onView={(v) => go({ view: v })} />}
         </div>
       </section>
-      <PauseStudy open={pausing} onClose={() => setPausing(false)} onPause={() => { setPausing(false); go({ paused: true }) }} />
+      <PauseStudy open={pausing} onClose={() => setPausing(false)} onPause={(reason) => { setPausing(false); platform().moveStudy(study.id, 'paused', TEAM, reason) }} />
     </AppShell>
   )
 }

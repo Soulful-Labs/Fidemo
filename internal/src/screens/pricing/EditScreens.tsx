@@ -5,7 +5,7 @@ import Button, { IconButton } from '../../components/ui/Button'
 import { Chip } from '../../components/ui/controls'
 import { Select } from '../../components/ui/Input'
 import { SuccessModal } from '../../components/ui/Overlay'
-import { DEDUCTED_EDIT, EARNED_STARS, PARAMETERS, POINTS, POINT_NOTES, TIERS_EDIT, TRUST_NOTES } from '../../mock/pricing'
+import { DEDUCTED_EDIT, EARNED, EARNED_STARS, PARAMETERS, POINTS, POINT_NOTES, TIERS_EDIT, TRUST_NOTES, FEE, DEDUCTED_VIEW } from '../../mock/pricing'
 import { Edit, EditShell, Notes, Pencil } from './parts'
 
 const Trash = () => (
@@ -53,19 +53,19 @@ export default function EditPricing() {
     <EditShell {...s} onSave={() => setSaved(true)}>
       {key === 'client-fees' && (
         <>
-          <div className="grid grid-cols-2 gap-3"><Edit label="Platform Fees" value="$100" note="One-time per study" /><Edit label="Moderation Fees" value="$10" note="One-time per completed participant" /></div>
+          <div className="grid grid-cols-2 gap-3"><Edit label="Platform Fees" value={FEE.platform} note="One-time per study" /><Edit label="Moderation Fees" value={FEE.moderation} note="One-time per completed participant" /></div>
           <section className="mt-3 flex flex-col gap-3 rounded-lg border-1 border-stroke-1 bg-bg-1 p-4">
             <h3 className="text-body-regular text-text-title">Recruitment Fees</h3>
-            <div className="rounded-md bg-bg-2 px-3 pb-3 pt-2.5 [&_label]:text-text-regular [&_label]:text-text-subtitle"><Edit plain label="Base" value="$25" /></div>
-            <AddOnRow name="Add-on 1" amount="+$25" pills={[['Study Type:', 'Video Call, In-Person, Diary Study'], [undefined, 'Roles']]} />
-            <AddOnRow name="Add-on 2" amount="+$20" pills={[[undefined, 'Skills']]} />
+            <div className="rounded-md bg-bg-2 px-3 pb-3 pt-2.5 [&_label]:text-text-regular [&_label]:text-text-subtitle"><Edit plain label="Base" value={FEE.recruitmentBase} /></div>
+            <AddOnRow name="Add-on 1" amount={FEE.typeAddOn} pills={[['Study Type:', 'Video Call, In-Person, Diary Study'], [undefined, 'Roles']]} />
+            <AddOnRow name="Add-on 2" amount={FEE.skillsAddOn} pills={[[undefined, 'Skills']]} />
             <Button variant="secondary" size="md" className="self-start px-3" onClick={() => setCreating(true)}>+ Create Add-on</Button>
             {creating && (
               <div className="rounded-md border-1 border-stroke-1 bg-bg-0 p-4">
                 <div className="flex items-center justify-between pb-3"><h4 className="text-title-s text-text-title">Create Add-on</h4>
                   <div className="flex gap-3"><Button size="md" className="px-3" onClick={() => setCreating(false)}>Create</Button><Button variant="secondary" size="md" className="px-3" onClick={() => setCreating(false)}>Cancel</Button></div></div>
                 <div className="grid grid-cols-2 gap-5 [&_label]:text-text-regular [&_label]:text-text-subtitle">
-                  <Edit plain label="Add-on Amount" value="$  20" />
+                  <Edit plain label="Add-on Amount" value={FEE.skillsAddOn.replace('+', '')} />
                   <div><Select label="For Parameter" placeholder="Choose parameters to add" options={PARAMETERS} onChange={(v) => setChips((c) => c.includes(v) ? c : [...c, v])} />
                     <div className="flex gap-2 pt-2">{chips.map((c) => <Chip key={c} onRemove={() => setChips((all) => all.filter((x) => x !== c))}>{c}</Chip>)}</div></div>
                 </div>
@@ -76,7 +76,7 @@ export default function EditPricing() {
         </>
       )}
       {key === 'participant-fees' && (
-        <div className="grid grid-cols-3 gap-3"><Edit label="Withdrawal" value="$1.99" note="One-time charge per withdrawal" /><Edit label="Reward Points Value" value="$1" note="For = 100 Reward Coins" /><Edit label="Minimum Points To Redeem" value="1000" note="Minimum points required to redeem at a time" /></div>
+        <div className="grid grid-cols-3 gap-3"><Edit label="Withdrawal" value={FEE.withdrawal} note="One-time charge per withdrawal" /><Edit label="Reward Points Value" value={FEE.pointValue} note="For = 100 Reward Coins" /><Edit label="Minimum Points To Redeem" value={FEE.minimumRedeem} note="Minimum points required to redeem at a time" /></div>
       )}
       {key === 'tiers' && <div className="grid grid-cols-3 gap-3">{TIERS_EDIT.map(([l, v]) => <Edit key={l} label={l!} value={v!} unit="Trust Score" note="Equal or above trust score to reach this tier" />)}</div>}
       {key === 'reward-points' && (
@@ -85,9 +85,9 @@ export default function EditPricing() {
       {key === 'trust-score' && (
         <div className="flex flex-col gap-3">
           <div className="grid grid-cols-2 items-stretch gap-3">
-            <Box title="Earned For"><Edit plain label="Onboarding" value="+50" /><div className="border-t-1 border-stroke-input pt-4"><Edit plain label="Study Completion" value="+10" /></div>
+            <Box title="Earned For"><Edit plain label="Onboarding" value={EARNED[0]![1]!} /><div className="border-t-1 border-stroke-input pt-4"><Edit plain label="Study Completion" value={EARNED[1]![1]!} /></div>
               <Sub note="Counts For Last 10 studies">Participation Ratings</Sub>{EARNED_STARS.map(([l, v]) => <Edit key={l} plain label={l!} value={v!} />)}</Box>
-            <Box title="Deducted For"><p className="text-body-medium text-text-title">Participation Ratings</p><Edit plain label="2-star rating" value="-2" /><Edit plain label="1-star rating" value="-3" />
+            <Box title="Deducted For"><p className="text-body-medium text-text-title">Participation Ratings</p><Edit plain label="2-star rating" value={DEDUCTED_VIEW[0]![1]!} /><Edit plain label="1-star rating" value={DEDUCTED_VIEW[1]![1]!} />
               <div className="border-t-1 border-stroke-input" />{DEDUCTED_EDIT.map(([l, v]) => <Edit key={l} plain label={l!} value={v!} />)}</Box>
           </div>
           <Notes items={TRUST_NOTES} />

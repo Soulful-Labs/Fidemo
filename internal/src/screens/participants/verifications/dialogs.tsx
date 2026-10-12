@@ -27,11 +27,25 @@ const COPY: Record<Decision, { formTitle?: string; note?: string; label: string;
  * - the two rejections: one centred dialog carrying the statement and
  *   "Yes, Reject", then the outcome.
  */
-export default function DecisionFlow({ kind, step, onStep, onDone }: { kind: Decision; step: Step; onStep: (s: Step) => void; onDone: () => void }) {
-  const c = COPY[kind]
+export default function DecisionFlow({ kind, step, onStep, onDone, onDecide, name }: {
+  kind: Decision; step: Step; onStep: (s: Step) => void; onDone: () => void
+  /** Records the decision on the shared platform with its statement; a refusal is shown and the flow stays on its form. */
+  onDecide?: (statement: string) => { ok: boolean; why?: string }
+  /** First name of the person decided on; the frames' own copy names Samuel or Maya. */
+  name?: string
+}) {
+  const named = (v: unknown) => (typeof v === 'string' && name ? v.replace(/Samuel|Maya/g, name) : v)
+  const c = Object.fromEntries(Object.entries(COPY[kind]).map(([k, v]) => [k, named(v)])) as (typeof COPY)[Decision]
   const [text, setText] = useState('')
+  const [why, setWhy] = useState('')
+  const decide = () => {
+    const res = onDecide?.(text) ?? { ok: true }
+    if (!res.ok) { setWhy(res.why ?? ''); onStep('form'); return }
+    setWhy(''); setText(''); onStep('done')
+  }
   const close = () => onStep(null)
   const field = <TextArea size="sm" rows={3} className={c.formTitle ? '[&_textarea]:h-[96px]' : '[&_textarea]:h-[96px]'} label={c.label} placeholder={c.placeholder} value={text} onChange={(e) => setText(e.target.value)} />
+  const error = why ? <p className="pt-1 text-text-regular text-state-danger">{why}</p> : null
   return (
     <>
       {c.formTitle ? (
@@ -39,17 +53,17 @@ export default function DecisionFlow({ kind, step, onStep, onDone }: { kind: Dec
           <Modal open={step === 'form'} onClose={close} layout="titled" title={c.formTitle}
             footer={<><Button variant="secondary" onClick={close}>Cancel</Button><Button variant={c.tone} onClick={() => onStep('confirm')}>{c.go}</Button></>}>
             <p className="text-text-regular leading-5 text-text-title">{c.note}</p>
-            <div className="-mt-1">{field}</div>
+            <div className="-mt-1">{field}{error}</div>
             <div className="flex flex-col gap-2 pb-7 pt-1.5"><p className="text-text-regular text-text-title">Enter your account password to confirm this action.</p><PasswordInput size="sm" label="Password" placeholder="Enter password" /></div>
           </Modal>
-          <Modal open={step === 'confirm'} onClose={close} title={c.ask} footer={<><Button variant="tertiary" onClick={close}>Cancel</Button><Button onClick={() => onStep('done')}>Yes</Button></>}>
+          <Modal open={step === 'confirm'} onClose={close} title={c.ask} footer={<><Button variant="tertiary" onClick={close}>Cancel</Button><Button onClick={decide}>Yes</Button></>}>
             <p className="text-body-regular text-text-subtitle">{c.askBody}</p>
           </Modal>
         </>
       ) : (
-        <Modal open={step === 'form'} onClose={close} title={c.ask} className="[&>div>div]:w-full [&>div>div]:max-w-none [&>div]:px-4 [&>div]:pb-6" footer={<><Button variant="tertiary" onClick={close}>Cancel</Button><Button onClick={() => onStep('done')}>Yes, Reject</Button></>}>
+        <Modal open={step === 'form'} onClose={close} title={c.ask} className="[&>div>div]:w-full [&>div>div]:max-w-none [&>div]:px-4 [&>div]:pb-6" footer={<><Button variant="tertiary" onClick={close}>Cancel</Button><Button onClick={decide}>Yes, Reject</Button></>}>
           <p className="mx-auto max-w-[280px] pb-4 text-body-regular text-text-subtitle">{c.askBody}</p>
-          <div className="text-left">{field}</div>
+          <div className="text-left">{field}{error}</div>
         </Modal>
       )}
       <SuccessModal open={step === 'done'} onClose={onDone} onAction={onDone} action="Done" title={c.done} body={c.doneBody} />

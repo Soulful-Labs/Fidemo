@@ -2,7 +2,6 @@ import { useState } from 'react'
 import StudyTypeTag from '../../../components/app/StudyTypeTag'
 import { IconButton } from '../../../components/ui/Button'
 import { ClockIcon, DotsIcon, LinkIcon } from '../../../components/ui/icons'
-import { FIGURES as F } from '../../../mock/manage'
 import type { ManagedStudy } from '../../../mock/manage'
 
 const Stat = ({ label, value, rest }: { label: string; value: string; rest?: string }) => (
@@ -30,7 +29,7 @@ const MENU = ['Copy Study Link', 'Pause Study', 'Stop-complete Study', 'Edit', '
  */
 export default function StudyHeader({ study, onPause }: { study: ManagedStudy; onPause: () => void }) {
   const [menu, setMenu] = useState(false)
-  const copy = () => { void navigator.clipboard?.writeText(F.shareLink) }
+  const copy = () => { void navigator.clipboard?.writeText(study.figures.shareLink) }
   const items = study.fullMenu ? MENU : MENU.filter((m) => m !== 'Stop-complete Study' && m !== 'Edit')
   const pick = (item: string) => {
     setMenu(false)
@@ -44,7 +43,7 @@ export default function StudyHeader({ study, onPause }: { study: ManagedStudy; o
         <div className="flex h-[38px] items-center">
           <StudyTypeTag type={study.type} filled />
           <div className="relative ml-auto flex items-center gap-3">
-            <span className="flex h-8 items-center rounded-full bg-bgAlt-2 px-[14px] text-text-regular text-text-title">{F.status}</span>
+            <span className="flex h-8 items-center rounded-full bg-bgAlt-2 px-[14px] text-text-regular text-text-title">{study.figures.status}</span>
             <IconButton label="Copy study link" onClick={copy}><LinkIcon className="h-5 w-5" /></IconButton>
             <IconButton label="Study options" aria-expanded={menu} onClick={() => setMenu((m) => !m)}><DotsIcon className="h-5 w-5" /></IconButton>
             {menu && (
@@ -67,10 +66,10 @@ export default function StudyHeader({ study, onPause }: { study: ManagedStudy; o
           <span className="flex h-7 items-center rounded-full border-1 border-stroke-3 px-2 text-text-regular text-text-subtitle">{study.industry}</span>
         </div>
         <div className="flex gap-6 pt-3">
-          <Stat label="Completed" value={F.completed[0]!} rest={F.completed[1]} />
-          <Stat label="Qualified" value={F.qualified[0]!} rest={F.qualified[1]} />
-          <Stat label="Days Remaining" value={F.daysRemaining} />
-          <Stat label="Progress" value={F.progress} />
+          <Stat label="Completed" value={study.figures.completed[0]!} rest={study.figures.completed[1]} />
+          <Stat label="Qualified" value={study.figures.qualified[0]!} rest={study.figures.qualified[1]} />
+          <Stat label="Days Remaining" value={study.figures.daysRemaining} />
+          <Stat label="Progress" value={study.figures.progress} />
         </div>
       </div>
     </header>

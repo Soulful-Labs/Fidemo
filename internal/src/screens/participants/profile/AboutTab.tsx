@@ -3,7 +3,7 @@ import TierTag from '../../../components/app/TierTag'
 import Button from '../../../components/ui/Button'
 import { ChevronRight, InfoIcon, VerifiedIcon } from '../../../components/ui/icons'
 import { cn } from '../../../lib/cn'
-import { ACCOUNT, METRICS, PERSON, PERSONAL, PROFESSIONAL, RATINGS, TOPICS, VERIFIED } from '../../../mock/profile'
+import type { ProfileView } from '../../../mock/profile'
 
 const BAR = { green: ['bg-brand-secondary', 'text-brand-secondary'], blue: ['bg-blue-600', 'text-blue-600'], purple: ['bg-purple-600', 'text-purple-600'], yellow: ['bg-yellow-500', 'text-brand-primary'] }
 
@@ -31,7 +31,8 @@ export const Check = ({ children }: { children: string }) => (
  * verifications); Personal Details and Account Details (email, phone, date of
  * birth, the ID documents and the selfie check). Everything is read only.
  */
-export default function AboutTab({ onReviews }: { onReviews: () => void }) {
+export default function AboutTab({ onReviews, view }: { onReviews: () => void; view: ProfileView }) {
+  const { ACCOUNT, METRICS, PERSON, PERSONAL, PROFESSIONAL, RATINGS, TOPICS, VERIFIED } = view
   return (
     <div className="grid grid-cols-2 gap-3">
       <Card title="Professional Details">
@@ -40,7 +41,7 @@ export default function AboutTab({ onReviews }: { onReviews: () => void }) {
         <div className="h-3" />
       </Card>
       <Card title="Trust Score">
-        <p className="flex items-center gap-3 text-title-l leading-[31px] text-text-title">{PERSON.score}<TierTag tier="Platinum" size={32} />
+        <p className="flex items-center gap-3 text-title-l leading-[31px] text-text-title">{PERSON.score}<TierTag tier={PERSON.tier} size={32} />
           <Button variant="tertiary" size="sm" className="rounded-sm bg-bg-1 px-2.5 text-text-regular" rightIcon={<ChevronRight className="h-4 w-4" />} onClick={onReviews}>Reviews</Button></p>
         <p className="pt-3 text-text-regular leading-5 text-text-subtitle">Performance Ratings</p>
         {RATINGS.map(([label, value, colour]) => (

@@ -1,18 +1,20 @@
 import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import StudyTypeTag from '../../components/app/StudyTypeTag'
 import type { StudyType } from '../../components/app/StudyTypeTag'
 import Button, { IconButton } from '../../components/ui/Button'
 import { SearchInput, Select } from '../../components/ui/Input'
 import { DotsIcon, DownloadIcon, ExternalIcon, EyeIcon, ReceiptIcon } from '../../components/ui/icons'
-import Table, { Pagination } from '../../components/ui/Table'
+import Table from '../../components/ui/Table'
 import type { Column } from '../../components/ui/Table'
 import { SegmentedTabs, UnderlineTabs } from '../../components/ui/Tabs'
 import { cn } from '../../lib/cn'
-import { CLIENT_STUDIES, CLIENT_STUDIES_MORE, COMPLETED_INVOICES, PENDING_INVOICES } from '../../mock/clients'
+import { useClientView } from '../../mock/clients'
+import { platform } from '@shared/store'
+import { monthDayYear } from '@shared/format'
+import { TEAM } from '../../platform'
 import type { ClientStudy } from '../../mock/clients'
-import { ReviewsPanel } from '../participants/panels'
 import { AccountFlow } from '../participants/profile/accountDialogs'
 import type { AccountStep } from '../participants/profile/accountDialogs'
 import { Mastercard } from '../studies/review/PaymentRevisions'
@@ -44,17 +46,20 @@ const Stat = ({ label, value, note, tint }: { label: string; value: string; note
 export default function ClientProfile() {
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
-  const off = params.get('state') === 'deactivated'
+  const { id } = useParams()
+  const view = useClientView(id)
+  const c = view.client
+  /** Deactivated is what the platform holds for this client. */
+  const off = view.deactivated
   const tab: Tab = params.get('tab') === 'studies' ? 'studies' : params.get('tab') === 'payments' ? 'payments' : 'about'
   const done = params.get('sub') === 'completed'
-  const go = (n: { tab?: Tab; sub?: string; off?: boolean }) => {
+  const go = (n: { tab?: Tab; sub?: string }) => {
     const t = n.tab ?? tab
-    setParams({ ...(t !== 'about' && { tab: t }), ...(n.sub === 'completed' && { sub: 'completed' }), ...((n.off ?? off) && { state: 'deactivated' }) }, { replace: true })
+    setParams({ ...(t !== 'about' && { tab: t }), ...(n.sub === 'completed' && { sub: 'completed' }) }, { replace: true })
   }
   const [menu, setMenu] = useState(false)
   const [rowMenu, setRowMenu] = useState<string | null>(null)
-  const [reviews, setReviews] = useState(false)
-  const [invoice, setInvoice] = useState<'paid' | 'due' | null>(null)
+  const [invoice, setInvoice] = useState<string | null>(null)
   const [flow, setFlow] = useState<AccountStep>(null)
 
   const studyCols: Column<ClientStudy>[] = [
@@ -73,24 +78,25 @@ export default function ClientProfile() {
       </>
     ) },
   ]
-  const invoiceCols = (date: string, kind: 'paid' | 'due'): Column<string>[] => [
-    { key: 'n', header: 'Invoice Number', width: 140, render: () => <span className="text-text-subtitle">INV-1024366</span> }, { key: 's', header: 'Study Invoice', width: '1fr', render: () => 'Patient Trust in Telehealth' },
-    { key: 'd', header: date, width: 180, render: () => 'Aug 10, 2026' }, { key: 'a', header: 'Amount', width: 260, render: (r) => <span className="text-body-medium">{r}</span> },
-    { key: 'x', header: '', width: 112, className: 'px-3', render: () => (
+  type InvoiceRow = (typeof view.PENDING)[number]
+  const invoiceCols = (date: string): Column<InvoiceRow>[] => [
+    { key: 'n', header: 'Invoice Number', width: 140, render: (r) => <span className="text-text-subtitle">{r.number}</span> }, { key: 's', header: 'Study Invoice', width: '1fr', render: (r) => r.study },
+    { key: 'd', header: date, width: 180, render: (r) => r.date }, { key: 'a', header: 'Amount', width: 260, render: (r) => <span className="text-body-medium">{r.amount}</span> },
+    { key: 'x', header: '', width: 112, className: 'px-3', render: (r) => (
       <span className="flex gap-3"><IconButton label="Download invoice" onClick={(e) => e.stopPropagation()}><DownloadIcon className="h-5 w-5" /></IconButton>
-        <IconButton label="View invoice" onClick={(e) => { e.stopPropagation(); setInvoice(kind) }}><EyeIcon className="h-5 w-5" /></IconButton></span>) },
+        <IconButton label="View invoice" onClick={(e) => { e.stopPropagation(); setInvoice(r.studyId) }}><EyeIcon className="h-5 w-5" /></IconButton></span>) },
   ]
   const H = ({ children }: { children: string }) => <h3 className="pb-3 pt-6 text-title-s leading-[25px] text-text-title">{children}</h3>
 
   return (
-    <AppShell className="flex flex-col pb-8" crumbs={[{ label: 'Active', to: '/clients' }, { label: 'Jennifer Lee' }]}>
-      <ClientHeader reviews onReviews={() => setReviews(true)} menu={
+    <AppShell className="flex flex-col pb-8" crumbs={[{ label: off ? 'Deactivated' : 'Active', to: off ? '/clients?tab=deactivated' : '/clients' }, { label: c.name }]}>
+      <ClientHeader id={c.id} reviews onReviews={() => go({ tab: 'about' })} menu={
         <>
           <IconButton label="Client options" aria-expanded={menu} onClick={() => setMenu((m) => !m)}><DotsIcon className="h-5 w-5" /></IconButton>
           {menu && (
             <ul role="menu" className="absolute right-0 top-[46px] z-30 w-[220px] rounded-lg bg-bg-0 p-2 shadow-[0_4px_16px_rgba(32,30,25,0.12)]">
               {['Send E-mail', off ? 'Reactivate Account' : 'Deactivate Account'].map((item) => (
-                <li key={item} role="none"><button role="menuitem" type="button" onClick={() => { setMenu(false); if (item === 'Send E-mail') window.location.href = 'mailto:jenniferlee@soulfullabs.ai'; else setFlow('form') }}
+                <li key={item} role="none"><button role="menuitem" type="button" onClick={() => { setMenu(false); if (item === 'Send E-mail') window.location.href = `mailto:${c.email}`; else setFlow('form') }}
                   className="flex h-[38px] w-full items-center rounded-sm px-3 text-body-regular text-text-title hover:bg-bg-1">{item}</button></li>))}
             </ul>
           )}
@@ -98,41 +104,41 @@ export default function ClientProfile() {
       {off && (
         <div role="status" className="mt-2 flex items-center justify-between gap-4 rounded-lg bg-yellow-40 px-4 py-3.5 text-text-regular leading-5">
           <div><p className="text-body-medium leading-[22px] text-state-danger">Account is deactivated.</p>
-            <p className="pt-1.5 text-text-title">This account was deactivated as business verification could not be done. Can verify it manually and reactivate.</p><p className="pt-1.5 text-text-subtitle">Oct 1, 2026</p></div>
+            <p className="pt-1.5 text-text-title">{view.statusNote?.reason ?? 'This account was deactivated.'} Can verify it manually and reactivate.</p><p className="pt-1.5 text-text-subtitle">{monthDayYear(view.statusNote?.at)}</p></div>
           <div className="flex shrink-0 gap-3"><Button variant="tertiary" className="bg-yellow-40 px-5" leftIcon={<ExternalIcon className="h-5 w-5" />}>Reason</Button><Button variant="secondary" className="px-5" onClick={() => setFlow('form')}>Reactivate Account</Button></div>
         </div>
       )}
       <SegmentedTabs className="mt-4 w-80 self-start" segmentClassName="flex-1 min-w-0" value={tab} onChange={(k) => go({ tab: k as Tab })} items={[{ key: 'about', label: 'About' }, { key: 'studies', label: 'Studies' }, { key: 'payments', label: 'Payments' }]} />
       <div className="pt-3">
-        {tab === 'about' && <ClientAbout />}
+        {tab === 'about' && <ClientAbout id={c.id} />}
         {tab === 'studies' && (
           <div>
             <UnderlineTabs items={[{ key: 'ongoing', label: 'Ongoing' }, { key: 'completed', label: 'Completed' }]} value={done ? 'completed' : 'ongoing'} onChange={(k) => go({ sub: k })} />
             <div className="flex gap-3 pb-3 pt-4"><SearchInput size="sm" placeholder="Search studies..." /><Select size="sm" className="w-[134px] shrink-0" value="All" options={['All']} /></div>
-            <Table rows={done ? [...CLIENT_STUDIES, ...CLIENT_STUDIES_MORE] : CLIENT_STUDIES} rowKey={(r) => r.id} columns={studyCols} highlight="st-pay"
-              onRowClick={(r) => r.id.startsWith('st-') && navigate(`/studies/${r.id}${done ? '?state=completed' : ''}`)} />
-            {done && <div className="pt-3"><Pagination page={1} pages={80} /></div>}
+            <Table rows={done ? view.COMPLETED : view.ONGOING} rowKey={(r) => r.id} columns={studyCols} highlight="st-pay"
+              onRowClick={(r) => navigate(`/studies/${r.id}${done ? '?state=completed' : ''}`)} />
           </div>
         )}
         {tab === 'payments' && (
           <div>
-            <div className="flex gap-3"><Stat tint label="Due Payments" value="$6,874" note="of 5 studies" /><Stat label="All Time Spent" value="$25,890" note="for 5 studies" /><Stat label="Average Study Cost" value="$3,876" note="from 15 studies" /></div>
-            <H>Pending Invoices</H><Table rowHeight={70} rows={PENDING_INVOICES} rowKey={(r) => r} columns={invoiceCols('Due Date (auto-debit)', 'due')} onRowClick={() => setInvoice('due')} />
-            <H>Completed Invoices</H><Table rowHeight={70} rows={COMPLETED_INVOICES} rowKey={(r) => r} columns={invoiceCols('Date', 'paid')} onRowClick={() => setInvoice('paid')} />
+            <div className="flex gap-3">{view.stats.map((st) => <Stat key={st.label} tint={st.tint} label={st.label} value={st.value} note={st.note} />)}</div>
+            <H>Pending Invoices</H><Table rowHeight={70} rows={view.PENDING} rowKey={(r) => r.key} columns={invoiceCols('Due Date (auto-debit)')} onRowClick={(r) => setInvoice(r.studyId)} />
+            <H>Completed Invoices</H><Table rowHeight={70} rows={view.PAID} rowKey={(r) => r.key} columns={invoiceCols('Date')} onRowClick={(r) => setInvoice(r.studyId)} />
             <H>Saved Payment Methods</H>
             <div className="flex gap-2">
-              {[['Mastercard', '2687 4242 3247 4242', true], ['VISA', '2687 0047 2911 6080', false]].map(([brand, num, def]) => (
-                <div key={String(brand)} className="h-[98px] w-[376px] rounded-lg bg-bg-1 p-4 text-text-regular leading-5">
-                  <p className="flex items-center gap-2 text-text-title">{def ? <Mastercard /> : <span className="text-label font-semibold text-blue-600">VISA</span>}{brand}{def && <><span aria-hidden="true" className="text-text-body">•</span><span className="text-text-body">Default</span></>}</p>
-                  <p className="pt-1.5 text-body-medium text-text-title">{num}</p><p className="pt-1.5 text-text-subtitle">Expires 08/28 &nbsp;•&nbsp; CVV: 235</p>
+              {view.cards.map(({ brand, last4, expires, isDefault: def }) => (
+                <div key={last4} className="h-[98px] w-[376px] rounded-lg bg-bg-1 p-4 text-text-regular leading-5">
+                  <p className="flex items-center gap-2 text-text-title">{brand === 'Mastercard' ? <Mastercard /> : <span className="text-label font-semibold text-blue-600">VISA</span>}{brand}{def && <><span aria-hidden="true" className="text-text-body">•</span><span className="text-text-body">Default</span></>}</p>
+                  {/* The platform keeps the last four digits only, never a full number or a CVV. */}
+                  <p className="pt-1.5 text-body-medium text-text-title">**** **** **** {last4}</p><p className="pt-1.5 text-text-subtitle">{expires}</p>
                 </div>))}
             </div>
           </div>
         )}
       </div>
-      <ReviewsPanel open={reviews} onClose={() => setReviews(false)} />
-      <InvoicePanel kind={invoice} onClose={() => setInvoice(null)} />
-      <AccountFlow kind={off ? 'reactivate' : 'deactivate'} step={flow} onStep={setFlow} onDone={() => { setFlow(null); go({ off: !off }) }} />
+      
+      <InvoicePanel studyId={invoice} onClose={() => setInvoice(null)} />
+      <AccountFlow name={c.name.split(' ')[0]} kind={off ? 'reactivate' : 'deactivate'} step={flow} onStep={setFlow} onReason={(reason) => platform().setClientStatus(c.id, off ? 'active' : 'deactivated', reason, TEAM)} onDone={() => setFlow(null)} />
     </AppShell>
   )
 }

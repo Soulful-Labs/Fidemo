@@ -1,21 +1,15 @@
+import { useMemo } from 'react'
+import { billing, clientById, consoleDashboard, counts, personById, shortName, ticketOwnerName } from '@shared/derive'
+import { ago, count, money } from '@shared/format'
+import { studyPictures, usePlatform } from '../platform'
+
 /**
- * The Dashboard as drawn, state by state (section 1850:115647). Every number
- * and row is the frame's own text. The frames are not consistent with each
- * other (the All tab counts 16 identity verifications, the Onboarding tab 2;
- * the tab counts do not add up to All's 274), so each tab carries what its
- * own frame draws. Stage two replaces all of this with figures derived from
- * one source; CLAUDE.md, "Dashboard", names what each one counts.
+ * The Dashboard's pending actions, read from the shared platform. Every tile,
+ * tab count and group count is shared/derive.ts consoleDashboard, so they
+ * agree with each other and with every list they lead to.
  */
 
 export interface Kpi { value: string; label: string }
-
-/** The four tiles. Identical in all five frames. */
-export const KPIS: Kpi[] = [
-  { value: '264', label: 'Screeners To Review' },
-  { value: '36', label: 'Onboarding To Verify' },
-  { value: '7', label: 'Open Tickets' },
-  { value: '18', label: 'Live studies' },
-]
 
 export interface ActionRow {
   id: string
@@ -43,79 +37,95 @@ export interface ActionGroup {
 
 export type TabKey = 'all' | 'onboarding' | 'studies' | 'support' | 'manage'
 
-export const TABS: { key: TabKey; label: string; count: string }[] = [
-  { key: 'all', label: 'All', count: '274' },
-  { key: 'onboarding', label: 'Onboarding', count: '4' },
-  { key: 'studies', label: 'Studies', count: '264' },
-  { key: 'support', label: 'Support', count: '3' },
-  { key: 'manage', label: 'Manage', count: '6' },
-]
-
 const PENDING = 'Pending screeners applications to be reviewed for study'
+/** Each group shows its first rows; View All opens the whole queue. */
+const FIRST = 2
 
-const thomas: ActionRow = { id: 'iv-1', title: 'Thomas Rifer', detail: ['Selfie liveness check flagged for manual review.'], when: '2 hr ago', to: '/participants/verifications/iv-1' }
-const nordic: ActionRow = { id: 'cv-1', title: 'Nordic Field Labs', detail: ["Tax registration number didn't match state records."], when: '1 hr ago', to: '/clients/verifications/cv-1' }
-const harbor: ActionRow = { id: 'cv-2', title: 'Harborview Research', detail: ['Company website could not be reached.'], when: '16 Sep, 2:36 PM', to: '/clients/verifications/cv-2' }
-const clientRows = [nordic, harbor]
+export function useDashboard() {
+  const state = usePlatform()
+  return useMemo(() => {
+    const d = consoleDashboard(state)
+    const now = new Date()
 
-const screenerRows: ActionRow[] = [
-  { id: 'st-goal', title: 'About goal-tracking methods study', lead: '124 screeners', detail: [PENDING], thumb: '/img/studies/goal-tracking.png', when: '15 min ago', to: '/studies/st-goal' },
-  { id: 'st-sleep', title: 'Share about your sleep cycle', lead: '86 screeners', detail: [PENDING], thumb: '/img/studies/sleep-cycle.png', when: '5 Sep, 10:16 AM', to: '/studies/st-sleep' },
-  { id: 'st-pay', title: 'How do you make your digital payments mostly?', lead: '32 screeners', detail: [PENDING], thumb: '/img/studies/digital-payments.png', when: '5 Sep, 10:16 AM', to: '/studies/st-pay' },
-]
+    const identity: ActionGroup = {
+      key: 'identity', title: 'Identity Verification', count: String(d.checks.length), viewAll: '/participants/verifications',
+      rows: d.checks.slice(0, FIRST).map((c) => ({
+        id: c.id, title: c.person.name, meta: c.kind === 'profession' ? 'Profession Credential' : undefined,
+        detail: [c.check.reason ?? 'Flagged for manual review.'], when: ago(c.check.flaggedAt, now), to: `/participants/verifications/${c.id}`,
+      })),
+    }
+    const business: ActionGroup = {
+      key: 'client-business', title: 'Client-Business Verification', count: String(d.business.length), viewAll: '/clients/verifications',
+      rows: d.business.slice(0, FIRST).map((c) => ({ id: c.id, title: c.company, detail: [c.business.reason ?? ''], when: ago(c.business.flaggedAt, now), to: `/clients/verifications/cv-${c.id}` })),
+    }
+    // Screeners, grouped by study: the studies with the most waiting first.
+    const byStudy = new Map<string, number>()
+    d.screeners.forEach((c) => byStudy.set(c.study.id, (byStudy.get(c.study.id) ?? 0) + 1))
+    const screenerStudies = [...byStudy.entries()].sort((a, b) => b[1] - a[1])
+    const screeners: ActionGroup = {
+      key: 'screeners', title: 'Screeners to review', count: count(d.screeners.length), viewAll: '/studies?tab=ongoing',
+      rows: screenerStudies.slice(0, 3).map(([id, n]) => {
+        const s = state.studies.find((x) => x.id === id)!
+        const latest = d.screeners.filter((c) => c.study.id === id).map((c) => c.p.events.at(-1)?.at ?? '').sort().at(-1)
+        return { id, title: s.title, lead: `${n} screeners`, detail: [PENDING], thumb: studyPictures(id, s.image).small, when: ago(latest, now), to: `/studies/${id}?tab=recruited&view=applications` }
+      }),
+    }
+    const ticketRow = (t: (typeof d.tickets)[number]): ActionRow => ({
+      id: t.id, title: ticketOwnerName(state, t), meta: t.owner.kind === 'client' ? 'Client' : 'Participant', detail: [t.subject], when: ago(t.lastActivityAt, now), to: `/support/${t.id}`,
+    })
+    const tickets: ActionGroup = { key: 'tickets', title: 'New Support Tickets', count: String(d.tickets.length), viewAll: '/support', rows: d.tickets.slice(0, FIRST).map(ticketRow) }
+    const noShows: ActionGroup = {
+      key: 'no-show', title: 'No-show verifications', count: String(d.noShows.length), viewAll: '/studies?tab=ongoing',
+      rows: d.noShows.slice(0, FIRST).map((c) => ({
+        id: `${c.study.id}-${c.person.id}`, title: shortName(c.person.name), meta: clientById(state, c.study.clientId)?.company,
+        detail: ['Marked as No-show by the client'], when: ago(c.p.events.find((e) => e.label === 'No Show')?.at, now), to: `/studies/${c.study.id}/respondents/${c.person.id}`,
+      })),
+    }
+    const refunds: ActionGroup = {
+      key: 'refunds', title: 'Refunds for unfilled studies', count: String(d.refunds.length), viewAll: '/finance/refunds',
+      rows: d.refunds.slice(0, FIRST).map((r) => ({
+        id: r.study.id, title: `${money(r.amount)} refund`, meta: `${r.study.title}, ${r.client?.company ?? ''}`,
+        detail: [`Study completed underfilled by ${r.shortfall} participants`], when: ago(r.study.completedAt, now), to: `/finance/refunds/${r.study.id}`,
+      })),
+    }
+    const flagged: ActionGroup = {
+      key: 'flagged', title: 'Flagged/reported accounts', count: String(d.reports.length), viewAll: '/participants/verifications?tab=reported',
+      rows: d.reports.slice(0, FIRST).map((r) => {
+        const by = r.reportedBy === 'system' ? 'By System (Algo)' : `By Client: ${clientById(state, r.reportedBy)?.company ?? ''},`
+        const study = r.studyId ? state.studies.find((s) => s.id === r.studyId)?.title : undefined
+        return { id: r.id, title: shortName(personById(state, r.personId)?.name ?? ''), meta: by, detail: [`For ${r.reason}`, ...(study ? [study] : [])], when: ago(r.at, now), to: `/participants/verifications/${r.id}` }
+      }),
+    }
+    const participantsTickets = d.tickets.filter((t) => t.owner.kind === 'participant')
+    const clientTickets = d.tickets.filter((t) => t.owner.kind === 'client')
 
-const lucas: ActionRow = { id: 'tk-1', title: 'Lucas Mayfield', meta: 'Participant', detail: ['Study reward pending'], when: '8 hr ago', to: '/support/tk-1' }
-const james: ActionRow = { id: 'tk-2', title: 'James Alva', meta: 'Client', detail: ['Unable to access the transcripts of sessions'], when: '1 hr ago', to: '/support/tk-2' }
-
-const noShowRows: ActionRow[] = [
-  { id: 'ns-1', title: 'Devon A.', meta: 'Nordic Field Labs', detail: ['Marked as No-show by the client'], when: '10 Sep, 10:16 AM', to: '/studies/st-goal' },
-  { id: 'ns-2', title: 'Jennifer M', meta: 'Nordic Field Labs', detail: ['Marked as No-show by the client'], when: '10 Sep, 10:120 AM', to: '/studies/st-goal' },
-]
-
-const refundRows: ActionRow[] = [
-  { id: 'rf-1', title: '$1,250 refund', meta: 'Wellness app feedback, Groveline Health', detail: ['Study completed underfilled by 10 participants'], when: '1 hr ago', to: '/finance/refunds/rf-1' },
-  { id: 'rf-2', title: '$750 refund', meta: 'Share about your sleep cycle, ABC Pharma', detail: ['Study completed underfilled by 5 participants'], when: '10 Sep, 10:120 AM', to: '/finance/refunds/rf-2' },
-]
-
-const flaggedRows: ActionRow[] = [
-  { id: 'fl-1', title: 'Devon A.', meta: 'By AI assistant', detail: ['For duplicate/multiple account', 'How do you make your digital payments mostly?'], when: '1 hr ago', to: '/participants/verifications/fl-1' },
-  { id: 'fl-2', title: 'Jennifer M', meta: 'By Client: ABC Pharma,', detail: ['For abusive behavior in study session', 'How do you make your digital payments mostly?'], when: '10 Sep, 10:120 AM', to: '/participants/verifications/fl-2' },
-]
-
-const identityAll: ActionGroup = {
-  key: 'identity', title: 'Identity Verification', count: '16', viewAll: '/participants/verifications',
-  rows: [thomas, { id: 'iv-2', title: 'Jane D.', detail: ['Selfie liveness check passed without issues.'], when: '5 Sep, 10:16 AM', to: '/participants/verifications/iv-2' }],
+    const GROUPS: Record<TabKey, ActionGroup[]> = {
+      all: [identity, business, screeners, tickets, noShows, refunds, flagged],
+      onboarding: [identity, business],
+      studies: [screeners, refunds],
+      support: [
+        { key: 'tickets-participants', title: 'Participants', count: String(participantsTickets.length), viewAll: '/support', rows: participantsTickets.slice(0, FIRST).map(ticketRow) },
+        { key: 'tickets-clients', title: 'Client', count: String(clientTickets.length), viewAll: '/support', rows: clientTickets.slice(0, FIRST).map(ticketRow) },
+      ],
+      manage: [noShows, flagged],
+    }
+    const KPIS: Kpi[] = [
+      { value: count(d.tiles.screenersToReview), label: 'Screeners To Review' },
+      { value: count(d.tiles.onboardingToVerify), label: 'Onboarding To Verify' },
+      { value: count(d.tiles.openTickets), label: 'Open Tickets' },
+      { value: count(d.tiles.liveStudies), label: 'Live studies' },
+    ]
+    const TABS: { key: TabKey; label: string; count: string }[] = [
+      { key: 'all', label: 'All', count: count(d.tabs.all) },
+      { key: 'onboarding', label: 'Onboarding', count: count(d.tabs.onboarding) },
+      { key: 'studies', label: 'Studies', count: count(d.tabs.studies) },
+      { key: 'support', label: 'Support', count: count(d.tabs.support) },
+      { key: 'manage', label: 'Manage', count: count(d.tabs.manage) },
+    ]
+    void billing; void counts
+    return { KPIS, TABS, GROUPS, badges: { dashboard: d.tabs.all, support: d.tiles.openTickets } }
+  }, [state])
 }
-const clientBusiness: ActionGroup = { key: 'client-business', title: 'Client-Business Verification', count: '2', viewAll: '/clients/verifications', rows: clientRows }
-const screeners: ActionGroup = { key: 'screeners', title: 'Screeners to review', count: '264', viewAll: '/studies', rows: screenerRows }
-const noShows: ActionGroup = { key: 'no-show', title: 'No-show verifications', count: '2', viewAll: '/studies', rows: noShowRows }
-const refunds: ActionGroup = { key: 'refunds', title: 'Refunds for unfilled studies', count: '2', viewAll: '/finance/refunds', rows: refundRows }
-const flagged: ActionGroup = { key: 'flagged', title: 'Flagged/reported accounts', count: '2', viewAll: '/participants/verifications', rows: flaggedRows }
 
-/** Each tab's groups, as its own frame draws them. */
-export const GROUPS: Record<TabKey, ActionGroup[]> = {
-  // 1851:115853
-  all: [
-    identityAll,
-    clientBusiness,
-    screeners,
-    { key: 'tickets', title: 'New Support Tickets', count: '2', viewAll: '/support', rows: [lucas, james] },
-    noShows,
-    refunds,
-    flagged,
-  ],
-  // 1872:70720
-  onboarding: [
-    { ...identityAll, count: '2', rows: [thomas, { id: 'iv-3', title: 'Jenny Keens', detail: ['Automatic ID match didn’t matched against the submitted document.'], when: '4 Sep, 10:16 AM', to: '/participants/verifications/iv-3' }] },
-    { ...clientBusiness, collapsed: true },
-  ],
-  // 1872:71323
-  studies: [screeners, refunds],
-  // 1872:71711: the Participants group's first row has its "Participant" label hidden; its second row is a client, as drawn.
-  support: [
-    { key: 'tickets-participants', title: 'Participants', count: '2', viewAll: '/support', rows: [{ ...lucas, meta: undefined }, james] },
-    { key: 'tickets-clients', title: 'Client', count: '1', viewAll: '/support', collapsed: true, rows: [lucas, james] },
-  ],
-  // 1872:72123
-  manage: [noShows, flagged],
-}
+/** The tab keys, for screens that only need to know which tabs exist. */
+export const TAB_KEYS: TabKey[] = ['all', 'onboarding', 'studies', 'support', 'manage']

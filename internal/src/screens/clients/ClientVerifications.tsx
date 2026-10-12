@@ -8,7 +8,10 @@ import Table, { Pagination } from '../../components/ui/Table'
 import type { Column } from '../../components/ui/Table'
 import { SegmentedTabs, UnderlineTabs } from '../../components/ui/Tabs'
 import { cn } from '../../lib/cn'
-import { CLIENT_HISTORY, CLIENT_PENDING } from '../../mock/clients'
+import { useClientCase, useClientChecks } from '../../mock/clients'
+import { ticketsOf } from '@shared/derive'
+import { platform } from '@shared/store'
+import { TEAM, usePlatform } from '../../platform'
 import type { ClientCheck } from '../../mock/clients'
 import { Field } from '../participants/profile/AboutTab'
 import DecisionFlow from '../participants/verifications/dialogs'
@@ -25,6 +28,7 @@ const flag: Column<ClientCheck> = { key: 'flag', header: 'Flagged For', width: 1
  * "Onboarding"; built as "Pending" on both.
  */
 export function ClientVerificationsList() {
+  const { CLIENT_PENDING, CLIENT_HISTORY, count } = useClientChecks()
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const history = params.get('tab') === 'history'
@@ -33,7 +37,7 @@ export function ClientVerificationsList() {
     <AppShell crumbs={[{ label: 'Verifications' }]}>
       <SegmentedTabs className="w-[280px]" segmentClassName="flex-1 min-w-0" value={history ? 'history' : 'pending'} onChange={(k) => setParams(k === 'history' ? { tab: k } : {}, { replace: true })}
         items={[{ key: 'pending', label: 'Pending' }, { key: 'history', label: 'History' }]} />
-      <h2 className="pb-2 pt-4 text-title-s leading-[25px] text-text-title">{history ? 'History' : '87 pending verifications'}</h2>
+      <h2 className="pb-2 pt-4 text-title-s leading-[25px] text-text-title">{history ? 'History' : count}</h2>
       <div className="flex gap-4 pb-[15px]"><SearchInput size="sm" placeholder="Search participants by name or role..." /><Select size="sm" className="w-[200px] shrink-0" value="Flagged for All" options={['Flagged for All']} /></div>
       {history
         ? <Table rowHeight={52} rows={CLIENT_HISTORY} rowKey={(r) => r.id} onRowClick={open} columns={[who, col('role', 'Role', 220), col('date', 'Completed', 130, true), flag, col('reason', 'Verification Remarks', '1fr'),
@@ -58,44 +62,55 @@ const Tag = ({ good, children }: { good: boolean; children: string }) => (
  * The frames light Participants > Verifications; the route lights Clients.
  */
 export function ClientVerificationDetail() {
-  const { id = 'cv-1' } = useParams()
+  const { id = 'cv-cl-verda' } = useParams()
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
-  const [outcome, setOutcome] = useState<'pending' | 'verified' | 'rejected'>(params.get('state') === 'rejected' || id === 'cv-2h' ? 'rejected' : id.endsWith('h') ? 'verified' : 'pending')
+  const k = useClientCase(id)
+  const c = k.client
+  const outcome = k.outcome
+  const state = usePlatform()
   const [flow, setFlow] = useState<{ kind: Decision; step: Step } | null>(null)
   const profile = params.get('tab') === 'profile'
   const pending = outcome === 'pending'
   const ok = outcome === 'verified'
+  const by = k.decidedBy ? ` · by ${k.decidedBy}` : ''
+  const chat = () => {
+    const open = ticketsOf(state, 'client', c.id)[0]
+    if (open) { navigate(`/support/${open.id}`); return }
+    const made = platform().createTicket({ kind: 'client', id: c.id }, { subject: 'Business verification: more information needed', message: c.business.reason ?? 'We need a little more information to verify your business.' }, TEAM)
+    if (made.ok) navigate(`/support/${made.id}`)
+  }
   return (
-    <AppShell className="flex flex-col pb-8" crumbs={[{ label: pending && !profile ? 'Verifications' : 'Onboarding', to: '/clients/verifications' }, { label: pending ? 'Jennifer Lee' : 'Samuel Lee' }]}>
-      <ClientHeader />
+    <AppShell className="flex flex-col pb-8" crumbs={[{ label: pending && !profile ? 'Verifications' : 'Onboarding', to: '/clients/verifications' }, { label: c.name }]}>
+      <ClientHeader id={c.id} />
       <UnderlineTabs className="mt-4" value={profile ? 'profile' : 'flagged'} onChange={(k) => setParams(k === 'profile' ? { tab: 'profile' } : {}, { replace: true })}
         items={[{ key: 'flagged', label: profile ? 'Status' : 'Flagged' }, { key: 'profile', label: 'Profile Details' }]} />
-      {profile ? <div className="pt-5"><ClientAbout /></div> : (
+      {profile ? <div className="pt-5"><ClientAbout id={c.id} /></div> : (
         <div className="flex flex-col gap-3 pt-6">
           <h2 className="text-body-regular leading-[22px] text-text-subtitle">Profession Credential</h2>
           <section className={cn('flex items-center justify-between gap-4 rounded-lg px-4 py-3.5 text-text-regular leading-5', pending ? 'bg-yellow-40' : 'border-1 border-stroke-1 bg-bg-1')}>
-            <div><h3 className="text-body-medium leading-[22px] text-text-title">VAT (Tax) Number Registration, Website</h3><p className="pt-1.5 text-text-subtitle">Given VAT number for company registration and website could be found and matched in records.</p><p className="pt-1.5 text-text-subtitle">Oct 1, 2026</p></div>
+            <div><h3 className="text-body-medium leading-[22px] text-text-title">VAT (Tax) Number Registration, Website</h3><p className="pt-1.5 text-text-subtitle">{c.business.reason}</p><p className="pt-1.5 text-text-subtitle">{k.flaggedAt}</p></div>
             {pending ? (
               <div className="flex shrink-0 gap-3">
                 <Button variant="tertiary" className="bg-yellow-40 px-5 text-state-danger!" leftIcon={<CloseIcon className="h-5 w-5" />} onClick={() => setFlow({ kind: 'reject-verification', step: 'form' })}>Reject</Button>
                 <Button variant="tertiary" className="bg-yellow-40 px-5 text-state-success!" leftIcon={<VerifiedIcon className="h-5 w-5" />} onClick={() => setFlow({ kind: 'verify-profession', step: 'form' })}>Mark Verified</Button>
-                <Button className="px-5" leftIcon={<SupportIcon className="h-5 w-5" />} onClick={() => navigate('/support/tk-1?state=ongoing')}>Chat</Button>
+                <Button className="px-5" leftIcon={<SupportIcon className="h-5 w-5" />} onClick={chat}>Chat</Button>
               </div>
-            ) : <Button variant="tertiary" className="bg-bg-1 px-5" leftIcon={<SupportIcon className="h-5 w-5" />} onClick={() => navigate('/support/tk-1?state=ongoing')}>View Support Chat</Button>}
+            ) : <Button variant="tertiary" className="bg-bg-1 px-5" leftIcon={<SupportIcon className="h-5 w-5" />} onClick={chat}>View Support Chat</Button>}
           </section>
           {!pending && (
             <div className="rounded-md border-1 border-stroke-1 bg-bg-0 p-4 text-text-regular leading-5">
               <p className={cn('text-body-regular', ok ? 'text-state-success' : 'text-state-danger')}>{ok ? 'Marked as verified!' : 'Rejected the Business registration verification.'}</p>
-              <p className="pt-1.5 text-text-title">{ok ? 'An OCR error, manually verified and matched with record.' : 'Did not submitted the VAT number document for verification as required.'}</p><p className="pt-1.5 text-text-subtitle">{ok ? 'Oct 5, 2026' : 'Oct 30, 2026'}</p>
+              <p className="pt-1.5 text-text-title">{c.business.note}</p><p className="pt-1.5 text-text-subtitle">{k.decidedAt}{by}</p>
             </div>
           )}
-          <Field label="Company Name" value="SoulfulLabs" />
-          <Field label="VAT (Tax) Number" value="EAS56893231459" /><Tag good={ok}>{ok ? 'Marked as Verified' : 'Company registration could not be verified with records!'}</Tag>
-          <Field label="Company Website" value="https://www.soulfullabs.ai" /><Tag good={ok}>{ok ? 'Marked as Verified' : 'Website not found!'}</Tag>
+          <Field label="Company Name" value={c.company} />
+          <Field label="VAT (Tax) Number" value={c.vat || 'N/A'} /><Tag good={ok}>{ok ? 'Marked as Verified' : 'Company registration could not be verified with records!'}</Tag>
+          <Field label="Company Website" value={c.website || 'N/A'} /><Tag good={ok}>{ok ? 'Marked as Verified' : 'Website not found!'}</Tag>
         </div>
       )}
-      {flow && <DecisionFlow kind={flow.kind} step={flow.step} onStep={(s) => setFlow(s ? { ...flow, step: s } : null)} onDone={() => { setOutcome(flow.kind === 'verify-profession' ? 'verified' : 'rejected'); setFlow(null) }} />}
+      {flow && <DecisionFlow kind={flow.kind} name={c.name.split(' ')[0]} step={flow.step} onStep={(s) => setFlow(s ? { ...flow, step: s } : null)}
+        onDecide={(statement) => platform().decideBusiness(c.id, flow.kind === 'verify-profession' ? 'verified' : 'rejected', statement, TEAM)} onDone={() => setFlow(null)} />}
     </AppShell>
   )
 }

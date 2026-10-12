@@ -7,7 +7,7 @@ import Table, { Pagination } from '../../components/ui/Table'
 import type { Column } from '../../components/ui/Table'
 import { SegmentedTabs, UnderlineTabs } from '../../components/ui/Tabs'
 import { cn } from '../../lib/cn'
-import { PERIOD_OPTIONS, REFUNDS, TILES, TX, TX_TABS, TYPE_OPTIONS } from '../../mock/finance'
+import { PERIOD_OPTIONS, TX_TABS, TYPE_OPTIONS, useFinance } from '../../mock/finance'
 import type { Refund, Tx, TxKind } from '../../mock/finance'
 import TransactionDetails from './TransactionDetails'
 import type { DetailKind } from './TransactionDetails'
@@ -37,14 +37,19 @@ export default function Finance({ refunds }: { refunds?: boolean }) {
   const [params, setParams] = useSearchParams()
   const k = params.get('tx')
   const tab: TxKind = TX_TABS.some((t) => t.key === k) ? (k as TxKind) : 'all'
-  const [detail, setDetail] = useState<DetailKind | null>(null)
+  const [detail, setDetail] = useState<{ kind: DetailKind; id: string } | null>(null)
   const [type, setType] = useState(TYPE_OPTIONS[0]!)
   const [period, setPeriod] = useState(PERIOD_OPTIONS[0]!)
+  const [query, setQuery] = useState('')
+  const [page, setPage] = useState(1)
+  const { TILES, TX, REFUNDS, refundsCount, refundsTotal } = useFinance(tab, type, period, query)
+  const pages = Math.max(1, Math.ceil(TX.length / 10))
+  const shown = TX.slice((Math.min(page, pages) - 1) * 10, Math.min(page, pages) * 10)
   const open = (r: Tx) => {
-    if (r.type.startsWith('Participant Earning')) setDetail('earning')
-    else if (r.type.startsWith('Participant Payout')) setDetail('payouts')
-    else if (r.type.startsWith('Study Payment')) setDetail('payments')
-    else navigate('/finance/refunds')
+    if (r.type.startsWith('Participant Earning')) setDetail({ kind: 'earning', id: r.id })
+    else if (r.type.startsWith('Participant Payout')) setDetail({ kind: 'payouts', id: r.id })
+    else if (r.type.startsWith('Study Payment')) setDetail({ kind: 'payments', id: r.id })
+    else if (r.row.studyId) navigate(`/finance/refunds/${r.row.studyId}`)
   }
   const refundCols: Column<Refund>[] = [
     { key: 'd', header: 'Date', width: 110, sortable: true, render: (r) => r.date }, { key: 's', header: 'Study', width: '1fr', render: (r) => <span className="flex gap-2">{r.type}<span aria-hidden="true">•</span>{r.study}</span> },
@@ -61,11 +66,10 @@ export default function Finance({ refunds }: { refunds?: boolean }) {
           <h2 className="pt-6 text-title-s leading-[25px] text-text-title">Pending Refund Confirmations</h2>
           <p className="pt-1 text-text-regular leading-5 text-text-body">Confirm the pending refund transactions to clients for studies</p>
           <div className="mt-3 flex h-[84px] items-center justify-between rounded-lg border-1 border-stroke-1 bg-bgAlt-1 px-4">
-            <div><p className="text-text-regular text-text-title">Refunds Pending</p><p className="pt-1 text-title-l text-state-destructive">24</p></div>
-            <div className="text-right"><p className="text-text-regular text-text-title">Total client refund value</p><p className="pt-1 text-title-l text-state-destructive">$38,956</p></div>
+            <div><p className="text-text-regular text-text-title">Refunds Pending</p><p className="pt-1 text-title-l text-state-destructive">{refundsCount}</p></div>
+            <div className="text-right"><p className="text-text-regular text-text-title">Total client refund value</p><p className="pt-1 text-title-l text-state-destructive">{refundsTotal}</p></div>
           </div>
           <Table className="mt-4" rowHeight={56} rows={REFUNDS} rowKey={(r) => r.id} columns={refundCols} onRowClick={(r) => navigate(`/finance/refunds/${r.id}`)} />
-          <div className="pt-3"><Pagination page={1} pages={10} /></div>
         </>
       ) : (
         <>
@@ -83,15 +87,15 @@ export default function Finance({ refunds }: { refunds?: boolean }) {
           <h2 className="pb-3 pt-7 text-title-s leading-[25px] text-text-title">Transactions</h2>
           <UnderlineTabs items={TX_TABS} value={tab} onChange={(v) => setParams(v === 'all' ? {} : { tx: v }, { replace: true })} />
           <div className="flex gap-3 pb-3 pt-4">
-            <SearchInput size="sm" placeholder="Search transaction by name, type, amount..." />
+            <SearchInput size="sm" placeholder="Search transaction by name, type, amount..." value={query} onChange={(e) => setQuery(e.target.value)} />
             {tab === 'all' && <Select size="sm" className="w-[200px] shrink-0" value={type} onChange={setType} options={TYPE_OPTIONS} />}
             <Select size="sm" className="w-[112px] shrink-0" value={period} onChange={setPeriod} options={PERIOD_OPTIONS} />
           </div>
-          <Table rowHeight={52} rows={TX[tab]} rowKey={(r) => r.id} columns={COLS[tab]} onRowClick={open} />
-          <div className="pt-3"><Pagination page={1} pages={10} /></div>
+          <Table rowHeight={52} rows={shown} rowKey={(r) => r.id} columns={COLS[tab]} onRowClick={open} />
+          <div className="pt-3"><Pagination page={Math.min(page, pages)} pages={pages} onChange={setPage} /></div>
         </>
       )}
-      <TransactionDetails kind={detail} onClose={() => setDetail(null)} />
+      <TransactionDetails kind={detail?.kind ?? null} id={detail?.id} onClose={() => setDetail(null)} />
     </AppShell>
   )
 }

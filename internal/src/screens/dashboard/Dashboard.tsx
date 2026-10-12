@@ -1,7 +1,7 @@
 import { useSearchParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import { UnderlineTabs } from '../../components/ui/Tabs'
-import { GROUPS, KPIS, TABS } from '../../mock/dashboard'
+import { TAB_KEYS, useDashboard } from '../../mock/dashboard'
 import type { TabKey } from '../../mock/dashboard'
 import ActionGroupCard from './ActionGroupCard'
 
@@ -20,7 +20,8 @@ import ActionGroupCard from './ActionGroupCard'
  */
 export default function Dashboard() {
   const [params, setParams] = useSearchParams()
-  const tab = (TABS.some((t) => t.key === params.get('tab')) ? params.get('tab') : 'all') as TabKey
+  const tab = (TAB_KEYS.includes(params.get('tab') as TabKey) ? params.get('tab') : 'all') as TabKey
+  const { KPIS, TABS, GROUPS } = useDashboard()
 
   return (
     <AppShell crumbs={[{ label: 'Dashboard' }]}>

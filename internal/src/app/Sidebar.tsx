@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { LogoMark } from '../components/ui/Logo'
+import { useDashboard } from '../mock/dashboard'
 import { cn } from '../lib/cn'
 import { NAV, activeNav } from './nav'
 import type { NavItem } from './nav'
@@ -19,6 +20,9 @@ export default function Sidebar() {
   const account = pathname.startsWith('/account')
   /** The one frame drawn as a sub-admin (2065:207638): their card, the same eight modules. */
   const asSub = pathname === '/account/sub-admin'
+  /** The two badges are counts from the shared platform: everything pending on the Dashboard, and open tickets. */
+  const { badges } = useDashboard()
+  const badgeFor: Record<string, string> = { dashboard: String(badges.dashboard), support: String(badges.support) }
 
   return (
     <nav aria-label="Main" className="fixed inset-y-0 left-0 z-30 flex w-nav flex-col border-r-1 border-shell-edge bg-bg-1">
@@ -35,7 +39,7 @@ export default function Sidebar() {
             <p className={cn('px-4 pb-1.5 text-text-regular leading-5 text-text-body', g === 0 ? 'pt-[17px]' : 'pt-3.5')}>{group}</p>
             <ul className="flex flex-col gap-0.5">
               {items.map((item) => (
-                <NavRow key={item.key} item={item} active={active.item === item.key} activeChild={active.child} />
+                <NavRow key={item.key} item={item.badge ? { ...item, badge: badgeFor[item.key] ?? item.badge } : item} active={active.item === item.key} activeChild={active.child} />
               ))}
             </ul>
           </div>

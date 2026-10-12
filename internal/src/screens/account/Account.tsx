@@ -5,7 +5,7 @@ import Button from '../../components/ui/Button'
 import Input, { PasswordInput } from '../../components/ui/Input'
 import { ChevronRight } from '../../components/ui/icons'
 import { Modal, SuccessModal } from '../../components/ui/Overlay'
-import { MAYA, PETER } from '../../mock/team'
+import { useMember } from '../../mock/team'
 import { ProfileFacts } from '../subadmin/SubAdminProfile'
 
 const Glyph = ({ out }: { out?: boolean }) => (
@@ -22,6 +22,8 @@ const Glyph = ({ out }: { out?: boolean }) => (
  * settings. The sub-admin frame draws the full sidebar, all eight modules.
  */
 export default function Account({ sub }: { sub?: boolean }) {
+  const PETER = useMember('tm-peter')!
+  const MAYA = useMember('tm-maya')!
   const navigate = useNavigate()
   const [dialog, setDialog] = useState<null | 'password' | 'updated' | 'logout'>(null)
   const Row = ({ label, out, onClick }: { label: string; out?: boolean; onClick: () => void }) => (
@@ -57,6 +59,7 @@ export default function Account({ sub }: { sub?: boolean }) {
 
 /** Edit My Profile (2065:205614): picture, Name, Email Address, a locked Role; Save / Cancel. The breadcrumb reads "Sub-Admin / Edit My Profile", as drawn. */
 export function EditAccount() {
+  const PETER = useMember('tm-peter')!
   const navigate = useNavigate()
   return (
     <AppShell crumbs={[{ label: 'Sub-Admin', to: '/account' }, { label: 'Edit My Profile' }]}>

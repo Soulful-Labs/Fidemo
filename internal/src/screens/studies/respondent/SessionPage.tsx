@@ -5,7 +5,7 @@ import Button from '../../../components/ui/Button'
 import { SearchInput, Select } from '../../../components/ui/Input'
 import { ChevronDown, ChevronUp, CloseIcon, SortIcon, StarIcon, UserIcon, VerifiedIcon } from '../../../components/ui/icons'
 import { cn } from '../../../lib/cn'
-import { MANAGED } from '../../../mock/manage'
+import { useManagedStudy } from '../../../mock/manage'
 import { PARTICIPANTS, sessionActivity } from '../../../mock/results'
 import type { Attendance, Participant } from '../../../mock/results'
 import RespondentProfile from '../manage/RespondentProfile'
@@ -34,7 +34,7 @@ const Tag = ({ good, children }: { good: boolean; children: string }) => (
 export default function SessionPage() {
   const { id } = useParams()
   const [params, setParams] = useSearchParams()
-  const study = MANAGED.find((s) => s.id === id) ?? MANAGED[1]!
+  const study = useManagedStudy(id)
   const inPerson = study.type === 'in-person-group'
   const done = params.get('state') === 'completed'
   const tab = params.get('tab') === 'activity' ? 'activity' : 'result'

@@ -9,7 +9,7 @@ import { ChevronRight } from '../../components/ui/icons'
 import Table from '../../components/ui/Table'
 import type { Column } from '../../components/ui/Table'
 import { SegmentedTabs } from '../../components/ui/Tabs'
-import { STUDY_COUNTS, STUDY_ROWS } from '../../mock/studies'
+import { useStudyRows } from '../../mock/studies'
 import type { StudyRow } from '../../mock/studies'
 
 type Tab = 'review' | 'ongoing' | 'completed'
@@ -54,6 +54,9 @@ export default function Studies() {
   const tab = (TABS.some((t) => t.key === params.get('tab')) ? params.get('tab') : 'review') as Tab
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState('All Studies')
+  const { rows, count } = useStudyRows(tab)
+  /** Search narrows the visible list by study name. */
+  const shown = rows.filter((r) => !query.trim() || r.name.toLowerCase().includes(query.trim().toLowerCase()))
 
   const open = (r: StudyRow) => navigate(tab === 'review' ? `/studies/review/${r.id}` : tab === 'completed' ? `/studies/${r.id}?state=completed` : `/studies/${r.id}`)
 
@@ -95,8 +98,8 @@ export default function Studies() {
         </div>
       </div>
 
-      <p className="pt-4 text-body-regular text-text-body">{STUDY_COUNTS[tab]}</p>
-      <Table className="mt-2" rows={STUDY_ROWS} rowKey={(r) => r.id} highlight="st-pay" onRowClick={open} columns={columns[tab]} />
+      <p className="pt-4 text-body-regular text-text-body">{count}</p>
+      <Table className="mt-2" rows={shown} rowKey={(r) => r.id} highlight="st-pay" onRowClick={open} columns={columns[tab]} />
     </AppShell>
   )
 }

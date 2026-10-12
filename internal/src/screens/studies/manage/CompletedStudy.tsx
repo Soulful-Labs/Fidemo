@@ -5,7 +5,6 @@ import StudyTypeTag from '../../../components/app/StudyTypeTag'
 import Button, { IconButton } from '../../../components/ui/Button'
 import { AudienceIcon, ClipboardIcon, ClockIcon, CopyIcon, DotsIcon, LinkIcon, ScreenerIcon } from '../../../components/ui/icons'
 import { UnderlineTabs } from '../../../components/ui/Tabs'
-import { FIGURES as F } from '../../../mock/manage'
 import type { ManagedStudy } from '../../../mock/manage'
 import { BillLine } from '../review/PaymentRevisions'
 import { AudiencePills, Block, EstimatedAudience } from './ManageTab'
@@ -42,7 +41,7 @@ const Stat = ({ label, value, rest, ring }: { label: string; value: string; rest
  */
 export default function CompletedStudy({ study, tab, onTab }: { study: ManagedStudy; tab: Tab; onTab: (t: Tab) => void }) {
   const [menu, setMenu] = useState(false)
-  const copy = () => { void navigator.clipboard?.writeText(F.shareLink) }
+  const copy = () => { void navigator.clipboard?.writeText(study.figures.shareLink) }
   return (
     <AppShell className="flex flex-col pb-8" crumbs={[{ label: 'Studies', to: '/studies' }, { label: 'Completed', to: '/studies?tab=completed' }, { label: study.title }]}>
       <header className="flex gap-6 rounded-lg bg-bgAlt-1 p-4">
@@ -83,18 +82,18 @@ export default function CompletedStudy({ study, tab, onTab }: { study: ManagedSt
             <Field label="Study Description"><p className="text-body-regular leading-[22px] text-text-title">{study.description}</p></Field>
             <Field label="Share Link">
               <div className="flex gap-3">
-                <p className="flex h-12 min-w-0 flex-1 items-center truncate rounded-md border-1 border-stroke-input bg-bg-1 px-3 text-body-regular text-text-subtitle">{F.shareLink}</p>
+                <p className="flex h-12 min-w-0 flex-1 items-center truncate rounded-md border-1 border-stroke-input bg-bg-1 px-3 text-body-regular text-text-subtitle">{study.figures.shareLink}</p>
                 <Button variant="tertiary" className="w-[103px] px-0" leftIcon={<CopyIcon className="h-5 w-5" />} onClick={copy}>Copy</Button>
               </div>
             </Field>
             <Field label="Duration"><p className="flex gap-3 text-body-regular leading-[22px] text-text-subtitle">From July 10, 2026, 02:30 PM<span aria-hidden="true">•</span>To July 10, 2026, 02:30 PM</p></Field>
             <div className="-mt-2 flex flex-col gap-4">
-              <Block Icon={AudienceIcon} title="Audience" head="h-[52px]" body="pb-[26px]" extra={<EstimatedAudience />}><AudiencePills roles="Physician, General Doctor, Nutritionist, Therapist, Medical Practitioner" /></Block>
-              <Block Icon={ScreenerIcon} title="Screener" head="h-12" body="pb-[30px]"><Pill label="Screening:">{F.screening}</Pill></Block>
-              <Block Icon={ClipboardIcon} title="Study" head="h-12" body="pb-[30px]"><div className="flex gap-2"><Pill label={study.summary[0]}>{study.summary[1]}</Pill><Pill label="Incentive:">{F.incentive}</Pill></div></Block>
+              <Block Icon={AudienceIcon} title="Audience" head="h-[52px]" body="pb-[26px]" extra={<EstimatedAudience value={study.figures.estimatedAudience} />}><AudiencePills pills={study.audience} /></Block>
+              <Block Icon={ScreenerIcon} title="Screener" head="h-12" body="pb-[30px]"><Pill label="Screening:">{study.figures.screening}</Pill></Block>
+              <Block Icon={ClipboardIcon} title="Study" head="h-12" body="pb-[30px]"><div className="flex gap-2"><Pill label={study.summary[0]}>{study.summary[1]}</Pill><Pill label="Incentive:">{study.figures.incentive}</Pill></div></Block>
             </div>
           </div>
-          <ClientCard className="w-[338px] p-3" />
+          <ClientCard client={study.client} className="w-[338px] p-3" />
         </div>
       )}
       {tab === 'results' && <div className="pt-4"><ResultsTab study={study} completed /></div>}
