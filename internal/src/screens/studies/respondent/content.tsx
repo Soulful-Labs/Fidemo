@@ -3,7 +3,6 @@ import type { ReactNode } from 'react'
 import Button from '../../../components/ui/Button'
 import { CalendarIcon, ClockIcon, CopyIcon, DownloadIcon, ExternalIcon, EyeIcon, ListIcon, PinIcon, PlayIcon, StarIcon, VerifiedIcon, VideoUserIcon } from '../../../components/ui/icons'
 import { cn } from '../../../lib/cn'
-import { PIN, SESSION_ADDRESS } from '../../../mock/results'
 import type { ActivityItem, Answer } from '../../../mock/results'
 
 const QTag = ({ children }: { children: string }) => <span className="flex h-7 shrink-0 items-center rounded-full bg-bgAlt-2 px-2.5 text-text-regular text-text-title">{children}</span>
@@ -78,12 +77,12 @@ export function ActivityList({ items, inline }: { items: ActivityItem[]; inline?
   )
 }
 
-/** Verification PIN: the session code in a 48px box with a copy button. `wide` runs the full width with the code on the right. */
-export function PinCard({ text, wide }: { text: string; wide?: boolean }) {
+/** Verification PIN: the study's own session code (shared/store.ts) in a 48px box with a copy button. `wide` runs the full width with the code on the right. */
+export function PinCard({ code: pin, text, wide }: { code: string; text: string; wide?: boolean }) {
   const code = (
-    <button type="button" aria-label="Copy PIN" onClick={() => { void navigator.clipboard?.writeText(PIN) }}
+    <button type="button" aria-label="Copy PIN" onClick={() => { void navigator.clipboard?.writeText(pin) }}
       className="flex h-12 w-[198px] shrink-0 items-center justify-between rounded-md border-1 border-stroke-1 bg-bg-0 px-4 text-title-m tracking-[0.04em] text-text-title">
-      {PIN}<CopyIcon className="h-6 w-6" />
+      {pin}<CopyIcon className="h-6 w-6" />
     </button>
   )
   return (
@@ -108,7 +107,7 @@ const Line = ({ Icon, muted, children }: { Icon: typeof CalendarIcon; muted?: bo
  * finished, greyed with a "Completed" tag. No frame shows what starts it.
  */
 export function SessionCard({ title, date, time, address, aside, phase, children }: {
-  title: string; date: string; time: string; address?: boolean; aside?: ReactNode; phase?: 'running' | 'finished'; children?: ReactNode
+  title: string; date: string; time: string; address?: string; aside?: ReactNode; phase?: 'running' | 'finished'; children?: ReactNode
 }) {
   const muted = phase === 'finished'
   return (
@@ -124,7 +123,7 @@ export function SessionCard({ title, date, time, address, aside, phase, children
       <div className="flex flex-col gap-3 pt-3">
         <Line Icon={CalendarIcon} muted={muted}>{date}</Line>
         <Line Icon={ClockIcon} muted={muted}>{time}</Line>
-        {address && <Line Icon={PinIcon} muted={muted}>{SESSION_ADDRESS}</Line>}
+        {address && <Line Icon={PinIcon} muted={muted}>{address}</Line>}
       </div>
       {children}
     </section>
@@ -134,7 +133,7 @@ export function SessionCard({ title, date, time, address, aside, phase, children
 export const JoinNow = () => <Button fullWidth className="mt-3" leftIcon={<VideoUserIcon className="h-5 w-5" />}>Join Now</Button>
 
 /** "Video Result": the recording's tile, its length and date, and links to the recording and the transcript. */
-export function VideoResult({ title, who }: { title: string; who: string }) {
+export function VideoResult({ title, who, when }: { title: string; who: string; when: string }) {
   return (
     <section className="rounded-lg border-1 border-yellow-50 bg-yellow-30 p-4">
       <h3 className="text-body-medium leading-[22px] text-text-title">Video Result</h3>
@@ -145,7 +144,7 @@ export function VideoResult({ title, who }: { title: string; who: string }) {
         </div>
         <div>
           <p className="pt-1 text-body-regular leading-[22px] text-text-title">{title}</p>
-          <p className="flex items-center gap-1 pt-1.5 text-text-regular leading-5 text-text-subtitle"><ClockIcon className="h-4 w-4 text-state-success" />42:16<CalendarIcon className="ml-3 h-4 w-4 text-state-success" />Aug 12, 2026, 10:00 AM</p>
+          <p className="flex items-center gap-1 pt-1.5 text-text-regular leading-5 text-text-subtitle"><ClockIcon className="h-4 w-4 text-state-success" />42:16<CalendarIcon className="ml-3 h-4 w-4 text-state-success" />{when}</p>
           <div className="flex gap-4 pt-3">
             <Button variant="secondary" size="md" className="px-3" rightIcon={<ExternalIcon className="h-4 w-4" />}>View Video Recording</Button>
             <Button variant="tertiary" size="md" className="px-3" rightIcon={<ExternalIcon className="h-4 w-4" />}>Transcript</Button>

@@ -6,7 +6,7 @@ import StudyTypeTag from '../../../components/app/StudyTypeTag'
 import Button from '../../../components/ui/Button'
 import { AudienceIcon, CalendarIcon, CardIcon, ClipboardIcon, HistoryIcon, InfoIcon, ReceiptIcon, ScreenerIcon, UsersIcon } from '../../../components/ui/icons'
 import { SuccessModal } from '../../../components/ui/Overlay'
-import { QUESTIONS, SCREENER_LABELS } from '../../../mock/review'
+import { ReviewContext, useReviewData } from '../../../mock/review'
 import { billing } from '@shared/derive'
 import { monthDayYearTime, money } from '@shared/format'
 import { platform } from '@shared/store'
@@ -48,6 +48,7 @@ export default function ReviewStudy() {
   const tab = (TABS.some((t) => t.key === params.get('tab')) ? params.get('tab') : 'about') as Tab
   const setTab = (k: Tab) => setParams(k === 'about' ? {} : { tab: k }, { replace: true })
   const study = useManagedStudy(id)
+  const view = useReviewData(id)
   const type = study.type
   const [why, setWhy] = useState('')
   /** Workflow 7: the team takes the study live, or sends it back (shared/store.ts). */
@@ -55,6 +56,7 @@ export default function ReviewStudy() {
   const [overlay, setOverlay] = useState<'changes' | 'published' | null>(null)
 
   return (
+    <ReviewContext.Provider value={view}>
     <AppShell className="p-4"
       crumbs={[{ label: 'Studies', to: '/studies' }, { label: 'Review', to: '/studies' }, { label: study.title }]}
       right={<>
@@ -81,7 +83,7 @@ export default function ReviewStudy() {
           <div role="tabpanel" className="p-4">
             {tab === 'about' && <AboutTab type={type} />}
             {tab === 'audience' && <AudienceTab />}
-            {tab === 'screener' && <QuestionList labels={SCREENER_LABELS} questions={QUESTIONS} />}
+            {tab === 'screener' && <QuestionList labels={view.screenerLabels} questions={view.screener} />}
             {tab === 'study' && <StudyTab type={type} />}
             {tab === 'payment' && <PaymentTab onReceipt={() => undefined} />}
             {tab === 'revisions' && <RevisionsTab />}
@@ -95,5 +97,6 @@ export default function ReviewStudy() {
         title="This study has been published live!" body="It is live on the platform and showing to targeted participants."
         action="Done! View Details" onAction={() => navigate(`/studies/${id}`)} />
     </AppShell>
+    </ReviewContext.Provider>
   )
 }

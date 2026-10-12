@@ -1,6 +1,5 @@
 import { Fragment } from 'react'
 import { cn } from '../../../lib/cn'
-import { QUESTION_PROMPT } from '../../../mock/review'
 import type { Question, Verdict } from '../../../mock/review'
 import { Pill, Rule } from './parts'
 
@@ -26,7 +25,7 @@ export function QuestionBlock({ label, q }: { label: string; q: Question }) {
         <Pill filled>{label}</Pill>
         <Pill muted>{q.kind}</Pill>
       </div>
-      <p className="pt-3 text-body-medium leading-[22px] text-text-title">{QUESTION_PROMPT}</p>
+      <p className="pt-3 text-body-medium leading-[22px] text-text-title">{q.prompt}</p>
       <div className="flex flex-col gap-2 pt-2">
         {q.answers?.map(([answer, verdict]) => (
           <div key={answer} className="flex gap-1">
@@ -52,7 +51,7 @@ export function QuestionList({ labels, questions, ruled = true }: { labels: stri
   return (
     <div className="flex flex-col gap-4">
       {questions.map((q, i) => (
-        <Fragment key={labels[i]}>
+        <Fragment key={`${labels[i]}${i}`}>
           {ruled && i > 0 && <Rule />}
           <QuestionBlock label={labels[i]!} q={q} />
         </Fragment>

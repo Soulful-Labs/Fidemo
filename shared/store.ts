@@ -14,7 +14,7 @@ import { canMoveParticipation, canMoveStudy, isLive, participationOf } from './l
 import {
   DECISION_UNDO_MS, DEMO_SESSION_CODE, RESTRICTION_DAYS, TIMINGS, canReschedule, canWithdraw, isSessionType, priceStudy,
 } from './platform'
-import { canRedeem, starsForRating } from './rules'
+import { canRedeem, starsForRating, starsFromDimensions } from './rules'
 import { sessionStartOf as sessionStart } from './derive'
 import { EMPTY_PROFILE } from './seed/people'
 import { SEED_VERSION, buildSeed } from './seed'
@@ -270,7 +270,7 @@ export function createPlatform(options: Options = {}) {
     // ------------------------------------------------------ participations
 
     /** Workflow 26, 27: the client selects someone and the platform invites them. */
-    invite: (studyId: string, personId: string) => move((s) => {
+    invite: (studyId: string, personId: string, actor: Actor = SYSTEM) => move((s) => {
       const study = s.studies.find((x) => x.id === studyId)
       if (!study) return no('No such study')
       if (!isLive(study.state)) return no('Only a live study can invite people')
@@ -281,6 +281,7 @@ export function createPlatform(options: Options = {}) {
       const moved = shift(p, 'invited')
       if (!moved.ok) return no(p.state === 'invited' ? 'They have already been invited' : 'They are already on this study')
       stamp(p, 'Invited')
+      log(s, actor, `Invited ${nameOf(s, personId)} to apply for ${study.title}`, 'Studies / Matched / Invite')
       notify(s, personId, {
         kind: 'study', title: "You've been invited to a study!",
         body: `A researcher has directly invited you to participate in the ${study.title} study ($${study.rates.incentivePer}). Review the details and apply.`,
@@ -457,7 +458,7 @@ export function createPlatform(options: Options = {}) {
     }),
 
     /** The undo of Mark Completed, until the payout has been approved. */
-    uncomplete: (studyId: string, personId: string) => move((s) => {
+    uncomplete: (studyId: string, personId: string, actor: Actor = SYSTEM) => move((s) => {
       const hit = find(s, studyId, personId)
       if (!hit) return no('Not on this study')
       if (hit.p.state !== 'completed') return no('They are not marked as completed')
@@ -466,6 +467,7 @@ export function createPlatform(options: Options = {}) {
       hit.p.state = 'scheduled'; hit.p.completedAt = undefined
       s.pending = s.pending.filter((x) => !(x.kind === 'pay' && x.studyId === studyId && x.personId === personId))
       stamp(hit.p, 'Completion undone')
+      log(s, actor, `Undid the completion of ${nameOf(s, personId)} on ${hit.study.title}`, 'Studies / Sessions / Undo')
       return yes()
     }),
 
@@ -475,17 +477,20 @@ export function createPlatform(options: Options = {}) {
       if (!hit) return no('Not on this study')
       const moved = shift(hit.p, 'no_show')
       if (!moved.ok) return moved
+      // Policy: a no-show is not paid. Nothing to pay is left waiting.
+      s.pending = s.pending.filter((x) => !(x.kind === 'pay' && x.studyId === studyId && x.personId === personId))
       stamp(hit.p, 'No Show')
       log(s, actor, `Marked ${nameOf(s, personId)} as no-show on ${hit.study.title}`, 'Studies / Sessions / No-show')
       return yes()
     }),
 
     /** The undo of a no-show: back to the booked session. */
-    undoNoShow: (studyId: string, personId: string) => move((s) => {
+    undoNoShow: (studyId: string, personId: string, actor: Actor = SYSTEM) => move((s) => {
       const hit = find(s, studyId, personId)
       if (!hit || hit.p.state !== 'no_show') return no('They are not marked as a no-show')
       hit.p.state = 'scheduled'
       stamp(hit.p, 'No-show undone')
+      log(s, actor, `Undid the no-show of ${nameOf(s, personId)} on ${hit.study.title}`, 'Studies / Sessions / Undo')
       return yes()
     }),
 
@@ -502,11 +507,18 @@ export function createPlatform(options: Options = {}) {
      * control. The stars the policy's table needs are stored (rules.ts,
      * starsForRating).
      */
-    rateParticipant: (studyId: string, personId: string, rating: RatingState, extra: Pick<ParticipantRating, 'comment' | 'expertise' | 'reliability' | 'communication'> = {}) => move((s) => {
+    rateParticipant: (studyId: string, personId: string, rating: RatingState | 'dimensions', extra: Pick<ParticipantRating, 'comment' | 'expertise' | 'reliability' | 'communication'> = {}, actor: Actor = SYSTEM) => move((s) => {
       const hit = find(s, studyId, personId)
       if (!hit) return no('Not on this study')
       if (hit.p.state !== 'completed') return no('Only someone who completed the study can be rated')
-      hit.p.rating = { ...extra, stars: starsForRating(rating), state: rating, at: iso() }
+      if (hit.p.rating) return no('They have already been rated for this study')
+      if (rating === 'dimensions') {
+        // The console's Rate panel: three five-star dimensions, no three-state control (rules.ts, starsFromDimensions).
+        const stars = starsFromDimensions(extra)
+        if (!stars) return no('Rate all three: expertise, reliability and communication')
+        hit.p.rating = { ...extra, stars, at: iso() }
+      } else hit.p.rating = { ...extra, stars: starsForRating(rating), state: rating, at: iso() }
+      log(s, actor, `Rated ${nameOf(s, personId)} ${hit.p.rating.stars} stars for ${hit.study.title}`, 'Studies / Results / Rate')
       return yes()
     }),
 

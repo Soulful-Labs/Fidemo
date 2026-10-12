@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { cn } from '../lib/cn'
+import NoticeHost from '../components/app/Notice'
 import Sidebar from './Sidebar'
 import TitleBar from './TitleBar'
 import type { Crumb } from './TitleBar'
@@ -20,6 +21,7 @@ export default function AppShell({ crumbs, centre, right, children, className }:
         <TitleBar crumbs={crumbs} centre={centre} right={right} />
         <main className={cn('flex-1 p-6', className)}>{children}</main>
       </div>
+      <NoticeHost />
     </div>
   )
 }

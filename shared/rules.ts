@@ -67,6 +67,19 @@ export function starsForRating(state: RatingState): Stars {
   }
 }
 
+/**
+ * The console's Rate panel (Figma 1932:109444) draws three five-star
+ * dimensions and no overall control. The stars the policy table scores are
+ * their mean, rounded: 5, 5, 4 is 5 stars (+4); 4, 4, 3 is 4 (+3); 3, 3, 3 is
+ * 3 (+1). Every value of the table is reachable from here. Undefined until
+ * all three are given.
+ */
+export function starsFromDimensions(d: { expertise?: number; reliability?: number; communication?: number }): Stars | undefined {
+  const all = [d.expertise, d.reliability, d.communication]
+  if (all.some((x) => !x || x < 1 || x > 5)) return undefined
+  return Math.round((all as number[]).reduce((a, b) => a + b, 0) / 3) as Stars
+}
+
 export const clampTrust = (score: number): number => Math.min(TRUST.MAX, Math.max(TRUST.MIN, Math.round(score)))
 
 /** A score after one change, kept within the policy's 50 to 100. */

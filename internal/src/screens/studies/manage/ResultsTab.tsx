@@ -6,7 +6,7 @@ import { Select } from '../../../components/ui/Input'
 import { CheckIcon, ChevronRight, DownloadIcon, SortIcon, StarIcon } from '../../../components/ui/icons'
 import { Pagination } from '../../../components/ui/Table'
 import type { ManagedStudy } from '../../../mock/manage'
-import { CERTIFICATE as C, RESULTS, RESULT_SESSIONS, resultRows } from '../../../mock/results'
+import { useResults } from '../../../mock/results'
 import type { ResultRow } from '../../../mock/results'
 import { DownloadSessions, RatePanel, RatedPanel } from '../respondent/dialogs'
 import { Tile } from './OverviewTab'
@@ -21,15 +21,18 @@ import { Tile } from './OverviewTab'
  * Rated By You; in-person counts sessions and participants; the two group
  * types count Completed and Avg. Trust Score and group the table by session,
  * each with "View Result". In-person types call the summary "Notes Summaries".
+ * Every row is someone who actually completed (shared/derive.ts); a rating
+ * given here is stored on their participation and moves their Trust Score.
  */
 export default function ResultsTab({ study, completed }: { study: ManagedStudy; completed?: boolean }) {
   const navigate = useNavigate()
   const group = study.type === 'video-group' || study.type === 'in-person-group'
-  const base = RESULTS[study.type]
-  /** The completed survey (1932:96711) draws 30 /30 required, 11 /30 completed and three pages. */
-  const spec = completed ? { ...base, tiles: [['Completed', '30', '/30 required'], ['Avg. Trust Score', '92'], ['Rated By You', '11', '/30 completed']] as typeof base.tiles } : base
-  const [rated, setRated] = useState(false)
-  const rows = resultRows(group)
+  const spec = useResults(study.raw)
+  const C = spec.certificate
+  const [rated, setRated] = useState<ResultRow | null>(null)
+  const [page, setPage] = useState(1)
+  const pages = Math.max(1, Math.ceil(spec.rows.length / 10))
+  const rows = group ? spec.rows : spec.rows.slice((Math.min(page, pages) - 1) * 10, Math.min(page, pages) * 10)
   const [rating, setRating] = useState<ResultRow | null>(null)
   const [downloading, setDownloading] = useState(false)
   const grid = group ? 'grid-cols-[180px_280px_160px_160px_1fr_150px]' : 'grid-cols-[180px_360px_180px_180px_1fr]'
@@ -39,12 +42,12 @@ export default function ResultsTab({ study, completed }: { study: ManagedStudy; 
     <div role="row" onClick={() => open(r)} className={`grid ${grid} h-[70px] cursor-pointer items-center border-t-1 border-stroke-1 text-text-regular text-text-title hover:bg-bgAlt-1`}>
       <span className="px-4">{r.name}</span>
       <span className="px-4">{r.role}</span>
-      {group && <span className="flex gap-2 px-4">{r.session}<span aria-hidden="true">•</span>10:00 AM</span>}
+      {group && <span className="flex gap-2 px-4">{r.session}<span aria-hidden="true">•</span>{r.time}</span>}
       <span className="px-4">{r.date}</span>
       <span className="flex items-center gap-2 px-4">{r.score}<TierTag tier={r.tier} /></span>
       <span className={group ? 'flex justify-end px-3' : 'flex px-0'}>
         {r.rated
-          ? <button type="button" onClick={(e) => { e.stopPropagation(); setRated(true) }} className="flex h-[38px] items-center rounded-md border-1 border-cta-tertiaryStroke px-3 text-text-medium">Rated</button>
+          ? <button type="button" onClick={(e) => { e.stopPropagation(); setRated(r) }} className="flex h-[38px] items-center rounded-md border-1 border-cta-tertiaryStroke px-3 text-text-medium">Rated</button>
           : <Button size="md" className="px-3" leftIcon={<StarIcon className="h-5 w-5" />} onClick={(e) => { e.stopPropagation(); setRating(r) }}>Rate Now</Button>}
       </span>
     </div>
@@ -75,7 +78,7 @@ export default function ResultsTab({ study, completed }: { study: ManagedStudy; 
           <span className="px-4">Date</span>
           <span className="flex items-center gap-1 px-4">Score<SortIcon className="h-4 w-4 text-text-body" /></span><span />
         </div>
-        {group ? RESULT_SESSIONS.map((s) => (
+        {group ? spec.sessions.map((s) => (
           <Fragment key={s.id}>
             <div className="flex h-[62px] items-center justify-between border-t-1 border-stroke-1 bg-bg-1 pl-4 pr-3 text-text-regular text-text-title">
               <span className="flex gap-2">{s.code}<span aria-hidden="true">•</span>{s.when}</span>
@@ -84,8 +87,9 @@ export default function ResultsTab({ study, completed }: { study: ManagedStudy; 
             {rows.filter((r) => r.session === s.code).map((r) => <Row key={r.id} r={r} />)}
           </Fragment>
         )) : rows.map((r) => <Row key={r.id} r={r} />)}
+        {spec.rows.length === 0 && <p className="border-t-1 border-stroke-1 p-4 text-text-regular text-text-subtitle">No one has completed this study yet.</p>}
       </div>
-      <div className="pt-3"><Pagination page={1} pages={completed ? 3 : 2} /></div>
+      <div className="pt-3"><Pagination page={Math.min(page, pages)} pages={pages} onChange={setPage} /></div>
 
       <section className="mt-6 flex items-start gap-4 rounded-lg bg-bgAlt-1 p-4">
         <span aria-hidden="true" className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-1 border-stroke-3 bg-bg-0">
@@ -100,9 +104,9 @@ export default function ResultsTab({ study, completed }: { study: ManagedStudy; 
         <Button variant="secondary" className="px-5" leftIcon={<DownloadIcon className="h-5 w-5" />}>Download</Button>
       </section>
 
-      <RatePanel person={rating} onClose={() => setRating(null)} />
-      <RatedPanel open={rated} onClose={() => setRated(false)} />
-      <DownloadSessions open={downloading} onClose={() => setDownloading(false)} />
+      <RatePanel study={study} person={rating} onClose={() => setRating(null)} />
+      <RatedPanel study={study} person={rated} onClose={() => setRated(null)} />
+      <DownloadSessions open={downloading} downloads={spec.downloads} onClose={() => setDownloading(false)} />
     </div>
   )
 }

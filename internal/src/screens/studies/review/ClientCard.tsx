@@ -1,7 +1,7 @@
 import { Fragment } from 'react'
 import { MailIcon, VerifiedIcon } from '../../../components/ui/icons'
 import { Avatar } from '../../../components/ui/Tag'
-import { CLIENT as C } from '../../../mock/review'
+import { useReview } from '../../../mock/review'
 import { Rule } from './parts'
 
 /**
@@ -12,6 +12,7 @@ import { Rule } from './parts'
  * here is a link in the frames.
  */
 export default function ClientCard() {
+  const { CLIENT: C } = useReview()
   return (
     <aside className="w-[360px] shrink-0 self-start rounded-lg border-1 border-stroke-1 pb-3 pt-3 text-text-regular leading-5">
       <div className="px-3">

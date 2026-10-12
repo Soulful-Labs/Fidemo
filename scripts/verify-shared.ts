@@ -8,11 +8,11 @@
  * is refused with a reason.
  */
 import {
-  billing, consoleDashboard, counts, financeTotals, personFigures, pointsRows, refundsPending, respondentStudies, trustInputs,
+  billing, consoleDashboard, counts, financeTotals, personFigures, pointsRows, recruit, refundsPending, respondentStudies, trustInputs,
 } from '../shared/derive'
 import { respondentStatus, participationOf } from '../shared/lifecycle'
 import { FEES, TIMINGS } from '../shared/platform'
-import { POINTS, REDEEM, TIERS, TRUST, starsForRating, trustScore } from '../shared/rules'
+import { POINTS, REDEEM, TIERS, TRUST, starsForRating, starsFromDimensions, trustScore } from '../shared/rules'
 import { DEMO_CLIENT_ID, DEMO_PERSON_ID, MASTER_ADMIN_ID, buildSeed } from '../shared/seed'
 import { createPlatform } from '../shared/store'
 import type { Actor } from '../shared/store'
@@ -33,6 +33,7 @@ check('policy: score never below 50', trustScore({ completedThisYear: 0, stars: 
 check('policy: completion capped at 10 a year, ratings at 40', trustScore({ completedThisYear: 30, stars: Array(20).fill(5), noShows: 0, lateShows: 0, cancelledSessions: 0, frauds: 0 }) === 100)
 check('rating control maps to stars 5/4/2', starsForRating('excellent') === 5 && starsForRating('good') === 4 && starsForRating('poor') === 2)
 check('platform: withdrawal fee is $2', FEES.WITHDRAWAL === 2)
+check('console rate panel: mean of three dimensions, all five values reachable', starsFromDimensions({ expertise: 5, reliability: 5, communication: 4 }) === 5 && starsFromDimensions({ expertise: 3, reliability: 3, communication: 3 }) === 3 && starsFromDimensions({ expertise: 1, reliability: 1, communication: 1 }) === 1 && starsFromDimensions({ expertise: 5 }) === undefined)
 
 // -------------------------------------------------------------------- the seed
 
@@ -120,6 +121,37 @@ check('paying a balance clears the Billing pill', billing(st().studies.find((s) 
 p.reset()
 check('a patch without an email keeps the email', p.updatePerson(DEMO_PERSON_ID, { name: 'Jonathan Reeve', email: undefined }).ok && st().people.find((x) => x.id === DEMO_PERSON_ID)!.email === 'jonathan.reeve@example.com')
 check('reset puts everything back', !st().studies.some((s) => s.id === id) && refundsPending(st()).length === 2)
+
+// The console's decisions are what the client app and the respondent app read (one store, one derive).
+p.reset()
+{
+  const lastBy = () => st().activity[0]?.by
+  const clientTag = () => recruit(st(), st().studies.find((s) => s.id === 'st-social')!, 'ferry-l')?.state
+  const respondentSees = () => respondentStudies(st(), 'ferry-l').find((r) => r.id === 'st-social')?.status
+  check('console qualifies: logged under the team member', p.decide('st-social', 'ferry-l', 'qualified', team).ok && lastBy() === MASTER_ADMIN_ID)
+  check('console qualifies: the client app sees it', clientTag() !== undefined && st().studies.find((s) => s.id === 'st-social')!.participations.find((x) => x.personId === 'ferry-l')!.state === 'qualified', String(clientTag()))
+  check('console qualifies: the respondent app sees it', respondentSees() === 'invited_to_complete', String(respondentSees()))
+  check('console undo within the hour', p.decide('st-social', 'ferry-l', 'applied', team).ok && respondentSees() === 'applied')
+  p.decide('st-social', 'ferry-l', 'qualified', team)
+  clock += 61 * 60_000
+  check('console undo refused after the hour', !p.decide('st-social', 'ferry-l', 'applied', team).ok)
+  const yara = () => st().studies.find((s) => s.id === 'st-28')!.participations.find((x) => x.personId === 'yara-m')!
+  check('console no-show: logged, nothing queued to pay', p.markNoShow('st-28', 'yara-m', team).ok && lastBy() === MASTER_ADMIN_ID && !st().pending.some((x) => x.personId === 'yara-m'))
+  clock += TIMINGS.completionToPaid + 100; p.tick()
+  check('console no-show: never paid, the respondent app shows No Show', !yara().paidAt && respondentStudies(st(), 'yara-m').find((r) => r.id === 'st-28')?.status === 'no_show')
+  check('console undo no-show, then complete with the code: paid after the delay', p.undoNoShow('st-28', 'yara-m', team).ok && p.enterClientCode('st-28', 'yara-m', yara().code!.value).ok && p.complete('st-28', 'yara-m', team).ok && (clock += TIMINGS.completionToPaid + 100, p.tick(), Boolean(yara().paidAt)))
+  check('console rating: refused twice (a simulated client rated at payout)', !p.rateParticipant('st-28', 'yara-m', 'dimensions', { expertise: 4, reliability: 4, communication: 3 }, team).ok)
+  const unrated = st().studies.find((s) => s.id === 'st-social')!.participations.find((x) => x.state === 'completed' && !x.rating)!
+  check('console rating: stored as the mean of the dimensions and logged', p.rateParticipant('st-social', unrated.personId, 'dimensions', { expertise: 4, reliability: 4, communication: 3 }, team).ok && unrated.personId !== undefined
+    && st().studies.find((s) => s.id === 'st-social')!.participations.find((x) => x.personId === unrated.personId)!.rating?.stars === 4 && lastBy() === MASTER_ADMIN_ID)
+  check('console approves the study a client submitted', (() => {
+    const made = p.submitStudy(DEMO_CLIENT_ID, { title: 'Console approval check', description: 'x', type: 'survey', industry: 'Tech', durationMins: 30, required: 5, incentive: 50, targetProfession: 'Engineer' })
+    if (!made.ok) return false
+    const id = (made as { id: string }).id
+    return st().studies.find((s) => s.id === id)?.state === 'in_review' && p.moveStudy(id, 'recruiting', team).ok && lastBy() === MASTER_ADMIN_ID
+  })())
+}
+p.reset(); clock = now.getTime()
 
 // A simulated client decides on the timer.
 check('simulated client: screener then auto-qualified after the delay', (() => {

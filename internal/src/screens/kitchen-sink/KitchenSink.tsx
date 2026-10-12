@@ -171,12 +171,12 @@ export default function KitchenSink() {
 
         <Section title="Session card states and decision bars" note="After Started (1961:184899); screener and completion bars">
           <div className="grid w-full grid-cols-2 gap-3">
-            <SessionCard phase="running" title="In-person interview of Liam K. and You" date="August 12, 2026, Wednesday" time="10:00 AM - 11:00 AM" address />
-            <SessionCard phase="finished" title="In-person interview of Liam K. and You" date="August 12, 2026, Wednesday" time="10:00 AM - 11:00 AM" address />
+            <SessionCard phase="running" title="In-person interview of Liam K. and You" date="August 12, 2026, Wednesday" time="10:00 AM - 11:00 AM" address="A-123, Empire State, Hamburg Street 2, Carolina, Texas, USA - 10001" />
+            <SessionCard phase="finished" title="In-person interview of Liam K. and You" date="August 12, 2026, Wednesday" time="10:00 AM - 11:00 AM" address="A-123, Empire State, Hamburg Street 2, Carolina, Texas, USA - 10001" />
           </div>
-          <div className="w-full"><ScreenerBar initial="todo" /></div>
-          <div className="w-full"><ScreenerBar initial="settled" /></div>
-          <div className="w-full"><GroupCompletionBar /></div>
+          <div className="w-full"><ScreenerBar state="todo" canUndo={false} onDecide={() => undefined} /></div>
+          <div className="w-full"><ScreenerBar state="qualified" canUndo={false} onDecide={() => undefined} /></div>
+          <div className="w-full"><GroupCompletionBar done={false} onAll={() => undefined} /></div>
         </Section>
 
         <Section title="Participant panels" note="Reviews and Invite To Study open from the profile (turn 10)">
@@ -215,7 +215,7 @@ export default function KitchenSink() {
         body="Your new password has been updated with your account which you can use to login from now." action="Go To Login" onAction={() => setModal(null)} />
       <SuccessModal tone="green" open={modal === 'success-green'} onClose={() => setModal(null)} title="This study has been published live!"
         body="It is live on the platform and showing to targeted participants." action="Done! View Details" onAction={() => setModal(null)} />
-      <RespondentProfile open={profile !== null} invited={profile === 'invited'} onClose={() => setProfile(null)} onInvite={() => setProfile(null)} />
+      <RespondentProfile personId={profile !== null ? 'ferry-l' : undefined} invited={profile === 'invited'} onClose={() => setProfile(null)} onInvite={() => setProfile(null)} />
       <ReviewsPanel open={panelP === 'reviews'} onClose={() => setPanelP(null)} />
       <InviteToStudy open={panelP === 'invite'} onClose={() => setPanelP(null)} />
     </AppShell>

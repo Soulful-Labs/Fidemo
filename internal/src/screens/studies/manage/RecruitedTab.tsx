@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import TierTag from '../../../components/app/TierTag'
 import Button from '../../../components/ui/Button'
@@ -8,7 +9,7 @@ import type { Column } from '../../../components/ui/Table'
 import { SegmentedTabs } from '../../../components/ui/Tabs'
 import { cn } from '../../../lib/cn'
 import type { ManagedStudy } from '../../../mock/manage'
-import { SCHEDULED, SESSIONS, applications } from '../../../mock/recruiting'
+import { useRecruiting } from '../../../mock/recruiting'
 import type { Application, ApplicationStatus, Booking, Session } from '../../../mock/recruiting'
 
 const STATUS: Record<ApplicationStatus, string> = {
@@ -28,13 +29,13 @@ const APPLICATION_COLUMNS: Column<Application>[] = [
   { key: 'score', header: 'Score', width: '1fr', sortable: true, render: (r) => <Score row={r} /> },
 ]
 
-const bookingColumns = (join: boolean): Column<Booking>[] => [
+const bookingColumns = (onJoin: (r: Booking) => void): Column<Booking>[] => [
   { key: 'name', header: 'Name', width: 160, render: (r) => r.name },
   { key: 'role', header: 'Role', width: 320, render: (r) => r.role },
   { key: 'score', header: 'Score', width: 190, sortable: true, render: (r) => <Score row={r} /> },
   { key: 'time', header: 'Session Time', width: '1fr', render: (r) => <span className="flex gap-2">{r.day}<span aria-hidden="true">•</span>{r.time}</span> },
-  { key: 'join', header: '', width: 140, className: 'pr-2', render: (r) => join && r.id === 'b1'
-    ? <span className="flex justify-end"><Button size="md" className="px-3" leftIcon={<VideoUserIcon className="h-5 w-5" />} onClick={(e) => e.stopPropagation()}>Join Now</Button></span> : null },
+  { key: 'join', header: '', width: 140, className: 'pr-2', render: (r) => r.join
+    ? <span className="flex justify-end"><Button size="md" className="px-3" leftIcon={<VideoUserIcon className="h-5 w-5" />} onClick={(e) => { e.stopPropagation(); onJoin(r) }}>Join Now</Button></span> : null },
 ]
 
 /** A group session: its date and time (and address, in person), seats taken, who is in it, and View Participants. */
@@ -73,6 +74,8 @@ function SessionCard({ session, onOpen }: { session: Session; onOpen: () => void
  *   "Applications".
  * Applications: Name, Role, Status (Applied, Qualified, Disqualified), Score
  * with the tier; ten rows and the pagination. Rows open the respondent.
+ * Every row is one of the study's real participations (shared/derive.ts);
+ * "Join Now" shows only while a video session is running.
  */
 export default function RecruitedTab({ study, view, onView }: { study: ManagedStudy; view: 'first' | 'applications'; onView: (v: 'first' | 'applications') => void }) {
   const navigate = useNavigate()
@@ -81,6 +84,12 @@ export default function RecruitedTab({ study, view, onView }: { study: ManagedSt
   const segmented = group || booked
   const showApplications = !segmented || view === 'applications'
   const open = (id: string) => navigate(`/studies/${study.id}/respondents/${id}`)
+  const { applications, scheduled, sessions } = useRecruiting(study.raw)
+  const [page, setPage] = useState(1)
+  const rows = showApplications ? applications : scheduled
+  const pages = Math.max(1, Math.ceil(rows.length / 10))
+  const shown = rows.slice((Math.min(page, pages) - 1) * 10, Math.min(page, pages) * 10)
+  const empty = (text: string) => <p className="rounded-lg bg-bg-1 p-4 text-text-regular text-text-subtitle">{text}</p>
   const filters = <div className="flex gap-3"><Select size="sm" className="w-40" value="Status: All" options={['Status: All']} /><Select size="sm" className="w-40" value="Tier: All" options={['Tier: All']} /></div>
   return (
     <div>
@@ -95,17 +104,18 @@ export default function RecruitedTab({ study, view, onView }: { study: ManagedSt
       </div>
       {showApplications ? (
         <>
-          <Table rowHeight={52} rows={applications(study.type === 'video-group' ? 'Sarah K' : 'John M')} rowKey={(r) => r.id} columns={APPLICATION_COLUMNS} onRowClick={(r) => open(r.id)} />
-          <div className="pt-3"><Pagination page={1} pages={10} /></div>
+          {applications.length ? <Table rowHeight={52} rows={shown as typeof applications} rowKey={(r) => r.id} columns={APPLICATION_COLUMNS} onRowClick={(r) => open(r.id)} /> : empty('No one has applied to this study yet.')}
+          <div className="pt-3"><Pagination page={Math.min(page, pages)} pages={pages} onChange={setPage} /></div>
         </>
       ) : booked ? (
         <>
-          <Table rowHeight={60} rows={SCHEDULED} rowKey={(r) => r.id} columns={bookingColumns(study.type === 'video')} onRowClick={(r) => open(r.id)} />
-          <div className="pt-3"><Pagination page={1} pages={10} /></div>
+          {scheduled.length ? <Table rowHeight={60} rows={shown as typeof scheduled} rowKey={(r) => r.id} columns={bookingColumns((r) => open(r.id))} onRowClick={(r) => open(r.id)} /> : empty('No sessions are booked yet.')}
+          <div className="pt-3"><Pagination page={Math.min(page, pages)} pages={pages} onChange={setPage} /></div>
         </>
       ) : (
         <div className="flex flex-col gap-2">
-          {SESSIONS[study.type === 'in-person-group' ? 'inPerson' : 'video'].map((s) => <SessionCard key={s.id} session={s} onOpen={() => navigate(`/studies/${study.id}/sessions/${s.id}`)} />)}
+          {sessions.map((s) => <SessionCard key={s.id} session={s} onOpen={() => navigate(`/studies/${study.id}/sessions/${s.id}`)} />)}
+          {sessions.length === 0 && empty('This study has no sessions yet.')}
         </div>
       )}
     </div>

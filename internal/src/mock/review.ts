@@ -1,156 +1,122 @@
+import { createContext, useContext, useMemo } from 'react'
+import { billing, clientById, durationLabel, paymentStats, sessionSeats, studiesOf, studyById, teamById } from '@shared/derive'
+import { monthDayYear, monthDayYearTime, money } from '@shared/format'
+import type { PlatformState, PreScreenQuestion, Question as SharedQuestion, Study } from '@shared/types'
+import { consoleType, studyPictures, usePlatform } from '../platform'
+import { clientPhoto } from './clients'
+import { addressOf, cardDay, slotRange } from './recruiting'
+
 /**
- * Review a new study (section 1982:104844), every string as drawn. All six
- * type variants draw the same study ("About goal-tracking methods") under the
- * same breadcrumb ("Social media posts designing apps"); only the type tag and
- * the Study tab change. Stage two derives these from the study itself.
+ * Review a new study (section 1982:104844), read from the study under review
+ * in the shared platform: what the client entered on each of the Create
+ * flow's steps, its price, its deposit and the changes already asked for.
+ * Approving it or sending it back moves this study (shared/store.ts).
  */
-export const REVIEW = {
-  crumb: 'Social media posts designing apps',
-  title: 'About goal-tracking methods',
-  thumb: '/img/review/header-thumb.png',
-  participants: '10',
-  cost: '$12,960',
-  submitted: '30 Jul, 2026, 11:00 AM',
-  about: {
-    description: 'Discuss the effectiveness of the goal-setting tools in helping users achieve their fitness milestones.',
-    studyTime: '30 minutes',
-    thumbnail: '/img/review/thumbnail.png',
-  },
-}
-
-export const CLIENT = {
-  name: 'Jennifer Lee',
-  role: 'Product Manager',
-  email: 'jenniferlee@soulfullabs.ai',
-  avatar: '/img/review/jennifer-lee.png',
-  workspace: [
-    ['Company Name', 'SoulfulLabs'],
-    ['VAT No.', 'EAS56893231459'],
-    ['Website', 'https://www.soulfullabs.ai'],
-    ['Industry', 'IT & Consultation'],
-    ['Location', 'NYC, New York, USA'],
-  ],
-  metrics: [
-    ['Completed studies', '20'],
-    ['Total spent', '$150K'],
-    ['Verification', 'Govt. ID Verified'],
-    ['Member since', 'Jan 1, 2022'],
-  ],
-}
-
-/** A pill on the Audience tab: an optional grey label, then the value. */
 export type AudiencePill = { label?: string; value: string; icon?: 'users' | 'pin' }
-
-export const AUDIENCE: { heading: string; gap: 'tight' | 'loose'; pills: AudiencePill[] }[] = [
-  { heading: 'Target Audience', gap: 'tight', pills: [
-    { value: '10', icon: 'users' },
-    { value: 'Worldwide', icon: 'pin' },
-    { label: 'Gender:', value: 'All' },
-    { label: 'Education:', value: 'High school graduate' },
-    { label: 'Age:', value: '18-22, 31-40' },
-  ] },
-  { heading: 'Work details', gap: 'loose', pills: [
-    { label: 'Work Functions:', value: 'Consultation' },
-    { label: 'Roles:', value: 'Physician, General Doctor, Nutritionist, Therapist, Medical Practitioner' },
-    { label: 'Industry:', value: 'Healthcare, Pharma' },
-    { label: 'Skills:', value: 'Therapy, Yoga, Weight Loss, Keto Diet' },
-  ] },
-  { heading: 'Conditions to apply', gap: 'tight', pills: [
-    { value: 'Has never participated in any study with Soulful Labs (You) before' },
-    { label: 'Profile Tiers:', value: 'Platinum, Gold' },
-  ] },
-]
-
 export type Verdict = 'Correct' | 'Incorrect' | 'May Select' | 'Must Select'
-export interface Question {
-  kind: string
-  answers?: [string, Verdict][]
-  placeholder?: string
+export interface Question { kind: string; prompt: string; answers?: [string, Verdict][]; placeholder?: string }
+
+const KIND: Record<SharedQuestion['kind'], string> = { single: 'Single-select', multi: 'Multi-select', text: 'Single-line input', image: 'Image upload', scale: 'Rating scale' }
+
+/** A pre-screener question marks its passing answers Correct and the rest Incorrect (workflow 28). */
+const preQuestion = (q: PreScreenQuestion): Question => ({ kind: 'Single-select', prompt: q.prompt, answers: q.options.map((o) => [o, q.passing.includes(o) ? 'Correct' : 'Incorrect']) })
+/** A screener or task question: the options the participant will choose from; none is right or wrong. */
+const question = (q: SharedQuestion): Question => q.kind === 'text'
+  ? { kind: KIND.text, prompt: q.prompt, placeholder: q.placeholder ?? 'Participants will enter a short text response here…' }
+  : q.kind === 'image'
+    ? { kind: KIND.image, prompt: q.prompt, placeholder: 'Participants will upload an image here…' }
+    : { kind: KIND[q.kind], prompt: q.prompt, answers: q.options.map((o) => [o, 'May Select'] as [string, Verdict]) }
+
+const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+export function review(state: PlatformState, s: Study) {
+  const client = clientById(state, s.clientId)
+  const bill = billing(s)
+  const deposit = s.payments.filter((p) => p.kind === 'deposit')
+  const depositPaid = deposit.reduce((a, p) => a + p.amount, 0)
+  const pics = studyPictures(s.id, s.image)
+  const stats = paymentStats(studiesOf(state, s.clientId))
+  const audience = s.setup?.audience ?? [{ value: String(s.required), icon: 'people' }, { label: 'Roles', value: s.targetProfession }]
+  const pill = (a: { label?: string; value: string; icon?: string }): AudiencePill => ({ label: a.label ? `${a.label}:` : undefined, value: a.value, icon: a.icon === 'people' ? 'users' : a.icon === 'pin' ? 'pin' : undefined })
+  const work = new Set(['Work Functions', 'Roles', 'Industry', 'Skills'])
+  const conditions = new Set(['Profile Tiers', 'Condition'])
+  const group = (f: (label?: string) => boolean) => audience.filter((a) => f(a.label)).map(pill)
+
+  /** One-to-one availability: the open days, by weekday, from the first slot to the end of the last. */
+  const byDay = new Map<string, string[]>()
+  for (const a of s.availability ?? []) {
+    const day = WEEKDAYS[(new Date(a.date).getDay() + 6) % 7]!
+    if (a.slots.length) byDay.set(day, [...(byDay.get(day) ?? []), `${a.slots[0]}|${slotRange(a.slots.at(-1)!, s.durationMins).split(' - ')[1]}`])
+  }
+  const week = WEEKDAYS.filter((d) => byDay.has(d)).map((d) => [d, [...new Set(byDay.get(d))].map((r) => r.split('|') as [string, string])] as [string, [string, string][]])
+  const location = s.locations?.[0]
+  const seats = sessionSeats(s)
+
+  return {
+    REVIEW: {
+      title: s.title, thumb: pics.thumb, participants: String(s.required), cost: money(bill.totalCost),
+      submitted: monthDayYearTime(s.submittedAt ?? s.createdAt),
+      about: { description: s.description, studyTime: durationLabel(s.durationMins), thumbnail: pics.thumb },
+    },
+    type: consoleType(s.type),
+    CLIENT: {
+      id: s.clientId, name: client?.name ?? '', role: client?.role ?? '', email: client?.email ?? '', avatar: clientPhoto(state, s.clientId),
+      workspace: [['Company Name', client?.company ?? ''], ['VAT No.', client?.vat ?? ''], ['Website', client?.website ?? ''], ['Industry', client?.industry ?? ''], ['Location', client?.location ?? '']],
+      metrics: [['Completed studies', String(stats.spentStudies)], ['Total spent', money(stats.spent)],
+        ['Verification', client?.business.state === 'verified' ? 'Business Verified' : client?.business.state === 'flagged' ? 'Business check pending' : 'Not verified'],
+        ['Member since', monthDayYear(client?.joinedAt)]],
+    },
+    AUDIENCE: [
+      { heading: 'Target Audience', gap: 'tight' as const, pills: group((l) => !l || (!work.has(l) && !conditions.has(l))) },
+      { heading: 'Work details', gap: 'loose' as const, pills: group((l) => Boolean(l && work.has(l))) },
+      { heading: 'Conditions to apply', gap: 'tight' as const, pills: group((l) => Boolean(l && conditions.has(l))) },
+    ].filter((g) => g.pills.length > 0),
+    screener: [...s.preScreener.map(preQuestion), ...s.screener.map(question)],
+    screenerLabels: [...s.preScreener.map((_, i) => `Pre-screener - Q${i + 1}`), ...s.screener.map((_, i) => `Q${s.preScreener.length + i + 1}`)],
+    tasks: (s.tasks ?? []).map(question),
+    DIARY: s.diary && {
+      setup: [['Duration Unit:', 'Days'], ['Frequency:', 'Every day'], ['Study Duration:', `${s.diary.totalDays} days`], ['Minimum Required:', `${s.diary.minDays} days`]],
+      days: Array.from({ length: s.diary.totalDays }, (_, i) => `DAY ${i + 1}`),
+    },
+    week,
+    dates: (s.availability ?? []).map((a) => [cardDay(a.date), `${a.slots.length} slot${a.slots.length === 1 ? '' : 's'}`] as [string, string]),
+    ADDRESS: location && { name: location.label, line: location.address },
+    GROUP: {
+      seats: `${s.sessions?.[0]?.seats ?? 0} seats`,
+      sessions: seats.map((x, i) => [`Session ${i + 1}`, cardDay(x.date), slotRange(x.slot, s.durationMins), addressOf(s, x.locationId) ?? ''] as [string, string, string, string]),
+    },
+    PAYMENT: {
+      totalCost: money(bill.totalCost), depositPaid: money(depositPaid), incentive: money(s.rates.incentivePer), suggested: `Suggested: ${money(s.rates.incentivePer)}`,
+      card: client?.cards.find((c) => c.isDefault)?.last4 ?? client?.cards[0]?.last4 ?? '—',
+      billing: [
+        { label: 'Platform Fee', amount: money(s.rates.platformFee) },
+        { label: 'Recruiting Fee', detail: `${money(s.rates.recruitingPer)} x ${s.required} participants`, amount: money(s.rates.recruitingPer * s.required), info: true },
+        { label: 'Incentives', detail: `${money(s.rates.incentivePer)} x ${s.required} participants`, amount: money(s.rates.incentivePer * s.required), info: true },
+        { label: 'Moderation Fee', detail: `${money(s.rates.moderationPer)} x ${s.required} participants`, amount: money(s.rates.moderationPer * s.required), info: true },
+      ],
+      totals: [
+        { label: 'Total cost', amount: money(bill.totalCost) },
+        { label: 'Less: Incentive Deposit', detail: `${money(s.rates.incentivePer)} x ${s.required} participants`, amount: `-${money(depositPaid)}`, info: true },
+      ],
+      net: { label: 'Net payable cost', amount: money(Math.max(0, bill.totalCost - depositPaid)) },
+      transactions: deposit.map((p) => ({ title: 'Incentive Deposit Paid', amount: money(p.amount), when: monthDayYearTime(p.at), detail: `${money(s.rates.incentivePer)} x ${s.required} participants` })),
+    },
+    REVISIONS: {
+      requested: [...s.revisions].reverse().map((r) => ({ title: 'Requested changes.', by: teamById(state, r.by)?.name, greeting: `Hey ${client?.name.split(' ')[0] ?? ''},`, text: r.text, when: monthDayYearTime(r.at) })),
+      created: { title: 'Created and submitted the study for review.', when: monthDayYearTime(s.submittedAt ?? s.createdAt) },
+    },
+  }
+}
+export type ReviewView = ReturnType<typeof review>
+
+export function useReviewData(id?: string) {
+  const state = usePlatform()
+  return useMemo(() => {
+    const s = studyById(state, id) ?? state.studies.find((x) => x.state === 'in_review') ?? state.studies[0]!
+    return review(state, s)
+  }, [state, id])
 }
 
-const PROMPT = 'What are your top ways to document and track your life goals?'
-export const QUESTION_PROMPT = PROMPT
-
-const SINGLE: Question = { kind: 'Single-select', answers: [['Answer A', 'Correct'], ['Answer B', 'Incorrect']] }
-const MULTI: Question = { kind: 'Multi-select', answers: [['Answer A', 'May Select'], ['Answer B', 'Must Select'], ['Answer C', 'Incorrect']] }
-const LINE: Question = { kind: 'Single-line input', placeholder: 'Participants will enter a short text response here…' }
-const NUMBER: Question = { kind: 'Number input', placeholder: 'Participants will enter a number in text response' }
-
-/**
- * The four questions each frame shows before its bottom edge. The frames hold
- * nine blocks in all; five sit below the fold and cannot be screenshotted.
- */
-export const QUESTIONS: Question[] = [SINGLE, MULTI, LINE, NUMBER]
-/** The Screener tab labels its first three "Pre-screener - Qn" and the fourth plain "Q4", as drawn. */
-export const SCREENER_LABELS = ['Pre-screener - Q1', 'Pre-screener - Q2', 'Pre-screener - Q3', 'Q4']
-export const SURVEY_LABELS = ['Q1', 'Q2', 'Q3', 'Q4']
-
-export const DIARY = {
-  setup: [['Duration Unit:', 'Days'], ['Frequency:', 'Every 2 days'], ['Study Duration:', '5 days'], ['Minimum Required:', '4 days']],
-  /** Two days are visible; a third sits below the fold. */
-  days: ['DAY 1', 'DAY 2'],
-  questions: [SINGLE, LINE],
-}
-
-export const AVAILABILITY = {
-  buffer: '15 minutes',
-  bufferHelp: 'It is a duration gap added between consecutive scheduled meetings.',
-  notice: '10',
-  noticeUnit: 'Minutes',
-  noticeHelp: 'Set how much notice time is required to scheduled a slot before the current time.',
-  overridesHelp: 'Add dates when your availability changes from your daily hours.',
-  overrides: [['Aug 20, Friday', '12:00 AM - 12:00 AM'], ['Aug 25, Monday', 'Unavailable']],
-  /** Each day's ranges; Friday draws two. */
-  week: [['Monday', 1], ['Tuesday', 1], ['Wednesday', 1], ['Thursday', 1], ['Friday', 2]] as [string, number][],
-  time: '12:00 AM',
-}
-
-export const ADDRESS = {
-  help: 'Add your commercial addresses for participants to book in-person interviews at.',
-  name: 'Carolina, Taxas, USA',
-  line: 'A-123, Empire State, Hamburg Street 2, Carolina, Texas, USA - 10001',
-}
-
-export const GROUP = {
-  seats: '10 seats',
-  seatsHelp: 'Max number of study participants',
-  video: [['Session 1', 'Aug 20, Friday', '12:00 PM - 12:40 PM'], ['Session 2', 'Aug 21, Friday', '12:00 PM - 12:40 PM']],
-  inPerson: [['Session 1', 'Aug 20, Friday', '12:00 PM - 12:40 PM'], ['Session 2', 'Aug 20, Friday', '12:00 PM - 12:40 PM']],
-}
-
-export const PAYMENT = {
-  totalCost: '$16,510',
-  depositPaid: '$3,000',
-  incentive: '$700',
-  suggested: 'Suggested: $700',
-  autoPay: 'On',
-  card: '4242',
-  /** label, detail line, amount, info icon, bold */
-  billing: [
-    { label: 'Platform Fee', amount: '$100' },
-    { label: 'Recruiting Fee', detail: '$20 x 25 participants', amount: '$500', info: true },
-    { label: 'Incentives', detail: '$100 x 25 participants', amount: '$2,500', info: true },
-    { label: 'Moderation Fee', detail: '$10 x 25 participants', amount: '$250', info: true },
-  ],
-  totals: [
-    { label: 'Total cost', amount: '$16,510' },
-    { label: 'Less: Incentive Deposit', detail: '$100 x 30 participants', amount: '-$3000', info: true },
-  ],
-  net: { label: 'Net payable cost', amount: '$13,510' },
-  transaction: { title: 'Incentive Deposit Paid', amount: '$3,000', when: 'Aug 5, 2026, 10:24 AM', detail: '$20 x 30 participants' },
-}
-
-export const REVISIONS = {
-  requested: {
-    title: 'Requested changes.',
-    greeting: 'Hey Jennifer,',
-    intro: 'We have reviewed your study and noticed the following things should be updated:',
-    items: [
-      ['About section:', 'Description is too vague which should be easy to understand what study is about.'],
-      ['Screener section:', 'The questions’ answers of are not appropriate as pr the type of questions.'],
-    ],
-    outro: 'You can just update the above changes and tr-submit it to get it live asap. Thanks!',
-    when: 'Aug 7, 2026, 10:42 PM',
-  },
-  created: { title: 'Created and submitted the study for review.', when: 'Aug 7, 2026, 10:42 PM' },
-}
+export const ReviewContext = createContext<ReviewView | null>(null)
+/** The study under review, for the tabs inside ReviewStudy. */
+export const useReview = (): ReviewView => useContext(ReviewContext)!

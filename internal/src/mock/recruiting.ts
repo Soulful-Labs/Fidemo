@@ -1,83 +1,106 @@
+import { useMemo } from 'react'
+import { personById, profileCard, recruits, sessionSeats } from '@shared/derive'
+import { money } from '@shared/format'
+import type { PlatformState, Study, Tier as SharedTier } from '@shared/types'
 import type { Tier } from '../components/app/TierTag'
+import { usePlatform } from '../platform'
 
 /**
- * The Matched and Recruited tabs as drawn (1952:76970, 1952:77106,
- * 1952:77242, 1952:77337, 1952:81128 and their siblings in the other five
- * type sections). The people are the same in every section.
+ * Matched and Recruited (1952:76970, 1952:77106, 1952:77242, 1952:77337,
+ * 1952:81128 and their siblings), read from the study's real participations
+ * in the shared platform. Matched and Invited are the participations the
+ * platform matched or invited; Applications every one who applied (Applied,
+ * Qualified or Disqualified); Scheduled the booked sessions; Sessions a group
+ * study's own sessions with the people booked into them.
  */
 export interface Match { id: string; initial: string; name: string; role: string; score: string; tier: Tier; verified?: boolean }
-
-/** The first card is "Ferry L." with an "R" in its avatar, as drawn. */
-export const MATCHED: Match[] = [
-  { id: 'm1', initial: 'R', name: 'Ferry L.', role: 'Physiology Therapist, Orthopedic', score: '95%', tier: 'Platinum', verified: true },
-  { id: 'm2', initial: 'S', name: 'Sophie A.', role: 'Clinical Psychologist', score: '89%', tier: 'Gold', verified: true },
-  { id: 'm3', initial: 'E', name: 'Ella M.', role: 'Nutritionist', score: '87%', tier: 'Gold' },
-  { id: 'm4', initial: 'T', name: 'Tom H.', role: 'Cardiologist', score: '95%', tier: 'Platinum' },
-  { id: 'm5', initial: 'L', name: 'Liam T.', role: 'Orthopedic Surgeon', score: '93%', tier: 'Platinum', verified: true },
-  { id: 'm6', initial: 'D', name: 'David P.', role: 'Gastroenterologist', score: '94%', tier: 'Platinum' },
-  { id: 'm7', initial: 'J', name: 'James K.', role: 'Pediatrician', score: '91%', tier: 'Platinum', verified: true },
-  { id: 'm8', initial: 'A', name: 'Ava R.', role: 'Dermatologist', score: '90%', tier: 'Platinum' },
-  { id: 'm9', initial: 'N', name: 'Nina C.', role: 'Radiologist', score: '68%', tier: 'Silver' },
-]
-
 export type ApplicationStatus = 'Applied' | 'Qualified' | 'Disqualified'
 export interface Application { id: string; name: string; role: string; status: ApplicationStatus; score: string; tier: Tier }
-
-/** Ten applications. The group video frame names the first "Sarah K"; every other frame "John M". */
-export const applications = (first: string): Application[] => [
-  { id: 'a1', name: first, role: 'Supply Chain Specialist', status: 'Applied', score: '92', tier: 'Platinum' },
-  { id: 'a2', name: 'John M', role: 'Sales Strategist', status: 'Applied', score: '85', tier: 'Gold' },
-  { id: 'a3', name: 'John M', role: 'Compliance Officer', status: 'Applied', score: '88', tier: 'Gold' },
-  { id: 'a4', name: 'John M', role: 'Financial Consultant', status: 'Applied', score: '91', tier: 'Platinum' },
-  { id: 'a5', name: 'Veronica L', role: 'Human Resources Manager', status: 'Qualified', score: '90', tier: 'Platinum' },
-  { id: 'a6', name: 'John M', role: 'Operations Manager', status: 'Qualified', score: '92', tier: 'Platinum' },
-  { id: 'a7', name: 'John M', role: 'Project Coordinator', status: 'Qualified', score: '78', tier: 'Gold' },
-  { id: 'a8', name: 'John M', role: 'Business Analyst', status: 'Qualified', score: '86', tier: 'Gold' },
-  { id: 'a9', name: 'John M', role: 'Market Research Analyst', status: 'Disqualified', score: '65', tier: 'Silver' },
-  { id: 'a10', name: 'John M', role: 'Data Analyst', status: 'Disqualified', score: '70', tier: 'Gold' },
-]
-
-export interface Booking { id: string; name: string; role: string; score: string; tier: Tier; day: string; time: string }
-
-/** One-to-one studies: the booked sessions (video 1:1 1952:81128, in-person 1961:182930). */
-export const SCHEDULED: Booking[] = [
-  { id: 'b1', name: 'Veronica L', role: 'Human Resources Manager', score: '90', tier: 'Platinum', day: '12 Aug, Wed', time: '10:00 AM' },
-  { id: 'b2', name: 'John M', role: 'Human Resources Manager', score: '90', tier: 'Platinum', day: '16 Aug, Fri', time: '10:00 AM' },
-  { id: 'b3', name: 'Emily R', role: 'Marketing Director', score: '85', tier: 'Gold', day: '16 Aug, Fri', time: '11:00 AM' },
-  { id: 'b4', name: 'Michael T', role: 'Software Engineer', score: '92', tier: 'Platinum', day: '16 Aug, Fri', time: '12:00 PM' },
-  { id: 'b5', name: 'Sophia K', role: 'Product Designer', score: '88', tier: 'Gold', day: '16 Aug, Fri', time: '1:00 PM' },
-  { id: 'b6', name: 'David L', role: 'Data Analyst', score: '87', tier: 'Gold', day: '16 Aug, Fri', time: '2:00 PM' },
-  { id: 'b7', name: 'Olivia J', role: 'Project Manager', score: '91', tier: 'Platinum', day: '16 Aug, Fri', time: '3:00 PM' },
-  { id: 'b8', name: 'James C', role: 'UX Researcher', score: '89', tier: 'Gold', day: '16 Aug, Fri', time: '4:00 PM' },
-  { id: 'b9', name: 'Ava B', role: 'Sales Executive', score: '93', tier: 'Platinum', day: '16 Aug, Fri', time: '5:00 PM' },
-  { id: 'b10', name: 'Lucas H', role: 'Content Writer', score: '86', tier: 'Gold', day: '16 Aug, Fri', time: '6:00 PM' },
-]
-
+export interface Booking { id: string; name: string; role: string; score: string; tier: Tier; day: string; time: string; join: boolean }
 export interface Session { id: string; name: string; day: string; time: string; address?: string; seats: string; people: string }
-const ADDRESS = 'A-123, Empire State, Hamburg Street 2, Carolina, Texas, USA - 10001'
 
-/** Group studies: the sessions (group video 1952:77337, in-person group 1961:185585). */
-export const SESSIONS: Record<'video' | 'inPerson', Session[]> = {
-  video: [
-    { id: 's1', name: 'Session 1', day: 'Aug 20, Friday', time: '12:00 PM - 12:40 PM', seats: '4 / 10 Seats', people: 'JRTUMO' },
-    { id: 's2', name: 'Session 2', day: 'Aug 21, Saturday', time: '1:00 PM - 1:40 PM', seats: '6 / 10 Seats', people: 'YQELFA' },
-  ],
-  inPerson: [
-    { id: 's1', name: 'Session 1', day: 'Aug 20, Friday', time: '12:00 PM - 12:40 PM', address: ADDRESS, seats: '4 / 10 Seats', people: 'JRTUMO' },
-    { id: 's2', name: 'Session 2', day: 'Aug 20, Friday', time: '12:00 PM - 12:40 PM', address: ADDRESS, seats: '6 / 10 Seats', people: 'JRTUMO' },
-  ],
+export const TIER_NAME: Record<SharedTier, Tier> = { silver: 'Silver', gold: 'Gold', platinum: 'Platinum' }
+
+/** "12 Aug, Wed", as the Scheduled table writes a day. */
+export const shortDay = (iso: string) => {
+  const d = new Date(iso)
+  return `${d.getDate()} ${d.toLocaleDateString('en-US', { month: 'short' })}, ${d.toLocaleDateString('en-US', { weekday: 'short' })}`
+}
+/** "Aug 20, Friday", as a session card writes it. */
+export const cardDay = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + new Date(iso).toLocaleDateString('en-US', { weekday: 'long' })
+/** "August 12, 2026, Wednesday", as the session card on a respondent page writes it. */
+export const longDay = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + ', ' + new Date(iso).toLocaleDateString('en-US', { weekday: 'long' })
+
+/** "10:00 AM" plus the study's length: "10:00 AM - 11:00 AM". */
+export function slotRange(slot: string, mins: number): string {
+  const m = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(slot.trim())
+  if (!m) return slot
+  const start = ((Number(m[1]) % 12) + (m[3]!.toUpperCase() === 'PM' ? 12 : 0)) * 60 + Number(m[2])
+  const end = (start + mins) % (24 * 60)
+  const h = Math.floor(end / 60), mm = end % 60
+  return `${slot} - ${((h + 11) % 12) + 1}:${String(mm).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`
 }
 
-/** Respondent Profile Details (1932:109128): one profile is drawn, Ferry L.'s. */
-export const PROFILE = {
-  initial: 'F', name: 'Ferry L.', role: 'Physiology Therapist, Orthopedic',
-  meta: ['New York, USA', '10 years experience', 'Cert. ID: HL-R-9F2A-3K7P'],
-  trust: '95', tier: 'Platinum' as Tier,
-  ratings: [
-    { label: 'Expertise', value: '98%', colour: 'green' }, { label: 'Reliability', value: '100%', colour: 'blue' },
-    { label: 'Communication', value: '94%', colour: 'purple' }, { label: 'Success Rate', value: '89%', colour: 'yellow' },
-  ] as { label: string; value: string; colour: 'green' | 'blue' | 'purple' | 'yellow' }[],
-  about: [['Occupation', 'Physician'], ['Industry', 'Healthcare, Pharma'], ['Education', 'MBBS, BHMS'], ['Gender & Age', 'Male  •  31 years'], ['Experience', '10 years'], ['Other Interests', 'Psychology, Neurology']],
-  verified: ['Government ID Verified', 'Live Photo Verified', 'Verified Professional', 'NPI cross checked'],
-  metrics: [['Completed Studies', '100'], ['Earned', '$5K+'], ['Highest Streak', '3 months']],
+/** When a booked session starts, as a date. */
+export function startOf(date: string, slot: string): Date {
+  const d = new Date(date)
+  const m = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(slot.trim())
+  if (m) d.setHours((Number(m[1]) % 12) + (m[3]!.toUpperCase() === 'PM' ? 12 : 0), Number(m[2]), 0, 0)
+  return d
+}
+
+export const addressOf = (study: Study, locationId?: string) =>
+  study.locations?.find((l) => l.id === locationId)?.address ?? study.locations?.[0]?.address
+
+const statusOf = (state: string): ApplicationStatus => state === 'applied' ? 'Applied' : state === 'disqualified' ? 'Disqualified' : 'Qualified'
+
+export function recruiting(state: PlatformState, study: Study, now = new Date()) {
+  const row = (r: ReturnType<typeof recruits>[number]) => ({ id: r.id, name: r.name, role: r.role, score: String(r.score), tier: TIER_NAME[r.tier] })
+  const card = (r: ReturnType<typeof recruits>[number]): Match => ({ ...row(r), initial: r.name.slice(0, 1), score: `${r.score}%`, verified: r.professionVerified })
+  const byScore = <T extends { score: string }>(a: T, b: T) => Number.parseInt(b.score, 10) - Number.parseInt(a.score, 10)
+  const matched = recruits(state, study, 'matched', now).map(card).sort(byScore)
+  const invited = recruits(state, study, 'invited', now).map(card).sort(byScore)
+  const applications: Application[] = recruits(state, study, 'recruited', now).map((r) => ({ ...row(r), status: statusOf(r.participation.state) }))
+  const scheduled: Booking[] = recruits(state, study, undefined, now)
+    .filter((r) => r.participation.booking && (r.participation.state === 'scheduled'))
+    .sort((a, b) => startOf(a.participation.booking!.date, a.participation.booking!.slot).getTime() - startOf(b.participation.booking!.date, b.participation.booking!.slot).getTime())
+    .map((r) => {
+      const b = r.participation.booking!
+      const start = startOf(b.date, b.slot).getTime()
+      return { ...row(r), day: shortDay(b.date), time: b.slot, join: study.type === 'video_call' && now.getTime() >= start - 15 * 60_000 && now.getTime() <= start + study.durationMins * 60_000 }
+    })
+  const sessions: Session[] = sessionSeats(study).map((x, i) => ({
+    id: x.id, name: `Session ${i + 1}`, day: cardDay(x.date), time: slotRange(x.slot, study.durationMins),
+    address: study.type === 'in_person_group' ? addressOf(study, x.locationId) : undefined,
+    seats: `${x.taken} / ${x.seats} Seats`, people: x.people.map((id) => personById(state, id)?.name.slice(0, 1) ?? '').join(''),
+  }))
+  return { matched, invited, applications, scheduled, sessions }
+}
+
+export function useRecruiting(study: Study) {
+  const state = usePlatform()
+  return useMemo(() => recruiting(state, study), [state, study])
+}
+
+/** Respondent Profile Details (1932:109128): the person, as shared/derive.ts profileCard describes them to the team. */
+export function useRespondentProfile(personId?: string) {
+  const state = usePlatform()
+  return useMemo(() => {
+    const c = personId ? profileCard(state, personId) : undefined
+    if (!c) return undefined
+    const years = (n: number) => `${n} year${n === 1 ? '' : 's'}`
+    return {
+      id: c.id, initial: c.name.slice(0, 1), name: c.name, role: c.role,
+      meta: [c.location, `${years(c.experienceYears)} experience`, ...(c.certificateId ? [`Cert. ID: ${c.certificateId}`] : [])],
+      trust: String(c.score), score: c.score, tier: TIER_NAME[c.tier],
+      ratings: [
+        { label: 'Expertise', value: `${c.ratings.expertise}%`, colour: 'green' }, { label: 'Reliability', value: `${c.ratings.reliability}%`, colour: 'blue' },
+        { label: 'Communication', value: `${c.ratings.communication}%`, colour: 'purple' }, { label: 'Success Rate', value: `${c.ratings.successRate}%`, colour: 'yellow' },
+      ] as { label: string; value: string; colour: 'green' | 'blue' | 'purple' | 'yellow' }[],
+      about: [['Occupation', c.about.occupation], ['Industry', c.about.industry], ['Education', c.about.education],
+        ['Gender & Age', c.about.age ? `${c.about.gender}  •  ${years(c.about.age)}` : c.about.gender], ['Experience', years(c.experienceYears)], ['Other Interests', c.about.interests || '—']] as [string, string][],
+      verified: c.verified,
+      metrics: [['Completed Studies', String(c.completedStudies)], ['Earned', money(c.earned)], ['Highest Streak', `${c.streaks} month${c.streaks === 1 ? '' : 's'}`]] as [string, string][],
+    }
+  }, [state, personId])
 }

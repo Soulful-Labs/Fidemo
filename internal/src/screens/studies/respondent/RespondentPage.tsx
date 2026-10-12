@@ -1,8 +1,8 @@
 import { Fragment, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
+import { canUndoDecision, decide, markCompleted, markNoShow, undoAttendance } from '../../../mock/attendance'
 import { useManagedStudy } from '../../../mock/manage'
-import { applications } from '../../../mock/recruiting'
-import { ANSWERS, DIARY_ANSWERS, SHORT_ACTIVITY, sessionActivity } from '../../../mock/results'
+import { useRespondent } from '../../../mock/results'
 import { CompletedBar, CompletionBar, ScreenerBar } from './bars'
 import type { CompletionState, ScreenerState } from './bars'
 import { ActivityList, Answers, JoinNow, Notes, PinCard, RateBanner, SessionCard, VideoResult } from './content'
@@ -10,102 +10,103 @@ import DetailShell, { DETAIL_TABS, RespondentCard } from './DetailShell'
 import { NoShowDialog, RatePanel } from './dialogs'
 
 type Tab = 'screener' | 'result' | 'activity'
-const PIN_ACTIVITY = 'This PIN number is to be shared with John M. for their completion verification'
-const PIN_COMPLETION = 'Share this PIN number with John M. for their completion verification'
 
 /**
- * A respondent inside a study (`/studies/:id/respondents/:rid`). Where they
- * are in the study decides what is drawn:
- * - applied (from Recruited > Applications): Screener and Activity, with the
- *   Qualify / Disqualify bar under their answers (1952:78522);
- * - booked (from Recruited > Scheduled, one-to-one studies): Study Result
- *   shows the session and its Verification PIN (1952:82213, 1961:184023);
- * - finished (from Results): Study Result shows the answers, recording or
- *   notes, and the completion bar; the card beside it asks for a rating
- *   (1932:108609, 1952:82396, 1961:184231).
- * Group studies draw only the applied page; their sessions have their own.
+ * A respondent inside a study (`/studies/:id/respondents/:personId`). Where
+ * they are in the study, which is their participation's state in the shared
+ * platform, decides what is drawn:
+ * - applied (and decided): Screener and Activity, with the Qualify /
+ *   Disqualify bar under their answers (1952:78522);
+ * - booked (one-to-one session studies): Study Result shows the session and
+ *   the study's Verification PIN (1952:82213, 1961:184023);
+ * - finished (completed or no-show): Study Result shows the answers,
+ *   recording or notes, and the completion bar; the card beside it asks for a
+ *   rating (1932:108609, 1952:82396, 1961:184231).
  */
 export default function RespondentPage() {
   const { id, rid = '' } = useParams()
   const [params, setParams] = useSearchParams()
   const study = useManagedStudy(id)
+  const r = useRespondent(study.raw, rid)
+  const [rating, setRating] = useState(false)
+  const [asking, setAsking] = useState(false)
+  if (!r) return <DetailShell study={study} tabs={[DETAIL_TABS.screener]} tab="screener" onTab={() => undefined}><p className="text-text-regular text-text-subtitle">This person is not on this study.</p></DetailShell>
+
   const group = study.type === 'video-group' || study.type === 'in-person-group'
-  const stage = group || rid.startsWith('a') ? 'applied' : rid.startsWith('b') ? 'booked' : 'finished'
-  const name = group ? 'Sarah K' : 'John M'
+  const stage = group && r.stage !== 'applied' ? 'finished' : r.stage
   const keys: Tab[] = stage === 'applied' ? ['screener', 'activity'] : ['screener', 'result', 'activity']
   const wanted = params.get('tab') as Tab | null
   const tab: Tab = wanted && keys.includes(wanted) ? wanted : stage === 'applied' ? 'screener' : 'result'
-  const [rating, setRating] = useState(false)
-  const [asking, setAsking] = useState(false)
-  const [completion, setCompletion] = useState<CompletionState>('todo')
-
-  const status = applications('').find((a) => a.id === rid)?.status
-  const screener: ScreenerState = status === 'Qualified' ? 'settled' : status === 'Disqualified' ? 'disqualified' : 'todo'
   const finished = stage === 'finished'
   const closed = params.get('from') === 'completed'
   const session = study.type === 'video' || study.type === 'in-person'
   const inPerson = study.type === 'in-person'
+  const p = r.participation
+  const noShow = p.state === 'no_show'
+  const completed = p.state === 'completed'
 
-  const activity = study.type === 'survey' ? SHORT_ACTIVITY : sessionActivity(name, inPerson || study.type === 'diary', study.type === 'video')
-  const banner = study.type === 'survey' ? ['Rate Ferry for this study', 'Rate Ferry'] : inPerson ? ['Rate John for this study', 'Rate John'] : ['Rate John M for this study', 'Rate John']
+  const screener: ScreenerState = p.state === 'applied' ? 'todo' : p.state === 'disqualified' ? 'disqualified' : 'qualified'
+  const completion: CompletionState = noShow ? 'noshow' : completed ? (p.paidAt ? 'settled' : 'completed') : 'todo'
+  const pinFor = (what: string) => `Share this PIN number with ${r.name}. for their ${what} verification`
 
   let bar = null
-  if (tab === 'screener' && stage === 'applied' && rid.startsWith('a')) bar = <ScreenerBar initial={screener} />
+  if (tab === 'screener' && stage === 'applied') bar = <ScreenerBar state={screener} canUndo={canUndoDecision(p)} onDecide={(to) => decide(study.id, r.id, to)} />
   if (tab === 'result' && finished) bar = session
-    ? <CompletionBar label={inPerson ? 'Completion Confirmation' : 'Final Completion Confirmation'} state={completion} onChange={setCompletion} onNoShow={() => setAsking(true)} />
-    : <CompletedBar closed={closed} />
+    ? <CompletionBar label={inPerson ? 'Completion Confirmation' : 'Final Completion Confirmation'} name={r.name} state={completion}
+        onComplete={() => markCompleted(study.id, r.id)} onNoShow={() => setAsking(true)} onUndo={() => undoAttendance(study.id, p)} />
+    : <CompletedBar closed={closed} kind={study.type === 'diary' ? 'diary' : 'survey'} name={r.name} noShow={noShow} />
+  const sessionTitle = inPerson ? `In-person interview of ${r.name} and Client` : 'Scheduled For'
 
   return (
     <DetailShell closed={closed} close={stage === 'applied'} study={study} tabs={keys.map((k) => DETAIL_TABS[k])} tab={tab} onTab={(k) => setParams({ tab: k, ...(closed && { from: 'completed' }) }, { replace: true })} bar={bar}
-      aside={<RespondentCard name={name} onRate={finished ? () => setRating(true) : undefined} />}>
-      {tab === 'screener' && <Answers answers={ANSWERS} />}
+      aside={<RespondentCard name={r.name} card={r.card} onRate={completed && !r.rating ? () => setRating(true) : undefined} />}>
+      {tab === 'screener' && <Answers answers={r.answers} />}
 
       {tab === 'result' && study.type === 'diary' && (
         <div className="flex flex-col gap-3">
-          {DIARY_ANSWERS.map(([day, answers], i) => (
-            <Fragment key={day}>
+          {Array.from({ length: study.raw.diary?.totalDays ?? 0 }, (_, i) => i + 1).filter((d) => p.diaryDays?.includes(d)).map((d, i) => (
+            <Fragment key={d}>
               {i > 0 && <hr className="-mx-4 mt-2 border-0 border-t-1 border-stroke-1" />}
-              <p className="flex h-7 items-center justify-center rounded-full bg-bg-1 text-text-regular text-text-subtitle">{day}</p>
-              <Answers answers={answers} />
+              <p className="flex h-7 items-center justify-center rounded-full bg-bg-1 text-text-regular text-text-subtitle">DAY {d}</p>
+              <Answers answers={r.tasks} />
             </Fragment>
           ))}
+          {!p.diaryDays?.length && <p className="text-text-regular text-text-subtitle">No diary days have been filled in yet.</p>}
         </div>
       )}
-      {tab === 'result' && !session && study.type !== 'diary' && <Answers answers={ANSWERS} />}
-      {tab === 'result' && session && !finished && (
+      {tab === 'result' && !session && study.type !== 'diary' && <Answers answers={r.tasks} />}
+      {tab === 'result' && session && !finished && r.session && (
         <div className="flex flex-col gap-3">
           <div className="grid grid-cols-2 gap-3">
-            {inPerson
-              ? <SessionCard title="In-person interview of Liam K. and Client" date="August 12, 2026, Wednesday" time="10:00 AM - 11:00 AM" address />
-              : <SessionCard title="Scheduled For" date="August 12, 2026, Wednesday" time="10:00 AM"><JoinNow /></SessionCard>}
-            <PinCard text={inPerson ? PIN_COMPLETION : 'Share this PIN number with John M. for their joining verification'} />
+            <SessionCard title={sessionTitle} date={r.session.date} time={r.session.time} address={r.session.address}>{!inPerson && <JoinNow />}</SessionCard>
+            <PinCard code={r.code} text={pinFor(inPerson ? 'completion' : 'joining')} />
           </div>
           {inPerson && <Notes tall="h-[667px]" />}
         </div>
       )}
-      {tab === 'result' && session && finished && (
+      {tab === 'result' && session && finished && r.session && (
         <div className="flex flex-col gap-3">
           {inPerson
-            ? <SessionCard title="In-person interview of Liam K. and Client" date="August 12, 2026, Wednesday" time="10:00 AM - 11:00 AM" address />
-            : <VideoResult title="Video Recording of John M and You" who="John M" />}
+            ? <SessionCard title={sessionTitle} date={r.session.date} time={r.session.time} address={r.session.address} />
+            : <VideoResult title={`Video Recording of ${r.name} and You`} who={r.name} when={r.session.at} />}
           {inPerson && <Notes tall="h-[580px]" />}
-          <PinCard wide text={PIN_COMPLETION} />
+          <PinCard wide code={r.code} text={pinFor('completion')} />
         </div>
       )}
 
       {tab === 'activity' && (
         <div className="flex flex-col gap-4">
-          {finished && <RateBanner title={banner[0]!} action={banner[1]!} onRate={() => setRating(true)} />}
+          {completed && !r.rating && <RateBanner title={`Rate ${r.name} for this study`} action={`Rate ${r.first}`} onRate={() => setRating(true)} />}
           <div>
             <h2 className="pb-2 text-body-medium leading-[22px] text-text-title">Study activity</h2>
-            <ActivityList items={activity} />
+            <ActivityList items={r.activity} />
           </div>
-          {study.type !== 'survey' && <PinCard wide text={PIN_ACTIVITY} />}
+          {study.type !== 'survey' && p.code && <PinCard wide code={r.code} text={`This PIN number is to be shared with ${r.name}. for their completion verification`} />}
         </div>
       )}
 
-      <RatePanel person={rating ? name : null} onClose={() => setRating(false)} />
-      <NoShowDialog open={asking} group={false} onClose={() => setAsking(false)} onConfirm={() => { setAsking(false); setCompletion('noshow') }} />
+      <RatePanel study={study} person={rating ? r : null} onClose={() => setRating(false)} />
+      <NoShowDialog open={asking} group={false} name={r.name} onClose={() => setAsking(false)} onConfirm={() => { setAsking(false); markNoShow(study.id, r.id) }} />
     </DetailShell>
   )
 }

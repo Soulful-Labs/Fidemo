@@ -1,7 +1,7 @@
 import Button from '../../../components/ui/Button'
 import { DownloadIcon, InfoIcon, ReceiptIcon, VerifiedIcon } from '../../../components/ui/icons'
 import { cn } from '../../../lib/cn'
-import { PAYMENT as P, REVISIONS as R } from '../../../mock/review'
+import { useReview } from '../../../mock/review'
 import { Rule } from './parts'
 
 interface Line { label: string; detail?: string; amount: string; info?: boolean }
@@ -31,6 +31,7 @@ export const Mastercard = () => (
  * Transactions with a Receipt button. Every figure is read only.
  */
 export function PaymentTab({ onReceipt }: { onReceipt: () => void }) {
+  const { PAYMENT: P } = useReview()
   return (
     <div className="grid grid-cols-2 gap-x-6">
       <h2 className="col-span-2 text-title-s leading-[25px] text-text-title">Payment Overview</h2>
@@ -52,7 +53,7 @@ export function PaymentTab({ onReceipt }: { onReceipt: () => void }) {
           <span className="self-start text-state-success">{P.incentive}</span>
         </div>
         <Rule className="mt-2" />
-        <div className="flex justify-between pt-2 text-text-subtitle"><span>AutoPay</span><span className="text-text-title">{P.autoPay}</span></div>
+        <div className="flex justify-between pt-2 text-text-subtitle"><span>AutoPay</span><span className="text-text-title">On</span></div>
         <Rule className="mt-2" />
         <div className="flex justify-between pt-2 text-text-subtitle"><span>Card on File</span>
           <span className="flex items-center gap-2 text-text-title"><Mastercard /><span>•••• {P.card}</span></span>
@@ -71,16 +72,19 @@ export function PaymentTab({ onReceipt }: { onReceipt: () => void }) {
       </div>
       <div className="pt-6">
         <h2 className="text-title-s leading-[25px] text-text-title">Transactions</h2>
-        <div className="mt-3 flex flex-col gap-2 rounded-md border-1 border-stroke-1 p-3 text-text-regular">
-          <div className="flex justify-between text-text-medium text-text-title">
-            <span className="flex items-center gap-1"><ReceiptIcon className="h-5 w-5" />{P.transaction.title}</span>
-            <span>{P.transaction.amount}</span>
+        {P.transactions.map((t, k) => (
+          <div key={k} className="mt-3 flex flex-col gap-2 rounded-md border-1 border-stroke-1 p-3 text-text-regular">
+            <div className="flex justify-between text-text-medium text-text-title">
+              <span className="flex items-center gap-1"><ReceiptIcon className="h-5 w-5" />{t.title}</span>
+              <span>{t.amount}</span>
+            </div>
+            <div className="flex items-center justify-between text-text-subtitle">
+              <div className="flex flex-col gap-1"><p>{t.when}</p><p>{t.detail}</p></div>
+              <Button variant="tertiary" size="md" className="px-3" leftIcon={<DownloadIcon className="h-5 w-5" />} onClick={onReceipt}>Receipt</Button>
+            </div>
           </div>
-          <div className="flex items-center justify-between text-text-subtitle">
-            <div className="flex flex-col gap-1"><p>{P.transaction.when}</p><p>{P.transaction.detail}</p></div>
-            <Button variant="tertiary" size="md" className="px-3" leftIcon={<DownloadIcon className="h-5 w-5" />} onClick={onReceipt}>Receipt</Button>
-          </div>
-        </div>
+        ))}
+        {P.transactions.length === 0 && <p className="mt-3 rounded-md border-1 border-stroke-1 p-3 text-text-regular text-text-subtitle">No payment has been taken for this study yet.</p>}
       </div>
     </div>
   )
@@ -103,21 +107,17 @@ const Entry = ({ title, when, children }: { title: string; when: string; childre
  * submission is a single line. Each has a green tick and its time.
  */
 export function RevisionsTab() {
-  const q = R.requested
+  const { REVISIONS: R } = useReview()
   return (
     <div className="flex flex-col gap-2">
-      <Entry title={q.title} when={q.when}>
-        <div className="mb-0.5 rounded-md bg-bg-1 px-3 py-3 text-text-regular leading-5 text-text-title">
-          <p>{q.greeting}</p>
-          <p>{q.intro}</p>
-          <ol className="list-decimal py-5 pl-5">
-            {q.items.map(([head, detail]) => (
-              <li key={head}>{head}<ol className="list-[lower-alpha] pl-[21px]"><li>{detail}</li></ol></li>
-            ))}
-          </ol>
-          <p>{q.outro}</p>
-        </div>
-      </Entry>
+      {R.requested.map((q, k) => (
+        <Entry key={k} title={q.by ? `${q.title} By ${q.by}.` : q.title} when={q.when}>
+          <div className="mb-0.5 whitespace-pre-line rounded-md bg-bg-1 px-3 py-3 text-text-regular leading-5 text-text-title">
+            <p>{q.greeting}</p>
+            <p>{q.text}</p>
+          </div>
+        </Entry>
+      ))}
       <Entry title={R.created.title} when={R.created.when} />
     </div>
   )

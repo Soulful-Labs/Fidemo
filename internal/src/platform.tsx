@@ -2,6 +2,7 @@ import { useEffect, useSyncExternalStore } from 'react'
 import { platform } from '@shared/store'
 import type { Actor } from '@shared/store'
 import { MASTER_ADMIN_ID } from '@shared/seed'
+import { notice } from './components/app/Notice'
 import type { PlatformState, StudyType as SharedType } from '@shared/types'
 import type { StudyType } from './components/app/StudyTypeTag'
 
@@ -54,6 +55,6 @@ export const studyPictures = (id: string, fallback?: string) => CROPS[id] ?? { t
 
 /** A refused move says why. */
 export const say = (res: { ok: boolean; why?: string }, toast?: (m: string) => void): boolean => {
-  if (!res.ok && res.why) (toast ?? ((m: string) => window.alert(m)))(res.why)
+  if (!res.ok && res.why) (toast ?? notice)(res.why)
   return res.ok
 }

@@ -9,7 +9,7 @@ import Button from '../../../components/ui/Button'
 import { ClipboardIcon, ClockIcon, HistoryIcon, InfoIcon, ScreenerIcon, StarIcon, VerifiedIcon } from '../../../components/ui/icons'
 import { cn } from '../../../lib/cn'
 import type { ManagedStudy } from '../../../mock/manage'
-import { RESPONDENT as R } from '../../../mock/results'
+import type { RespondentView } from '../../../mock/results'
 
 export const DETAIL_TABS: Record<'screener' | 'result' | 'activity', PanelTab> = {
   screener: { key: 'screener', label: 'Screener', width: 'w-[123px]', Icon: ScreenerIcon },
@@ -26,7 +26,7 @@ const Rule = () => <hr className="-mx-3 border-0 border-t-1 border-stroke-1" />
  * About, Verified and Metrics. Once they have finished, a "Rate ... for this
  * study" block sits on top.
  */
-export function RespondentCard({ name, onRate }: { name: string; onRate?: () => void }) {
+export function RespondentCard({ name, card: R, onRate }: { name: string; card: RespondentView['card']; onRate?: () => void }) {
   const first = name.split(' ')[0]
   return (
     <aside className="flex w-[304px] shrink-0 flex-col gap-3 self-start rounded-lg border-1 border-stroke-1 p-3 text-text-regular leading-5">

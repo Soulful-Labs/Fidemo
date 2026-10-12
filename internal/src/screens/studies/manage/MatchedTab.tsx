@@ -6,8 +6,10 @@ import { ChevronRight, ShieldUserIcon } from '../../../components/ui/icons'
 import { Modal } from '../../../components/ui/Overlay'
 import { SegmentedTabs } from '../../../components/ui/Tabs'
 import type { ManagedStudy } from '../../../mock/manage'
-import { MATCHED } from '../../../mock/recruiting'
+import { platform } from '@shared/store'
+import { useRecruiting } from '../../../mock/recruiting'
 import type { Match } from '../../../mock/recruiting'
+import { TEAM, say } from '../../../platform'
 import RespondentProfile from './RespondentProfile'
 
 /**
@@ -48,13 +50,18 @@ function Card({ person, invited, onInvite, onView }: { person: Match; invited: b
  * surfaced from the pool for this study's audience. Two segments, three
  * dropdowns (their options are not drawn), and the cards three across.
  * Inviting asks first ("Invite Ferry to apply for this study?", 1932:110861),
- * then confirms ("Invitation has been sent!", 1932:110882).
+ * then confirms ("Invitation has been sent!", 1932:110882). The cards are the
+ * study's own matched and invited participations; Send Invite invites for
+ * real (shared/store.ts), notifies the person and is logged.
  */
 export default function MatchedTab({ study, invited, onSegment }: { study: ManagedStudy; invited: boolean; onSegment: (invited: boolean) => void }) {
   const [asking, setAsking] = useState<Match | null>(null)
   const [sent, setSent] = useState<Match | null>(null)
   const [viewing, setViewing] = useState<Match | null>(null)
+  const { matched, invited: sentTo } = useRecruiting(study.raw)
+  const people = invited ? sentTo : matched
   const first = (m: Match) => m.name.split(' ')[0]
+  const send = (m: Match) => { setAsking(null); if (say(platform().invite(study.id, m.id, TEAM))) setSent(m) }
   return (
     <div>
       <h2 className="text-title-s leading-[25px] text-text-title">Matched Respondents</h2>
@@ -69,18 +76,19 @@ export default function MatchedTab({ study, invited, onSegment }: { study: Manag
         </div>
       </div>
       <div className="grid grid-cols-3 gap-3 pt-6">
-        {MATCHED.map((m) => <Card key={m.id} person={m} invited={invited} onInvite={() => setAsking(m)} onView={() => setViewing(m)} />)}
+        {people.map((m) => <Card key={m.id} person={m} invited={invited} onInvite={() => setAsking(m)} onView={() => setViewing(m)} />)}
+        {people.length === 0 && <p className="col-span-3 rounded-lg bg-bg-1 p-4 text-text-regular text-text-subtitle">{invited ? 'No one has been invited to this study yet.' : 'No one in the pool is waiting to be invited to this study.'}</p>}
       </div>
 
       <Modal open={asking !== null} onClose={() => setAsking(null)} className="[&>div>div]:max-w-[330px]" title={`Invite ${asking ? first(asking) : ''} to apply for this study?`}
-        footer={<><Button variant="tertiary" onClick={() => setAsking(null)}>Cancel</Button><Button onClick={() => { setSent(asking); setAsking(null) }}>Send Invite</Button></>}>
+        footer={<><Button variant="tertiary" onClick={() => setAsking(null)}>Cancel</Button><Button onClick={() => asking && send(asking)}>Send Invite</Button></>}>
         <p className="text-body-regular text-text-subtitle">An invitation will be sent to this participant to apply for this ‘{study.title}’ study.</p>
       </Modal>
       <Modal open={sent !== null} onClose={() => setSent(null)} title="Invitation has been sent!" className="[&_div]:max-w-none"
         footer={<Button onClick={() => { setSent(null); onSegment(true) }}>Done!</Button>}>
         <p className="text-body-regular text-text-subtitle">{sent?.name} has been invited to apply for this study.</p>
       </Modal>
-      <RespondentProfile open={viewing !== null} invited={invited} onClose={() => setViewing(null)}
+      <RespondentProfile personId={viewing?.id} invited={invited} onClose={() => setViewing(null)}
         onInvite={() => { setAsking(viewing); setViewing(null) }} />
     </div>
   )

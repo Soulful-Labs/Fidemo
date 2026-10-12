@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import StudyTypeTag from '../../../components/app/StudyTypeTag'
 import type { StudyType } from '../../../components/app/StudyTypeTag'
 import { PinIcon, UsersIcon } from '../../../components/ui/icons'
-import { AUDIENCE, REVIEW } from '../../../mock/review'
+import { useReview } from '../../../mock/review'
 import { Pill, Rule } from './parts'
 
 const Row = ({ label, children }: { label: string; children: ReactNode }) => (
@@ -21,6 +21,7 @@ const Value = ({ children }: { children: ReactNode }) => <p className="text-body
  * the 160 x 90 Thumbnail.
  */
 export function AboutTab({ type }: { type: StudyType }) {
+  const { REVIEW } = useReview()
   return (
     <div className="flex flex-col gap-3">
       <Row label="Title"><Value>{REVIEW.title}</Value></Row>
@@ -44,6 +45,7 @@ const ICON = { users: UsersIcon, pin: PinIcon }
  * 16 either side between groups. Pills sit 8 apart, 12 under Work details.
  */
 export function AudienceTab() {
+  const { AUDIENCE } = useReview()
   return (
     <div className="flex flex-col gap-4">
       {AUDIENCE.map((g, i) => (
@@ -54,7 +56,7 @@ export function AudienceTab() {
             <div className={g.gap === 'loose' ? 'flex flex-col items-start gap-3 pt-3' : 'flex flex-col items-start gap-2 pt-2'}>
               {g.pills.map((p) => {
                 const Icon = p.icon ? ICON[p.icon] : null
-                return <Pill key={p.value} label={p.label} icon={Icon && <Icon className="h-4 w-4 text-text-subtitle" />}>{p.value}</Pill>
+                return <Pill key={`${p.label}${p.value}`} label={p.label} icon={Icon && <Icon className="h-4 w-4 text-text-subtitle" />}>{p.value}</Pill>
               })}
             </div>
           </section>
