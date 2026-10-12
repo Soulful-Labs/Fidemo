@@ -1201,6 +1201,108 @@ Diffs at 1440: Fees 1.99%, Gamification 3.55%, Edit Clients Fees 3.17%, Edit
 Participants Fees 1.41%, Edit Tiers 1.61%, Edit Trust Score 3.23%, Edit Reward Points
 2.73%, the published dialog 5.24%. Nothing is cut off by its frame.
 
+## Sub-Admin and My Account (turn 16)
+
+**Sub-Admin section `2060:197774`:** 4 frames, none hidden: the list `2060:197775`
+(named "Pricing & Rewards", 1440 x 1469), Create Profile `2062:201923`, Profile
+`2065:203055`, Edit Profile `2065:203431`. Loose: "Last active" `2062:201633` (All
+Time, Last 7 days, Last 30 days, Last 90 days, Last 6 months) and two named "Tiers":
+`2062:201706` (module checkboxes) and `2062:201813` (the six sub-admins, Sophia Garcia
+twice). They are the three filters over Activities.
+**My Account section `2065:203731`:** 6 frames, none hidden: Profile `2065:205670`,
+Edit Profile `2065:205614`, Sub-Admin Profile `2065:207638`, Change Password
+`2065:206687`, Logout `2065:206708`, "Password has been updated!" `2065:206726`.
+
+**Routes.** `/sub-admin`, `/sub-admin/new`, `/sub-admin/:id`, `/sub-admin/:id/edit`;
+`/account`, `/account/edit`, `/account/sub-admin` (the one frame drawn as a sub-admin).
+
+**The list.** "Sub-Admins List / 5 sub-admin members" over six rows; "+ Add New
+Sub-Admin". Columns Name (sortable), Role, Email, Access (one ringed tag per module),
+Status (Active / Inactive). Then "Activities / Details of activities logs of
+sub-admins": Export, "Search activities...", "All Modules", "Sub-Admin", "All Time";
+columns Activity, Module Path, Date, Action By (photo, name, role); ten rows,
+pagination to 10.
+
+**Creating a sub-admin.** One form: a picture ("Change Picture"), Name, Email Address,
+Role, Account Status (Active), and eight toggles: Dashboard, Studies, Participants,
+Clients, Support, Finance, Pricing & Rewards, Sub-Admin; "Create". No password, no
+invitation, no "email sent", no confirmation: nothing drawn says how the new person
+first signs in. **Role is a free-text job title** ("Enter the designation of
+sub-admin"); it is shown in the list, the profile, the sidebar card and the log, and
+it sets nothing: access comes only from the toggles. **A toggle is a whole module, on
+or off.** No read-only against edit, no per-action permission (approve, deactivate,
+confirm a refund, edit a fee), no limit by amount.
+
+**Changing or removing.** Edit Profile is the create form filled in (it keeps the
+subtitle "Enter the required details of new sub-admin"). Status and access change
+there. There is no remove or delete, no suspend dialog, no reason, no password, no
+warning and no confirmation: "Inactive" in a dropdown is the whole of it. Nothing says
+what Inactive does.
+
+**As a sub-admin sees it.** Drawn once, `2065:207638`: the sidebar card reads Maya
+Thompson / Studies Manager and her account page has no Edit Profile button. **The nav
+still shows all eight modules** though her access is Studies and Participants. No
+frame draws a restricted nav, a locked module or a "no access" page.
+
+**The activity log.** Global: one table for everyone, filterable by module, person
+and period; none on a sub-admin's own profile. A row is one sentence, a three-part
+module path, a date and time, and who (name and role). No before and after values, no
+target link, no reason. It is the first place in the console that names a team
+member. **Only the first two rows are console actions** ("Qualified Amelia in screener
+of for goal tracking study", "Verified Identity of Robert D for onboarding", both
+under "Studies / Screeners / Qualify"); the other eight are filler from another
+product (focus groups, survey distribution, workshops) by eight people who are not in
+the sub-admin list. **Not drawn in the log:** deactivating or reactivating an account,
+rejecting a verification, restricting an account, confirming a refund, changing a fee,
+tier, score or points value, creating or editing a sub-admin, publishing a study. The
+master admin's own actions do not appear either: the heading says "of sub-admins".
+
+**My Account.** No tabs. Master admin (crumb "Master Admin - Account"): a Profile card
+(photo, Name, Email Address, Role, "Edit Profile") and Settings with two rows, Change
+Password and Logout. Edit My Profile: picture, Name, Email Address, Role locked at
+"Master Admin"; Save / Cancel. Change Password: Current Password, New Password ("At
+least 1 special character, 1 uppercase character, and 1 number"), Confirm New
+Password; then "Password has been updated!". Logout asks "Are you sure you want to
+logout?". **The master admin's own access is not drawn**: no module list, no way to
+hand the role over, no second master admin. A sub-admin's account is the same page
+without Edit Profile, so a sub-admin cannot change their own name, email or picture.
+
+**Who may edit Pricing and Rewards.** Only the "Pricing & Rewards" module toggle. No
+approval, second person or master-admin-only rule is drawn; a sub-admin with that
+toggle can change every fee, tier, score and points value, and (turn 15) nothing
+records that they did.
+
+**Access control.** None drawn beyond the toggles and a password: no two-factor, no
+session list or limit, no sign-in history, no IP rule, no password expiry, no lockout,
+no forced reset for a new sub-admin.
+
+**Against the policy.** Nothing in either section touches scores, tiers, points or the
+certificate.
+
+Slips kept: "5 sub-admin members" over six rows; two rows named Michael Chen, the
+second with Robert Mayfield's email; "emily.avis@" for Emily Davis; the profile frames
+are of Maya Thompson, who is not in the list; "Modules Access (2)" on the create form;
+the master admin's Profile gives Peter Devian the email maya.thompson@humanlayer.com,
+and Edit My Profile gives the name "Maya Thompson" over "Peter.devian @humanlayer.com"
+under the breadcrumb "Sub-Admin / Edit My Profile"; the section labels are layers named
+"Role"; "screener of for".
+
+Built choices: every row opens the one profile drawn (Maya); Create, Save and Cancel
+go back and store nothing; the toggles and Account Status change only the form;
+"Change Picture" and Export do nothing; the three filters carry their drawn options
+(the module one is checkboxes in Figma, a single choice here) and filter nothing;
+Submit opens the updated dialog without checking the fields; Logout goes to sign in.
+`/account/sub-admin` is not linked from anywhere: it is the sub-admin's view of the
+same page.
+
+Shared changes: the sidebar account card shows Maya on `/account/sub-admin` only; the
+placeholder route helper is gone (every route is built). Everything signed off
+re-swept: unchanged.
+
+Diffs at 1440: list 3.55%, Create Profile 1.70%, Profile 1.32%, Edit Profile 1.73%;
+My Account 1.14%, Edit My Profile 1.18%, as a sub-admin 1.28%; Change Password 4.70%,
+Logout 3.36%, updated 4.62%. Nothing is cut off by its frame.
+
 ---
 
 ## The file, mapped
