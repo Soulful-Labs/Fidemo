@@ -1,7 +1,6 @@
 import { createElement } from 'react'
 import type { RouteObject } from 'react-router-dom'
 import { Navigate } from 'react-router-dom'
-import Placeholder from './screens/Placeholder'
 import KitchenSink from './screens/kitchen-sink/KitchenSink'
 import SignIn from './screens/auth/SignIn'
 import ResetPassword from './screens/auth/ResetPassword'
@@ -21,16 +20,14 @@ import Finance from './screens/finance/Finance'
 import RefundDetail from './screens/finance/RefundDetail'
 import EditPricing from './screens/pricing/EditScreens'
 import Pricing from './screens/pricing/Pricing'
+import Account, { EditAccount } from './screens/account/Account'
+import SubAdminProfile from './screens/subadmin/SubAdminProfile'
+import SubAdmins from './screens/subadmin/SubAdmins'
 import Studies from './screens/studies/Studies'
 import ReviewStudy from './screens/studies/review/ReviewStudy'
 import ManageStudy from './screens/studies/manage/ManageStudy'
 import RespondentPage from './screens/studies/respondent/RespondentPage'
 import SessionPage from './screens/studies/respondent/SessionPage'
-
-/** A module route not built yet: the shell, with the breadcrumb the frames give that module. */
-const later = (path: string, ...labels: string[]): RouteObject => ({
-  path, element: createElement(Placeholder, { crumbs: labels.map((label) => ({ label })) }),
-})
 
 /**
  * The route map. Built: sign in and password reset (turn 1). Every module
@@ -65,8 +62,13 @@ const routes: RouteObject[] = [
   { path: '/finance/refunds/:id', element: createElement(RefundDetail) },
   { path: '/pricing', element: createElement(Pricing) },
   { path: '/pricing/:what', element: createElement(EditPricing) },
-  later('/sub-admin', 'Sub-Admin'),
-  later('/account', 'Master Admin - Account'),
+  { path: '/sub-admin', element: createElement(SubAdmins) },
+  { path: '/sub-admin/new', element: createElement(SubAdminProfile, { mode: 'create' }) },
+  { path: '/sub-admin/:id', element: createElement(SubAdminProfile, { mode: 'view' }) },
+  { path: '/sub-admin/:id/edit', element: createElement(SubAdminProfile, { mode: 'edit' }) },
+  { path: '/account', element: createElement(Account) },
+  { path: '/account/edit', element: createElement(EditAccount) },
+  { path: '/account/sub-admin', element: createElement(Account, { sub: true }) },
   { path: '*', element: createElement(Navigate, { to: '/dashboard', replace: true }) },
 ]
 

@@ -155,3 +155,8 @@ pricing/participant-fees
 pricing/tiers
 pricing/trust-score
 pricing/reward-points
+sub-admin/new
+sub-admin/sa-1
+sub-admin/sa-1/edit
+account/edit
+account/sub-admin

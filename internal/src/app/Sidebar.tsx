@@ -17,6 +17,8 @@ export default function Sidebar() {
   const { pathname } = useLocation()
   const active = activeNav(pathname)
   const account = pathname.startsWith('/account')
+  /** The one frame drawn as a sub-admin (2065:207638): their card, the same eight modules. */
+  const asSub = pathname === '/account/sub-admin'
 
   return (
     <nav aria-label="Main" className="fixed inset-y-0 left-0 z-30 flex w-nav flex-col border-r-1 border-shell-edge bg-bg-1">
@@ -40,11 +42,11 @@ export default function Sidebar() {
         ))}
       </div>
 
-      <Link to="/account" className="mx-4 mb-4 flex h-[60px] shrink-0 items-center gap-2 rounded-md border-1 border-stroke-1 bg-bg-0 px-2">
-        <img src="/img/peter-avatar.png" alt="" className="h-10 w-10 rounded-sm object-cover" />
+      <Link to={asSub ? '/account/sub-admin' : '/account'} className="mx-4 mb-4 flex h-[60px] shrink-0 items-center gap-2 rounded-md border-1 border-stroke-1 bg-bg-0 px-2">
+        <img src={asSub ? '/img/team/maya-40.png' : '/img/peter-avatar.png'} alt="" className="h-10 w-10 rounded-sm object-cover" />
         <span className="flex flex-col">
-          <span className={cn('text-text-medium', account ? 'text-brand-primary' : 'text-text-subtitle')}>Peter Devian</span>
-          <span className="text-text-regular text-text-body">Master Admin</span>
+          <span className={cn('text-text-medium', account ? 'text-brand-primary' : 'text-text-subtitle')}>{asSub ? 'Maya Thompson' : 'Peter Devian'}</span>
+          <span className="text-text-regular text-text-body">{asSub ? 'Studies Manager' : 'Master Admin'}</span>
         </span>
       </Link>
     </nav>
