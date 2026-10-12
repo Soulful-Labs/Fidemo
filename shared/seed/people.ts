@@ -17,15 +17,28 @@ import type { Check, Person, ProfileDetails, Stars } from '../types'
  */
 export function starsFor(target: number, studies: number): Stars[] {
   const need = Math.max(-TRUST.RATINGS_MAX, Math.min(TRUST.RATINGS_MAX, target - TRUST.ONBOARDING - Math.min(studies, TRUST.STUDY_COMPLETION_CAP_PER_YEAR)))
-  const n = TRUST.RATINGS_WINDOW
+  return starsSumming(need, TRUST.RATINGS_WINDOW)
+}
+
+/** `n` ratings whose policy deltas add up to `need`, lowest first; the closest reachable sum when `need` cannot be hit exactly. */
+export function starsSumming(need: number, n: number): Stars[] {
+  if (n <= 0) return []
+  let best: Stars[] = Array(n).fill(3) as Stars[]
+  let gap = Infinity
   for (let a = n; a >= 0; a -= 1) for (let b = n - a; b >= 0; b -= 1) for (let c = n - a - b; c >= 0; c -= 1) for (let d = n - a - b - c; d >= 0; d -= 1) {
     const e = n - a - b - c - d
-    if (a * RATING_DELTA[5] + b * RATING_DELTA[4] + c * RATING_DELTA[3] + d * RATING_DELTA[2] + e * RATING_DELTA[1] === need) {
-      return [...Array(e).fill(1), ...Array(d).fill(2), ...Array(c).fill(3), ...Array(b).fill(4), ...Array(a).fill(5)] as Stars[]
+    const got = a * RATING_DELTA[5] + b * RATING_DELTA[4] + c * RATING_DELTA[3] + d * RATING_DELTA[2] + e * RATING_DELTA[1]
+    if (Math.abs(got - need) < gap) {
+      gap = Math.abs(got - need)
+      best = [...Array(e).fill(1), ...Array(d).fill(2), ...Array(c).fill(3), ...Array(b).fill(4), ...Array(a).fill(5)] as Stars[]
+      if (gap === 0) return best
     }
   }
-  return Array(n).fill(3) as Stars[]
+  return best
 }
+
+/** The score each person's record is written to produce, by id. */
+export const targetScore = (id: string): number | undefined => [...ROWS, ...GENERATED].find((r) => r[0] === id)?.[7]
 
 export const EMPTY_PROFILE: ProfileDetails = {
   gender: '', address: '', areaType: '', aboutMe: '', languages: [], nationality: '', income: '', ethnicity: '',

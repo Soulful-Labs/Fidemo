@@ -130,3 +130,12 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nall checks passed')
 if (failed) process.exit(1)
+
+// Scores land where the seed means them to, not saturated at the top.
+{
+  const s = buildSeed(new Date())
+  const scores = s.people.filter((p) => p.id !== DEMO_PERSON_ID).map((p) => personFigures(s, p.id).trustScore)
+  const at100 = scores.filter((x) => x === 100).length
+  console.log('     pool scores: min', Math.min(...scores), 'max', Math.max(...scores), 'at 100:', at100, 'of', scores.length)
+  if (at100 > 3) { console.log('FAIL seed: the pool saturates at 100'); process.exit(1) } else console.log('ok   seed: scores spread, not saturated')
+}

@@ -11,17 +11,18 @@
  * always last month.
  */
 import { DEMO_SESSION_CODE, isSessionType, priceStudy } from './platform'
-import { starsForRating } from './rules'
 import { SCREENERS, TASKS } from './seed/screeners'
 import { catalogue } from './seed/catalogue'
 import type { CatalogueEntry } from './seed/catalogue'
-import { buildPool } from './seed/people'
+import { buildPool, starsSumming, targetScore } from './seed/people'
+import { trustInputs } from './derive'
+import { TRUST, starsForRating, trustForStars } from './rules'
 import type {
   Activity, Client, EarlierReview, Location, Participation, ParticipationState, Person, PlatformState,
   Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudySetup, StudyType, TeamMember, Ticket,
 } from './types'
 
-export const SEED_VERSION = 1
+export const SEED_VERSION = 2
 export const DEMO_PERSON_ID = 'jonathan'
 export const DEMO_PERSON_EMAIL = 'jonathan.reeve@example.com'
 export const DEMO_CLIENT_ID = 'cl-soulful'
@@ -702,5 +703,29 @@ export function buildSeed(now: Date = new Date()): PlatformState {
   ] as [string, string, string, string][]).map(([what, path, when, by], i) => ({ id: `ac-${i + 1}`, what, path, at: when, by }))
     .sort((a, b) => b.at.localeCompare(a.at))
 
-  return { version: SEED_VERSION, seededAt: now.toISOString(), people, clients, studies, reports, tickets, team, activity, pending: [] }
+  const state: PlatformState = { version: SEED_VERSION, seededAt: now.toISOString(), people, clients, studies, reports, tickets, team, activity, pending: [] }
+
+  /**
+   * Each person's record from before the seed (`prior`) was written to give
+   * the score the frames drew for them. The studies above then add completed,
+   * rated participations on top, which on their own would push most of the
+   * pool to 100. So the prior record is rewritten here to leave room for what
+   * the seed added: the score is still computed by the policy from the
+   * stored inputs, and it lands on the intended number.
+   */
+  for (const person of pool) {
+    const target = targetScore(person.id)
+    if (target === undefined) continue
+    person.prior = { completedThisYear: 0, stars: [] }
+    const seeded = trustInputs(state, person.id, now)
+    const studies = Math.max(0, Math.min(TRUST.STUDY_COMPLETION_CAP_PER_YEAR, 8) - seeded.completedThisYear)
+    const completions = Math.min(TRUST.STUDY_COMPLETION_CAP_PER_YEAR, seeded.completedThisYear + studies) * TRUST.STUDY_COMPLETION
+    const deductions = seeded.noShows * TRUST.NO_SHOW + seeded.lateShows * TRUST.LATE_SHOW_UP + seeded.cancelledSessions * TRUST.CANCELLED_SESSION + seeded.frauds * TRUST.FRAUD
+    const recent = seeded.stars.slice(-TRUST.RATINGS_WINDOW)
+    const room = TRUST.RATINGS_WINDOW - recent.length
+    const need = target - TRUST.ONBOARDING - completions - deductions - recent.reduce((n, x) => n + trustForStars(x), 0)
+    person.prior = { completedThisYear: studies, stars: starsSumming(need, room) }
+  }
+
+  return state
 }
