@@ -47,15 +47,15 @@ export default function VerificationsList() {
       <h2 className="pb-2 pt-4 text-title-s leading-[25px] text-text-title">{reported ? counts.reported : counts.onboarding}</h2>
       <Toolbar filter={reported ? 'Reported By All' : 'Flagged for All'} />
       {reported
-        ? <Table rowHeight={52} rows={REPORTED as Row[]} rowKey={(r) => r.id} onRowClick={open} columns={[{ ...who, width: 180 }, col('role', 'Role', 206), col('date', 'Date', 124, { sortable: true }), by, col('flag', 'Flagged For', 170), col('reason', 'Reason', '1fr')]} />
-        : <Table rowHeight={52} rows={ONBOARDING as Row[]} rowKey={(r) => r.id} onRowClick={open} columns={[who, col('role', 'Role', 240), col('date', 'Date', 130, { sortable: true }), col('flag', 'Flagged For', 170), col('reason', 'Reason', '1fr')]} />}
+        ? <Table empty="Participants reported by a client or by the system will appear here." rowHeight={52} rows={REPORTED as Row[]} rowKey={(r) => r.id} onRowClick={open} columns={[{ ...who, width: 180 }, col('role', 'Role', 206), col('date', 'Date', 124, { sortable: true }), by, col('flag', 'Flagged For', 170), col('reason', 'Reason', '1fr')]} />
+        : <Table empty="Identity and profession checks that need a person will appear here." rowHeight={52} rows={ONBOARDING as Row[]} rowKey={(r) => r.id} onRowClick={open} columns={[who, col('role', 'Role', 240), col('date', 'Date', 130, { sortable: true }), col('flag', 'Flagged For', 170), col('reason', 'Reason', '1fr')]} />}
       <div className="pt-3"><Pagination page={1} pages={10} /></div>
 
       <h2 className="mt-8 border-t-1 border-stroke-1 pb-3 pt-8 text-title-s leading-[25px] text-text-title">History</h2>
       <Toolbar filter="Flagged for All" />
       {reported
-        ? <Table rowHeight={52} rows={REPORTED_HISTORY as Row[]} rowKey={(r) => r.id} onRowClick={open} columns={[who, by.width ? { ...by, width: 220 } : by, col('date', 'Completed', 130, { sortable: true }), col('flag', 'Flagged For', 170), col('reason', 'Verification Remarks', '1fr'), result(true)]} />
-        : <Table rowHeight={52} rows={ONBOARDING_HISTORY as Row[]} rowKey={(r) => r.id} onRowClick={open} columns={[who, col('role', 'Role', 220), col('date', 'Completed', 130, { sortable: true }), col('flag', 'Flagged For', 170), col('reason', 'Verification Remarks', '1fr'), result(false)]} />}
+        ? <Table empty="Reports you have decided will appear here." rowHeight={52} rows={REPORTED_HISTORY as Row[]} rowKey={(r) => r.id} onRowClick={open} columns={[who, by.width ? { ...by, width: 220 } : by, col('date', 'Completed', 130, { sortable: true }), col('flag', 'Flagged For', 170), col('reason', 'Verification Remarks', '1fr'), result(true)]} />
+        : <Table empty="Verifications you have decided will appear here." rowHeight={52} rows={ONBOARDING_HISTORY as Row[]} rowKey={(r) => r.id} onRowClick={open} columns={[who, col('role', 'Role', 220), col('date', 'Completed', 130, { sortable: true }), col('flag', 'Flagged For', 170), col('reason', 'Verification Remarks', '1fr'), result(false)]} />}
       <div className="pt-3"><Pagination page={1} pages={10} /></div>
     </AppShell>
   )

@@ -95,6 +95,7 @@ export default function Support() {
             </div>
           )
         })}
+        {rows.length === 0 && <p role="row" className="border-t-1 border-stroke-1 px-4 py-4 text-text-subtitle">{{ new: 'New tickets from participants and clients will appear here.', ongoing: 'Tickets you have replied to will appear here.', closed: 'Resolved tickets will appear here.' }[tab]}</p>}
       </div>
       {tab !== 'new' && <div className="pt-3"><Pagination page={Math.min(page, pages)} pages={pages} onChange={setPage} /></div>}
       <CreateTicket open={creating} onClose={() => setCreating(false)} onCreate={(id) => { setCreating(false); navigate(`/support/${id}`) }} />

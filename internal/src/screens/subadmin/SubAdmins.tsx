@@ -31,7 +31,7 @@ export default function SubAdmins() {
         <div><h1 className="text-title-s leading-[25px] text-text-title">Sub-Admins List</h1><p className="pt-1 text-text-regular leading-5 text-text-subtitle">{SUB_ADMINS.length} sub-admin members</p></div>
         <Button className="px-5" onClick={() => navigate('/sub-admin/new')}>+ &nbsp;Add New Sub-Admin</Button>
       </div>
-      <Table rowHeight={52} rows={SUB_ADMINS} rowKey={(r) => r.id} onRowClick={(r) => navigate(`/sub-admin/${r.id}`)} columns={[
+      <Table empty="Sub-admins you add will appear here." rowHeight={52} rows={SUB_ADMINS} rowKey={(r) => r.id} onRowClick={(r) => navigate(`/sub-admin/${r.id}`)} columns={[
         { key: 'n', header: 'Name', width: 190, sortable: true, render: (r) => <span className="flex items-center gap-2"><img src={r.photo} alt="" className="h-6 w-6 rounded-full object-cover" />{r.name}</span> },
         { key: 'r', header: 'Role', width: 200, render: (r) => r.role }, { key: 'e', header: 'Email', width: 300, render: (r) => r.email },
         { key: 'a', header: 'Access', width: '1fr', render: (r) => <span className="flex gap-2">{r.access.map((a) => <span key={a} className="flex h-7 items-center rounded-full border-1 border-stroke-3 px-2.5 text-text-subtitle">{a}</span>)}</span> },
@@ -47,7 +47,7 @@ export default function SubAdmins() {
         <Select size="sm" className="w-[200px] shrink-0" value={f[1]} onChange={pick(1)} options={[...new Set(FILTER_PEOPLE)]} />
         <Select size="sm" className="w-[180px] shrink-0" value={f[2]} onChange={pick(2)} options={FILTER_PERIOD} />
       </div>
-      <Table rowHeight={66} rows={ACTIVITIES} rowKey={(r) => r.id} columns={[
+      <Table empty="Actions taken in the console will appear here." rowHeight={66} rows={ACTIVITIES} rowKey={(r) => r.id} columns={[
         { key: 'w', header: 'Activity', width: '1fr', render: (r) => r.what }, { key: 'p', header: 'Module Path', width: 240, className: 'whitespace-nowrap', render: (r) => r.path },
         { key: 'd', header: 'Date', width: 170, className: 'whitespace-nowrap', render: (r) => r.when },
         { key: 'b', header: 'Action By', width: 240, render: (r) => <span className="flex items-center gap-2"><img src={r.photo} alt="" className="h-8 w-8 rounded-full object-cover" /><span><span className="block">{r.who}</span><span className="block text-text-subtitle">{r.role}</span></span></span> },

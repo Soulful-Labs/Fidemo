@@ -43,7 +43,7 @@ export default function WalletTab({ sub, onSub, view }: { sub: WalletSub; onSub:
         <div className="pt-5">
           <Balance label="Wallet Balance" value="$542.60" total="$18,264" />
           <div className="flex gap-3 pb-3 pt-5"><SearchInput size="sm" placeholder="Search transaction..." /><Period w="w-60" /><FilterButton onClick={() => setDialog('earnFilter')} /></div>
-          <Table rowHeight={52} rows={EARNINGS} rowKey={(r) => r.id} onRowClick={() => setDialog('tx')} columns={[
+          <Table empty="Earnings will appear here once a study is paid." rowHeight={52} rows={EARNINGS} rowKey={(r) => r.id} onRowClick={() => setDialog('tx')} columns={[
             { key: 'what', header: 'Particular', width: '1fr', render: (r) => <span className="-ml-1">{r.what}</span> },
             { key: 'when', header: 'Date - Time', width: 260, sortable: true, render: (r) => <When day={r.day} time={r.time} /> },
             { key: 'id', header: 'Transaction ID', width: 200, render: (r) => r.id },
@@ -65,7 +65,7 @@ export default function WalletTab({ sub, onSub, view }: { sub: WalletSub; onSub:
           </div>
           <H>Payout History</H>
           <div className="flex gap-3 pb-3"><SearchInput size="sm" placeholder="Search transaction..." /><Period w="w-60" /><Sort /></div>
-          <Table rowHeight={52} rows={PAYOUTS} rowKey={(r) => r.key} onRowClick={() => setDialog('payout')} columns={[
+          <Table empty="Withdrawals will appear here." rowHeight={52} rows={PAYOUTS} rowKey={(r) => r.key} onRowClick={() => setDialog('payout')} columns={[
             { key: 'when', header: 'Date - Time', width: 316, sortable: true, render: (r) => <When day={r.day} time={r.time} /> },
             { key: 'to', header: 'To', width: 244, render: (r) => r.to }, { key: 'id', header: 'Transaction ID', width: 200, render: (r) => r.id },
             { key: 'amount', header: 'Amount', width: 200, sortable: true, render: (r) => <span className="text-text-medium">{r.amount}</span> },
@@ -80,7 +80,7 @@ export default function WalletTab({ sub, onSub, view }: { sub: WalletSub; onSub:
           <Balance green label="Balance" value="1244" total="18,264" />
           <H>Points History</H>
           <div className="flex gap-3 pb-3"><SearchInput size="sm" placeholder="Search transaction..." /><Period w="w-60" /><Sort /><FilterButton onClick={() => setDialog('pointFilter')} /></div>
-          <Table rowHeight={52} rows={POINTS} rowKey={(r) => r.key} columns={[
+          <Table empty="Reward points will appear here as they are earned." rowHeight={52} rows={POINTS} rowKey={(r) => r.key} columns={[
             { key: 'what', header: 'Particulars', width: '1fr', render: (r) => <span className="-ml-1 flex gap-2"><span className="text-text-medium">{r.kind}</span><span aria-hidden="true">•</span>{r.what}</span> },
             { key: 'when', header: 'Date - Time', width: 260, sortable: true, render: () => <When day="Jul 22, 2026" time="11:00 PM" /> },
             { key: 'points', header: 'Points', width: 200, sortable: true, render: (r) => <span className="text-body-regular text-state-success">{r.points}</span> },
@@ -88,7 +88,7 @@ export default function WalletTab({ sub, onSub, view }: { sub: WalletSub; onSub:
           <div className="pt-3"><Pagination page={1} pages={10} /></div>
           <H>Redeem History</H>
           <div className="flex gap-3 pb-3"><SearchInput size="sm" placeholder="Search transaction..." /><Period w="w-60" /></div>
-          <Table rowHeight={52} rows={REDEEMS} rowKey={(r) => r.key} columns={[
+          <Table empty="Redeemed points will appear here." rowHeight={52} rows={REDEEMS} rowKey={(r) => r.key} columns={[
             { key: 'what', header: 'Particulars', width: '1fr', render: (r) => <span className="-ml-1">{r.what}</span> },
             { key: 'when', header: 'Date - Time', width: 260, sortable: true, render: () => <When day="Jul 22, 2026" time="11:00 PM" /> },
             { key: 'id', header: 'Transaction ID', width: 260, render: () => '#152356789107' },
@@ -104,7 +104,7 @@ export default function WalletTab({ sub, onSub, view }: { sub: WalletSub; onSub:
             ))}
           </div>
           <h3 className="pb-3 pt-6 text-title-s leading-[25px] text-text-title">8 Referrals</h3>
-          <Table rowHeight={52} rows={REFERRALS} rowKey={(r) => r.key} columns={[
+          <Table empty="People this participant refers will appear here." rowHeight={52} rows={REFERRALS} rowKey={(r) => r.key} columns={[
             { key: 'name', header: 'Name', width: 380, sortable: true, render: (r) => <span className="flex items-center gap-2"><img src={r.photo} alt="" className="h-6 w-6 rounded-full object-cover" />{r.name}</span> },
             { key: 'email', header: 'Email', width: 380, render: (r) => r.email }, { key: 'joined', header: 'Joined', width: 200, render: (r) => r.joined },
             { key: 'status', header: 'Status', width: '1fr', render: (r) => <Pill good={r.status === 'Completed'}>{r.status}</Pill> },

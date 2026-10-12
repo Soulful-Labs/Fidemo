@@ -1,8 +1,8 @@
 import { useEffect, useSyncExternalStore } from 'react'
 import { platform } from '@shared/store'
 import type { Actor } from '@shared/store'
-import { MASTER_ADMIN_ID } from '@shared/seed'
 import { notice } from './components/app/Notice'
+import { currentMemberId } from './session'
 import type { PlatformState, StudyType as SharedType } from '@shared/types'
 import type { StudyType } from './components/app/StudyTypeTag'
 
@@ -30,11 +30,11 @@ export function PlatformClock() {
 }
 
 /**
- * Who is acting. The console has no sign-in that names a team member yet, so
- * every decision is taken as the master admin, Peter Devian, and recorded
- * against him.
+ * Who is acting: the team member signed in to the console (session.ts).
+ * Every decision is taken as them, and shared/store.ts writes it to the
+ * activity log under their name. The id is read at the moment of the action.
  */
-export const TEAM: Actor = { kind: 'team', id: MASTER_ADMIN_ID }
+export const TEAM: Actor = { kind: 'team', get id() { return currentMemberId() } }
 
 /** The console's study type names, as its type tag draws them. */
 export const consoleType = (t: SharedType): StudyType =>

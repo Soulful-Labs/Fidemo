@@ -1305,6 +1305,83 @@ Logout 3.36%, updated 4.62%. Nothing is cut off by its frame.
 
 ---
 
+## Sign in and sign up
+
+The console is served at `/internal` on the shared origin and is behind a real
+sign-in (`src/session.ts`, `src/app/Guard.tsx`, `shared/store.ts` signInTeam).
+
+- **Sign in** checks the email and password the platform holds for the team. A
+  wrong email, a wrong password and an inactive account are each refused under
+  the field. The session is the member's email in browser storage: it survives
+  a reload, and Logout on My Account ends it.
+- **Every route is guarded.** Signed out, any console address goes to sign in
+  and comes back to where it was headed. A sub-admin sees only the modules
+  their access toggles give them, in the sidebar and by address; a module they
+  lack says so. They land on the Dashboard, or the first module they have.
+- **Demo logins**, both shown on the sign-in screen, password `demo1234`:
+  `peter@focusinsite.com` (master admin; signing in puts the demo data back)
+  and `maya.thompson@humanlayer.com` (sub-admin: Studies, Participants; her
+  sign-in does not reset, so a change the master admin makes to her access can
+  be shown). Robert Mayfield is the seed's inactive account.
+- **The activity log** records each action against whoever is signed in
+  (`TEAM` in `src/platform.tsx` reads the session at the moment of the action).
+- **Sign up** (`/signup`, then `/signup/verify`, code 123456, no email sent) is
+  not drawn in Figma; it is Sign In's card with four fields and the password
+  rule Change Password already draws. The new person becomes the master admin
+  of a completely empty platform (`shared/seed.ts` buildEmpty).
+
+### Must change before production
+
+1. **Open sign-up is wrong for an internal console.** It is built for the demo
+   only. It must become invite-only: an existing admin invites a team member,
+   who sets their own password from the invitation.
+2. **That invitation is the answer to an open question in the designs.** The
+   Sub-Admin frames create a sub-admin with no password, no invitation and no
+   word on how they first sign in (turn 16). In this build a sub-admin made on
+   the Create Profile form starts on the demo password `demo1234`, which is a
+   placeholder for the invitation, not a decision.
+3. **Passwords are plain text in browser storage**, checked in the browser.
+   There is no backend; nothing here is real authentication.
+4. **One platform per browser.** Signing up replaces the shared state for all
+   three apps with an empty one; signing in as the demo master admin replaces
+   it again with the demo data. A new account does not survive that reset.
+
+### Empty states
+
+No frame draws an empty list. Each is one plain line in the list's own box
+(`Table`'s `empty`), saying what will appear there.
+
+| Where | Line |
+|---|---|
+| Dashboard, each group | Nothing is waiting here. New items will appear as they come in. |
+| Dashboard, a tab with no groups | No actions are pending. They will appear here as studies, people and tickets come in. |
+| Studies, To Review | Studies that clients submit for review will appear here. |
+| Studies, Ongoing | Studies you approve will appear here while they run. |
+| Studies, Completed | Studies will appear here once they are completed. |
+| Study, Matched / Invited | No one in the pool is waiting to be invited to this study. / No one has been invited to this study yet. |
+| Study, Applications / Scheduled / Sessions | No one has applied to this study yet. / No sessions are booked yet. / This study has no sessions yet. |
+| Study, Results | No one has completed this study yet. |
+| Session, Participants | No one has booked a seat in this session yet. |
+| Review, Transactions | No payment has been taken for this study yet. |
+| Participants, Active / Deactivated | Participants will appear here once they sign up. / Participants whose accounts are deactivated will appear here. |
+| Participant, Studies | Studies will appear here as this participant takes part. |
+| Participant, Wallet (5 tables) | Earnings will appear here once a study is paid. / Withdrawals will appear here. / Reward points will appear here as they are earned. / Redeemed points will appear here. / People this participant refers will appear here. |
+| Participant verifications, Onboarding pending / history | Identity and profession checks that need a person will appear here. / Verifications you have decided will appear here. |
+| Participant verifications, Reported pending / history | Participants reported by a client or by the system will appear here. / Reports you have decided will appear here. |
+| Clients, Active / Deactivated | Clients will appear here once they sign up. / Clients whose accounts are deactivated will appear here. |
+| Client, Reviews | No reviews yet |
+| Client, Studies ongoing / completed | This client's running studies will appear here. / This client's completed studies will appear here. |
+| Client, Invoices pending / paid | Invoices waiting to be paid will appear here. / Paid invoices will appear here. |
+| Client verifications, Pending / History | Business checks that need a person will appear here. / Business verifications you have decided will appear here. |
+| Support, New / Ongoing / Closed | New tickets from participants and clients will appear here. / Tickets you have replied to will appear here. / Resolved tickets will appear here. |
+| Finance, Transactions (all five tabs) | Payments, earnings, payouts and refunds will appear here as they happen. |
+| Finance, Refunds | Refunds for underfilled studies will appear here to be confirmed. |
+| Sub-Admin, list / Activities | Sub-admins you add will appear here. / Actions taken in the console will appear here. |
+| A record that is not on the platform | Nothing to show here. This record is not on the platform. It may have gone when the demo was reset. |
+| A module a sub-admin lacks | You do not have access to (module). |
+
+---
+
 ## Rules invented in this build, needing sign-off
 
 No signed document states these. Each is the build's reading of the designs,

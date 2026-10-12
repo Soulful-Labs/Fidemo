@@ -30,6 +30,7 @@ export default function ActionGroupCard({ group }: { group: ActionGroup }) {
         </Link>
       </header>
       {open && group.rows.map((row) => <Row key={row.id} row={row} />)}
+      {open && group.rows.length === 0 && <p className="border-t-1 border-stroke-1 px-3 py-4 text-text-regular text-text-subtitle">Nothing is waiting here. New items will appear as they come in.</p>}
     </section>
   )
 }

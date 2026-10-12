@@ -18,10 +18,12 @@ export interface Column<T> {
  * stroke-1 rule between them; cells padded 16px. Column widths are the
  * frame's, passed per table.
  */
-export default function Table<T>({ columns, rows, rowKey, onRowClick, rowHeight = 64, className, highlight }: {
+export default function Table<T>({ columns, rows, rowKey, onRowClick, rowHeight = 64, className, highlight, empty }: {
   columns: Column<T>[]; rows: T[]; rowKey: (r: T) => string; onRowClick?: (r: T) => void; rowHeight?: number; className?: string
   /** A row drawn in its hover state (bgAlt-1), as the Studies frames draw their second row. */
   highlight?: string
+  /** With no rows: one plain line under the header saying what will appear here. No frame draws an empty list. */
+  empty?: string
 }) {
   const widths = columns.map((c) => (typeof c.width === 'number' ? `${c.width}px` : c.width ?? '1fr')).join(' ')
   return (
@@ -42,6 +44,7 @@ export default function Table<T>({ columns, rows, rowKey, onRowClick, rowHeight 
           ))}
         </div>
       ))}
+      {rows.length === 0 && empty && <p role="row" className="border-t-1 border-stroke-1 px-4 py-4 text-text-regular text-text-subtitle">{empty}</p>}
     </div>
   )
 }

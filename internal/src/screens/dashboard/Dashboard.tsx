@@ -40,6 +40,7 @@ export default function Dashboard() {
 
       <div className="flex flex-col gap-3 pt-4">
         {GROUPS[tab].map((g) => <ActionGroupCard key={`${tab}-${g.key}`} group={g} />)}
+        {GROUPS[tab].length === 0 && <p className="rounded-lg bg-bg-1 p-4 text-text-regular text-text-subtitle">No actions are pending. They will appear here as studies, people and tickets come in.</p>}
       </div>
     </AppShell>
   )

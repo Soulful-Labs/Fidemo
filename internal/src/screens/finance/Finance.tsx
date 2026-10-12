@@ -69,7 +69,7 @@ export default function Finance({ refunds }: { refunds?: boolean }) {
             <div><p className="text-text-regular text-text-title">Refunds Pending</p><p className="pt-1 text-title-l text-state-destructive">{refundsCount}</p></div>
             <div className="text-right"><p className="text-text-regular text-text-title">Total client refund value</p><p className="pt-1 text-title-l text-state-destructive">{refundsTotal}</p></div>
           </div>
-          <Table className="mt-4" rowHeight={56} rows={REFUNDS} rowKey={(r) => r.id} columns={refundCols} onRowClick={(r) => navigate(`/finance/refunds/${r.id}`)} />
+          <Table empty="Refunds for underfilled studies will appear here to be confirmed." className="mt-4" rowHeight={56} rows={REFUNDS} rowKey={(r) => r.id} columns={refundCols} onRowClick={(r) => navigate(`/finance/refunds/${r.id}`)} />
         </>
       ) : (
         <>
@@ -91,7 +91,7 @@ export default function Finance({ refunds }: { refunds?: boolean }) {
             {tab === 'all' && <Select size="sm" className="w-[200px] shrink-0" value={type} onChange={setType} options={TYPE_OPTIONS} />}
             <Select size="sm" className="w-[112px] shrink-0" value={period} onChange={setPeriod} options={PERIOD_OPTIONS} />
           </div>
-          <Table rowHeight={52} rows={shown} rowKey={(r) => r.id} columns={COLS[tab]} onRowClick={open} />
+          <Table empty="Payments, earnings, payouts and refunds will appear here as they happen." rowHeight={52} rows={shown} rowKey={(r) => r.id} columns={COLS[tab]} onRowClick={open} />
           <div className="pt-3"><Pagination page={Math.min(page, pages)} pages={pages} onChange={setPage} /></div>
         </>
       )}

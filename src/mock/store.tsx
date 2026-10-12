@@ -5,7 +5,7 @@ import {
   trustHistory as trustHistoryOf, walletRows,
 } from '@shared/derive'
 import type { ClientReviewRow, TrustHistoryEntry } from '@shared/derive'
-import { DEMO_PERSON_ID } from '@shared/seed'
+import { DEMO_PERSON_ID, buildSeed } from '@shared/seed'
 import { platform } from '@shared/store'
 import type { Actor } from '@shared/store'
 import { TIMINGS } from '@shared/platform'
@@ -93,8 +93,17 @@ const ticketOf = (t: PlatformTicket): Ticket => ({
 })
 
 /** Everything one person's screens read, derived from the platform in one pass. */
+/**
+ * The platform can hold nobody at all: a new console account starts an empty
+ * one (shared/store.ts signUpTeam). The screens still need a person to draw,
+ * so the seed's demo person stands in, signed out; signing in puts the demo
+ * state back.
+ */
+let standIn: Person | undefined
+const onPlatform = (world: PlatformState, personId: string) => Boolean(personById(world, personId) ?? personById(world, DEMO_PERSON_ID))
+
 function view(world: PlatformState, personId: string) {
-  const person = personById(world, personId) ?? personById(world, DEMO_PERSON_ID)!
+  const person = personById(world, personId) ?? personById(world, DEMO_PERSON_ID) ?? (standIn ??= personById(buildSeed(), DEMO_PERSON_ID)!)
   const figures = personFigures(world, person.id)
   return {
     person,
@@ -293,7 +302,7 @@ export function useStoreValue() {
     ...v,
     user: v.user,
     trustHistory: v.trustHistory as TrustHistoryEntry[],
-    signedIn: local.signedIn,
+    signedIn: local.signedIn && onPlatform(world, local.personId),
     onboarding: local.onboarding,
     filters: local.filters,
     arrivedVia: local.arrivedVia,

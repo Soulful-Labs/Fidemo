@@ -82,7 +82,7 @@ async function main() {
   // dashboard. Writing the signed-out state is idempotent against that.
   const CLEAR = `try{localStorage.setItem('fi-internal-session','{"current":null}')}catch(e){}`
   /** Onboarding turns a signed-in visitor away, so it is checked signed out. */
-  const OPEN = /^(signup|signin|check-email|organization|payment-method|in-review|welcome|pricing)/
+  const OPEN = /^(signup|signin|check-email|reset-password|set-password)/
   let bad = 0
   let prior = null
 

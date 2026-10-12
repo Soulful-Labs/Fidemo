@@ -17,7 +17,7 @@ import {
 import { canRedeem, starsForRating, starsFromDimensions } from './rules'
 import { sessionStartOf as sessionStart } from './derive'
 import { EMPTY_PROFILE } from './seed/people'
-import { SEED_VERSION, buildSeed } from './seed'
+import { DEMO_TEAM_PASSWORD, MASTER_ADMIN_ID, SEED_VERSION, buildEmpty, buildSeed } from './seed'
 import type {
   Answers, AppNotification, Booking, Check, Client, ClientReview, Module, ParticipantRating, Participation, ParticipationState,
   PayoutMethod, Person, PlatformState, RatingState, RepeatRule, Report, Result, SavedCard, Study, StudySetup, StudyState,
@@ -838,11 +838,77 @@ export function createPlatform(options: Options = {}) {
       const existing = m.id ? s.team.find((t) => t.id === m.id) : undefined
       if (existing?.master) return no('The master admin’s access cannot be changed here')
       const id = existing?.id ?? uid('tm')
-      const next: TeamMember = { ...existing, id, name: m.name.trim(), email: m.email.trim(), role: m.role.trim(), access: m.access, active: m.active }
+      const email = m.email.trim().toLowerCase()
+      if (s.team.some((t) => t.id !== id && t.email.toLowerCase() === email)) return no('Another team member already uses that email address')
+      /** No frame draws how a new sub-admin gets a password, so in this build they start on the demo password. */
+      const next: TeamMember = { ...existing, id, name: m.name.trim(), email: m.email.trim(), role: m.role.trim(), access: m.access, active: m.active, password: existing?.password ?? DEMO_TEAM_PASSWORD }
       if (existing) s.team[s.team.indexOf(existing)] = next
       else s.team.push(next)
       log(s, actor, `${existing ? 'Updated' : 'Created'} the sub-admin profile of ${next.name}`, `Sub-Admin / Profile / ${existing ? 'Edit' : 'Create'}`)
       return yes({ id })
+    }),
+
+    /**
+     * Console sign-in. Checks the email and password against the team as the
+     * platform holds it and changes nothing. A seeded demo login always works:
+     * when the platform is someone's empty one, or the login is the master
+     * admin's, the demo state is put back first, as the respondent app's sign
+     * in does.
+     */
+    signInTeam: (email: string, password: string): Result<{ id: string; reset: boolean }> => {
+      const key = email.trim().toLowerCase()
+      const latest = read() ?? state
+      const here = latest.team.find((t) => t.email.toLowerCase() === key)
+      const seeded = buildSeed(clock()).team.find((t) => t.email.toLowerCase() === key)
+      const who = here ?? seeded
+      if (!who) return no('No team account uses that email address')
+      if (who.password !== password) return { ok: false, why: 'That password is not right' }
+      if (!who.active) return no('This account is inactive. Ask the master admin to activate it')
+      const reset = !here || (who.id === MASTER_ADMIN_ID && Boolean(seeded))
+      if (reset) { state = buildSeed(clock()); write(state); emit() }
+      return yes({ id: who.id, reset })
+    },
+
+    /** Whether a new team account could be made with this email. */
+    teamEmailFree: (email: string): boolean => {
+      const key = email.trim().toLowerCase()
+      return ![...(read() ?? state).team, ...buildSeed(clock()).team].some((t) => t.email.toLowerCase() === key)
+    },
+
+    /**
+     * Console sign-up: a new master admin, on a platform with nothing in it
+     * (seed.ts, buildEmpty). It replaces the shared state for all three apps;
+     * signing in with a demo login puts the demo state back.
+     */
+    signUpTeam: (m: { name: string; email: string; password: string }): Result<{ id: string }> => {
+      if (!m.name.trim() || !m.email.trim() || !m.password) return no('A name, a work email and a password are required')
+      if (!api.teamEmailFree(m.email)) return no('A team account already uses that email address')
+      const id = uid('tm')
+      const owner: TeamMember = { id, name: m.name.trim(), email: m.email.trim(), role: 'Master Admin', master: true, active: true, password: m.password,
+        access: ['Dashboard', 'Studies', 'Participants', 'Clients', 'Support', 'Finance', 'Pricing & Rewards', 'Sub-Admin'] }
+      state = buildEmpty(owner, clock()); write(state); emit()
+      return yes({ id })
+    },
+
+    /** My Account, Edit Profile: a team member's own name and email. */
+    updateTeamProfile: (memberId: string, patch: { name: string; email: string }) => move((s) => {
+      const t = s.team.find((x) => x.id === memberId)
+      if (!t) return no('No such team member')
+      if (!patch.name.trim() || !patch.email.trim()) return no('A name and an email address are required')
+      if (s.team.some((x) => x.id !== memberId && x.email.toLowerCase() === patch.email.trim().toLowerCase())) return no('Another team member already uses that email address')
+      t.name = patch.name.trim(); t.email = patch.email.trim()
+      log(s, { kind: 'team', id: memberId }, 'Updated their profile', 'My Account / Profile / Edit')
+      return yes()
+    }),
+
+    /** My Account, Change Password: the current one has to be right. */
+    changeTeamPassword: (memberId: string, current: string, next: string) => move((s) => {
+      const t = s.team.find((x) => x.id === memberId)
+      if (!t) return no('No such team member')
+      if (t.password !== current) return no('The current password is not right')
+      t.password = next
+      log(s, { kind: 'team', id: memberId }, 'Changed their password', 'My Account / Settings / Change Password')
+      return yes()
     }),
   }
 

@@ -59,7 +59,7 @@ export default function Participants() {
         <Select size="sm" className="w-[140px]" value={filters.gender} onChange={pick('gender')} options={FILTERS.gender} />
         <Select size="sm" className="w-[140px]" value={filters.tier} onChange={pick('tier')} options={FILTERS.tier} />
       </div>
-      <Table className="mt-3" rowHeight={52} rows={shown} rowKey={(r) => r.id} onRowClick={(r) => navigate(`/participants/${r.id}`)}
+      <Table empty={tab === 'deactivated' ? 'Participants whose accounts are deactivated will appear here.' : 'Participants will appear here once they sign up.'} className="mt-3" rowHeight={52} rows={shown} rowKey={(r) => r.id} onRowClick={(r) => navigate(`/participants/${r.id}`)}
         columns={columns(tab === 'active' ? 'Last Active' : 'Deactivated')} />
       <div className="pt-3"><Pagination page={Math.min(page, pages)} pages={pages} onChange={setPage} /></div>
       <AdvancedFilters open={advanced} onClose={() => setAdvanced(false)} />

@@ -40,9 +40,9 @@ export function ClientVerificationsList() {
       <h2 className="pb-2 pt-4 text-title-s leading-[25px] text-text-title">{history ? 'History' : count}</h2>
       <div className="flex gap-4 pb-[15px]"><SearchInput size="sm" placeholder="Search participants by name or role..." /><Select size="sm" className="w-[200px] shrink-0" value="Flagged for All" options={['Flagged for All']} /></div>
       {history
-        ? <Table rowHeight={52} rows={CLIENT_HISTORY} rowKey={(r) => r.id} onRowClick={open} columns={[who, col('role', 'Role', 220), col('date', 'Completed', 130, true), flag, col('reason', 'Verification Remarks', '1fr'),
+        ? <Table empty="Business verifications you have decided will appear here." rowHeight={52} rows={CLIENT_HISTORY} rowKey={(r) => r.id} onRowClick={open} columns={[who, col('role', 'Role', 220), col('date', 'Completed', 130, true), flag, col('reason', 'Verification Remarks', '1fr'),
           { key: 'result', header: 'Result', width: 120, render: (r) => <span className={cn('inline-flex h-7 items-center rounded-full px-2.5 text-text-regular', r.result === 'Verified' ? 'bg-state-successBg text-state-success' : 'bg-orange-100 text-state-destructive')}>{r.result}</span> }]} />
-        : <Table rowHeight={52} rows={CLIENT_PENDING} rowKey={(r) => r.id} onRowClick={open} columns={[who, col('role', 'Role', 240), col('date', 'Date', 130, true), flag, col('reason', 'Reason', '1fr')]} />}
+        : <Table empty="Business checks that need a person will appear here." rowHeight={52} rows={CLIENT_PENDING} rowKey={(r) => r.id} onRowClick={open} columns={[who, col('role', 'Role', 240), col('date', 'Date', 130, true), flag, col('reason', 'Reason', '1fr')]} />}
       <div className="border-b-1 border-stroke-1 pb-10 pt-3"><Pagination page={1} pages={10} /></div>
     </AppShell>
   )

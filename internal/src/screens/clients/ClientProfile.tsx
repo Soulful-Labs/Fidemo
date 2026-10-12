@@ -115,15 +115,15 @@ export default function ClientProfile() {
           <div>
             <UnderlineTabs items={[{ key: 'ongoing', label: 'Ongoing' }, { key: 'completed', label: 'Completed' }]} value={done ? 'completed' : 'ongoing'} onChange={(k) => go({ sub: k })} />
             <div className="flex gap-3 pb-3 pt-4"><SearchInput size="sm" placeholder="Search studies..." /><Select size="sm" className="w-[134px] shrink-0" value="All" options={['All']} /></div>
-            <Table rows={done ? view.COMPLETED : view.ONGOING} rowKey={(r) => r.id} columns={studyCols} highlight="st-pay"
+            <Table empty={done ? 'This client\u2019s completed studies will appear here.' : 'This client\u2019s running studies will appear here.'} rows={done ? view.COMPLETED : view.ONGOING} rowKey={(r) => r.id} columns={studyCols} highlight="st-pay"
               onRowClick={(r) => navigate(`/studies/${r.id}${done ? '?state=completed' : ''}`)} />
           </div>
         )}
         {tab === 'payments' && (
           <div>
             <div className="flex gap-3">{view.stats.map((st) => <Stat key={st.label} tint={st.tint} label={st.label} value={st.value} note={st.note} />)}</div>
-            <H>Pending Invoices</H><Table rowHeight={70} rows={view.PENDING} rowKey={(r) => r.key} columns={invoiceCols('Due Date (auto-debit)')} onRowClick={(r) => setInvoice(r.studyId)} />
-            <H>Completed Invoices</H><Table rowHeight={70} rows={view.PAID} rowKey={(r) => r.key} columns={invoiceCols('Date')} onRowClick={(r) => setInvoice(r.studyId)} />
+            <H>Pending Invoices</H><Table empty="Invoices waiting to be paid will appear here." rowHeight={70} rows={view.PENDING} rowKey={(r) => r.key} columns={invoiceCols('Due Date (auto-debit)')} onRowClick={(r) => setInvoice(r.studyId)} />
+            <H>Completed Invoices</H><Table empty="Paid invoices will appear here." rowHeight={70} rows={view.PAID} rowKey={(r) => r.key} columns={invoiceCols('Date')} onRowClick={(r) => setInvoice(r.studyId)} />
             <H>Saved Payment Methods</H>
             <div className="flex gap-2">
               {view.cards.map(({ brand, last4, expires, isDefault: def }) => (

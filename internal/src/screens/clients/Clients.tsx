@@ -38,7 +38,7 @@ export default function Clients() {
         <Select size="sm" className="w-[150px] shrink-0" value="Location: All" options={['Location: All']} />
         <Select size="sm" className="w-[150px] shrink-0" value={`${last}: All`} options={[`${last}: All`]} />
       </div>
-      <Table className="mt-3" rowHeight={52} rows={rows} rowKey={(r) => r.id} onRowClick={(r) => navigate(`/clients/${r.id}`)} columns={columns(last)} />
+      <Table empty={off ? 'Clients whose accounts are deactivated will appear here.' : 'Clients will appear here once they sign up.'} className="mt-3" rowHeight={52} rows={rows} rowKey={(r) => r.id} onRowClick={(r) => navigate(`/clients/${r.id}`)} columns={columns(last)} />
       <div className="pt-3"><Pagination page={1} pages={10} /></div>
     </AppShell>
   )

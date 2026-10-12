@@ -22,12 +22,16 @@ import type {
   Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudySetup, StudyType, TeamMember, Ticket,
 } from './types'
 
-export const SEED_VERSION = 2
+export const SEED_VERSION = 3
 export const DEMO_PERSON_ID = 'jonathan'
 export const DEMO_PERSON_EMAIL = 'jonathan.reeve@example.com'
 export const DEMO_CLIENT_ID = 'cl-soulful'
 export const DEMO_CLIENT_EMAIL = 'jennifer@soulfullabs.com'
 export const MASTER_ADMIN_ID = 'tm-peter'
+/** The console's demo logins: the master admin, and a sub-admin limited to Studies and Participants. One password for every seeded team member. */
+export const DEMO_ADMIN_EMAIL = 'peter@focusinsite.com'
+export const DEMO_SUB_ADMIN_EMAIL = 'maya.thompson@humanlayer.com'
+export const DEMO_TEAM_PASSWORD = 'demo1234'
 
 const DAY = 86_400_000
 
@@ -672,9 +676,9 @@ export function buildSeed(now: Date = new Date()): PlatformState {
   // ------------------------------------------------------------------- team
 
   const member = (id: string, name: string, role: string, access: TeamMember['access'], n: number, active = true): TeamMember =>
-    ({ id, name, role, email: `${name.toLowerCase().replace(' ', '.')}@humanlayer.com`, photo: `/img/team/s${n}.png`, access, active })
+    ({ id, name, role, email: `${name.toLowerCase().replace(' ', '.')}@humanlayer.com`, photo: `/img/team/s${n}.png`, access, active, password: DEMO_TEAM_PASSWORD })
   const team: TeamMember[] = [
-    { id: MASTER_ADMIN_ID, name: 'Peter Devian', role: 'Master Admin', email: 'peter.devian@humanlayer.com', photo: '/img/team/peter.png', master: true, active: true,
+    { id: MASTER_ADMIN_ID, name: 'Peter Devian', role: 'Master Admin', email: DEMO_ADMIN_EMAIL, photo: '/img/team/peter.png', master: true, active: true, password: DEMO_TEAM_PASSWORD,
       access: ['Dashboard', 'Studies', 'Participants', 'Clients', 'Support', 'Finance', 'Pricing & Rewards', 'Sub-Admin'] },
     { ...member('tm-maya', 'Maya Thompson', 'Studies Manager', ['Studies', 'Participants'], 1), photo: '/img/team/maya.png' },
     member('tm-robert', 'Robert Mayfield', 'Community Manager', ['Dashboard', 'Clients', 'Participants'], 2, false),
@@ -728,4 +732,13 @@ export function buildSeed(now: Date = new Date()): PlatformState {
   }
 
   return state
+}
+
+/**
+ * A platform with nothing in it but the person who just created it: no
+ * studies, people, clients, tickets, payments or other team members. What a
+ * new master admin signs up into (console sign-up).
+ */
+export function buildEmpty(owner: TeamMember, now: Date = new Date()): PlatformState {
+  return { version: SEED_VERSION, seededAt: now.toISOString(), people: [], clients: [], studies: [], reports: [], tickets: [], team: [owner], activity: [], pending: [] }
 }

@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { LogoMark } from '../components/ui/Logo'
 import { useDashboard } from '../mock/dashboard'
 import { cn } from '../lib/cn'
+import { can, landing, moduleOf, useMe } from '../session'
 import { NAV, activeNav } from './nav'
 import type { NavItem } from './nav'
 
@@ -18,8 +19,13 @@ export default function Sidebar() {
   const { pathname } = useLocation()
   const active = activeNav(pathname)
   const account = pathname.startsWith('/account')
-  /** The one frame drawn as a sub-admin (2065:207638): their card, the same eight modules. */
-  const asSub = pathname === '/account/sub-admin'
+  /**
+   * The signed-in person: their card, and only the modules they may open. The
+   * one frame drawn as a sub-admin (2065:207638) still shows all eight; the
+   * access toggles on a sub-admin's profile now decide it.
+   */
+  const me = useMe()
+  const photo = me?.id === 'tm-peter' ? '/img/peter-avatar.png' : me?.id === 'tm-maya' ? '/img/team/maya-40.png' : me?.photo
   /** The two badges are counts from the shared platform: everything pending on the Dashboard, and open tickets. */
   const { badges } = useDashboard()
   const badgeFor: Record<string, string> = { dashboard: String(badges.dashboard), support: String(badges.support) }
@@ -27,30 +33,32 @@ export default function Sidebar() {
   return (
     <nav aria-label="Main" className="fixed inset-y-0 left-0 z-30 flex w-nav flex-col border-r-1 border-shell-edge bg-bg-1">
       <div className="flex h-[73px] shrink-0 items-start px-5 pt-5">
-        <Link to="/dashboard" className="flex items-center gap-[14px]">
+        <Link to={landing(me)} className="flex items-center gap-[14px]">
           <LogoMark className="h-8 w-[26px]" />
           <span className="text-title-l font-medium"><span className="text-text-subtitle">Admin</span> <span className="text-text-body">Panel</span></span>
         </Link>
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-4">
-        {NAV.map(({ group, items }, g) => (
+        {NAV.map(({ group, items }) => ({ group, items: items.filter((i) => { const m = moduleOf(i.to); return !m || can(me, m) }) })).filter((x) => x.items.length > 0).map(({ group, items }, g) => (
           <div key={group} className="flex flex-col">
             <p className={cn('px-4 pb-1.5 text-text-regular leading-5 text-text-body', g === 0 ? 'pt-[17px]' : 'pt-3.5')}>{group}</p>
             <ul className="flex flex-col gap-0.5">
               {items.map((item) => (
-                <NavRow key={item.key} item={item.badge ? { ...item, badge: badgeFor[item.key] ?? item.badge } : item} active={active.item === item.key} activeChild={active.child} />
+                <NavRow key={item.key} item={item.badge ? { ...item, badge: badgeFor[item.key] === '0' ? undefined : badgeFor[item.key] ?? item.badge } : item} active={active.item === item.key} activeChild={active.child} />
               ))}
             </ul>
           </div>
         ))}
       </div>
 
-      <Link to={asSub ? '/account/sub-admin' : '/account'} className="mx-4 mb-4 flex h-[60px] shrink-0 items-center gap-2 rounded-md border-1 border-stroke-1 bg-bg-0 px-2">
-        <img src={asSub ? '/img/team/maya-40.png' : '/img/peter-avatar.png'} alt="" className="h-10 w-10 rounded-sm object-cover" />
+      <Link to="/account" className="mx-4 mb-4 flex h-[60px] shrink-0 items-center gap-2 rounded-md border-1 border-stroke-1 bg-bg-0 px-2">
+        {photo
+          ? <img src={photo} alt="" className="h-10 w-10 rounded-sm object-cover" />
+          : <span className="flex h-10 w-10 items-center justify-center rounded-sm bg-bg-2 text-body-medium text-text-subtitle">{me?.name.slice(0, 1)}</span>}
         <span className="flex flex-col">
-          <span className={cn('text-text-medium', account ? 'text-brand-primary' : 'text-text-subtitle')}>{asSub ? 'Maya Thompson' : 'Peter Devian'}</span>
-          <span className="text-text-regular text-text-body">{asSub ? 'Studies Manager' : 'Master Admin'}</span>
+          <span className={cn('text-text-medium', account ? 'text-brand-primary' : 'text-text-subtitle')}>{me?.name}</span>
+          <span className="text-text-regular text-text-body">{me?.master ? 'Master Admin' : me?.role}</span>
         </span>
       </Link>
     </nav>

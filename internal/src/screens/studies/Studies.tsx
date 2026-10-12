@@ -99,7 +99,7 @@ export default function Studies() {
       </div>
 
       <p className="pt-4 text-body-regular text-text-body">{count}</p>
-      <Table className="mt-2" rows={shown} rowKey={(r) => r.id} highlight="st-pay" onRowClick={open} columns={columns[tab]} />
+      <Table empty={{ review: 'Studies that clients submit for review will appear here.', ongoing: 'Studies you approve will appear here while they run.', completed: 'Studies will appear here once they are completed.' }[tab]} className="mt-2" rows={shown} rowKey={(r) => r.id} highlight="st-pay" onRowClick={open} columns={columns[tab]} />
     </AppShell>
   )
 }

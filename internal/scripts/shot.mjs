@@ -115,7 +115,8 @@ async function capture(s, job) {
    * job and navigate again. A reload would replay whatever the guard
    * redirected to rather than the route that was asked for.
    */
-  const signedIn = !SIGNED_OUT && job.signedOut !== true
+  // The auth screens turn a signed-in visitor away, so they render signed out.
+  const signedIn = !SIGNED_OUT && job.signedOut !== true && !/^\/?(signup|signin|check-email|reset-password|set-password)/.test(route)
   const target = base + '/' + route.replace(/^\/+/, '')
   for (let attempt = 0; attempt < 3; attempt += 1) {
     await s('Runtime.evaluate', { expression: sessionScript(signedIn) })

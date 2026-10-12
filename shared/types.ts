@@ -394,6 +394,11 @@ export interface TeamMember {
   master?: boolean
   access: Module[]
   active: boolean
+  /**
+   * What they sign in to the console with. Plain text, because this build has
+   * no backend to hash it on: a demo credential, never a real one.
+   */
+  password?: string
 }
 
 /** One line of the console's activity log. Written by the store, never by a screen. */
