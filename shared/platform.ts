@@ -165,5 +165,29 @@ export const TIMINGS = {
   toast: 3000,
 } as const
 
+/**
+ * The two waits a participant is told about, each said one way everywhere.
+ * No source file states either: the withdrawal time is the one the policy is
+ * reported to give (2-3 working days), and the review time is the longer of
+ * the two Figma drew, so it never promises more than the team can do by hand.
+ */
+export const WAITS = {
+  /** Hearing back on a screener, and a completed study's response being processed. */
+  REVIEW: '3-5 days',
+  /** A withdrawal reaching the bank. */
+  WITHDRAWAL: '2-3 working days',
+  /** "Expected in bank by" is the far end of that: this many working days after the request. */
+  WITHDRAWAL_LATEST_WORKING_DAYS: 3,
+} as const
+
+/** A date `n` working days (Monday to Friday) after `iso`. */
+export function workingDaysAfter(iso: string, n: number): string {
+  const d = new Date(iso)
+  let left = n
+  while (left > 0) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0 && d.getDay() !== 6) left -= 1 }
+  return d.toISOString()
+}
+export const withdrawalExpectedBy = (requestedAt: string): string => workingDaysAfter(requestedAt, WAITS.WITHDRAWAL_LATEST_WORKING_DAYS)
+
 /** Tables in the client app and the console page at ten rows. */
 export const PAGE_SIZE = 10

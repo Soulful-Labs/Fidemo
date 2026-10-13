@@ -65,7 +65,7 @@ function ticketRow(state: PlatformState, t: PlatformTicket): TicketRecord {
   return {
     id: t.id, subject: t.subject, message: t.message, number: t.id,
     last: `${who}: ${last.text.slice(0, 90)}${last.text.length > 90 ? '…' : ''}`,
-    unread: t.status === 'open' && last.from !== 'user', status: t.status === 'open' ? 'Open' : 'Solved',
+    unread: t.status === 'open' && last.from !== 'user', status: t.status === 'open' ? 'Open' : 'Closed',
     activity: dayOrToday(t.lastActivityAt), created: monthDayYear(t.createdAt), day: new Date(t.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'long' }),
     messages: t.messages.map((m) => ({
       id: m.id, from: m.from === 'user' ? 'client' as const : 'support' as const, auto: m.from === 'auto' || undefined,

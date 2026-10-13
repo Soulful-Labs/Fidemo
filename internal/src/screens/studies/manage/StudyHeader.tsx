@@ -1,3 +1,4 @@
+import { copyText } from '../../../components/app/Notice'
 import { useState } from 'react'
 import StudyTypeTag from '../../../components/app/StudyTypeTag'
 import { IconButton } from '../../../components/ui/Button'
@@ -36,7 +37,7 @@ const MENU = ['Copy Study Link', 'Pause Study', 'Stop-complete Study']
  */
 export default function StudyHeader({ study, onPause, onComplete }: { study: ManagedStudy; onPause: () => void; onComplete: () => void }) {
   const [menu, setMenu] = useState(false)
-  const copy = () => { void navigator.clipboard?.writeText(study.figures.shareLink) }
+  const copy = () => { void copyText(study.figures.shareLink, 'Study link') }
   const items = MENU
   const pick = (item: string) => {
     setMenu(false)

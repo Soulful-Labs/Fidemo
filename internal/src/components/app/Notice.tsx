@@ -20,3 +20,14 @@ export default function NoticeHost() {
   if (!m) return null
   return <p role="status" className="fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 rounded-md bg-text-title px-4 py-3 text-text-regular text-bg-0">{m}</p>
 }
+
+/** Copies to the clipboard and says so, or says it could not: never silently. */
+export async function copyText(text: string, what = 'Link'): Promise<void> {
+  try {
+    if (!navigator.clipboard) throw new Error('no clipboard')
+    await navigator.clipboard.writeText(text)
+    notice(`${what} copied`)
+  } catch {
+    notice(`Could not copy the ${what.toLowerCase()}. Your browser blocked the clipboard.`)
+  }
+}

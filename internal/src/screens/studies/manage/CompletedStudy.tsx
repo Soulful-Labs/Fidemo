@@ -1,3 +1,4 @@
+import { copyText } from '../../../components/app/Notice'
 import { useState } from 'react'
 import AppShell from '../../../app/AppShell'
 import Pill from '../../../components/app/Pill'
@@ -41,7 +42,7 @@ const Stat = ({ label, value, rest, ring }: { label: string; value: string; rest
  */
 export default function CompletedStudy({ study, tab, onTab }: { study: ManagedStudy; tab: Tab; onTab: (t: Tab) => void }) {
   const [menu, setMenu] = useState(false)
-  const copy = () => { void navigator.clipboard?.writeText(study.figures.shareLink) }
+  const copy = () => { void copyText(study.figures.shareLink, 'Study link') }
   return (
     <AppShell className="flex flex-col pb-8" crumbs={[{ label: 'Studies', to: '/studies' }, { label: 'Completed', to: '/studies?tab=completed' }, { label: study.title }]}>
       <header className="flex gap-6 rounded-lg bg-bgAlt-1 p-4">

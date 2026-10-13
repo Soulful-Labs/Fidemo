@@ -1,3 +1,4 @@
+import { avatarFor } from '@shared/avatar'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import AppShell from '../../app/AppShell'
@@ -127,9 +128,9 @@ export default function KitchenSink() {
             {['All', 'Interview', 'Focus Group'].map((t) => <OptionTile key={t} selected={tile === t} onClick={() => setTile(t)}>{t}</OptionTile>)}
           </div>
           <div className="flex items-end gap-3">
-            <Avatar name="Peter Devian" src="/img/peter-avatar.png" size={24} />
-            <Avatar name="Peter Devian" src="/img/peter-avatar.png" size={40} />
-            <Avatar name="Peter Devian" src="/img/peter-avatar.png" size={48} />
+            <Avatar name="Peter Devian" src={avatarFor('tm-peter')} size={24} />
+            <Avatar name="Peter Devian" src={avatarFor('tm-peter')} size={40} />
+            <Avatar name="Peter Devian" src={avatarFor('tm-peter')} size={48} />
             <Avatar name="F" size={64} />
           </div>
         </Section>

@@ -56,7 +56,7 @@ export default function SupportChat() {
       <TopBar title={ticket.subject} onBack={back} />
 
       <div className="flex items-center gap-2 border-b-1 border-stroke-2 px-4 py-2">
-        <Tag tone={ticket.status === 'open' ? 'yellow' : 'green'}>{ticket.status === 'open' ? 'Open' : 'Solved'}</Tag>
+        <Tag tone={ticket.status === 'open' ? 'yellow' : 'green'}>{ticket.status === 'open' ? 'Open' : 'Closed'}</Tag>
         <span className="text-body-regular text-text-title">#{ticket.id}</span>
         <button type="button" aria-label="Ticket info" onClick={() => setInfo(true)} className="ml-auto text-text-title"><Info className="h-6 w-6" /></button>
       </div>

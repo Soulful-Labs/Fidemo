@@ -1,3 +1,6 @@
+import { resultsOf } from '../../mock/respondent'
+import type { QA } from '../../mock/respondent'
+import { csv, fileName, pdf, save } from '@shared/files'
 import { Avatar } from '../../components/client/RespondentCard'
 import { useNavigate, useParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
@@ -36,6 +39,10 @@ function Seal() {
  * summaries card, the completed respondents with the client's own rating
  * against each, and the study verification certificate.
  */
+/** One answer as a spreadsheet cell. */
+const answerText = (a: QA['answer']): string =>
+  a.kind === 'text' ? a.value : a.kind === 'file' ? `${a.name} (${a.size})` : a.kind === 'matrix' ? a.rows.map((r) => `${r.label}: ${a.columns[r.choice] ?? ''}`).join('; ') : a.values.join('; ')
+
 export default function ResultsTab() {
   const toast = useToast()
   const { id } = useParams()
@@ -69,7 +76,10 @@ export default function ResultsTab() {
                 <p className="text-body-medium text-text-title">{SUMMARIES.title}</p>
                 <p className="text-text-regular text-text-subtitle">{SUMMARIES.body}</p>
               </div>
-              <Button variant="secondary" size="none" className="h-12 px-6" onClick={() => toast('Summaries downloaded')}
+              <Button variant="secondary" size="none" className="h-12 px-6" onClick={() => {
+                const lines = rows.flatMap((r) => resultsOf(s, r.participation).flatMap((sec) => sec.answers.map((qa) => [r.name, r.role, sec.label ?? '', qa.prompt, answerText(qa.answer)])))
+                toast(lines.length ? `Saved ${save(fileName(`${s.title} results`, 'csv'), csv(['Respondent', 'Role', 'Entry', 'Question', 'Answer'], lines))}` : 'No completed responses to download yet')
+              }}
                 leftIcon={<Download className="h-4 w-4" />} rightIcon={<ChevronRight className="h-4 w-4" />}>
                 {SUMMARIES.cta}
               </Button>
@@ -138,7 +148,7 @@ export default function ResultsTab() {
                 <p className="text-text-regular text-text-subtitle">CERT ID · {cert.id} · Issued {monthDayYear(cert.issuedAt)}</p>
               </div>
             </div>
-            <Button variant="secondary" size="none" className="h-12 px-4" onClick={() => toast('Certificate downloaded')} leftIcon={<Download className="h-4 w-4" />}>
+            <Button variant="secondary" size="none" className="h-12 px-4" onClick={() => toast(`Saved ${save(fileName(`certificate ${cert.id}`, 'pdf'), pdf('Human Certificate', [`Cert ID ${cert.id}`, `Issued ${monthDayYear(cert.issuedAt)}`, `Study: ${s.title}`, '', `${cert.verified} of ${cert.total} completions verified human`, CERTIFICATE.body]))}`)} leftIcon={<Download className="h-4 w-4" />}>
               {CERTIFICATE.cta}
             </Button>
           </div>

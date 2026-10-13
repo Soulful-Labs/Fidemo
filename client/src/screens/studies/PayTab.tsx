@@ -1,3 +1,4 @@
+import { fileName, pdf, save } from '@shared/files'
 import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
@@ -133,7 +134,7 @@ export default function PayTab() {
                     </span>
                     <span className="flex flex-col items-end gap-2">
                       <span className="text-text-regular leading-5 text-text-title">{t.amount}</span>
-                      <Button variant="tertiary" size="none" className="h-[38px] px-4" onClick={() => toast('Receipt downloaded')}
+                      <Button variant="tertiary" size="none" className="h-[38px] px-4" onClick={() => toast(`Saved ${save(fileName(`receipt ${t.label} ${t.at}`, 'pdf'), pdf(`Receipt: ${t.label}`, [`Study: ${s.title}`, t.at, t.sub, '', `Amount: ${t.amount}`]))}`)}
                         leftIcon={<Download className="h-4 w-4" />}>Receipt</Button>
                     </span>
                   </div>

@@ -1,3 +1,4 @@
+import { avatarFor } from '@shared/avatar'
 import { useNavigate } from 'react-router-dom'
 import StudyTypeTag from '../../components/app/StudyTypeTag'
 import Button from '../../components/ui/Button'
@@ -31,7 +32,7 @@ export default function TransactionDetails({ kind, id, onClose }: { kind: Detail
       <h3 className="text-body-regular text-text-subtitle">{title}</h3>
       <div className="mt-3 rounded-lg bg-bgAlt-1 p-3 text-text-regular leading-5">
         <p className="text-text-subtitle">{partyLabel}</p>
-        <p className="flex items-center justify-between pt-2"><span className="flex h-8 items-center gap-2 rounded-full bg-bgAlt-2 px-3 text-text-title"><img src="/img/verifications/robert.png" alt="" className="h-4 w-4 rounded-full" />{party}<ExternalIcon className="h-4 w-4 text-text-subtitle" /></span><span className="text-body-medium text-state-success">$350</span></p>
+        <p className="flex items-center justify-between pt-2"><span className="flex h-8 items-center gap-2 rounded-full bg-bgAlt-2 px-3 text-text-title"><img src={avatarFor(String(party))} alt="" className="h-4 w-4 rounded-full" />{party}<ExternalIcon className="h-4 w-4 text-text-subtitle" /></span><span className="text-body-medium text-state-success">$350</span></p>
         <p className="pt-2 text-title-s text-text-title">{t?.amount}</p><p className="pt-2 text-text-title">{t?.at}</p>
         <hr className="my-3 border-0 border-t-1 border-stroke-1" />
         <p className="text-text-subtitle">Transaction ID</p><p className="pt-1 text-body-regular text-text-title">{t?.row.reference}</p>

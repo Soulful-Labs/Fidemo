@@ -1,10 +1,12 @@
+import { avatarFor } from '@shared/avatar'
+import { withdrawalExpectedBy } from '@shared/platform'
 import { sharedVideo } from '@shared/derive'
 import { useMemo } from 'react'
 import {
   ageFrom, certificateId, hasCertificate, payoutRows, personById, personFigures, pointsRows, profileCompletion, redeemRows, respondentStudies, walletRows,
 } from '@shared/derive'
 import type { RespondentStudy } from '@shared/derive'
-import { clockTime, dayMonthYear, money, monthDayYear } from '@shared/format'
+import { clockTime, dayMonthYear, money, monthDayYear, monthDayYearTime } from '@shared/format'
 import type { StudyType } from '../components/app/StudyTypeTag'
 import { consoleType, studyPictures, usePlatform } from '../platform'
 import { photoFor, tierName } from './participants'
@@ -78,10 +80,12 @@ export function useProfile(personId?: string) {
       INVITES, SCHEDULED, APPLIED, HISTORY,
       SAVED: { invites: saved(INVITES), scheduled: saved(SCHEDULED), drafts: DRAFTS, applied: saved(APPLIED), history: saved(HISTORY) },
       EARNINGS: walletRows(state, p.id).map((r) => ({ what: r.title, day: monthDayYear(r.at), time: clockTime(r.at), id: r.txNumber, amount: money(r.amount) })),
-      PAYOUTS: payoutRows(p).map((r) => ({ key: r.id, day: monthDayYear(r.at), time: clockTime(r.at), to: `To ${p.payoutMethods.find((m) => m.accountNumber.replace(/\s/g, '').endsWith(r.destination.replace(/\D/g, '')))?.bankName ?? 'Bank'}... ${r.destination}`, id: r.txId, amount: money(r.amount), status: r.status === 'processing' ? 'Processing' : 'Completed' })),
+      PAYOUTS: payoutRows(p).map((r) => ({ key: r.id, day: monthDayYear(r.at), time: clockTime(r.at), to: `To ${p.payoutMethods.find((m) => m.accountNumber.replace(/\s/g, '').endsWith(r.destination.replace(/\D/g, '')))?.bankName ?? 'Bank'}... ${r.destination}`, id: r.txId, amount: money(r.amount), status: r.status === 'processing' ? 'Processing' : 'Completed',
+        /** For Payout Details: the payout itself, not the frame's sample. */
+        bank: r.destination.slice(-4), when: monthDayYearTime(r.at), fee: money(r.fee), net: money(r.net), expected: r.status === 'processing' ? monthDayYear(r.expectedBy ?? withdrawalExpectedBy(r.at)) : '' })),
       POINTS: pointsRows(state, p.id).map((r) => ({ key: r.id, kind: r.label, what: r.detail, points: `+${r.amount}` })),
       REDEEMS: redeemRows(p).map((r) => ({ key: r.id, what: `${r.points} points redeemed`, points: `-${r.points}` })),
-      REFERRALS: p.referrals.map((r, i) => ({ key: r.id, photo: `/img/participants/ref${(i % 8) + 1}.png`, name: r.name, email: r.email, joined: monthDayYear(r.at), status: r.status === 'joined' ? 'Joined' : 'Completed' })),
+      REFERRALS: p.referrals.map((r) => ({ key: r.id, photo: avatarFor(r.id), name: r.name, email: r.email, joined: monthDayYear(r.at), status: r.status === 'joined' ? 'Joined' : 'Completed' })),
       figures: f,
     }
   }, [state, personId])

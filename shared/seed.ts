@@ -10,6 +10,8 @@
  * stale: sessions are always a few days ahead and "paid last month" is
  * always last month.
  */
+import { avatarFor } from './avatar'
+import { withdrawalExpectedBy } from './platform'
 import { DEMO_SESSION_CODE, isSessionType, priceStudy } from './platform'
 import { SCREENERS, TASKS } from './seed/screeners'
 import { catalogue } from './seed/catalogue'
@@ -23,7 +25,7 @@ import type {
   Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudySetup, StudyType, TeamMember, Ticket,
 } from './types'
 
-export const SEED_VERSION = 6
+export const SEED_VERSION = 7
 export const DEMO_PERSON_ID = 'jonathan'
 export const DEMO_PERSON_EMAIL = 'jonathan.reeve@example.com'
 export const DEMO_CLIENT_ID = 'cl-soulful'
@@ -198,7 +200,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
       { id: 'pm-2', bankName: 'Chase Bank', accountNumber: '9921 4410 7788 4521', routingCode: '80123344', type: 'Savings', isDefault: false },
     ],
     payouts: [
-      { id: 'po-1', at: at(-5, 23, 0), amount: 100, destination: '****7790', txId: '#152356789107', status: 'processing', expectedBy: at(-3, 17, 0) },
+      { id: 'po-1', at: at(-5, 23, 0), amount: 100, destination: '****7790', txId: '#152356789107', status: 'processing', expectedBy: withdrawalExpectedBy(at(-5, 23, 0)) },
       { id: 'po-2', at: at(-120, 14, 20), amount: 250, destination: '****7790', txId: '#152356712004', status: 'completed' },
       { id: 'po-3', at: at(-330, 10, 5), amount: 500, destination: '****4521', txId: '#152356698771', status: 'completed' },
     ],
@@ -427,18 +429,18 @@ export function buildSeed(now: Date = new Date()): PlatformState {
 
   const sleep = live('st-sleep', 'Share about your sleep cycle', 'in_person', 'completed', 'Healthcare', 60,
     'Share about your sleep cycle, how you track it and what changes it through the week.',
-    'sleep.jpg', 60, 6, 89, 'allow', 'sleep', 'Adults who have tried to improve their sleep this year', { city: 'Boston' })
+    'sleep.svg', 60, 6, 89, 'allow', 'sleep', 'Adults who have tried to improve their sleep this year', { city: 'Boston' })
   sleep.participations = fill(sleep, { rated: 12, completed: 48, noShow: 3, disqualified: 8 }, { doneFrom: -70, doneTo: -8 })
 
   const fitness = live('st-fitness', 'Fitness tracker apps experience', 'group_video_call', 'ongoing', 'Health', 60,
     'Talk through the fitness tracker apps you use and what keeps you coming back to them.',
-    'runner.jpg', 60, 12, 84, 'prefer_fresh', 'fitness', 'Regular users of a fitness or activity app')
+    'fitness.svg', 60, 12, 84, 'prefer_fresh', 'fitness', 'Regular users of a fitness or activity app')
   fitness.sessions = sessionsFor(fitness, 6, 3)
   fitness.participations = fill(fitness, { rated: 2, completed: 16, unpaid: 2, noShow: 4, recruited: 2, scheduled: 10, qualified: 6, disqualified: 7, applied: 12, invited: 6, matched: 9 }, { doneFrom: -30, doneTo: -6 })
 
   const travel = live('st-travel', 'Travel preferences and experiences', 'in_person_group', 'completed', 'Travel', 60,
     'Talk through how you plan and book travel, and what changes your mind at the last minute.',
-    'airport.jpg', 45, 12, 94, 'allow', 'travel', 'Frequent flyers who book their own travel', { city: 'Chicago' })
+    'travel.svg', 45, 12, 94, 'allow', 'travel', 'Frequent flyers who book their own travel', { city: 'Chicago' })
   travel.sessions = sessionsFor(travel, 40, -20)
   travel.participations = fill(travel, { rated: 6, completed: 34, noShow: 2, disqualified: 5 }, { doneFrom: -60, doneTo: -14 })
 
@@ -563,7 +565,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
     }, 60, 'education', TASKS.education),
     base({
       id: 'st-rv-2', clientId: 'cl-orbit', title: 'Booking flow interviews', type: 'video_call', state: 'in_review', industry: 'Travel', durationMins: 45,
-      description: 'One to one calls on how people compare and book flights, and where they abandon the flow.', image: '/img/airport.jpg', required: 15,
+      description: 'One to one calls on how people compare and book flights, and where they abandon the flow.', image: '/img/travel.svg', required: 15,
       createdAt: at(-5, 10, 0), submittedAt: at(-4, 9, 10), endsAt: at(26, 18, 0), targetProfession: 'Frequent flyers who book their own travel',
     }, 140, 'travel'),
     onboardingStudy,
@@ -678,17 +680,17 @@ export function buildSeed(now: Date = new Date()): PlatformState {
 
   // ------------------------------------------------------------------- team
 
-  const member = (id: string, name: string, role: string, access: TeamMember['access'], n: number, active = true): TeamMember =>
-    ({ id, name, role, email: `${name.toLowerCase().replace(' ', '.')}@humanlayer.com`, photo: `/img/team/s${n}.png`, access, active, password: DEMO_TEAM_PASSWORD })
+  const member = (id: string, name: string, role: string, access: TeamMember['access'], active = true): TeamMember =>
+    ({ id, name, role, email: `${name.toLowerCase().replace(' ', '.')}@humanlayer.com`, photo: avatarFor(id), access, active, password: DEMO_TEAM_PASSWORD })
   const team: TeamMember[] = [
-    { id: MASTER_ADMIN_ID, name: 'Peter Devian', role: 'Master Admin', email: DEMO_ADMIN_EMAIL, photo: '/img/team/peter.png', master: true, active: true, password: DEMO_TEAM_PASSWORD,
+    { id: MASTER_ADMIN_ID, name: 'Peter Devian', role: 'Master Admin', email: DEMO_ADMIN_EMAIL, photo: avatarFor(MASTER_ADMIN_ID), master: true, active: true, password: DEMO_TEAM_PASSWORD,
       access: ['Dashboard', 'Studies', 'Participants', 'Clients', 'Support', 'Finance', 'Pricing & Rewards', 'Sub-Admin'] },
-    { ...member('tm-maya', 'Maya Thompson', 'Studies Manager', ['Studies', 'Participants'], 1), photo: '/img/team/maya.png' },
-    member('tm-robert', 'Robert Mayfield', 'Community Manager', ['Dashboard', 'Clients', 'Participants'], 2, false),
-    member('tm-michael', 'Michael Chen', 'Finance Manager', ['Finance'], 3),
-    member('tm-sophia', 'Sophia Garcia', 'Support Executive', ['Studies', 'Participants', 'Clients', 'Support'], 4),
-    member('tm-emily', 'Emily Davis', 'System Admin', ['Sub-Admin', 'Dashboard'], 5),
-    member('tm-james', 'James Wilson', 'Community Manager', ['Dashboard', 'Studies', 'Participants'], 6),
+    member('tm-maya', 'Maya Thompson', 'Studies Manager', ['Studies', 'Participants']),
+    member('tm-robert', 'Robert Mayfield', 'Community Manager', ['Dashboard', 'Clients', 'Participants'], false),
+    member('tm-michael', 'Michael Chen', 'Finance Manager', ['Finance']),
+    member('tm-sophia', 'Sophia Garcia', 'Support Executive', ['Studies', 'Participants', 'Clients', 'Support']),
+    member('tm-emily', 'Emily Davis', 'System Admin', ['Sub-Admin', 'Dashboard']),
+    member('tm-james', 'James Wilson', 'Community Manager', ['Dashboard', 'Studies', 'Participants']),
   ]
 
   /** What the team has already done in this seed. Each line is an action the lists above record the result of. */

@@ -1,3 +1,4 @@
+import { avatarFor } from '@shared/avatar'
 import IntroVideo from '../../../components/app/IntroVideo'
 import type { ReactNode } from 'react'
 import TierTag from '../../../components/app/TierTag'
@@ -70,7 +71,7 @@ export default function AboutTab({ onReviews, view }: { onReviews: () => void; v
           <File thumb="/img/participants/passport.png" name="Passport front.pdf" meta="5 MB" /><File thumb="/img/participants/passport.png" name="Passport back.pdf" meta="5 MB" />
           <Check>Govt. ID Verified</Check>
           <p className="pt-1 text-text-regular leading-5 text-text-subtitle">Selfie Verification</p>
-          <div className="flex h-10 items-center gap-2 rounded-md border-1 border-stroke-1 bg-bg-0 px-2 text-body-regular text-text-title"><img src="/img/participants/selfie.png" alt="" className="h-6 w-6 rounded-full object-cover" />Selfie photo verified</div>
+          <div className="flex h-10 items-center gap-2 rounded-md border-1 border-stroke-1 bg-bg-0 px-2 text-body-regular text-text-title"><img src={avatarFor(PERSON.id)} alt="" className="h-6 w-6 rounded-full object-cover" />Selfie photo verified</div>
           <Check>Human Verified</Check>
         </div>
       </Card>

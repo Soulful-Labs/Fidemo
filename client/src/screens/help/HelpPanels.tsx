@@ -97,7 +97,7 @@ export function MarkSolvedModal({ open, onClose, onConfirm }: { open: boolean; o
       footer={
         <>
           <Button variant="tertiary" className="flex-1" onClick={onClose}>Cancel</Button>
-          <Button className="flex-1" onClick={onConfirm ?? onClose}>Mark as solved</Button>
+          <Button className="flex-1" onClick={onConfirm ?? onClose}>Close Ticket</Button>
         </>
       }>
       <span className="mx-auto -order-1 flex h-[72px] w-[72px] items-center justify-center rounded-full bg-green-50 text-brand-secondary">

@@ -1,3 +1,4 @@
+import { copyText } from '../../../components/app/Notice'
 import { Fragment } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -82,7 +83,7 @@ export default function OverviewTab({ study, paused }: { study: ManagedStudy; pa
         <Field label="Share Link">
           <div className="flex gap-3">
             <p className="flex h-12 min-w-0 flex-1 items-center truncate rounded-md border-1 border-stroke-input bg-bg-0 px-3 text-body-regular text-text-subtitle">{study.figures.shareLink}</p>
-            <Button variant="tertiary" className="w-[103px] px-0" leftIcon={<CopyIcon className="h-5 w-5" />} onClick={() => { void navigator.clipboard?.writeText(study.figures.shareLink) }}>Copy</Button>
+            <Button variant="tertiary" className="w-[103px] px-0" leftIcon={<CopyIcon className="h-5 w-5" />} onClick={() => { void copyText(study.figures.shareLink, 'Study link') }}>Copy</Button>
           </div>
         </Field>
         <Field label="Active Since"><p className="text-body-regular leading-[22px] text-text-subtitle">{study.figures.activeSince}</p></Field>

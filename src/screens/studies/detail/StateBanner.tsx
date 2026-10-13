@@ -1,3 +1,4 @@
+import { WAITS } from '@shared/platform'
 import { diaryWords } from '@shared/platform'
 import type { ReactNode } from 'react'
 import { cn } from '../../../lib/cn'
@@ -80,7 +81,7 @@ function bannerContent(study: Study): BannerContent | null {
     case 'in_process':
       return {
         tone: 'blue', title: 'In Process', headline: `${money(study.reward)} credited, awaiting client approval`,
-        body: 'Your study response is under process. The client approves the payout list against the people they approved into the study, usually within 3-5 days, and the reward then lands in your wallet.',
+        body: `Your study response is under process. The client approves the payout list against the people they approved into the study, usually within ${WAITS.REVIEW}, and the reward then lands in your wallet.`,
       }
     case 'not_needed':
       return {

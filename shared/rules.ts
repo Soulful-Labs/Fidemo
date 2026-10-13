@@ -16,7 +16,7 @@ export const TRUST = {
   MIN: 50,
   MAX: 100,
   ONBOARDING: 50,
-  /** "+1% for each completed study, up to 10 studies in a year." */
+  /** "+1 for each completed study, up to 10 studies in a year." The score is a number out of 100, never a percentage. */
   STUDY_COMPLETION: 1,
   STUDY_COMPLETION_CAP_PER_YEAR: 10,
   /** "Ratings from the last 10 studies count", "+40% max". */

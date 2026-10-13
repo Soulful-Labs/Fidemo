@@ -1,3 +1,4 @@
+import { copyText } from '../../../components/app/Notice'
 import { Fragment } from 'react'
 import type { ReactNode } from 'react'
 import Button from '../../../components/ui/Button'
@@ -80,7 +81,7 @@ export function ActivityList({ items, inline }: { items: ActivityItem[]; inline?
 /** Verification PIN: the study's own session code (shared/store.ts) in a 48px box with a copy button. `wide` runs the full width with the code on the right. */
 export function PinCard({ code: pin, text, wide }: { code: string; text: string; wide?: boolean }) {
   const code = (
-    <button type="button" aria-label="Copy PIN" onClick={() => { void navigator.clipboard?.writeText(pin) }}
+    <button type="button" aria-label="Copy PIN" onClick={() => { void copyText(pin, 'PIN') }}
       className="flex h-12 w-[198px] shrink-0 items-center justify-between rounded-md border-1 border-stroke-1 bg-bg-0 px-4 text-title-m tracking-[0.04em] text-text-title">
       {pin}<CopyIcon className="h-6 w-6" />
     </button>

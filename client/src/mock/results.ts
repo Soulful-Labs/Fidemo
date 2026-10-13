@@ -1,7 +1,8 @@
 /** Results tab: the copy of its two cards. Every figure and every row is derived (shared/derive.ts). */
 export const SUMMARIES = {
   title: 'Results Summaries',
-  body: 'Get AI Summaries of all the results',
+  /** It was "Get AI Summaries of all the results". No summaries are written; the file is every completed answer. */
+  body: 'Every completed answer, as a spreadsheet',
   cta: 'Download',
 }
 

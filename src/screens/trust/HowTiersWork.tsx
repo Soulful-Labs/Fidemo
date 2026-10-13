@@ -7,14 +7,14 @@ import { TIERS, tierFor } from '@shared/rules'
 import { useStore } from '../../mock/store'
 
 /**
- * Every string as drawn on Figma 1114:95843, including "In Top 25%" for Gold
+ * Every string as drawn on Figma 1114:95843, except Gold's "In Top 25%", which is the chip's "In Top 20%" here as everywhere (one figure, conflict 9)
  * (the dashboard chip says 20%; Figma is not made consistent) and the notes.
  * Thresholds are the policy's.
  */
 const TIER_ROWS = [
-  { key: 'platinum', top: 'In Top 5%', line: "You're in top expert participants.", text: 'text-tier-platinum', bg: 'bg-purple-fade', ring: 'border-tier-platinum' },
-  { key: 'gold', top: 'In Top 25%', line: "You're in most trusted participants!", text: 'text-tier-gold', bg: 'bg-yellow-fade', ring: 'border-tier-gold' },
-  { key: 'silver', top: 'In Top 50%', line: "You're rising on your way up!", text: 'text-tier-silver', bg: '', ring: 'border-tier-silver' },
+  { key: 'platinum', top: TIER_LABEL.platinum.top, line: "You're in top expert participants.", text: 'text-tier-platinum', bg: 'bg-purple-fade', ring: 'border-tier-platinum' },
+  { key: 'gold', top: TIER_LABEL.gold.top, line: "You're in most trusted participants!", text: 'text-tier-gold', bg: 'bg-yellow-fade', ring: 'border-tier-gold' },
+  { key: 'silver', top: TIER_LABEL.silver.top, line: "You're rising on your way up!", text: 'text-tier-silver', bg: '', ring: 'border-tier-silver' },
 ] as const
 
 const NOTES = [

@@ -1,3 +1,4 @@
+import { copyText } from '../../../components/app/Notice'
 import { useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import AppShell from '../../../app/AppShell'
@@ -77,7 +78,7 @@ export default function Profile() {
         <div className="relative flex flex-col items-end justify-between">
           <div className="flex items-center gap-3">
             <span className="text-title-l leading-[31px] text-text-title">{P.score}</span><TierTag tier={P.tier} size={32} />{Reviews}
-            <IconButton label="Copy profile link" className="ml-1" onClick={() => { void navigator.clipboard?.writeText(window.location.href) }}><LinkIcon className="h-5 w-5" /></IconButton>
+            <IconButton label="Copy profile link" className="ml-1" onClick={() => { void copyText(window.location.href) }}><LinkIcon className="h-5 w-5" /></IconButton>
             <IconButton label="Participant options" aria-expanded={menu} onClick={() => setMenu((m) => !m)}><DotsIcon className="h-5 w-5" /></IconButton>
           </div>
           {menu && (

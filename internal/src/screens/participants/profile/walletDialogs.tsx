@@ -1,3 +1,4 @@
+import type { ProfileView } from '../../../mock/profile'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import StudyTypeTag from '../../../components/app/StudyTypeTag'
@@ -59,25 +60,27 @@ export const EarningsFilters = (p: Props) => <Filters {...p} heading="Category" 
 export const PointsFilters = (p: Props) => <Filters {...p} heading="Type" cols="grid-cols-2 [&_button]:w-full" tiles={['All', 'Referral', 'Study', 'Streaks', 'One-time bonuses']} range={['Points', '0-500']} />
 
 /** Payout Details (2022:166340, 460 x 615): a withdrawal, its status and expected date, the breakdown, and the receipt. */
-export function PayoutDetails({ open, onClose }: Props) {
+export function PayoutDetails({ open, onClose, payout }: Props & { payout: ProfileView['PAYOUTS'][number] | null }) {
+  if (!payout) return null
+  const processing = payout.status === 'Processing'
   return (
     <Modal open={open} onClose={onClose} layout="titled" title="Payout Details">
       <div className="flex flex-col gap-4 text-text-regular leading-5">
-        <h3 className="text-title-s leading-[25px] text-text-title">Bank Transfer 2149</h3>
+        <h3 className="text-title-s leading-[25px] text-text-title">Bank Transfer {payout.bank}</h3>
         <div className="grid grid-cols-2 gap-y-4">
-          <div><p className="text-text-body">Withdrawal Amount</p><p className="pt-1 text-body-medium text-text-title">$500</p></div>
-          <div><p className="text-text-body">Date</p><p className="pt-1 text-text-title">Jul 23, 2026, 11:00 PM</p></div>
-          <div><p className="text-text-body">Transaction ID</p><p className="pt-1 text-text-title">#152356789107</p></div>
+          <div><p className="text-text-body">Withdrawal Amount</p><p className="pt-1 text-body-medium text-text-title">{payout.amount}</p></div>
+          <div><p className="text-text-body">Date</p><p className="pt-1 text-text-title">{payout.when}</p></div>
+          <div><p className="text-text-body">Transaction ID</p><p className="pt-1 text-text-title">{payout.id}</p></div>
         </div>
         <div>
           <p className="pb-1.5 text-text-subtitle">Status</p>
-          <span className="inline-flex h-8 items-center rounded-full bg-yellow-50 px-3.5 text-brand-primary">Processing</span>
-          <p className="mt-2 rounded-md bg-yellow-40 px-3 py-2 text-text-title">Expected in bank by <span className="text-text-medium">July 25, 2026</span></p>
+          <span className={processing ? 'inline-flex h-8 items-center rounded-full bg-yellow-50 px-3.5 text-brand-primary' : 'inline-flex h-8 items-center rounded-full bg-state-successBg px-3.5 text-state-success'}>{payout.status}</span>
+          {processing && <p className="mt-2 rounded-md bg-yellow-40 px-3 py-2 text-text-title">Expected in bank by <span className="text-text-medium">{payout.expected}</span></p>}
         </div>
         <dl className="rounded-md border-1 border-stroke-1 px-3 pb-1 pt-3">
           <dt className="pb-2 text-text-body">Payout Breakdown</dt>
-          {[['Withdrawal Amount', '$500'], ['Processing Fees', '$2']].map(([l, v]) => <div key={l} className="flex justify-between border-b-1 border-stroke-1 py-2 text-text-subtitle"><span>{l}</span><span>{v}</span></div>)}
-          <div className="flex justify-between py-2 text-text-medium text-text-title"><span>Receivable Amount</span><span>$498</span></div>
+          {[['Withdrawal Amount', payout.amount], ['Processing Fees', payout.fee]].map(([l, v]) => <div key={l} className="flex justify-between border-b-1 border-stroke-1 py-2 text-text-subtitle"><span>{l}</span><span>{v}</span></div>)}
+          <div className="flex justify-between py-2 text-text-medium text-text-title"><span>Receivable Amount</span><span>{payout.net}</span></div>
         </dl>
         <Button variant="tertiary" fullWidth leftIcon={<DownloadIcon className="h-5 w-5" />}>Download Receipt PDF</Button>
       </div>

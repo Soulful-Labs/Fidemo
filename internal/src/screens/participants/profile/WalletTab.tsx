@@ -35,6 +35,8 @@ const Balance = ({ label, value, total, green }: { label: string; value: string;
 export default function WalletTab({ sub, onSub, view }: { sub: WalletSub; onSub: (s: WalletSub) => void; view: ProfileView }) {
   const { EARNINGS, PAYOUTS, POINTS, REDEEMS, REFERRALS } = view
   const [dialog, setDialog] = useState<null | 'tx' | 'payout' | 'earnFilter' | 'pointFilter'>(null)
+  /** The payout row that was clicked: Payout Details shows that one. */
+  const [payout, setPayout] = useState<ProfileView['PAYOUTS'][number] | null>(null)
   const close = () => setDialog(null)
   return (
     <div>
@@ -65,7 +67,7 @@ export default function WalletTab({ sub, onSub, view }: { sub: WalletSub; onSub:
           </div>
           <H>Payout History</H>
           <div className="flex gap-3 pb-3"><SearchInput size="sm" placeholder="Search transaction..." /><Period w="w-60" /><Sort /></div>
-          <Table empty="Withdrawals will appear here." rowHeight={52} rows={PAYOUTS} rowKey={(r) => r.key} onRowClick={() => setDialog('payout')} columns={[
+          <Table empty="Withdrawals will appear here." rowHeight={52} rows={PAYOUTS} rowKey={(r) => r.key} onRowClick={(r) => { setPayout(r); setDialog('payout') }} columns={[
             { key: 'when', header: 'Date - Time', width: 316, sortable: true, render: (r) => <When day={r.day} time={r.time} /> },
             { key: 'to', header: 'To', width: 244, render: (r) => r.to }, { key: 'id', header: 'Transaction ID', width: 200, render: (r) => r.id },
             { key: 'amount', header: 'Amount', width: 200, sortable: true, render: (r) => <span className="text-text-medium">{r.amount}</span> },
@@ -111,7 +113,7 @@ export default function WalletTab({ sub, onSub, view }: { sub: WalletSub; onSub:
           ]} />
         </div>
       )}
-      <TransactionDetails open={dialog === 'tx'} onClose={close} /><PayoutDetails open={dialog === 'payout'} onClose={close} />
+      <TransactionDetails open={dialog === 'tx'} onClose={close} /><PayoutDetails open={dialog === 'payout'} onClose={close} payout={payout} />
       <EarningsFilters open={dialog === 'earnFilter'} onClose={close} /><PointsFilters open={dialog === 'pointFilter'} onClose={close} />
     </div>
   )

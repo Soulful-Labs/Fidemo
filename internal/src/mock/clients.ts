@@ -1,3 +1,4 @@
+import { avatarFor } from '@shared/avatar'
 import { useMemo } from 'react'
 import {
   billing, businessDecided, businessPending, clientById, clientRating, clientReviews, counts, invoices, paymentStats, studiesOf, studyById, teamById,
@@ -15,11 +16,8 @@ import { billView } from './money'
  */
 export interface Client { id: string; photo: string; name: string; role: string; company: string; industry: string; location: string; date: string }
 
-/** The ten portraits the frames were drawn with; a client keeps the same one on every screen. */
-export const clientPhoto = (state: PlatformState, id: string): string => {
-  const i = Math.max(0, state.clients.findIndex((c) => c.id === id))
-  return id === 'cl-soulful' ? '/img/clients/jennifer.png' : `/img/clients/c${(i % 10) + 1}.png`
-}
+/** A client's picture: a drawn, faceless figure from their id, the same on every screen. The frames' portraits were photographs of real faces. */
+export const clientPhoto = (_state: PlatformState, id: string): string => avatarFor(id)
 
 const row = (state: PlatformState, c: PlatformClient): Client => ({
   id: c.id, photo: clientPhoto(state, c.id), name: c.name, role: c.role, company: c.company, industry: c.industry, location: c.location,

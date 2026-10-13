@@ -1,3 +1,4 @@
+import { WAITS } from '@shared/platform'
 import { diaryWords } from '@shared/platform'
 import { dateTime } from './format'
 import type { AppNotification, Payout, PayoutMethod, PointsEntry, Referral, Study, Ticket } from '../mock/types'
@@ -35,6 +36,13 @@ interface Sources {
  * study that exists and a state it is really in (PRD 11 copy, workflow
  * events). Rows are sorted newest first; the newest few are unread.
  */
+
+/** The entry the reminder sends them to: the first one not yet done ("Day 4/7" once days 1 to 3 are in), not the count of those done. */
+const nextEntry = (d: { totalDays: number; completedDays: number[] }): number => {
+  for (let n = 1; n <= d.totalDays; n += 1) if (!d.completedDays.includes(n)) return n
+  return d.totalDays
+}
+
 export function buildNotifications(src: Sources): AppNotification[] {
   const out: AppNotification[] = []
   // Seeded events are in the past: nothing here happened "just now", so any timestamp
@@ -54,7 +62,7 @@ export function buildNotifications(src: Sources): AppNotification[] {
     switch (s.status) {
       case 'invited_to_complete':
         add({ id: `nt-${s.id}-complete`, kind: 'study', title: "Congrats! You're invited to complete study!",
-          body: `You've been qualified and invited to schedule study for ${s.title}`,
+          body: `You've been qualified and invited to complete the ${s.title} study.`,
           at: last(s, 'Invited to complete') ?? applied ?? s.endsAt,
           actionLabel: 'Start Study', to: `/studies/${s.id}/${s.type === 'diary' ? 'diary' : 'survey'}`, secondaryActionLabel: 'View Details', secondaryTo: `/studies/${s.id}` })
         // Sent 24 hours before the study closes, so it only exists once that moment has passed.
@@ -74,7 +82,7 @@ export function buildNotifications(src: Sources): AppNotification[] {
         break
       case 'applied':
         add({ id: `nt-${s.id}-screener`, kind: 'study', title: 'Screener submitted',
-          body: `Your screener for the ${s.title} study has been submitted. You'll hear back within 48 hours.`,
+          body: `Your screener for the ${s.title} study has been submitted. You'll hear back within ${WAITS.REVIEW}.`,
           at: applied ?? s.endsAt, to: `/studies/${s.id}` })
         add({ id: `nt-${s.id}-update`, kind: 'study', title: 'Application update!',
           body: `Your application for ${s.title} is still under consideration. Check back for the outcome.`,
@@ -94,8 +102,8 @@ export function buildNotifications(src: Sources): AppNotification[] {
         break
       case 'in_process':
         if (s.diary) add({ id: `nt-${s.id}-diary`, kind: 'study', title: 'Daily diary entry reminder!',
-          body: `Complete today's entry for the ${s.title} diary study. Entry #${(s.diary?.completedDays.length ?? 0) + 1} of ${s.diary?.totalDays ?? 5} is due today.`, at: shift(last(s, 'Diary completed') ?? s.endsAt, -24 * 60),
-          actionLabel: `Resume Study - ${diaryWords(s.diary.unit).Unit}${s.diary.completedDays.length}/${s.diary.totalDays}`, to: `/studies/${s.id}/diary` })
+          body: `Complete today's entry for the ${s.title} diary study. Entry #${nextEntry(s.diary)} of ${s.diary.totalDays} is due today.`, at: shift(last(s, 'Diary completed') ?? s.endsAt, -24 * 60),
+          actionLabel: `Resume Study - ${diaryWords(s.diary.unit).Unit} ${nextEntry(s.diary)}/${s.diary.totalDays}`, to: `/studies/${s.id}/diary` })
         break
       case 'paid':
         add({ id: `nt-${s.id}-paid`, kind: 'money', title: `You've received $${s.reward}!`,
@@ -135,7 +143,7 @@ export function buildNotifications(src: Sources): AppNotification[] {
     if (p.status === 'completed') add({ id: `nt-${p.id}`, kind: 'money', title: 'Your withdrawal has been processed!',
       body: `Withdrawal of $${p.amount} has been completed and credited to your ${bank(p.destination)} account ${p.destination} successfully.`, at: shift(p.at, 2 * 24 * 60), to: `/wallet/payouts/${p.id}` })
     else add({ id: `nt-${p.id}`, kind: 'money', title: 'Withdrawal request submitted',
-      body: `Your withdrawal request of $${p.amount} to ${bank(p.destination)} ${p.destination} has been submitted. Processing takes 3-5 business days.`, at: p.at, to: `/wallet/payouts/${p.id}` })
+      body: `Your withdrawal request of $${p.amount} to ${bank(p.destination)} ${p.destination} has been submitted. It will reach your bank within ${WAITS.WITHDRAWAL}.`, at: p.at, to: `/wallet/payouts/${p.id}` })
   }
 
   for (const e of src.pointsHistory) {

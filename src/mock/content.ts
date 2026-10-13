@@ -1,3 +1,5 @@
+import { WAITS } from '@shared/platform'
+
 /** Words and images the respondent screens show that are not data: the Help FAQs and the learn video still. */
 
 /** FAQ list from PRD 12.2, used by Help and Support. Answers are prototype copy. */
@@ -8,7 +10,7 @@ export const FAQS: { q: string; a: string }[] = [
   { q: 'When will I receive updates about my earnings?', a: "You can track the updates of the participated studies in the 'Applied' or 'Invited' tab of studies menu" },
   { q: 'How can I track my payment status?', a: 'Wallet > Payouts lists every withdrawal with a Processing or Completed status and the expected date.' },
   { q: "What should I do if I don't receive my payment?", a: 'Raise a ticket from Contact Us and mark it as about money. Money tickets are answered within one working day.' },
-  { q: 'Are there specific payment schedules I should be aware of?', a: 'Rewards are credited when a study completes and released once the client approves the payout list, usually within 3-5 days. Withdrawals reach your bank within 2-3 working days.' },
+  { q: 'Are there specific payment schedules I should be aware of?', a: `Rewards are credited when a study completes and released once the client approves the payout list, usually within ${WAITS.REVIEW}. Withdrawals reach your bank within ${WAITS.WITHDRAWAL}.` },
   { q: 'Who can I contact for payment inquiries?', a: 'Use Contact Us on this screen. Payment questions are routed straight to the payments team.' },
   { q: 'What payment methods are available for my earnings?', a: 'Bank transfer to any savings or checking account you add under Manage Payout Methods.' },
 ]

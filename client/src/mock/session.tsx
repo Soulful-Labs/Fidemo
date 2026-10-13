@@ -1,3 +1,4 @@
+import { avatarFor } from '@shared/avatar'
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import type { ReactNode } from 'react'
 import { clientById } from '@shared/derive'
@@ -55,7 +56,8 @@ export const DEMO_ACCOUNT: Account = {
   name: '', role: '', company: '',
   seeded: true,
   onboarded: true,
-  photo: '/img/jennifer.png',
+  /** A drawn, faceless figure, as for every invented person (shared/avatar.ts). */
+  photo: avatarFor(DEMO_CLIENT_ID, 'Female'),
 }
 
 /** An account with the name, role and company the platform holds for it. */

@@ -1,3 +1,4 @@
+import { fileName, pdf, save } from '@shared/files'
 import { useState } from 'react'
 import { useSearchParams, useLocation } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
@@ -218,7 +219,7 @@ export default function Payments() {
                   <td className={cn('h-[70px] px-[16px] text-text-title', done ? 'text-body-medium' : 'text-body-regular')}>{money(r.amount)}</td>
                   <td className="h-[70px] px-[16px]">
                     <span className="flex items-center justify-end gap-3">
-                      <button type="button" aria-label="Download invoice" onClick={() => toast('Invoice downloaded')}
+                      <button type="button" aria-label="Download invoice" onClick={() => toast(`Saved ${save(fileName(`invoice ${r.number}`, 'pdf'), pdf(`Invoice ${r.number}`, [`Study: ${r.study}`, `${done ? 'Date' : 'Due date'}: ${r.date}`, `Amount: ${money(r.amount)}`, done ? 'Paid' : 'Not yet paid']))}`)}
                         className="flex h-[38px] w-[38px] items-center justify-center rounded-md border-1 border-stroke-input text-text-title hover:bg-bg-1">
                         <Download className="h-5 w-5" />
                       </button>

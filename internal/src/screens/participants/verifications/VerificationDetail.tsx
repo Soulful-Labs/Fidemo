@@ -1,3 +1,4 @@
+import { avatarFor } from '@shared/avatar'
 import IntroVideo from '../../../components/app/IntroVideo'
 import { sharedVideo } from '@shared/derive'
 import { useState } from 'react'
@@ -46,7 +47,7 @@ function Report({ decided, children, reason, detail, at, by, onStudy }: { decide
       {decided && <Button variant="tertiary" size="md" className="mt-2 rounded-sm bg-bg-1 px-3" leftIcon={<ExternalIcon className="h-4 w-4" />} onClick={onStudy}>View Study</Button>}
       <p className="pt-2 text-text-subtitle">{at}</p>
       {decided && <><p className="pt-2 text-text-body">Reported By</p>
-        <span className="mt-1.5 inline-flex h-7 items-center gap-2 rounded-full bg-bgAlt-2 px-2.5 text-text-title"><img src="/img/verifications/robert.png" alt="" className="h-4 w-4 rounded-full" />{by}<ChevronRight className="h-4 w-4 text-text-subtitle" /></span></>}
+        <span className="mt-1.5 inline-flex h-7 items-center gap-2 rounded-full bg-bgAlt-2 px-2.5 text-text-title"><img src={avatarFor(String(by))} alt="" className="h-4 w-4 rounded-full" />{by}<ChevronRight className="h-4 w-4 text-text-subtitle" /></span></>}
       {children}
     </section>
   )
@@ -152,7 +153,7 @@ export default function VerificationDetail() {
               {outcome === 'verified' ? <Good>Marked as Verified</Good> : <Bad>{outcome === 'rejected' ? 'ID Could not be verified with records neither manually!' : 'ID Could not be verified with records!'}</Bad>}
               <Label>Selfie Verification</Label>
               <div className="-mt-1 flex h-[46px] w-[318px] items-center gap-2 rounded-md border-1 border-stroke-1 px-3 text-text-regular text-state-success">
-                <img src="/img/participants/selfie.png" alt="" className="h-6 w-6 rounded-full object-cover" /><span className="flex-1">Selfie photo verified</span><VerifiedIcon className="h-5 w-5" />
+                <img src={avatarFor(person.id)} alt="" className="h-6 w-6 rounded-full object-cover" /><span className="flex-1">Selfie photo verified</span><VerifiedIcon className="h-5 w-5" />
               </div>
             </>
           ) : (
@@ -174,7 +175,7 @@ export default function VerificationDetail() {
               <File thumb="/img/participants/passport.png" name="Passport front.pdf" meta="5 MB" /><File thumb="/img/participants/passport.png" name="Passport back.pdf" meta="5 MB" />
               {person.identity.state === 'verified' ? <Good>ID Verified</Good> : <Bad>ID Could not be verified with records!</Bad>}
               <Label>Selfie Verification</Label>
-              <div className="-mt-2 flex h-10 items-center gap-2 rounded-md border-1 border-stroke-1 bg-bg-0 px-2 text-body-regular text-text-title"><img src="/img/participants/selfie.png" alt="" className="h-6 w-6 rounded-full object-cover" />Selfie photo verified</div>
+              <div className="-mt-2 flex h-10 items-center gap-2 rounded-md border-1 border-stroke-1 bg-bg-0 px-2 text-body-regular text-text-title"><img src={avatarFor(person.id)} alt="" className="h-6 w-6 rounded-full object-cover" />Selfie photo verified</div>
               <Check>Human Verified</Check>
               <div className="flex flex-col gap-3 border-t-1 border-stroke-input pt-3">{ACCOUNT.map(([l, v]) => <Field key={l} label={l!} value={v!} />)}</div>
             </Card>

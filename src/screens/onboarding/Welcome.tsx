@@ -41,7 +41,7 @@ export default function Welcome() {
             <TierChip tier="silver" />
           </ScoreDial>
           <p className="text-center text-text-regular text-text-subtitle">
-            Score and tiers climbs as you complete profile, studies, get ratings, win streaks, refer, and participate more!
+            Your score and tier rise as you complete studies and earn good ratings. Completing your profile, streaks and referrals earn reward points.
           </p>
         </motion.div>
       </div>

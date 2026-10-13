@@ -11,9 +11,7 @@
  */
 import { applyRepeatRule, billing, diaryReady, hasTakenPartWith, sessionNotStarted, openAvailability, personById, personFigures, profileCompletion, restrictionCount } from './derive'
 import { canEditStudy, canMoveParticipation, canMoveStudy, isLive, participationOf } from './lifecycle'
-import {
-  DECISION_UNDO_MS, DEMO_SESSION_CODE, RESTRICTION_DAYS, TIMINGS, canReschedule, canWithdraw, depositFor, isSessionType, priceStudy,
-} from './platform'
+import { DECISION_UNDO_MS, DEMO_SESSION_CODE, RESTRICTION_DAYS, TIMINGS, canReschedule, canWithdraw, depositFor, isSessionType, priceStudy, withdrawalExpectedBy } from './platform'
 import { canRedeem, starsForRating, starsFromDimensions } from './rules'
 import { sessionStartOf as sessionStart } from './derive'
 import { EMPTY_PROFILE } from './seed/people'
@@ -725,7 +723,7 @@ export function createPlatform(options: Options = {}) {
       const ok = canWithdraw(amount, f.walletBalance)
       if (!ok.ok) return no(ok.reason ?? 'That amount cannot be withdrawn')
       const id = uid('po')
-      person.payouts.unshift({ id, at: iso(), amount, destination, txId: `#${Math.floor(100000000000 + Math.random() * 899999999999)}`, status: 'processing' })
+      person.payouts.unshift({ id, at: iso(), amount, destination, txId: `#${Math.floor(100000000000 + Math.random() * 899999999999)}`, status: 'processing', expectedBy: withdrawalExpectedBy(iso()) })
       return yes({ id })
     }),
 

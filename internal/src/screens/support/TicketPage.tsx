@@ -66,7 +66,7 @@ export default function TicketPage() {
       <div className="sticky top-topbar z-10 flex h-14 shrink-0 items-center gap-3 bg-bg-1 px-4">
         <button type="button" aria-label="Back to Support" onClick={() => navigate(`/support${state === 'new' ? '' : `?tab=${state}`}`)}><ChevronLeft className="h-5 w-5 text-text-title" /></button>
         <h1 className="flex-1 pl-1 text-body-medium text-text-title">{t.subject}</h1>
-        <span className={cn('flex h-7 items-center rounded-full px-2.5 text-text-regular', state === 'closed' ? 'bg-state-successBg text-state-success' : 'bg-yellow-50 text-brand-primary')}>{state === 'closed' ? 'Solved' : 'Open'}</span>
+        <span className={cn('flex h-7 items-center rounded-full px-2.5 text-text-regular', state === 'closed' ? 'bg-state-successBg text-state-success' : 'bg-yellow-50 text-brand-primary')}>{state === 'closed' ? 'Closed' : 'Open'}</span>
         <button type="button" aria-label="Ticket info" className="px-1"><InfoIcon className="h-6 w-6 text-text-title" /></button>
         <Chip onClick={() => navigate(v.profile)}>{v.photo && <img src={v.photo} alt="" className="h-4 w-4 rounded-full" />}User profile</Chip>
         {v.about && <Chip onClick={() => navigate(v.about!)}><span className="text-text-title">[Report/Verification]</span></Chip>}

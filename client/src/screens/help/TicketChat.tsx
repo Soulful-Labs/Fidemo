@@ -45,7 +45,7 @@ export default function TicketChat() {
     setDraft('')
     setAttached(false)
   }
-  const solved = params.get('state') === 'solved' || record?.status === 'Solved'
+  const solved = params.get('state') === 'solved' || record?.status === 'Closed'
   const [ask, setAsk] = useState(params.get('modal') === 'solved')
   const t = THREAD
 
@@ -69,7 +69,7 @@ export default function TicketChat() {
               <span className="text-body-regular text-text-subtitle">{record?.number ?? t.number}</span>
               <Tag tone="grey" className={cn('h-7 px-2.5',
                 solved ? 'bg-green-50 text-brand-secondary' : 'bg-yellow-30 text-brand-primary')}>
-                {solved ? 'Solved' : 'Open'}
+                {solved ? 'Closed' : 'Open'}
               </Tag>
               <button type="button" aria-label="Ticket info" onClick={() => setAsk(true)}
                 className="flex h-8 w-8 items-center justify-center text-text-subtitle hover:text-text-title">
@@ -130,7 +130,7 @@ export default function TicketChat() {
       </div>
 
       <MarkSolvedModal open={ask} onClose={() => setAsk(false)}
-        onConfirm={() => { if (record) solveTicket(record.id); setAsk(false); toast('Ticket marked solved') }} />
+        onConfirm={() => { if (record) solveTicket(record.id); setAsk(false); toast('Ticket closed') }} />
     </AppShell>
   )
 }

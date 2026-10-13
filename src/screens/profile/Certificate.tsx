@@ -4,23 +4,21 @@ import { useAppNav } from '../../app/useAppNav'
 import ScoreDial from '../../components/app/ScoreDial'
 import TierChip from '../../components/app/TierChip'
 import TopBar from '../../components/ui/TopBar'
-import { accountCode } from '@shared/derive'
+import { certificateId } from '@shared/derive'
 import { tierFor } from '@shared/rules'
 import { useStore } from '../../mock/store'
 import { PerformanceRatings } from '../trust/TrustScoreDetails'
-import { Avatar } from './Profile'
 import { VerifiedIcon } from './profileIcons'
 
 /**
- * PRD 12.1, Figma 979:74343, string for string: avatar, name, "Cert. ID:
- * HL-R-XXXX-XXXX", "Profile Score", the tier chip, Performance Ratings and
- * the Verified list. The signed policy says the certificate carries no name
- * and reads FI-XXXX-XXXX; that is being settled separately and, until then,
- * this screen matches the frame (turn report, copy rule). "Live Photo
+ * PRD 12.1, Figma 979:74343, under the signed policy, which outranks both on
+ * the certificate: it carries no name, email or phone, and its id is the
+ * policy's FI-XXXX-XXXX (CERTIFICATE.ID_PREFIX), the same id the console and
+ * the client app read. Figma's avatar, name, "HL-R" id and "Profile Score"
+ * are replaced by a seal, the FI- id and "Trust Score". "Live Photo
  * Verified" only shows once a selfie has actually passed (hard rule 9).
  */
-/** The ID as this screen shows it (the frame's HL-R form; see the note above). */
-export const shownCertId = (email: string) => `HL-R-${accountCode(email, 4)}-${accountCode(email + '#', 4)}`
+export const shownCertId = certificateId
 
 export default function Certificate() {
   const navigate = useNavigate()
@@ -54,14 +52,17 @@ export default function Certificate() {
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         <Tilt className="flex flex-col gap-4 rounded-lg bg-bg-1 p-4">
           <div className="flex items-center gap-3">
-            <Avatar name={user.name} size={56} />
+            {/* No name and no face: the certificate says what was checked, not who (policy). */}
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-green-900/60 text-brand-secondary" aria-hidden="true">
+              <VerifiedIcon className="h-7 w-7" />
+            </span>
             <div className="flex flex-col gap-0.5">
-              {user.name && <span className="text-title-s text-text-title">{user.name}</span>}
+              <span className="text-title-s text-text-title">Verified Human</span>
               <span className="text-text-regular text-text-body">Cert. ID: <span className="text-text-title">{certId}</span></span>
             </div>
           </div>
 
-          <p className="text-body-medium text-text-title">Profile Score</p>
+          <p className="text-body-medium text-text-title">Trust Score</p>
           <div className="flex items-center justify-between gap-3 rounded-lg bg-bg-2 bg-yellow-fade p-3">
             <ScoreDial score={user.trustScore} size="sm" memory="trust-certificate" />
             <TierChip tier={tier} onClick={() => navigate('/trust-score/tiers')} />

@@ -1,3 +1,4 @@
+import { copyText } from '../../components/app/Notice'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import Button, { IconButton } from '../../components/ui/Button'
@@ -24,7 +25,7 @@ export function ClientHeader({ reviews, onReviews, menu, id }: { reviews?: boole
       </div>
       <div className="relative flex items-start gap-3">
         {reviews && <Button variant="tertiary" size="md" className="bg-bgAlt-1 px-3 text-text-regular" rightIcon={<ChevronRight className="h-4 w-4" />} onClick={onReviews}>Reviews</Button>}
-        <IconButton label="Copy link" className="ml-1" onClick={() => { void navigator.clipboard?.writeText(window.location.href) }}><LinkIcon className="h-5 w-5" /></IconButton>
+        <IconButton label="Copy link" className="ml-1" onClick={() => { void copyText(window.location.href) }}><LinkIcon className="h-5 w-5" /></IconButton>
         {menu ?? <IconButton label="Client options"><DotsIcon className="h-5 w-5" /></IconButton>}
       </div>
     </header>

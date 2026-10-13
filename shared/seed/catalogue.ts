@@ -69,7 +69,7 @@ export function catalogue({ at, CLIENTS }: CatalogueHelpers): CatalogueEntry[] {
 
   mk({ id: 'st-35', title: 'Airport lounge experience groups', type: 'in_person_group', status: 'available', reward: 150, durationMins: 90, industry: 'Travel', city: 'Chicago',
     description: 'A group session on what makes an airport lounge worth paying for, held at our Chicago office.',
-    targetProfession: 'Frequent flyers who book their own travel', image: IMG('airport', 'jpg'), screenerSet: 'travel', client: CLIENTS.orbit, daysLeft: 14 }),
+    targetProfession: 'Frequent flyers who book their own travel', image: IMG('travel'), screenerSet: 'travel', client: CLIENTS.orbit, daysLeft: 14 }),
 
   // ----- Invited to apply -----
   mk({ id: 'st-03', title: 'Retail pharmacy layout walkthrough', type: 'in_person', status: 'invited_to_apply', reward: 200, durationMins: 60, industry: 'Retail', city: 'New York',

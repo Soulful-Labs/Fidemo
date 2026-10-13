@@ -1,3 +1,5 @@
+import { withdrawalExpectedBy } from '@shared/platform'
+import { fileName, pdf, save } from '@shared/files'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAppNav } from '../../app/useAppNav'
 import EmptyState from '../../components/app/EmptyState'
@@ -27,7 +29,7 @@ export default function PayoutDetails() {
     return <EmptyState title="Payout not found" actionLabel="Back to Payouts" onAction={() => navigate('/wallet/payouts')} />
   }
 
-  const expected = payout.expectedBy ?? new Date(new Date(payout.at).getTime() + 2 * 86_400_000).toISOString()
+  const expected = payout.expectedBy ?? withdrawalExpectedBy(payout.at)
 
   return (
     <div className="flex min-h-full flex-col bg-bgAlt-0">
@@ -54,7 +56,11 @@ export default function PayoutDetails() {
 
         <Breakdown title="Payout Breakdown" amount={payout.amount} fee={payout.fee} net={payout.net} lastLabel="Receivable Amount" />
 
-        <Button variant="tertiary" fullWidth leftIcon={<Download />} onClick={() => toast('Receipt downloaded')}>
+        <Button variant="tertiary" fullWidth leftIcon={<Download />} onClick={() => toast(`Saved ${save(fileName(`receipt ${payout.txId}`, 'pdf'), pdf('Payout Receipt', [
+            `Bank Transfer ${payout.destination}`, `Transaction ID ${payout.txId}`, `Date ${dateTime(payout.at)}`, `Status ${payout.status === 'processing' ? 'Processing' : 'Completed'}`, '',
+            { heading: 'Payout Breakdown' }, `Withdrawal Amount  ${money(payout.amount)}`, `Processing Fees  ${money(payout.fee)}`, `Receivable Amount  ${money(payout.net)}`, '',
+            payout.status === 'processing' ? `Expected in bank by ${dateLong(expected)}` : 'Paid to your bank',
+          ]))}`)}>
           Download Receipt PDF
         </Button>
       </div>

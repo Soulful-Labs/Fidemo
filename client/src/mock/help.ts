@@ -88,7 +88,7 @@ export interface Ticket {
   subject: string
   last: string
   unread?: boolean
-  status: 'Open' | 'Solved'
+  status: 'Open' | 'Closed'
   activity: string
   created: string
   number: string
@@ -142,4 +142,4 @@ export const SENT_MODAL = {
 }
 
 /** Mark as solved? (1663:104539) is switched off; only its title is readable. */
-export const MARK_SOLVED = { title: 'Mark as solved?' }
+export const MARK_SOLVED = { title: 'Close this ticket?' }

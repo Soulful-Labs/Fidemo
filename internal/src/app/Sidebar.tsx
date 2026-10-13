@@ -25,7 +25,7 @@ export default function Sidebar() {
    * access toggles on a sub-admin's profile now decide it.
    */
   const me = useMe()
-  const photo = me?.id === 'tm-peter' ? '/img/peter-avatar.png' : me?.id === 'tm-maya' ? '/img/team/maya-40.png' : me?.photo
+  const photo = me?.photo
   /** The two badges are counts from the shared platform: everything pending on the Dashboard, and open tickets. */
   const { badges } = useDashboard()
   const badgeFor: Record<string, string> = { dashboard: String(badges.dashboard), support: String(badges.support) }

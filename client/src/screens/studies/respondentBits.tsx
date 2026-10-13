@@ -1,5 +1,5 @@
 import Button from '../../components/ui/Button'
-import { Calendar, CheckCircle, Clock, Copy, Download, Eye, MapPin } from '../../components/ui/icons'
+import { Calendar, CheckCircle, Clock, Copy, Eye, MapPin } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { copyText } from '../../lib/copy'
 import type { Answer, QA } from '../../mock/respondent'
@@ -191,8 +191,7 @@ export function SessionCard({ state, session, onStart, onFinish }: {
 }
 
 /** The notes the client types during a session. */
-export function NotesCard({ download, className }: { download?: boolean; className?: string }) {
-  const toast = useToast()
+export function NotesCard({ className }: { download?: boolean; className?: string }) {
   const marks = ['B', 'I', 'U', 'S', 'H1', 'H2', 'H3', 'H4']
   return (
     <div className={cn('flex flex-col rounded-lg border-1 border-stroke-input', className)}>
@@ -200,11 +199,7 @@ export function NotesCard({ download, className }: { download?: boolean; classNa
         <span className="text-text-large text-text-title">
           {NOTES.title} <span className="text-text-regular text-text-subtitle">&bull; {NOTES.saved}</span>
         </span>
-        {download && (
-          <button type="button" aria-label="Download notes" onClick={() => toast('Notes downloaded')} className="text-text-subtitle hover:text-text-title">
-            <Download className="h-5 w-5" />
-          </button>
-        )}
+        {/* A download button sat here. The notes are the frame's sample text, not anything the client typed, so there is no file to give. */}
       </div>
       <div className="flex h-12 items-center gap-6 border-b-1 border-stroke-1 px-4 text-text-subtitle">
         {marks.map((m) => <span key={m} className="text-body-regular">{m}</span>)}
