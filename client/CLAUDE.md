@@ -468,10 +468,66 @@ the Screener step was never saved.
 - `node --experimental-websocket scripts/screener-check.mjs` follows three
   questions from the builder to the client app, the console and a respondent.
 
-**Still lost in the Create flow, not fixed:** see the turn report of 13 Oct.
-The survey and diary form builder saves a fixed set, not what is typed;
-Save Draft & Exit saves nothing; audience, availability, sessions, address and
-diary settings are not stored (a new study borrows them or gets defaults).
+---
+
+## Everything built in the Create flow is the study
+
+Fixed 13 Oct 2026. The flow used to keep what a client typed in React state,
+hand the store six fields on Publish and let it fill the rest from another
+study or from defaults. Now the five steps edit one record, `StudyForm`
+(`shared/studyForm.ts`), and the platform does the rest.
+
+- **`buildStudy(form)`** turns the form into the study: the title, duration and
+  end date; the sample size, the repeat rule and the audience pills; the
+  screener; and step 4 by type (a survey's or diary's own questions and the
+  diary's days; addresses; group sessions and seats; weekly hours and date
+  overrides turned into the dated slots a respondent books). Anything it
+  cannot build is refused with what to fix, in the order of the steps, and
+  nothing is created.
+- **`submitStudy(clientId, form, draftId?)`** stores that study with the whole
+  form beside it (`study.form`). **`saveStudyDraft`** stores the form on a
+  draft with nothing checked. Drafts reopen through `formFromStudy`, so Save
+  Draft & Exit loses nothing, and saving a reopened draft saves over it.
+- **`summarise(state, form)`** writes the Publish, Manage and Review chips from
+  what was built. Estimated Audience is a count of the verified, active people
+  on the platform who fit the audience (`audiencePeople`); the Audience step's
+  forecast, tier split and average score use the same people.
+- **Manage Study reads the form back** line by line under the Study chip
+  (`studyDetails`, `tasksOutline`). No frame draws those lists.
+
+Things the frames draw as fixed text that are now inputs, because there was
+nothing true to save otherwise. Each is flagged for the designer:
+
+| Where | Frame draws | Built |
+|---|---|---|
+| Weekly Hours, Add an override | "12:00 AM" in a plain box | a box that opens the half hours of the day (`TimeBits.tsx`) |
+| Add an override | "Aug 20 - Aug 30" | two date fields, from and to |
+| Schedule Group Sessions, Create new session | a row with only Add and a cross | a date and a start time in that row |
+| Seats per session | "10 seats" as text | a text box |
+| Profile Tiers | a box reading "Select tiers..." | the picker the step's own options list was written for |
+| Question kebab | (a Question menu whose rows could not be read) | a menu with Delete Question, which asks first |
+
+Rules that follow from the frames' own wording, not from a signed document:
+- A day's hours must end after they start. The frame opens every day at
+  "12:00 AM TO 12:00 AM", which offers nothing, so the composer's Submit
+  refuses it by day until the hours are set. The copy button gives every day
+  that day's hours.
+- A study runs 60 days at most ("Study gets ended after 60 days max"), and
+  that is its end when no end date is typed. It was 30.
+- A new study starts with no address, session or override. The frames draw
+  one or two already there; those are example content, not the client's.
+
+**Saved, and not yet acted on anywhere:** AutoPay (payouts are still approved
+by hand), the diary's duration unit and frequency (entries are counted in
+days), work functions and skills (not on a participant's profile, so they
+cannot narrow the estimate), and the audience as a whole (the Matched tab
+still ranks the pool without it). The thumbnail keeps the chosen file's name
+only; nothing uploads.
+
+`node --experimental-websocket scripts/create-check.mjs` (repo root, against
+the one-origin build) builds a study of each of the six types, reads each back
+in the client app, the console and the respondent app, and saves and reopens a
+draft.
 
 ---
 

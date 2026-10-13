@@ -142,3 +142,9 @@ export function screenerOutline(study: { preScreener: PreScreenQuestion[]; scree
     ...study.screener.map((q) => ({ id: q.id, prompt: q.prompt, type: q.authored ?? TYPE[q.kind], options: 'options' in q ? q.options : undefined, eligibility: false })),
   ]
 }
+
+/** A survey's or diary's own questions in the order they are asked, named as the client built them. */
+export function tasksOutline(study: { tasks?: Question[] }): { id: string; prompt: string; type: string; options?: string[] }[] {
+  const TYPE: Record<Question['kind'], string> = { single: 'Single-select', multi: 'Multi-select', text: 'Multi-line input', image: 'File Upload', scale: 'Slider' }
+  return (study.tasks ?? []).map((q) => ({ id: q.id, prompt: q.prompt, type: q.authored ?? TYPE[q.kind], options: 'options' in q ? q.options : undefined }))
+}

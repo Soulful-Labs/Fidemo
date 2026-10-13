@@ -17,13 +17,13 @@ import {
 import { canRedeem, starsForRating, starsFromDimensions } from './rules'
 import { sessionStartOf as sessionStart } from './derive'
 import { EMPTY_PROFILE } from './seed/people'
-import { buildScreener, buildTasks } from './questions'
-import type { AuthoredQuestion } from './questions'
+import { MAX_RUN_DAYS, buildStudy, studyTypeOf, summarise } from './studyForm'
+import type { StudyForm } from './studyForm'
 import { DEMO_TEAM_PASSWORD, MASTER_ADMIN_ID, SEED_VERSION, buildEmpty, buildSeed } from './seed'
 import type {
   Answers, AppNotification, Booking, Check, Client, ClientReview, Module, ParticipantRating, Participation, ParticipationState,
-  PayoutMethod, Person, PlatformState, RatingState, RepeatRule, Report, Result, SavedCard, Study, StudySetup, StudyState,
-  StudyType, TeamMember, Ticket,
+  PayoutMethod, Person, PlatformState, RatingState, RepeatRule, Report, Result, SavedCard, Study, StudyState,
+  TeamMember, Ticket,
 } from './types'
 
 export const STORAGE_KEY = 'fi-platform'
@@ -39,8 +39,15 @@ const no = (why: string): Result<never> => ({ ok: false, why })
 const yes = <T extends object>(extra?: T): Result<T> => ({ ok: true, ...(extra as T) })
 const uid = (prefix: string) => `${prefix}-${Date.now().toString(36)}${Math.floor(Math.random() * 1296).toString(36)}`
 
-/** "Screening: 3 inputs", as the Manage and Review screens write a screener's size. */
-const screenerSummary = (b: { preScreener: unknown[]; screener: unknown[] }) => { const n = b.preScreener.length + b.screener.length; return `${n} input${n === 1 ? '' : 's'}` }
+/** A number question's answer is kept as a number, not as the text that was typed. Anything that is not a number stays as typed. */
+function tidyAnswers(study: Study, answers: Answers): Answers {
+  const numeric = new Set([...study.screener, ...(study.tasks ?? [])].filter((q) => q.format === 'number').map((q) => q.id))
+  return Object.fromEntries(Object.entries(answers).map(([id, v]) => {
+    if (!numeric.has(id) || typeof v !== 'string') return [id, v]
+    const n = Number(v.trim().replace(/,/g, ''))
+    return [id, v.trim() !== '' && Number.isFinite(n) ? n : v]
+  }))
+}
 
 export function createPlatform(options: Options = {}) {
   const storage = options.storage === undefined ? (typeof localStorage === 'undefined' ? null : localStorage) : options.storage
@@ -174,41 +181,54 @@ export function createPlatform(options: Options = {}) {
 
     // ------------------------------------------------------------ studies
 
-    /** Workflow 5 and 7: the client submits a study; it waits for the team. The incentive deposit is taken now. */
-    submitStudy: (clientId: string, d: {
-      title: string; description: string; type: StudyType; required: number; incentive: number; durationMins: number
-      image?: string; setup?: StudySetup; industry?: string; targetProfession?: string
-      /** The screener the client built, in their order (shared/questions.ts). A study is not submitted without one. */
-      screener: AuthoredQuestion[]
-      /** A survey's or diary's own questions, from the client's form builder. */
-      tasks?: AuthoredQuestion[]
-    }) => move<{ id: string }>((s) => {
+    /**
+     * Workflow 5 and 7: the client submits a study; it waits for the team. The
+     * incentive deposit is taken now. Everything on the study comes from the
+     * form the client filled (shared/studyForm.ts); a form that cannot be a
+     * study is refused with what to fix, and nothing is created. `draftId`
+     * submits a saved draft in place.
+     */
+    submitStudy: (clientId: string, form: StudyForm, draftId?: string) => move<{ id: string }>((s) => {
       if (!s.clients.some((c) => c.id === clientId)) return no('No such client')
-      if (d.required <= 0) return no('A study needs a sample size')
-      const built = buildScreener(d.screener ?? [])
+      const draft = draftId ? s.studies.find((x) => x.id === draftId && x.clientId === clientId) : undefined
+      if (draftId && draft?.state !== 'draft') return no('That draft is gone')
+      const built = buildStudy(form, clock())
       if (!built.ok) return no(built.why)
-      const form = buildTasks(d.tasks ?? [])
-      if (!form.ok) return no(form.why)
-      const id = uid('st')
-      /** Where a study still borrows: the parts of the Create flow that are not stored yet (address, diary length, and a survey's form when none was built). */
-      const template = s.studies.find((x) => x.type === d.type && x.screener.length > 0)
+      const id = draft?.id ?? uid('st')
+      const kept = structuredClone(form)
       const study: Study = {
-        id, clientId, title: d.title || 'Untitled study', description: d.description, image: d.image, type: d.type, state: 'in_review',
-        industry: d.industry ?? '', durationMins: d.durationMins, createdAt: iso(), submittedAt: iso(),
-        endsAt: new Date(clock().getTime() + 30 * 86_400_000).toISOString(), required: d.required, repeatRule: 'prefer_fresh',
-        rates: priceStudy(d.type, d.incentive), targetProfession: d.targetProfession ?? '', linkCode: `HL-${id.slice(-3).toUpperCase()}-A`,
-        /** The client's own screener, never another study's. */
-        preScreener: built.preScreener, screener: built.screener,
-        tasks: form.tasks.length ? form.tasks : template?.tasks, diary: template?.diary,
-        locations: template?.locations, city: template?.city,
-        availability: d.type === 'video_call' || d.type === 'in_person'
-          ? [2, 3, 5, 6].map((n) => ({ date: new Date(clock().getTime() + n * 86_400_000).toISOString(), slots: ['09:00 AM', '10:30 AM', '12:00 PM', '02:30 PM', '04:00 PM'] })) : undefined,
-        sessions: d.type === 'group_video_call' || d.type === 'in_person_group'
-          ? [3, 6].map((n, i) => ({ id: `s${i + 1}`, date: new Date(clock().getTime() + n * 86_400_000).toISOString(), slot: '10:00 AM', seats: Math.ceil(d.required / 2) })) : undefined,
-        setup: d.setup && { ...d.setup, screenerSummary: screenerSummary(built) }, participations: [], payments: [], revisions: [],
+        id, clientId, state: 'in_review', createdAt: draft?.createdAt ?? iso(), submittedAt: iso(), image: draft?.image,
+        linkCode: draft?.linkCode || `HL-${id.slice(-3).toUpperCase()}-A`, ...built.study,
+        setup: summarise(s, kept, clock()), form: kept, participations: [], payments: [], revisions: [],
       }
-      study.payments.push({ id: `${id}-deposit`, kind: 'deposit', amount: d.incentive * d.required, at: iso() })
+      study.payments.push({ id: `${id}-deposit`, kind: 'deposit', amount: study.rates.incentivePer * study.required, at: iso() })
+      if (draft) s.studies.splice(s.studies.indexOf(draft), 1)
       s.studies.unshift(study)
+      return yes({ id })
+    }),
+
+    /**
+     * Save Draft & Exit: the form as it stands, kept whole on a draft study so
+     * it reopens with everything in it. Nothing is checked; a draft may be
+     * half built. `draftId` saves over a draft already there.
+     */
+    saveStudyDraft: (clientId: string, form: StudyForm, draftId?: string) => move<{ id: string }>((s) => {
+      if (!s.clients.some((c) => c.id === clientId)) return no('No such client')
+      const draft = draftId ? s.studies.find((x) => x.id === draftId && x.clientId === clientId) : undefined
+      if (draftId && draft?.state !== 'draft') return no('That draft is gone')
+      const kept = structuredClone(form)
+      const type = studyTypeOf(kept)
+      const required = /^\d+$/.test(kept.participants.trim()) ? Number(kept.participants) : 0
+      const fields = {
+        title: kept.title.trim() || 'Untitled study', description: kept.description, type, durationMins: Number(kept.duration) || 0, required,
+        industry: kept.industries, targetProfession: kept.roles, rates: priceStudy(type, kept.incentive), autoPay: kept.autoPay, form: kept,
+      }
+      if (draft) { Object.assign(draft, fields); return yes({ id: draft.id }) }
+      const id = uid('st')
+      s.studies.unshift({
+        id, clientId, state: 'draft', createdAt: iso(), endsAt: new Date(clock().getTime() + MAX_RUN_DAYS * 86_400_000).toISOString(),
+        repeatRule: 'allow', linkCode: '', preScreener: [], screener: [], participations: [], payments: [], revisions: [], ...fields,
+      })
       return yes({ id })
     }),
 
@@ -327,7 +347,7 @@ export function createPlatform(options: Options = {}) {
     saveDraft: (studyId: string, personId: string, answers: Answers) => move((s) => {
       const hit = find(s, studyId, personId)
       if (!hit) return no('No application to save')
-      hit.p.answers = answers
+      hit.p.answers = tidyAnswers(hit.study, answers)
       return hit.p.state === 'draft' ? yes() : shift(hit.p, 'draft')
     }),
 
@@ -337,7 +357,7 @@ export function createPlatform(options: Options = {}) {
       if (!hit) return no('No application to submit')
       const moved = shift(hit.p, 'applied')
       if (!moved.ok) return moved
-      if (answers) hit.p.answers = answers
+      if (answers) hit.p.answers = tidyAnswers(hit.study, answers)
       hit.p.prescreener = 'passed'
       stamp(hit.p, 'Applied')
       if (clientOf(s, hit.study)?.simulated) s.pending.push({ kind: 'qualify', studyId, personId, dueAt: clock().getTime() + TIMINGS.screenerToInvite })
@@ -405,7 +425,7 @@ export function createPlatform(options: Options = {}) {
         if (!ok.ok) return no(ok.reason ?? 'This session cannot be rescheduled')
         count += 1
       }
-      const open = openAvailability(study, personId).find((a) => new Date(a.date).toDateString() === new Date(booking.date).toDateString())
+      const open = openAvailability(study, personId, clock()).find((a) => new Date(a.date).toDateString() === new Date(booking.date).toDateString())
       if (!open || !open.slots.includes(booking.slot)) return no('That slot has just been taken. Pick another one')
       const moved = shift(p, 'scheduled')
       if (!moved.ok) return moved

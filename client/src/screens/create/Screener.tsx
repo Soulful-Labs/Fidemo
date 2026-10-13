@@ -2,6 +2,8 @@ import Button from '../../components/ui/Button'
 import Toggle from '../../components/ui/Toggle'
 import { ChevronDown, MoreVertical, Plus, Trash } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
+import Modal from '../../components/ui/Modal'
+import Popover, { PopoverItem } from '../../components/ui/Popover'
 import { blankQuestion, MARKS_FOR, useDraft } from '../../mock/createStore'
 import type { Question, QuestionKind } from '../../mock/createStore'
 import CreateShell from './CreateShell'
@@ -85,16 +87,16 @@ function Pick({ value, tone, className, options, onPick }: {
 const MARK_TONE: Record<string, string> = {
   Correct: 'text-brand-secondary', 'Must Select': 'text-brand-secondary',
   Incorrect: 'text-state-danger', 'May Select': 'text-text-subtitle',
+  Qualify: 'text-brand-secondary', Disqualify: 'text-state-danger',
 }
 
 /** The option rows a select question is answered with. */
-function Options({ q, onAdd, onRemove, onText, onMark, removable }: {
-  q: Question; onAdd: () => void; onRemove: (id: string) => void; onText: (id: string, v: string) => void
+function Options({ q, marks, markWidth, onAdd, onRemove, onText, onMark, removable }: {
+  q: Question; marks: string[]; markWidth: string; onAdd: () => void; onRemove: (id: string) => void; onText: (id: string, v: string) => void
   /** The mark an option carries, which the question kind decides. */
   onMark: (id: string, mark: string) => void
   removable: boolean
 }) {
-  const marks = MARKS_FOR(q.kind)
   return (
     <div className="flex flex-col gap-2.5">
       {q.options.map((o) => (
@@ -106,7 +108,7 @@ function Options({ q, onAdd, onRemove, onText, onMark, removable }: {
             <span className="absolute left-4 h-4 w-4 rounded-full border-1.5 border-neutral-1000" />
             <Box value={o.text} placeholder="Enter option" onChange={(v) => onText(o.id, v)} className="pl-11" />
           </span>
-          <Pick value={o.mark} tone={MARK_TONE[o.mark]} className="w-[110px] px-3"
+          <Pick value={o.mark} tone={MARK_TONE[o.mark]} className={cn(markWidth, 'px-3')}
             options={marks} onPick={(v) => onMark(o.id, v)} />
           <button type="button" aria-label="Add option" onClick={onAdd} className="text-text-subtitle hover:text-text-title">
             <Plus className="h-5 w-5" />
@@ -122,32 +124,65 @@ function Options({ q, onAdd, onRemove, onText, onMark, removable }: {
   )
 }
 
-/** The grid a Mattrix question is answered on. */
+/** The grid a Mattrix question is answered on: its columns across the top, a row per item. */
 function Matrix({ q, write }: { q: Question; write: (next: Question) => void }) {
+  const columns = q.columns ?? [], rows = q.rows ?? []
+  const column = (i: number, v: string) => write({ ...q, columns: columns.map((c, k) => (k === i ? v : c)) })
   return (
     <div className="flex flex-col gap-2.5 rounded-md bg-bg-1 p-3">
       <div className="flex items-center gap-2.5">
         <span className="w-[72px] shrink-0" />
-        <Box value="1" className="w-[72px] bg-bg" />
-        <Box placeholder="Enter column item..." className="flex-1" />
-        <button type="button" aria-label="Add column" onClick={() => write({ ...q, columns: [...(q.columns ?? []), ''] })}
+        {columns.map((c, i) => (
+          <Box key={i} value={c} placeholder="Enter column item..." onChange={(v) => column(i, v)} className={i === 0 ? 'w-[72px] bg-bg' : 'flex-1'} />
+        ))}
+        <button type="button" aria-label="Add column" onClick={() => write({ ...q, columns: [...columns, ''] })}
           className="text-text-subtitle hover:text-text-title"><Plus className="h-5 w-5" /></button>
       </div>
-      {(q.rows ?? []).map((r, i) => (
+      {rows.map((r, i) => (
         <div key={i} className="flex items-center gap-2.5">
-          <Box value={r || undefined} placeholder="Enter row item..." className="w-[72px]" />
-          {[0, 1].map((c) => (
+          <Box value={r} placeholder="Enter row item..." className="w-[72px]"
+            onChange={(v) => write({ ...q, rows: rows.map((x, k) => (k === i ? v : x)) })} />
+          {columns.map((_, c) => (
             <span key={c} className="flex h-[38px] flex-1 items-center justify-center rounded-sm bg-bg-2">
               <span className="h-4 w-4 rounded-full border-1.5 border-neutral-1000" />
             </span>
           ))}
-          <button type="button" aria-label="Add row" onClick={() => write({ ...q, rows: [...(q.rows ?? []), ''] })}
+          <button type="button" aria-label="Add row" onClick={() => write({ ...q, rows: [...rows, ''] })}
             className="text-text-subtitle hover:text-text-title"><Plus className="h-5 w-5" /></button>
-          <button type="button" aria-label="Delete row" onClick={() => write({ ...q, rows: (q.rows ?? []).filter((_, k) => k !== i) })}
+          <button type="button" aria-label="Delete row" onClick={() => write({ ...q, rows: rows.filter((_, k) => k !== i) })}
             className="text-text-subtitle hover:text-text-title"><Trash className="h-5 w-5" /></button>
         </div>
       ))}
     </div>
+  )
+}
+
+/**
+ * The menu behind a question's kebab. The designs draw a Question menu but its
+ * rows could not be read this turn, so it holds the one thing the kebab used
+ * to do with no warning, and asks first.
+ */
+function QuestionMenu({ label, onDelete }: { label: string; onDelete: () => void }) {
+  const [open, setOpen] = useState(false)
+  const [asking, setAsking] = useState(false)
+  return (
+    <span className="relative flex shrink-0">
+      <button type="button" aria-label="Question options" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}
+        className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-sm border-1 border-stroke-input bg-bg text-text-subtitle hover:text-text-title">
+        <MoreVertical className="h-5 w-5" />
+      </button>
+      <Popover open={open} onClose={() => setOpen(false)} width={165}>
+        <PopoverItem danger onClick={() => { setOpen(false); setAsking(true) }}>Delete Question</PopoverItem>
+      </Popover>
+      <Modal open={asking} onClose={() => setAsking(false)} title="Delete Question?"
+        body={<>{label} and everything typed into it will be removed. This cannot be undone.</>}
+        footer={
+          <>
+            <Button variant="tertiary" className="flex-1" onClick={() => setAsking(false)}>Cancel</Button>
+            <Button variant="danger" className="flex-1" onClick={() => { setAsking(false); onDelete() }}>Delete</Button>
+          </>
+        } />
+    </span>
   )
 }
 
@@ -158,17 +193,27 @@ const PREVIEW_LINE: Partial<Record<QuestionKind, string>> = {
   'File Upload': 'Participants will upload a file',
 }
 
+/** The options a question keeps when its answer type changes: a select or ranking always has at least two rows to fill. */
+function optionsFor(q: Question, kind: QuestionKind, marks: string[]) {
+  const kept = q.options.map((o) => ({ ...o, mark: kind === 'Ranking' ? '' : marks.includes(o.mark) ? o.mark : marks[0] ?? o.mark }))
+  const needs = kind === 'Single-select' || kind === 'Multi-select' || kind === 'Ranking' ? 2 : 0
+  return [...kept, ...Array.from({ length: Math.max(0, needs - kept.length) }, (_, i) => ({ id: `o${Date.now()}${i}`, text: '', mark: kind === 'Ranking' ? '' : marks[i] ?? marks[0] ?? '' }))]
+}
+
 /** One question: its label, its answer type, and whatever that type needs. */
-function QuestionBlock({ q, index }: { q: Question; index: number }) {
-  const { draft, set } = useDraft()
-  const write = (next: Question) => set('questions', draft.questions.map((x) => (x.id === q.id ? next : x)))
-  const addOption = () => write({ ...q, options: [...q.options, { id: `o${Date.now()}`, text: '', mark: MARKS_FOR(q.kind)[0] ?? '' }] })
+export function QuestionBlock({ q, index, write, onDelete, marksFor = MARKS_FOR, markWidth = 'w-[110px]', plain }: {
+  q: Question; index: number; write: (next: Question) => void; onDelete: () => void
+  /** The verdicts an option can carry: a screener's by default, a survey's Qualify and Disqualify. */
+  marksFor?: (kind: QuestionKind) => string[]; markWidth?: string
+  /** The survey and diary composers draw their questions without the rule between them. */
+  plain?: boolean
+}) {
+  const addOption = () => write({ ...q, options: [...q.options, { id: `o${Date.now()}${q.options.length}`, text: '', mark: marksFor(q.kind)[0] ?? '' }] })
   const removeOption = (id: string) => write({ ...q, options: q.options.filter((o) => o.id !== id) })
   const optionText = (id: string, v: string) => write({ ...q, options: q.options.map((o) => (o.id === id ? { ...o, text: v } : o)) })
-  const remove = () => set('questions', draft.questions.filter((x) => x.id !== q.id))
 
   return (
-    <div className={cn('flex gap-4 py-4', index > 0 && 'border-t-1 border-stroke-1')}>
+    <div className={cn('flex gap-4', !plain && 'py-4', !plain && index > 0 && 'border-t-1 border-stroke-1')}>
       {GRIP}
       <div className="flex min-w-0 flex-1 flex-col gap-2.5">
         <div className="flex items-center gap-2.5">
@@ -182,17 +227,14 @@ function QuestionBlock({ q, index }: { q: Question; index: number }) {
           <Pick value={q.kind} className="w-[164px]"
             options={['Single-select', 'Multi-select', 'Single-line input', 'Number input',
               'Multi-line input', 'Slider', 'Ranking', 'File Upload', 'Mattrix']}
-            onPick={(v) => write({ ...q, kind: v as QuestionKind, options: q.options.map((o) => ({ ...o, mark: MARKS_FOR(v as QuestionKind)[0] ?? o.mark })) })} />
-          <button type="button" aria-label="Question options" onClick={remove}
-            className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-sm border-1 border-stroke-input bg-bg text-text-subtitle hover:text-text-title">
-            <MoreVertical className="h-5 w-5" />
-          </button>
+            onPick={(v) => write({ ...q, kind: v as QuestionKind, options: optionsFor(q, v as QuestionKind, marksFor(v as QuestionKind)) })} />
+          <QuestionMenu label={q.label} onDelete={onDelete} />
         </div>
 
         <Box value={q.text} placeholder="Enter question text..." onChange={(v) => write({ ...q, text: v })} />
 
         {(q.kind === 'Single-select' || q.kind === 'Multi-select') && (
-          <Options q={q} onAdd={addOption} onRemove={removeOption} onText={optionText}
+          <Options q={q} marks={marksFor(q.kind)} markWidth={markWidth} onAdd={addOption} onRemove={removeOption} onText={optionText}
             onMark={(id, mark) => write({ ...q, options: q.options.map((o) => (o.id === id ? { ...o, mark } : o)) })}
             removable={q.kind === 'Multi-select'} />
         )}
@@ -333,7 +375,9 @@ export default function Screener() {
                     pass see the full screener. */}
                 {i === 0 && <StageBand label="Eligibility pre-screener" help="The three questions that decide who may continue. Answers are pre-set, so nothing is reviewed by hand." />}
                 {i === PRESCREENER_QUESTIONS && <StageBand label="Full screener" help="Only participants who pass the pre-screener are asked these. A borderline answer is held for review rather than rejected." />}
-                <QuestionBlock q={q} index={i} />
+                <QuestionBlock q={q} index={i}
+                  write={(next) => set('questions', draft.questions.map((x) => (x.id === next.id ? next : x)))}
+                  onDelete={() => { set('questions', draft.questions.filter((x) => x.id !== q.id)); toast(`${q.label} deleted`) }} />
               </div>
             ))}
           </div>

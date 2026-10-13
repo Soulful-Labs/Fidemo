@@ -3,9 +3,10 @@ import { useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import Checkbox from '../../components/ui/Checkbox'
-import { Clock, Info, PaymentsIcon, PoolIcon, StudiesIcon, SurveyIcon } from '../../components/ui/icons'
+import { Clock, DiaryBookIcon, InPersonIcon, Info, PaymentsIcon, PoolIcon, StudiesIcon, SurveyIcon, VideoIcon } from '../../components/ui/icons'
+import { summarise } from '@shared/studyForm'
 import { useDraft } from '../../mock/createStore'
-import CreateShell from './CreateShell'
+import CreateShell, { SaveDraftButton } from './CreateShell'
 import BreakdownPanel from './BreakdownPanel'
 import { useStudies } from '../../platform'
 import { AddCardPanel } from '../payments/PaymentPanels'
@@ -67,8 +68,11 @@ function CardField({ label, placeholder, className, value, onChange }: {
 export default function Publish() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const { draft } = useDraft()
-  const { submitStudy } = useStudies()
+  const { draft, form, draftId, reset } = useDraft()
+  const { submitStudy, state } = useStudies()
+  /** The four steps as they were built, in the frame's own chips (shared/studyForm.ts). */
+  const built = summarise(state, form())
+  const TypeIcon = draft.type === 'survey' ? SurveyIcon : draft.type === 'video_call' ? VideoIcon : draft.type === 'in_person' ? InPersonIcon : DiaryBookIcon
   const toast = useToast()
   const { cards } = useWorkspace()
   const [breakdown, setBreakdown] = useState(false)
@@ -99,63 +103,47 @@ export default function Publish() {
    */
   const publish = () => {
     /** The store refuses a study it cannot ask the screener of, and says which question. Nothing is created then. */
-    const made = submitStudy({
-      title: draft.title || 'Untitled study',
-      description: draft.description,
-      type: draft.type === 'video_call' && draft.groupVideo ? 'group_video_call'
-        : draft.type === 'in_person' && draft.groupInPerson ? 'in_person_group'
-        : draft.type,
-      required: Number(draft.participants) || 0,
-      incentive: draft.incentive,
-      duration: Number(draft.duration) || 0,
-      screener: draft.questions,
-    })
+    const made = submitStudy(form(), draftId)
     if (!made.ok) { toast(made.why); return }
+    reset()
     navigate('/studies/create/published')
   }
 
   return (
     <CreateShell step="publish" action={
       <>
-        <Button variant="tertiary" size="row" onClick={() => navigate('/studies/drafts')}>Save Draft &amp; Exit</Button>
+        <SaveDraftButton />
         <Button size="row" disabled={!ready} onClick={publish}>Publish Study</Button>
       </>
     }>
       <div className="flex items-start gap-12 rounded-lg bg-bg-0 p-6">
         <div className="flex w-[600px] shrink-0 flex-col gap-2">
           <Review icon={<Info className="h-5 w-5" />} title="About">
-            <Chip value="Survey" icon={<SurveyIcon className="h-4 w-4 text-brand-secondary" />} />
+            <Chip value={built.typeLabel} icon={<TypeIcon className="h-4 w-4 text-brand-secondary" />} />
             <Chip value={`${draft.duration} mins`} icon={<Clock className="h-4 w-4" />} />
           </Review>
 
           <Review icon={<PoolIcon className="h-5 w-5" />} title="Audience" action={
             <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-bg-1 px-3 text-text-regular text-text-subtitle">
-              Estimated Audience: <span className="text-text-title">1K</span>
+              Estimated Audience: <span className="text-text-title">{built.estimatedAudience}</span>
               <Info className="h-4 w-4 text-text-body" />
             </span>
           }>
-            <Chip value={draft.participants} icon={<PoolIcon className="h-4 w-4" />} />
-            <Chip value="Worldwide" icon={
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
-                <path d="M12 21s7-5.3 7-11a7 7 0 1 0-14 0c0 5.7 7 11 7 11Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                <circle cx="12" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.5" />
-              </svg>} />
-            <Chip label="Gender" value="All" />
-            <Chip label="Education" value="High school graduate" />
-            <Chip label="Age" value="18-22, 31-40" />
-            <Chip label="Age" value="18-22, 31-40" />
-            <Chip label="Work Functions" value="Consultation" />
-            <Chip label="Roles" value="Physician, General Doctor, Nutritionist, Therapist, Medical Practitioner" />
-            <Chip label="Industry" value="Healthcare, Pharma" />
-            <Chip label="Organization Size" value="Self employed, 1-10, 10-50" />
+            {built.audience.map((a, i) => (
+              <Chip key={i} label={a.label} value={a.value} icon={a.icon === 'people' ? <PoolIcon className="h-4 w-4" /> : a.icon === 'pin' ? (
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
+                  <path d="M12 21s7-5.3 7-11a7 7 0 1 0-14 0c0 5.7 7 11 7 11Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                  <circle cx="12" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+                </svg>) : undefined} />
+            ))}
           </Review>
 
           <Review icon={<StudiesIcon className="h-5 w-5" />} title="Screener">
-            <Chip label="Screening" value="8 inputs" />
+            <Chip label="Screening" value={built.screenerSummary} />
           </Review>
 
           <Review icon={FORM} title="Study">
-            <Chip label="Survey Form" value="10 inputs" />
+            <Chip label={built.studySummary.label} value={built.studySummary.value} />
             <Chip label="Incentive" value={`$${draft.incentive}`} />
           </Review>
         </div>

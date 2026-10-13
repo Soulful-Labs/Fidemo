@@ -25,7 +25,7 @@ export function answersOf(study: Pick<Study, 'preScreener' | 'screener'>, p?: Pa
   const pre: QA[] = study.preScreener.map((q) => ({ prompt: q.prompt, answer: { kind: 'text', value: p?.prescreener === 'passed' ? 'Passed' : 'Not answered' } }))
   const main: QA[] = study.screener.map((q) => {
     const v = p?.answers?.[q.id]
-    return { prompt: q.prompt, answer: Array.isArray(v) ? { kind: 'bullets', values: v } : { kind: 'text', value: v || 'Not answered' } }
+    return { prompt: q.prompt, answer: Array.isArray(v) ? { kind: 'bullets', values: v } : { kind: 'text', value: v === undefined || v === '' ? 'Not answered' : String(v) } }
   })
   return [...pre, ...main]
 }

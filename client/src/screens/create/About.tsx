@@ -97,7 +97,10 @@ export default function About() {
                   className="h-[90px] w-full resize-none rounded-sm border-1 border-stroke-input bg-bg px-4 py-3 text-body-regular text-text-title placeholder:text-text-body" />
               </Field>
               <Field label="Thumbnail Image">
-                <button type="button" onClick={() => set('thumbnail', 'thumbnail.jpg')}
+                {/* The file's name is kept with the study. Nothing uploads in this build, so there is no picture to show yet. */}
+                <input id="thumbnail-file" type="file" accept="image/jpeg,image/png" className="sr-only"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) set('thumbnail', f.name) }} />
+                <button type="button" onClick={() => document.getElementById('thumbnail-file')?.click()}
                   className="flex h-[100px] flex-col items-center justify-center gap-1 rounded-sm border-1 border-stroke-input bg-bg">
                   <span className="flex items-center gap-2 text-body-medium text-text-title">
                     <Upload className="h-5 w-5" />{draft.thumbnail || 'Upload Thumbnail Image'}

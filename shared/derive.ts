@@ -422,17 +422,23 @@ export function matchScore(study: Study, person: Person): number {
   return Math.min(98, 62 + (hash(study.id + person.id) % 20) + industry + role)
 }
 
-/** The slots still open on a study: what the client offered, less what other people have booked. */
-export function openAvailability(study: Study, exceptPersonId?: string): { date: string; slots: string[] }[] {
+/**
+ * The slots still open on a study: what the client offered, less what other
+ * people have booked, and less anything closer than the minimum notice the
+ * client set (a study built in the Create flow carries one).
+ */
+export function openAvailability(study: Study, exceptPersonId?: string, now: Date = new Date()): { date: string; slots: string[] }[] {
   const booked = study.participations.filter((p) => p.state === 'scheduled' && p.booking && p.personId !== exceptPersonId).map((p) => p.booking!)
   if (study.sessions) {
     return study.sessions
       .filter((s) => booked.filter((b) => b.sessionId === s.id).length < s.seats)
       .map((s) => ({ date: s.date, slots: [s.slot] }))
   }
+  const earliest = study.schedule ? now.getTime() + study.schedule.noticeMins * 60_000 : undefined
   return (study.availability ?? []).map((a) => ({
     date: a.date,
-    slots: a.slots.filter((slot) => !booked.some((b) => sameDay(b.date, a.date) && b.slot === slot)),
+    slots: a.slots.filter((slot) => !booked.some((b) => sameDay(b.date, a.date) && b.slot === slot)
+      && (earliest === undefined || sessionStartOf({ date: a.date, slot }).getTime() >= earliest)),
   }))
 }
 
@@ -480,7 +486,7 @@ export function respondentStudy(state: PlatformState, study: Study, person: Pers
     matchScore: matchScore(study, person), reward: study.rates.incentivePer, durationMins: study.durationMins,
     endsAt: study.endsAt, daysLeft: daysRemaining(study, now), targetProfession: study.targetProfession,
     client: { id: study.clientId, name: client?.company ?? '', ...clientRating(state, study.clientId) },
-    locations: study.locations, availability: isSessionType(study.type) ? openAvailability(study, person.id) : undefined,
+    locations: study.locations, availability: isSessionType(study.type) ? openAvailability(study, person.id, now) : undefined,
     status, saved: person.savedStudyIds.includes(study.id), premium: study.premium, repeatRule: study.repeatRule, city: study.city,
     linkCode: study.linkCode, preScreener: study.preScreener, screener: study.screener, tasks: study.tasks,
     diary: study.diary ? { ...study.diary, completedDays: p?.diaryDays ?? [] } : undefined,

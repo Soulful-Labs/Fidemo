@@ -1,8 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { buildTasks } from '@shared/questions'
+import { TASK_MARKS } from '@shared/studyForm'
 import Button from '../../components/ui/Button'
-import { ChevronDown, ChevronLeft, MoreVertical, Plus, Upload } from '../../components/ui/icons'
+import { ChevronLeft, Plus, Upload } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { useToast } from '../../components/ui/Toast'
+import { blankQuestion, useDraft } from '../../mock/createStore'
+import type { Question, QuestionKind } from '../../mock/createStore'
+import { QuestionBlock } from './Screener'
 
 const SPARKLE = (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
@@ -10,75 +15,54 @@ const SPARKLE = (
       stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
   </svg>
 )
-const GRIP = (
-  <span className="grid w-3 shrink-0 grid-cols-2 gap-[3px] text-text-body" aria-hidden="true">
-    {Array.from({ length: 6 }).map((_, i) => <span key={i} className="h-[3px] w-[3px] rounded-full bg-current" />)}
-  </span>
-)
 
-interface Opt { id: string; text: string; mark: string }
-interface SQ { id: string; label: string; kind: string; text: string; options: Opt[] }
-
-const NEW = (n: number): SQ => ({
-  id: `sq${Date.now()}`, label: `SQ ${n}`, kind: 'Single-select', text: '',
-  options: [{ id: `a${Date.now()}`, text: '', mark: 'Qualify' }, { id: `b${Date.now()}`, text: '', mark: 'Disqualify' }],
-})
-
-function Box({ value, placeholder, onChange, className }: {
-  value?: string; placeholder?: string; onChange?: (v: string) => void; className?: string
-}) {
-  return (
-    <input value={value ?? ''} placeholder={placeholder} onChange={(e) => onChange?.(e.target.value)}
-      className={cn('h-[38px] w-full rounded-sm border-1 border-stroke-input bg-bg px-4 text-text-regular text-text-title placeholder:text-text-body', className)} />
-  )
-}
-
-function Pick({ value, tone, className, onClick }: { value: string; tone?: string; className?: string; onClick?: () => void }) {
-  return (
-    <button type="button" onClick={onClick} className={cn('flex h-[38px] shrink-0 items-center justify-between gap-2 rounded-sm border-1 border-stroke-input bg-bg px-3 text-text-regular',
-      tone ?? 'text-text-title', className)}>
-      <span className="truncate">{value}</span>
-      <ChevronDown className="h-4 w-4 shrink-0 text-text-subtitle" />
-    </button>
-  )
-}
+/** A survey's or diary's options qualify or disqualify; nothing else about a question differs from the screener's. */
+const marksFor = (kind: QuestionKind) => (kind === 'Single-select' || kind === 'Multi-select' ? TASK_MARKS : [])
 
 /**
  * Create Survey (1518:92064): the questionnaire composer that opens beside
  * the study settings. Its option marks are Qualify and Disqualify, not the
- * screener's Correct and Incorrect.
+ * screener's Correct and Incorrect. What is built here is the study's own
+ * form (`tasks` on the draft), and Submit refuses a form that cannot be asked.
  */
 export default function SurveyComposer({
   onSubmit, onBack, title = 'Create Survey', submit = 'Submit Survey',
   lead = 'Setup your survey inputs form here for users.', dayGroup, kind = 'Single-select', seed = 1,
 }: {
   onSubmit: () => void; onBack: () => void
-  title?: string; submit?: string; lead?: string; dayGroup?: string; kind?: string; seed?: number
+  title?: string; submit?: string; lead?: string; dayGroup?: string; kind?: QuestionKind; seed?: number
 }) {
   const toast = useToast()
+  const { draft, set } = useDraft()
   const [file, setFile] = useState<string | null>(null)
-  const [questions, setQuestions] = useState<SQ[]>(
-    Array.from({ length: seed }, (_, i) => ({ ...NEW(i + 1), label: dayGroup ? `Q${i + 1}` : `SQ ${i + 1}`, kind })),
-  )
-  /** Adds survey questions rather than toasting; no model is wired here. */
+  const questions = draft.tasks
+  const label = (n: number) => (dayGroup ? `Q${n}` : `SQ ${n}`)
+  const fresh = (n: number, k: QuestionKind = kind): Question => blankQuestion(label(n), k, marksFor(k))
+  const write = (next: Question[]) => set('tasks', next.map((q, i) => ({ ...q, label: label(i + 1) })))
+
+  /** The frame opens the composer with its first questions already there, empty. */
+  useEffect(() => {
+    if (draft.tasks.length === 0) set('tasks', Array.from({ length: seed }, (_, i) => fresh(i + 1)))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  /** Adds open questions rather than toasting; no model is wired here. */
   const generate = () => {
     const bank = [
       'What did you set out to do when you opened the app?',
       'Where did that take longer than you expected?',
       'What would you change first?',
     ]
-    setQuestions((qs) => [
-      ...qs,
-      ...bank.map((text, i) => ({
-        ...NEW(qs.length + i + 1),
-        label: dayGroup ? `Q${qs.length + i + 1}` : `SQ ${qs.length + i + 1}`,
-        kind,
-        text,
-      })),
-    ])
+    write([...questions, ...bank.map((text, i) => ({ ...fresh(questions.length + i + 1, 'Multi-line input'), text }))])
     toast('Questions generated')
   }
-  const write = (next: SQ) => setQuestions((qs) => qs.map((q) => (q.id === next.id ? next : q)))
+
+  const send = () => {
+    const built = buildTasks(questions)
+    if (!built.ok) { toast(built.why); return }
+    if (built.tasks.length === 0) { toast('Write at least one question before submitting'); return }
+    onSubmit()
+  }
 
   return (
     <div className="flex w-[628px] shrink-0 flex-col overflow-hidden rounded-lg border-1 border-stroke-input">
@@ -90,7 +74,7 @@ export default function SurveyComposer({
         <span className="text-title-s text-text-title">{title}</span>
         <span className="flex-1" />
         <span className="text-text-regular text-text-subtitle">Auto-saved</span>
-        <Button size="row" onClick={onSubmit}>{submit}</Button>
+        <Button size="row" onClick={send}>{submit}</Button>
       </div>
 
       <div className="flex flex-col gap-4 p-4">
@@ -107,51 +91,18 @@ export default function SurveyComposer({
         </div>
 
         <div className={cn('flex flex-col gap-4', dayGroup && 'rounded-md bg-bg-1 p-3')}>
-        {dayGroup && (
-          <p className="rounded-sm bg-bg-2 py-2 text-center text-text-regular text-text-title">{dayGroup}</p>
-        )}
-        {questions.map((q) => (
-          <div key={q.id} className="flex gap-4">
-            {GRIP}
-            <div className="flex min-w-0 flex-1 flex-col gap-2.5">
-              <div className="flex items-center gap-2.5">
-                <span className="flex h-[38px] items-center rounded-full bg-bg-1 px-4 text-text-regular text-text-title">{q.label}</span>
-                <span className="flex-1" />
-                <Pick value={q.kind} className="w-[164px]" />
-                <button type="button" aria-label="Question options" onClick={() => toast('Duplicate, move and delete land with the question menu')}
-                  className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-sm border-1 border-stroke-input bg-bg text-text-subtitle hover:text-text-title">
-                  <MoreVertical className="h-5 w-5" />
-                </button>
-              </div>
-              <Box value={q.text} placeholder="Enter question text..." onChange={(v) => write({ ...q, text: v })} />
-              {q.kind === 'Multi-line input' && (
-                <input readOnly placeholder="Participants will enter a long text response"
-                  className="h-[38px] w-full rounded-sm border-1 border-stroke-input bg-bg-1 px-4 text-text-regular italic text-text-title placeholder:italic placeholder:text-text-body" />
-              )}
-              <div className={cn('flex flex-col gap-2.5', q.kind !== 'Single-select' && 'hidden')}>
-                {q.options.map((o) => (
-                  <div key={o.id} className="flex items-center gap-2.5 pl-2.5">
-                    {GRIP}
-                    <span className="relative flex flex-1 items-center">
-                      <span className="absolute left-4 h-4 w-4 rounded-full border-1.5 border-neutral-1000" />
-                      <Box value={o.text} placeholder="Enter option" className="pl-11"
-                        onChange={(v) => write({ ...q, options: q.options.map((x) => (x.id === o.id ? { ...x, text: v } : x)) })} />
-                    </span>
-                    <Pick value={o.mark} tone={o.mark === 'Qualify' ? 'text-brand-secondary' : 'text-state-danger'} className="w-[118px]" />
-                    <button type="button" aria-label="Add option" className="text-text-subtitle"
-                      onClick={() => write({ ...q, options: [...q.options, { id: `o${Date.now()}`, text: '', mark: 'Qualify' }] })}>
-                      <Plus className="h-5 w-5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        ))}
+          {dayGroup && (
+            <p className="rounded-sm bg-bg-2 py-2 text-center text-text-regular text-text-title">{dayGroup}</p>
+          )}
+          {questions.map((q, i) => (
+            <QuestionBlock key={q.id} q={q} index={i} plain marksFor={marksFor} markWidth="w-[118px]"
+              write={(next) => write(questions.map((x) => (x.id === next.id ? next : x)))}
+              onDelete={() => { write(questions.filter((x) => x.id !== q.id)); toast(`${q.label} deleted`) }} />
+          ))}
         </div>
 
         <Button variant="tertiary" size="row" className="w-full" leftIcon={<Plus className="h-5 w-5" />}
-          onClick={() => setQuestions((qs) => [...qs, { ...NEW(qs.length + 1), label: dayGroup ? `Q${qs.length + 1}` : `SQ ${qs.length + 1}`, kind }])}>Add Question</Button>
+          onClick={() => write([...questions, fresh(questions.length + 1)])}>Add Question</Button>
       </div>
     </div>
   )

@@ -1,44 +1,54 @@
 import Button from '../../components/ui/Button'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { BLANK_WINDOW, dayOf, formId } from '@shared/studyForm'
+import type { TimeWindow } from '@shared/studyForm'
 import SidePanel from '../../components/ui/SidePanel'
 import Toggle from '../../components/ui/Toggle'
-import { Calendar, Close, Plus } from '../../components/ui/icons'
+import { Close, Plus } from '../../components/ui/icons'
 import { useDraft } from '../../mock/createStore'
 import { useToast } from '../../components/ui/Toast'
+import { DayPick, TimePick } from './TimeBits'
 
-function Time({ value }: { value: string }) {
-  return (
-    <span className="flex h-12 w-[100px] items-center rounded-sm border-1 border-stroke-input bg-bg px-3 text-text-regular text-text-title">
-      {value}
-    </span>
-  )
-}
+const DAY = 86_400_000
 
 /**
- * Add an override (1518:93557): the 600px panel the Date Overrides card in
- * the availability composer opens, for a date whose hours differ from the
- * weekly ones.
+ * Add an override (1518:93557) and Edit override (1749:143926): the 600px
+ * panel the Date Overrides card in the availability composer opens, for dates
+ * whose hours differ from the weekly ones. The frame draws the dates and the
+ * hours as fixed text; here they are the client's to set, and what is saved
+ * is what the study is built from (shared/studyForm.ts).
  */
-export default function OverridePanel({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [rows, setRows] = useState<number[]>([0, 1])
+export default function OverridePanel({ open, onClose, editId }: { open: boolean; onClose: () => void; editId?: string }) {
   const { draft, set } = useDraft()
   const toast = useToast()
+  const editing = draft.overrides.find((o) => o.id === editId)
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
+  const [rows, setRows] = useState<TimeWindow[]>([{ ...BLANK_WINDOW }])
+  const [allDay, setAllDay] = useState(false)
 
-  /**
-   * Save override only closed the panel, so a client could set a date's hours
-   * and nothing kept them: the Date Overrides card below never gained a row.
-   * It writes the override the panel describes onto the draft, which is what
-   * that card counts.
-   */
+  useEffect(() => {
+    if (!open) return
+    setFrom(editing?.from ?? ''); setTo(editing?.to ?? '')
+    setRows(editing?.windows.length ? editing.windows.map((w) => ({ ...w })) : [{ ...BLANK_WINDOW }])
+    setAllDay(editing ? editing.windows.length === 0 : false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, editId])
+
+  const a = dayOf(from), b = dayOf(to || from)
+  const days = a && b && b >= a ? Math.round((b.getTime() - a.getTime()) / DAY) + 1 : 0
+
   const save = () => {
-    const hours = draft.unavailableAllDay ? 'Unavailable' : `${rows.length} time${rows.length === 1 ? '' : 's'}`
-    set('overrides', [...draft.overrides, { date: 'Aug 20 - Aug 30', hours }])
-    toast(draft.unavailableAllDay ? 'Marked unavailable for those dates' : 'Override saved')
+    if (!a || !b) { toast('Choose the dates to override'); return }
+    if (b < a) { toast('The last date is before the first'); return }
+    const next = { id: editing?.id ?? formId('v'), from, to: to || from, windows: allDay ? [] : rows }
+    set('overrides', editing ? draft.overrides.map((o) => (o.id === editing.id ? next : o)) : [...draft.overrides, next])
+    toast(allDay ? 'Marked unavailable for those dates' : 'Override saved')
     onClose()
   }
 
   return (
-    <SidePanel open={open} onClose={onClose} title="Add an override" headerClassName="h-[56px]"
+    <SidePanel open={open} onClose={onClose} title={editing ? 'Edit override' : 'Add an override'} headerClassName="h-[56px]"
       bodyClassName="flex flex-col gap-4 p-4"
       footer={
         <div className="flex gap-3 [&_button]:h-12 [&_button]:flex-1 [&_button]:text-body-medium">
@@ -48,31 +58,30 @@ export default function OverridePanel({ open, onClose }: { open: boolean; onClos
       }>
       <div className="flex flex-col gap-1">
         <p className="text-body-medium text-text-title">Select dates to override</p>
-        <span className="relative flex">
-          <span className="flex h-12 w-full items-center rounded-sm border-1 border-stroke-input bg-bg px-4 pr-11 text-text-regular text-text-title">
-            Aug 20 - Aug 30
-          </span>
-          <Calendar className="pointer-events-none absolute right-4 top-3.5 h-5 w-5 text-text-subtitle" />
+        <span className="flex items-center gap-3">
+          <DayPick label="Override from" value={from} onChange={setFrom} className="h-12 flex-1" />
+          <span className="text-text-regular text-text-subtitle">TO</span>
+          <DayPick label="Override to" value={to} onChange={setTo} className="h-12 flex-1" />
         </span>
-        <p className="text-text-regular text-text-subtitle">11 days selected</p>
+        <p className="text-text-regular text-text-subtitle">{days} day{days === 1 ? '' : 's'} selected</p>
       </div>
 
       <span className="-mx-4 border-t-1 border-stroke-1" />
 
       <div className="flex flex-col gap-3">
         <p className="text-body-medium text-text-title">Which hours are you available?</p>
-        {rows.map((_, i) => (
+        {!allDay && rows.map((w, i) => (
           <div key={i} className="flex items-center gap-3">
-            <Time value="12:00 AM" />
+            <TimePick label="Override hours from" value={w.from} className="h-12" onPick={(v) => setRows((r) => r.map((x, k) => (k === i ? { ...x, from: v } : x)))} />
             <span className="text-text-regular text-text-subtitle">TO</span>
-            <Time value="12:00 AM" />
+            <TimePick label="Override hours to" value={w.to} className="h-12" onPick={(v) => setRows((r) => r.map((x, k) => (k === i ? { ...x, to: v } : x)))} />
             <button type="button" aria-label="Remove hours" onClick={() => setRows((r) => (r.length > 1 ? r.filter((_, k) => k !== i) : r))}
               className="text-text-subtitle hover:text-text-title">
               <Close className="h-4 w-4" />
             </button>
             <span className="flex-1" />
             {i === 0 && (
-              <button type="button" aria-label="Add hours" onClick={() => setRows((r) => [...r, r.length])}
+              <button type="button" aria-label="Add hours" onClick={() => setRows((r) => [...r, { ...BLANK_WINDOW }])}
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-1 border-stroke-input bg-bg text-text-subtitle hover:text-text-title">
                 <Plus className="h-5 w-5" />
               </button>
@@ -84,7 +93,7 @@ export default function OverridePanel({ open, onClose }: { open: boolean; onClos
       <span className="-mx-4 border-t-1 border-stroke-1" />
 
       <div className="flex items-center gap-3">
-        <Toggle checked={draft.unavailableAllDay} onChange={(v) => set('unavailableAllDay', v)} label="Mark Unavailable For Full Day" />
+        <Toggle checked={allDay} onChange={setAllDay} label="Mark Unavailable For Full Day" />
         <span className="text-body-regular text-text-title">Mark Unavailable For Full Day</span>
       </div>
     </SidePanel>

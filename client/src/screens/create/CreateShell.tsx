@@ -4,6 +4,9 @@ import { SideNav } from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import { DiaryIcon, Info, PoolIcon, StudiesIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
+import { useToast } from '../../components/ui/Toast'
+import { useDraft } from '../../mock/createStore'
+import { useStudies } from '../../platform'
 
 export type CreateStep = 'about' | 'audience' | 'screener' | 'study' | 'publish'
 
@@ -16,6 +19,26 @@ const STEPS: { key: CreateStep; label: string; Icon: typeof Info; to: string }[]
 ]
 
 /**
+ * Save Draft & Exit, on every step. The form as it stands is kept whole on a
+ * draft study (shared/store.ts saveStudyDraft), so it reopens from Drafts with
+ * everything in it. Saving again from a reopened draft saves over it.
+ */
+export function SaveDraftButton() {
+  const navigate = useNavigate()
+  const toast = useToast()
+  const { form, draftId, reset } = useDraft()
+  const { saveStudyDraft } = useStudies()
+  const save = () => {
+    const saved = saveStudyDraft(form(), draftId)
+    if (!saved.ok) { toast(saved.why); return }
+    reset()
+    toast('Draft saved')
+    navigate('/studies/drafts')
+  }
+  return <Button variant="tertiary" size="row" onClick={save}>Save Draft &amp; Exit</Button>
+}
+
+/**
  * The Create Study frame: the same left navigation, but the top bar carries
  * "Create Study / Study Name", the four step chips and the Save Draft & Exit
  * and Publish Study buttons instead of the bell and Create Study.
@@ -24,6 +47,7 @@ export default function CreateShell({ step, action, children }: { step: CreateSt
   const index = STEPS.findIndex((s) => s.key === step)
   const next = STEPS[index + 1]
   const navigate = useNavigate()
+  const { draft } = useDraft()
 
   return (
     <div className="flex min-h-screen bg-yellow-20">
@@ -31,7 +55,7 @@ export default function CreateShell({ step, action, children }: { step: CreateSt
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-[69px] shrink-0 items-center justify-between gap-6 border-b-1 border-stroke-input bg-yellow-20 px-4">
-          <span className="text-body-regular text-text-subtitle">Create Study / <span className="text-text-title">Study Name</span></span>
+          <span className="text-body-regular text-text-subtitle">Create Study / <span className="text-text-title">{draft.title.trim() || 'Study Name'}</span></span>
 
           <ol className="flex items-center">
             {STEPS.map((s, i) => {
@@ -54,7 +78,7 @@ export default function CreateShell({ step, action, children }: { step: CreateSt
           <div className="flex items-center gap-3">
             {action ?? (
               <>
-                <Button variant="tertiary" size="row" onClick={() => navigate('/studies/drafts')}>Save Draft &amp; Exit</Button>
+                <SaveDraftButton />
                 <Button size="row" onClick={() => next && navigate(next.to)}>Continue</Button>
               </>
             )}

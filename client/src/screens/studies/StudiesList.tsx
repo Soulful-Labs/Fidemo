@@ -1,3 +1,4 @@
+import { useDraft } from '../../mock/createStore'
 import { useMemo, useState } from 'react'
 import Button from '../../components/ui/Button'
 import { useNavigate } from 'react-router-dom'
@@ -104,7 +105,12 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
     return [...rows].sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id))
   }, [rows])
 
-  const open = (s: Study) => navigate(tab === 'ongoing' ? `/studies/${s.id}` : `/studies/${s.id}/manage`)
+  const { open: openDraft } = useDraft()
+  /** A draft reopens in the Create flow with everything it was saved with; anything else opens as a study. */
+  const open = (s: Study) => {
+    if (s.state === 'draft') { openDraft(s); navigate('/studies/create/about'); return }
+    navigate(tab === 'ongoing' ? `/studies/${s.id}` : `/studies/${s.id}/manage`)
+  }
 
   return (
     <AppShell crumbs={[{ label: 'Studies' }]}>
@@ -266,9 +272,11 @@ function RowMenu({
     toast(res.ok ? `${row.title} marked completed` : res.why)
     onClose()
   }
+  const { open: openDraft } = useDraft()
   const edit = () => {
     onClose()
-    nav(tab === 'drafts' ? '/studies/create/about' : `/studies/${row.id}/manage`)
+    if (row.state === 'draft') openDraft(row)
+    nav(row.state === 'draft' ? '/studies/create/about' : `/studies/${row.id}/manage`)
   }
   const duplicate = () => {
     const res = duplicateStudy(row.id)

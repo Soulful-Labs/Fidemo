@@ -16,6 +16,8 @@ import { POINTS, REDEEM, TIERS, TRUST, starsForRating, starsFromDimensions, trus
 import { DEMO_CLIENT_ID, DEMO_PERSON_ID, MASTER_ADMIN_ID, buildSeed } from '../shared/seed'
 import { buildScreener, screenerOutline } from '../shared/questions'
 import type { AuthoredQuestion } from '../shared/questions'
+import { blankForm, blankQuestion, buildStudy, estimateAudience, formFromStudy, formId, studyDetails, summarise } from '../shared/studyForm'
+import type { FormQuestion, StudyForm } from '../shared/studyForm'
 import { createPlatform } from '../shared/store'
 import type { Actor } from '../shared/store'
 
@@ -92,7 +94,15 @@ const BUILT: AuthoredQuestion[] = [
   { kind: 'Single-line input', text: '   ' },
   { kind: 'Number input', text: 'How many nights a week do you wear it?' },
 ]
-const made = p.submitStudy(DEMO_CLIENT_ID, { title: 'Journey study', description: 'Created by the verify script.', type: 'video_call', required: 5, incentive: 120, durationMins: 45, screener: BUILT })
+/** The same questions as the Create flow holds them, and a form around them. */
+const asForm = (qs: AuthoredQuestion[], marks: string[] = []): FormQuestion[] => qs.map((q, i) => ({
+  ...blankQuestion(`Q${i + 1}`, q.kind), text: q.text, options: (q.options ?? []).map((o) => ({ id: formId('o'), text: o.text, mark: o.mark ?? marks[0] ?? '' })),
+  min: q.min, max: q.max, gap: q.gap, rows: q.rows, columns: q.columns,
+}))
+const NINE_TO_FIVE = Object.fromEntries(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map((d) => [d, [{ from: '09:00 AM', to: '05:00 PM' }]]))
+const formOf = (over: Partial<StudyForm>): StudyForm => ({ ...blankForm(), type: 'video_call', description: 'Created by the verify script.', questions: asForm(BUILT), hours: NINE_TO_FIVE, availabilitySet: true, ...over })
+const SURVEY: Partial<StudyForm> = { type: 'survey', tasks: asForm([{ kind: 'Multi-line input', text: 'What would you change first?' }]), tasksSubmitted: true }
+const made = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Journey study', type: 'video_call', participants: '5', incentive: 120, duration: 45 }))
 {
   const mine = made.ok ? p.getState().studies.find((x) => x.id === made.id)! : undefined
   const outline = mine ? screenerOutline(mine) : []
@@ -102,9 +112,9 @@ const made = p.submitStudy(DEMO_CLIENT_ID, { title: 'Journey study', description
   check('screener: a leading single-select with a Correct answer decides eligibility', mine?.preScreener.length === 1 && mine.preScreener[0]!.passing.join() === 'Yes' && mine.screener.length === 2)
   check('screener: the verdicts set in the builder are kept', mine?.screener[0]!.marks?.['A ring'] === 'Must Select')
   check('screener: a number question is asked as a number', mine?.screener[1]!.kind === 'text' && mine.screener[1]!.format === 'number')
-  const none = p.submitStudy(DEMO_CLIENT_ID, { title: 'x', description: 'x', type: 'survey', required: 5, incentive: 10, durationMins: 10, screener: [{ kind: 'Single-select', text: '' }] })
+  const none = p.submitStudy(DEMO_CLIENT_ID, formOf({ ...SURVEY, title: 'x', questions: asForm([{ kind: 'Single-select', text: '' }]) }))
   check('screener: a study with no question is refused, and none is created', !none.ok && none.why.includes('at least one screener question') && !p.getState().studies.some((x) => x.title === 'x'))
-  const bad = p.submitStudy(DEMO_CLIENT_ID, { title: 'x', description: 'x', type: 'survey', required: 5, incentive: 10, durationMins: 10, screener: [{ kind: 'Number input', text: 'Age?' }, { kind: 'Multi-select', text: 'Pick', options: [{ text: 'Only one' }] }] })
+  const bad = p.submitStudy(DEMO_CLIENT_ID, formOf({ ...SURVEY, title: 'x', questions: asForm([{ kind: 'Number input', text: 'Age?' }, { kind: 'Multi-select', text: 'Pick', options: [{ text: 'Only one' }] }]) }))
   check('screener: a select with one option is refused by its number', !bad.ok && bad.why === 'Screener question 2 needs at least two options', bad.ok ? '' : bad.why)
   const kinds = buildScreener([
     { kind: 'Slider', text: 'Rate it', min: '1', max: '5', gap: '1' }, { kind: 'Slider', text: 'Age', min: '18', max: '80', gap: '1' },
@@ -113,7 +123,47 @@ const made = p.submitStudy(DEMO_CLIENT_ID, { title: 'Journey study', description
   ])
   check('screener: all nine builder types become something a respondent can be asked', kinds.ok && kinds.screener.map((q) => q.kind).join() === 'scale,text,multi,image,single,single,text' && kinds.screener[0]!.kind === 'scale' && kinds.screener[0]!.options.join() === '1,2,3,4,5', kinds.ok ? kinds.screener.map((q) => q.kind).join() : kinds.why)
 }
-check('1. client publishes a study, it waits in review', made.ok && st().studies[0]!.state === 'in_review')
+// ------------------------------------------------ everything the Create flow holds is the study
+{
+  const mine = made.ok ? st().studies.find((x) => x.id === made.id)! : undefined
+  const dayName = (iso: string) => new Date(iso).toLocaleDateString('en-US', { weekday: 'long' })
+  check('create: weekly hours become the dated slots a respondent books, weekdays only', Boolean(mine?.availability?.length) && mine!.availability!.every((a) => !['Saturday', 'Sunday'].includes(dayName(a.date))) && mine!.availability![0]!.slots[0] === '09:00 AM', mine?.availability?.[0]?.slots.join())
+  check('create: sessions are the study length with the buffer between them', mine?.availability?.[0]?.slots[1] === '10:00 AM' && mine.schedule?.bufferMins === 15, mine?.availability?.[0]?.slots.slice(0, 3).join())
+  check('create: nothing is offered after the study ends', mine !== undefined && mine.availability!.every((a) => a.date <= mine.endsAt))
+  check('create: the whole form is kept with the study', mine?.form?.title === 'Journey study' && mine.form.questions.length === BUILT.length && mine.required === 5 && mine.rates.incentivePer === 120)
+  check('create: hours that end before they start are refused, by day', (() => { const r = buildStudy(formOf({ title: 't', hours: { Monday: [{ from: '12:00 AM', to: '12:00 AM' }] } })); return !r.ok && r.why.startsWith('Monday') })())
+  check('create: a study with no title, or no availability submitted, is refused', !buildStudy(formOf({ title: ' ' })).ok && !buildStudy(formOf({ title: 't', availabilitySet: false })).ok)
+  const tomorrow = new Date(now.getTime() + 86_400_000), ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const off = buildStudy(formOf({ title: 't', overrides: [{ id: 'v1', from: ymd(tomorrow), to: ymd(tomorrow), windows: [] }] }), now)
+  check('create: a date override marked unavailable removes that day', off.ok && !off.study.availability!.some((a) => new Date(a.date).toDateString() === tomorrow.toDateString()))
+  const inPerson = formOf({ title: 't', type: 'in_person', groupInPerson: true, seats: '6 seats', addresses: [{ id: 'a1', title: 'Austin, Texas', detail: '12 Main St, Austin, Texas, 73301' }], sessions: [{ id: 's1', date: ymd(new Date(now.getTime() + 3 * 86_400_000)), time: '10:00 AM' }] })
+  const group = buildStudy(inPerson, now)
+  check('create: a group study has the client\'s own sessions, seats and address', group.ok && group.study.type === 'in_person_group' && group.study.sessions?.length === 1 && group.study.sessions[0]!.seats === 6 && group.study.sessions[0]!.slot === '10:00 AM' && group.study.locations?.[0]?.address === '12 Main St, Austin, Texas, 73301' && group.study.sessions[0]!.locationId === 'a1')
+  check('create: a session in the past, or an in-person study with no address, is refused', !buildStudy({ ...inPerson, sessions: [{ id: 's1', date: '2020-01-01', time: '10:00 AM' }] }, now).ok && !buildStudy({ ...inPerson, addresses: [] }, now).ok)
+  const diary = buildStudy(formOf({ title: 't', type: 'diary', studyDuration: '7 days', minimumRequired: '5 days', frequency: 'Every day', durationUnit: 'Day', tasks: asForm([{ kind: 'Multi-line input', text: 'What happened today?' }]), tasksSubmitted: true }), now)
+  check('create: diary settings are the study\'s, as chosen', diary.ok && diary.study.diary?.totalDays === 7 && diary.study.diary.minDays === 5 && diary.study.diary.frequency === 'Every day' && diary.study.tasks?.[0]?.prompt === 'What happened today?')
+  check('create: a survey with no form, or a diary asking for more days than it runs, is refused', !buildStudy(formOf({ title: 't', type: 'survey' }), now).ok && !buildStudy(formOf({ title: 't', type: 'diary', studyDuration: '3 days', minimumRequired: '5 days', tasks: asForm([{ kind: 'Multi-line input', text: 'x' }]), tasksSubmitted: true }), now).ok)
+  const aud = formOf({ title: 't', countries: ['United States of America'], gender: 'Female', education: '', ageRanges: [], roles: 'Oncologist, Nurse', industries: 'Healthcare', condition: 'never', tiers: 'Gold and above' })
+  const sum = summarise(st(), aud, now)
+  check('create: the audience is written as entered, and sets the repeat rule', sum.audience.some((a) => a.label === 'Roles' && a.value === 'Oncologist, Nurse') && sum.audience.some((a) => a.label === 'Gender' && a.value === 'Female') && sum.audience.some((a) => a.label === 'Profile Tiers') && (() => { const b = buildStudy(aud, now); return b.ok && b.study.repeatRule === 'exclude' && b.study.targetProfession === 'Oncologist, Nurse' })())
+  const everyone = estimateAudience(st(), formOf({ countries: [], gender: 'All Genders', education: '', ageRanges: [] }), now)
+  check('create: the estimated audience is counted from the pool and narrows with the audience', everyone > 0 && estimateAudience(st(), aud, now) < everyone && sum.estimatedAudience === String(estimateAudience(st(), aud, now)), `${everyone} -> ${sum.estimatedAudience}`)
+  check('create: the summary names the type and the setup that was built', sum.typeLabel === 'Video Call' && sum.studySummary.value === 'available 5 days/week, custom timings' && sum.screenerSummary === '3 inputs', `${sum.typeLabel} / ${sum.studySummary.value} / ${sum.screenerSummary}`)
+
+  const half = formOf({ title: 'Half built', type: 'in_person', questions: asForm([{ kind: 'Single-select', text: 'Unfinished', options: [{ text: 'only one' }] }]), addresses: [{ id: 'a1', title: 'Leeds', detail: '1 Park Row, Leeds' }], availabilitySet: false })
+  const saved = p.saveStudyDraft(DEMO_CLIENT_ID, half)
+  const draft = saved.ok ? st().studies.find((x) => x.id === saved.id)! : undefined
+  check('draft: saved as a draft with nothing checked and nothing charged', saved.ok && draft?.state === 'draft' && draft.payments.length === 0 && draft.title === 'Half built')
+  check('draft: it reopens with everything that was in it', draft !== undefined && JSON.stringify(formFromStudy(draft)) === JSON.stringify(half))
+  const again = saved.ok ? p.saveStudyDraft(DEMO_CLIENT_ID, { ...half, title: 'Half built, renamed' }, saved.id) : saved
+  check('draft: saving again saves over it, not beside it', again.ok && saved.ok && again.id === saved.id && st().studies.filter((x) => x.title.startsWith('Half built')).length === 1 && st().studies.find((x) => x.id === saved.id)!.title === 'Half built, renamed')
+  const early = saved.ok ? p.submitStudy(DEMO_CLIENT_ID, half, saved.id) : saved
+  check('draft: an unfinished draft is refused at submit and stays a draft', !early.ok && saved.ok && st().studies.find((x) => x.id === saved.id)!.state === 'draft', early.ok ? '' : early.why)
+  const done = saved.ok ? p.submitStudy(DEMO_CLIENT_ID, { ...half, questions: asForm(BUILT), hours: NINE_TO_FIVE, availabilitySet: true }, saved.id) : saved
+  check('draft: finished, it is submitted in place', done.ok && saved.ok && done.id === saved.id && st().studies.filter((x) => x.id === saved.id).length === 1 && st().studies.find((x) => x.id === saved.id)!.state === 'in_review' && st().studies.find((x) => x.id === saved.id)!.locations?.[0]?.label === 'Leeds')
+  check('create: the step-4 read-back lists the hours and the address', studyDetails({ ...half, hours: NINE_TO_FIVE }).some((r) => r.label === 'Monday' && r.value === '09:00 AM to 05:00 PM') && studyDetails(half).some((r) => r.label === 'Address 1' && r.value.includes('1 Park Row')))
+}
+check('1. client publishes a study, it waits in review', made.ok && st().studies.find((s) => s.id === (made as { id: string }).id)!.state === 'in_review')
 const id = made.ok ? made.id : ''
 check('2. it is in the console\'s To Review queue', st().studies.filter((s) => s.state === 'in_review').some((s) => s.id === id))
 check('   a client cannot take their own study live', !p.moveStudy(id, 'recruiting', client).ok)
@@ -121,7 +171,8 @@ check('   a respondent cannot apply before it is approved', !p.startApplication(
 check('3. the console approves it', p.moveStudy(id, 'recruiting', team).ok && st().studies.find((s) => s.id === id)!.state === 'recruiting')
 check('   the approval is in the activity log', st().activity[0]!.what.includes('Journey study') && st().activity[0]!.by === MASTER_ADMIN_ID)
 check('4. it appears to the respondent', respondentStudies(st(), DEMO_PERSON_ID).some((s) => s.id === id && s.status === 'available'))
-check('5. the respondent applies and submits the screener', p.startApplication(id, DEMO_PERSON_ID).ok && p.submitScreener(id, DEMO_PERSON_ID, { q1: 'x' }).ok && status(id) === 'applied')
+check('5. the respondent applies and submits the screener', p.startApplication(id, DEMO_PERSON_ID).ok && p.submitScreener(id, DEMO_PERSON_ID, { q2: ['A watch'], q3: ' 5 ' }).ok && status(id) === 'applied')
+check('   a number answer is saved as a number, the rest as given', (() => { const a = participationOf(st().studies.find((s) => s.id === id)!, DEMO_PERSON_ID)!.answers!; return a.q3 === 5 && Array.isArray(a.q2) })())
 check('6. the application is on the study, for client and console', counts(st().studies.find((s) => s.id === id)!).applied === 1 && consoleDashboard(st()).screeners.some((c) => c.study.id === id))
 check('   it is not qualified on a timer (the client is real)', st().pending.length === 0)
 check('   an applicant cannot be completed', !p.complete(id, DEMO_PERSON_ID, client).ok)
@@ -175,7 +226,7 @@ p.reset()
   check('console rating: stored as the mean of the dimensions and logged', p.rateParticipant('st-social', unrated.personId, 'dimensions', { expertise: 4, reliability: 4, communication: 3 }, team).ok && unrated.personId !== undefined
     && st().studies.find((s) => s.id === 'st-social')!.participations.find((x) => x.personId === unrated.personId)!.rating?.stars === 4 && lastBy() === MASTER_ADMIN_ID)
   check('console approves the study a client submitted', (() => {
-    const made = p.submitStudy(DEMO_CLIENT_ID, { title: 'Console approval check', description: 'x', type: 'survey', industry: 'Tech', durationMins: 30, required: 5, incentive: 50, targetProfession: 'Engineer', screener: BUILT })
+    const made = p.submitStudy(DEMO_CLIENT_ID, formOf({ ...SURVEY, title: 'Console approval check', industries: 'Tech', duration: 30, participants: '5', incentive: 50, roles: 'Engineer' }))
     if (!made.ok) return false
     const id = (made as { id: string }).id
     return st().studies.find((s) => s.id === id)?.state === 'in_review' && p.moveStudy(id, 'recruiting', team).ok && lastBy() === MASTER_ADMIN_ID

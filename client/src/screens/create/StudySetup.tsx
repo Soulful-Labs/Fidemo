@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import { ChevronRight, Edit } from '../../components/ui/icons'
-import { blankQuestion, setupDone, useDraft } from '../../mock/createStore'
-import CreateShell from './CreateShell'
+import { studySummary } from '@shared/studyForm'
+import { setupDone, useDraft } from '../../mock/createStore'
+import CreateShell, { SaveDraftButton } from './CreateShell'
 import { Section } from './CreateBits'
 import { CostingSummary, IncentivePayments, Payment, SettingsCard } from './StudyBits'
 import SurveyComposer from './SurveyComposer'
@@ -19,18 +20,12 @@ const TARGET = (
   </svg>
 )
 
-/** The four survey questions the frame starts the questionnaire with. */
-const SEED_SURVEY = [
-  { ...blankQuestion('SQ 1', 'Single-select'), options: [
-    { id: 'sq1a', text: '', mark: 'Qualify' }, { id: 'sq1b', text: '', mark: 'Disqualify' },
-  ] },
-]
-
 /** Survey Settings: the questionnaire is either still to be made, or made. */
 function SurveySettings() {
   const { draft, set } = useDraft()
   const [params] = useSearchParams()
-  const made = params.get('state') === 'created' || draft.surveyQuestions !== null
+  const made = params.get('state') === 'created' || draft.tasksSubmitted
+  const count = draft.tasks.filter((q) => q.text.trim()).length
   return (
     <Section icon={TARGET} title="Survey Settings" sub="Setup your survey for the participants" headPad="pb-4" titleLead="leading-[22px]" pad="py-4">
       <SettingsCard title="Custom Survey Form" sub={made ? undefined : 'Make the input form for survey questions'}>
@@ -38,7 +33,7 @@ function SurveySettings() {
           <>
             <button type="button" onClick={() => set('surveyOpen', true)}
               className="flex h-[38px] items-center justify-between gap-3 rounded-sm border-1 border-stroke-input bg-bg px-4 text-text-regular text-text-title">
-              {draft.surveyQuestions?.length ?? 10} Questions
+              {draft.tasksSubmitted ? `${count} Question${count === 1 ? '' : 's'}` : '10 Questions'}
               <ChevronRight className="h-4 w-4 text-text-subtitle" />
             </button>
             <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" leftIcon={<Edit className="h-5 w-5" />}
@@ -74,7 +69,7 @@ const DIARY_OPTIONS: Record<string, string[]> = {
 function DiarySettings() {
   const { draft, set } = useDraft()
   const [params] = useSearchParams()
-  const made = params.get('state') === 'created' || draft.surveyQuestions !== null
+  const made = params.get('state') === 'created' || draft.tasksSubmitted
   return (
     <Section icon={TARGET} title="Diary Study Settings" sub="Setup your Diary study for the participants" headPad="pb-4" titleLead="leading-[22px]" pad="py-4">
       <div className="flex flex-col gap-3.5 rounded-lg bg-yellow-30 p-4">
@@ -111,7 +106,7 @@ function DiarySettings() {
           <>
             <button type="button" onClick={() => set('surveyOpen', true)}
               className="flex h-[38px] items-center justify-between gap-3 rounded-sm border-1 border-stroke-input bg-bg px-4 text-text-regular text-text-title">
-              5 questions, 5 days logs
+              {draft.tasksSubmitted ? studySummary(draft).value : '5 questions, 5 days logs'}
               <ChevronRight className="h-4 w-4 text-text-subtitle" />
             </button>
             <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" leftIcon={<Edit className="h-5 w-5" />}
@@ -143,7 +138,7 @@ function VideoSettings({ group, open }: { group: boolean; open: boolean }) {
           <>
             <button type="button" onClick={() => set('surveyOpen', true)}
               className="flex h-[38px] items-center justify-between gap-3 rounded-sm border-1 border-stroke-input bg-bg px-4 text-text-regular text-text-title">
-              {group ? `${draft.sessions.length} sessions, ${draft.seats} seats per sessions` : `available ${draft.days.length} days/week, custom timings`}
+              {studySummary(draft).value}
               <ChevronRight className="h-4 w-4 text-text-subtitle" />
             </button>
             <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" leftIcon={<Edit className="h-5 w-5" />}
@@ -176,7 +171,7 @@ function InPersonSettings({ group, open }: { group: boolean; open: boolean }) {
           <>
             <button type="button" onClick={() => set('surveyOpen', true)}
               className="flex h-[38px] items-center justify-between gap-3 rounded-sm border-1 border-stroke-input bg-bg px-4 text-text-regular text-text-title">
-              {group ? '2 sessions, 10 seats per sessions, 1 address' : '2 addresses, available 5 days/week, custom timings, 2 days overrides'}
+              {draft.availabilitySet ? studySummary(draft).value : group ? '2 sessions, 10 seats per sessions, 1 address' : '2 addresses, available 5 days/week, custom timings, 2 days overrides'}
               <ChevronRight className="h-4 w-4 text-text-subtitle" />
             </button>
             <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" leftIcon={<Edit className="h-5 w-5" />}
@@ -212,6 +207,7 @@ export default function StudySetup() {
   const nav = useNavigate()
   const { draft, set } = useDraft()
   const [override, setOverride] = useState(false)
+  const [editing, setEditing] = useState<string | undefined>()
   const [params] = useSearchParams()
   const type = params.get('type') ?? draft.type
   const group = params.get('group') === '1' || (type === 'video_call' ? draft.groupVideo : draft.groupInPerson)
@@ -220,7 +216,7 @@ export default function StudySetup() {
   return (
     <CreateShell step="study" action={
       <>
-        <Button variant="tertiary" size="row" onClick={() => nav('/studies/drafts')}>Save Draft &amp; Exit</Button>
+        <SaveDraftButton />
         <Button size="row" disabled={!setupDone(draft)}
           onClick={() => nav('/studies/create/publish')}>Proceed to Publish</Button>
       </>
@@ -231,17 +227,17 @@ export default function StudySetup() {
             {type === 'video_call' || type === 'in_person' ? (
               <AvailabilityComposer group={group} address={type === 'in_person'}
                 title={type === 'in_person' && !group ? 'Set Address & Availability' : 'Set Availability'}
-                onOverride={() => setOverride(true)}
+                onOverride={(id) => { setEditing(id); setOverride(true) }}
                 onBack={() => set('surveyOpen', false)}
                 onSubmit={() => { set('availabilitySet', true); set('surveyOpen', false) }} />
             ) : type === 'diary' ? (
               <SurveyComposer title="Create Diary Form" submit="Submit Diary Form" dayGroup="DAY 1"
                 lead="Setup your form inputs form for users with AI or manually" kind="Multi-line input" seed={2}
-                onSubmit={() => { set('surveyQuestions', SEED_SURVEY); set('surveyOpen', false) }}
+                onSubmit={() => { set('tasksSubmitted', true); set('surveyOpen', false) }}
                 onBack={() => set('surveyOpen', false)} />
             ) : (
               <SurveyComposer
-                onSubmit={() => { set('surveyQuestions', SEED_SURVEY); set('surveyOpen', false) }}
+                onSubmit={() => { set('tasksSubmitted', true); set('surveyOpen', false) }}
                 onBack={() => set('surveyOpen', false)} />
             )}
             <div className="flex w-[488px] shrink-0 flex-col">
@@ -261,7 +257,7 @@ export default function StudySetup() {
         )}
       </div>
 
-      <OverridePanel open={override || params.get('panel') === 'override'} onClose={() => setOverride(false)} />
+      <OverridePanel open={override || params.get('panel') === 'override'} editId={editing} onClose={() => setOverride(false)} />
     </CreateShell>
   )
 }

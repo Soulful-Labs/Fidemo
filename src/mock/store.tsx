@@ -293,7 +293,8 @@ export function useStoreValue() {
     const saved: Record<string, Answers> = {}
     for (const s of world.studies) {
       const mine = s.participations.find((x) => x.personId === me)
-      if (mine?.answers) saved[s.id] = mine.answers
+      // The platform keeps a number answer as a number; the field it is typed into holds text.
+      if (mine?.answers) saved[s.id] = Object.fromEntries(Object.entries(mine.answers).map(([k, v]) => [k, typeof v === 'number' ? String(v) : v]))
     }
     return { ...saved, ...local.answers }
   }, [world, me, local.answers])

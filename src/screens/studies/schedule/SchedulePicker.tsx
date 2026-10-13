@@ -41,6 +41,14 @@ export default function SchedulePicker({
   const byDay = new Map(availability.map((a) => [dayKey(a.date), a]))
   const chosenDay = value.date ? byDay.get(dayKey(value.date)) : undefined
   const monthLabel = days[0].toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  /**
+   * The times on offer. A study whose hours a client set in the Create flow
+   * can offer any time of day, so its own times are listed, earliest first;
+   * a study that keeps to the drawn grid shows the grid as before.
+   */
+  const minutes = (slot: string) => { const m = /^(\d{1,2}):(\d{2}) (AM|PM)$/.exec(slot); return m ? ((Number(m[1]) % 12) + (m[3] === 'PM' ? 12 : 0)) * 60 + Number(m[2]) : 0 }
+  const offered = [...new Set(availability.flatMap((a) => a.slots))]
+  const grid = offered.every((slot) => SLOT_GRID.includes(slot)) ? SLOT_GRID : offered.sort((a, b) => minutes(a) - minutes(b))
 
   return (
     <>
@@ -86,7 +94,7 @@ export default function SchedulePicker({
       <section className="flex flex-col gap-4">
         <SectionHeading icon={<Clock className="h-5 w-5" />} title="Pick a time slot" sub="All times in US Eastern" />
         <div className="grid grid-cols-2 gap-2">
-          {SLOT_GRID.map((slot) => {
+          {grid.map((slot) => {
             const open = Boolean(chosenDay?.slots.includes(slot))
             const on = value.slot === slot
             return (

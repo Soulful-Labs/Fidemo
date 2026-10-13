@@ -89,11 +89,13 @@ export default function ManageStudy() {
               <Read label="Title" value={s.title} />
               <Read label="Description" value={s.description} />
               <Read label="Study Time" value={r.studyTime} />
+              {s.form?.endDate && <Read label="Study End Date" value={s.form.endDate} />}
               <div className="flex flex-col gap-0.5">
                 <span className="text-text-regular text-text-subtitle">Thumbnail</span>
                 <span className="mt-1 h-[100px] w-40 overflow-hidden rounded-md bg-bg-2">
-                  <img src={s.image} alt="" className="h-full w-full object-cover" />
+                  {s.image && <img src={s.image} alt="" className="h-full w-full object-cover" />}
                 </span>
+                {s.form?.thumbnail && <span className="pt-1 text-text-regular text-text-title">{s.form.thumbnail}</span>}
               </div>
             </div>
           </Step>
@@ -135,6 +137,31 @@ export default function ManageStudy() {
               <Chip label={r.studyRow.label} value={r.studyRow.value} />
               <Chip label={r.incentive.label} value={r.incentive.value} />
             </div>
+            {/* What was entered on the Study step, line by line, and the study's own questions. No frame lists these; the two chips above are all Figma draws. */}
+            {s.details.length > 0 && (
+              <dl className="grid grid-cols-[200px_1fr] gap-x-4 gap-y-1.5 pt-3 text-text-regular">
+                {s.details.map((d) => (
+                  <div key={d.label} className="contents">
+                    <dt className="text-text-subtitle">{d.label}</dt>
+                    <dd className="text-text-title">{d.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+            {s.form && s.tasksOutline.length > 0 && (
+              <ol className="flex flex-col gap-2 pt-3">
+                {s.tasksOutline.map((q, i) => (
+                  <li key={q.id} className="flex items-start gap-2 text-text-regular">
+                    <span className="flex h-7 shrink-0 items-center rounded-full bg-bg-2 px-3 text-text-title">{s.type === 'diary' ? `Q${i + 1}` : `SQ ${i + 1}`}</span>
+                    <span className="flex min-w-0 flex-1 flex-col pt-1">
+                      <span className="text-text-title">{q.prompt}</span>
+                      {q.options && <span className="text-text-subtitle">{q.options.join(' · ')}</span>}
+                    </span>
+                    <span className="flex h-7 shrink-0 items-center rounded-full border-1 border-stroke-input px-3 text-text-subtitle">{q.type}</span>
+                  </li>
+                ))}
+              </ol>
+            )}
           </Step>
         </div>
       </StudyFrame>

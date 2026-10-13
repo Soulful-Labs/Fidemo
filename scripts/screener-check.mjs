@@ -92,6 +92,15 @@ const BUILD_SCREENER = `(() => {
   }
   return true })()`
 
+/** Sets Monday to 9 to 5 in the availability composer and copies it to every day, as a client would. */
+const SET_HOURS = `(async () => {
+  const wait = () => new Promise((r) => setTimeout(r, 80))
+  const pick = async (label, t) => { document.querySelector('[aria-label="' + label + '"]').click(); await wait(); [...document.querySelectorAll('[role=option]')].find((o) => o.textContent.trim() === t).click(); await wait() }
+  await pick('Monday from', '09:00 AM'); await pick('Monday to', '05:00 PM')
+  document.querySelector('[aria-label="Copy Monday"]').click(); await wait()
+  return true })()`
+
+
 
 const results = []
 const say = (n, name, yes, detail = '') => { results.push(yes); console.log(`${yes ? 'YES' : 'NO '}  ${n}. ${name}${detail ? '\n       ' + detail : ''}`) }
@@ -131,7 +140,7 @@ await C.ev(BUILD_SCREENER); await sleep(300)
 const built = await C.ev(`[...document.querySelectorAll('input[placeholder="Enter question text..."]')].map((i, n) => ({ n: n + 1, text: i.value, type: i.closest('.py-4').querySelectorAll('button')[0].innerText.trim() })).filter((q) => q.text)`)
 say(1, 'As a client, create a study and add 3 screener questions with different answer types', built.length === 3 && new Set(built.map((b) => b.type)).size === 3, built.map((b) => `block ${b.n}: "${b.text}" (${b.type})`).join(' | '))
 await C.click('Continue')
-await C.click('Set Timing Availability'); await C.click('Submit'); await C.click('Proceed to Publish')
+await C.click('Set Timing Availability'); await C.ev(SET_HOURS); await C.click('Submit'); await C.click('Proceed to Publish')
 await C.ev(`(() => { const f = (ph, v) => __type(document.querySelector('input[placeholder="' + ph + '"]'), v); f('0000 0000 0000 0000', '4242 4242 4242 4242'); f('MM / YYYY', '12 / 2028'); f('000', '123'); f('Enter name', 'Jennifer Lee'); return true })()`)
 await C.click('Publish Study', 900)
 const id = await C.ev(`(__st().studies.find((s) => s.title === ${JSON.stringify(TITLE)}) || {}).id`)

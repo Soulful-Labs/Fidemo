@@ -1,11 +1,12 @@
-import { screenerOutline } from '@shared/questions'
-import type { AuthoredQuestion } from '@shared/questions'
+import { screenerOutline, tasksOutline } from '@shared/questions'
+import { studyDetails } from '@shared/studyForm'
+import type { StudyForm } from '@shared/studyForm'
 import { useEffect, useMemo, useSyncExternalStore } from 'react'
 import { clientById, daysRemaining, durationLabel, profileCard, shareLink, studiesOf, studyById } from '@shared/derive'
 import { dayMonthYear, longDateTime, money, monthDay, slotDay } from '@shared/format'
 import { platform } from '@shared/store'
 import type { Actor } from '@shared/store'
-import type { Client, Participation, PlatformState, RatingState, RepeatRule, Result, Study, StudyState, StudyType } from '@shared/types'
+import type { Client, Participation, PlatformState, RatingState, RepeatRule, Result, Study, StudyState } from '@shared/types'
 import { useSession } from './mock/session'
 
 /**
@@ -57,6 +58,10 @@ export interface ClientStudy extends Study {
   review?: StudyReview
   /** The screener in the order it is asked, each question named as the client built it (shared/questions.ts). */
   screenerOutline: ReturnType<typeof screenerOutline>
+  /** A survey's or diary's own questions, named as the client built them. */
+  tasksOutline: ReturnType<typeof tasksOutline>
+  /** Step 4 as the client entered it, line by line. Empty for a study that was not built in the Create flow. */
+  details: { label: string; value: string }[]
 }
 
 export function clientStudy(study: Study, now: Date = new Date()): ClientStudy {
@@ -78,7 +83,7 @@ export function clientStudy(study: Study, now: Date = new Date()): ClientStudy {
       studyRow: study.setup?.studySummary ?? { label: 'Study Time', value: durationLabel(study.durationMins) },
       incentive: { label: 'Incentive', value: money(study.rates.incentivePer) },
     },
-    screenerOutline: outline,
+    screenerOutline: outline, tasksOutline: tasksOutline(study), details: study.form ? studyDetails(study.form) : [],
   }
 }
 
@@ -135,14 +140,6 @@ export function useActor(): Actor {
 
 type Move = 'invited' | 'qualified' | 'disqualified' | 'applied' | 'recruited' | 'completed' | 'no_show'
 
-interface Draft {
-  title: string; description: string; type: StudyType; required: number; incentive: number
-  /** Minutes. */
-  duration: number; image?: string; review?: StudyReview
-  /** The screener as the Create flow built it. The store keeps the client's own questions (shared/questions.ts). */
-  screener: AuthoredQuestion[]
-}
-
 export function useStudies() {
   const state = usePlatform()
   const { account } = useSession()
@@ -174,12 +171,9 @@ export function useStudies() {
       payBalance: (studyId: string): Result => p.payBalance(studyId),
       duplicateStudy: (studyId: string) => p.duplicateStudy(studyId),
       /** Workflow 5 and 7: the client submits a study; the team takes it live from the console. */
-      submitStudy: (d: Draft) =>
-        p.submitStudy(clientId, {
-          title: d.title, description: d.description, type: d.type, required: d.required, incentive: d.incentive,
-          durationMins: d.duration, image: d.image, screener: d.screener,
-          setup: d.review && { estimatedAudience: d.review.estimatedAudience, audience: d.review.audience, screenerSummary: d.review.screener.value, studySummary: d.review.studyRow },
-        }),
+      submitStudy: (form: StudyForm, draftId?: string) => p.submitStudy(clientId, form, draftId),
+      /** Save Draft & Exit: the form as it stands, kept whole on a draft. */
+      saveStudyDraft: (form: StudyForm, draftId?: string) => p.saveStudyDraft(clientId, form, draftId),
     }
   }, [state, clientId, actor])
 }

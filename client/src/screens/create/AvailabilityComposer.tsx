@@ -5,8 +5,12 @@ import { ChevronLeft, Close, Copy, Edit, MoreVertical, Plus, Trash } from '../..
 import { useDraft } from '../../mock/createStore'
 import { useToast } from '../../components/ui/Toast'
 import Picker from '../../components/ui/Picker'
+import { dayHeading } from '@shared/format'
+import { BLANK_WINDOW, WEEKDAYS, availabilityFault, clockLabel, clockMinutes, dayOf, formId } from '@shared/studyForm'
+import type { TimeWindow, Weekday } from '@shared/studyForm'
+import { DayPick, TimePick } from './TimeBits'
 
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+const DAYS = WEEKDAYS
 
 function Card({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -30,14 +34,6 @@ function Field({ placeholder, value, onChange }: {
   )
 }
 
-function Time({ value }: { value: string }) {
-  return (
-    <span className="flex h-[38px] w-[100px] items-center rounded-sm border-1 border-stroke-input bg-bg px-3 text-text-regular text-text-title">
-      {value}
-    </span>
-  )
-}
-
 function IconBtn({ label, children, onClick }: { label: string; children: React.ReactNode; onClick?: () => void }) {
   return (
     <button type="button" aria-label={label} onClick={onClick}
@@ -54,45 +50,57 @@ function IconBtn({ label, children, onClick }: { label: string; children: React.
  * Weekly Hours for scheduled sessions and the meeting buffer for seats.
  */
 export default function AvailabilityComposer({ group, address, title = 'Set Availability', onOverride, onBack, onSubmit }: {
-  group: boolean; address?: boolean; title?: string; onOverride?: () => void; onBack: () => void; onSubmit: () => void
+  group: boolean; address?: boolean; title?: string; onOverride?: (editId?: string) => void; onBack: () => void; onSubmit: () => void
 }) {
-  const [extra, setExtra] = useState<string[]>([])
   const toast = useToast()
+  const { draft, set, form } = useDraft()
   /**
-   * The addresses on this study. The frame draws one, so it is the seed, and
-   * the form below adds to the same list, which is what Edit and Delete act
-   * on. The three fields were unbound and the form's own Add Address and
-   * Cancel had no handler at all, so an address typed here went nowhere.
+   * The addresses on this study are the draft's own (shared/studyForm.ts), so
+   * they are saved with it. The frame draws one already there; a new study has
+   * none until the client adds one in the form below.
    */
-  const [list, setList] = useState([{
-    id: 'seed',
-    title: 'Carolina, Texas, USA',
-    detail: 'A-123, Empire State, Hamburg Street 2, Carolina, Texas, USA - 10001',
-  }])
+  const list = draft.addresses
   const [street, setStreet] = useState('')
   const [city, setCity] = useState('')
   const [zip, setZip] = useState('')
   const clearAddress = () => { setStreet(''); setCity(''); setZip('') }
   const addAddress = () => {
     if (!street.trim() || !city.trim()) { toast('An address needs a street and a city'); return }
-    setList((a) => [...a, {
-      id: `addr-${Date.now().toString(36)}`,
-      title: city.trim(),
-      detail: [street.trim(), city.trim(), zip.trim()].filter(Boolean).join(', '),
-    }])
+    set('addresses', [...list, { id: formId('a'), title: city.trim(), detail: [street.trim(), city.trim(), zip.trim()].filter(Boolean).join(', ') }])
     clearAddress()
     toast('Address added')
   }
-  const { draft, set } = useDraft()
+  const dropAddress = (id: string) => set('addresses', list.filter((y) => y.id !== id))
+
+  /** A group session being added: its day and the time it starts. */
+  const [day, setDay] = useState('')
+  const [time, setTime] = useState('10:00 AM')
+  const addSession = () => {
+    if (!dayOf(day)) { toast('Choose the date of the session'); return }
+    if (draft.sessions.some((x) => x.date === day && x.time === time)) { toast('There is already a session at that time'); return }
+    set('sessions', [...draft.sessions, { id: formId('s'), date: day, time }].sort((a, b) => a.date.localeCompare(b.date) || clockMinutes(a.time) - clockMinutes(b.time)))
+    setDay('')
+    toast('Session added')
+  }
+
+  /** The hours offered on each weekday. A day with none is unavailable. */
+  const windows = (d: Weekday): TimeWindow[] => draft.hours[d] ?? []
+  const setWindows = (d: Weekday, next: TimeWindow[]) => set('hours', { ...draft.hours, [d]: next })
+
+  /** Submit keeps what was set only if it can be offered; otherwise it says what to fix and stays open. */
+  const submit = () => {
+    const fault = availabilityFault({ ...form(), availabilitySet: true })
+    if (fault) { toast(fault); return }
+    onSubmit()
+  }
 
   const limits = (
     <Card title="Limits">
       {group ? (
         <label className="flex flex-col gap-1">
           <span className="text-text-regular text-text-subtitle">Seats per session</span>
-          <span className="flex h-[38px] items-center rounded-sm border-1 border-stroke-input bg-bg px-4 text-text-regular text-text-title">
-            {draft.seats}
-          </span>
+          <input value={draft.seats} aria-label="Seats per session" onChange={(e) => set('seats', e.target.value)}
+            className="h-[38px] rounded-sm border-1 border-stroke-input bg-bg px-4 text-text-regular text-text-title" />
           <span className="text-text-regular text-text-subtitle">
             {address ? 'It is a duration added between consecutive scheduled meetings.' : 'Max number of study participants'}
           </span>
@@ -130,13 +138,6 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
       <p className="-mt-1 text-text-regular text-text-subtitle">
         Add your commercial addresses for participants to book in-person interviews at.
       </p>
-      {extra.map((a) => (
-        <div key={a} className="flex items-start justify-between gap-3 rounded-sm bg-bg-2 px-4 py-3">
-          <span className="text-text-regular text-text-title">{a}</span>
-          <button type="button" aria-label={`Remove ${a}`} onClick={() => setExtra((x) => x.filter((y) => y !== a))}
-            className="text-text-subtitle hover:text-text-title"><Close className="h-4 w-4" /></button>
-        </div>
-      ))}
       {list.map((a, i) => (
         <div key={a.id} className="flex items-start justify-between gap-3 rounded-sm bg-bg-2 px-4 py-3">
           <span className="flex flex-col gap-1">
@@ -148,17 +149,17 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
               same two things in one control. */}
           {group ? (
             <IconBtn label={`Address options for ${a.title}`}
-              onClick={() => { setList((x) => x.filter((y) => y.id !== a.id)); setStreet(a.detail); setCity(a.title); toast('Address moved into the form to edit') }}>
+              onClick={() => { dropAddress(a.id); setStreet(a.detail); setCity(a.title); toast('Address moved into the form to edit') }}>
               <MoreVertical className="h-4 w-4" />
             </IconBtn>
           ) : (
             <span className="flex items-center gap-2">
               <IconBtn label={`Edit ${a.title}`}
-                onClick={() => { setList((x) => x.filter((y) => y.id !== a.id)); setStreet(a.detail); setCity(a.title); toast('Edit it below, then Add Address') }}>
+                onClick={() => { dropAddress(a.id); setStreet(a.detail); setCity(a.title); toast('Edit it below, then Add Address') }}>
                 <Edit className="h-4 w-4" />
               </IconBtn>
               <IconBtn label={`Delete ${a.title}`}
-                onClick={() => { setList((x) => x.filter((y) => y.id !== a.id)); toast(`${a.title} removed`) }}>
+                onClick={() => { dropAddress(a.id); toast(`${a.title} removed`) }}>
                 <Trash className="h-4 w-4" />
               </IconBtn>
             </span>
@@ -183,53 +184,64 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
   const hours = group ? (
     <Card title="Schedule Group Sessions">
       {draft.sessions.map((s) => (
-        <div key={s.date} className="flex items-center justify-between gap-3 rounded-sm border-1 border-stroke-input bg-bg px-4 py-3">
+        <div key={s.id} className="flex items-center justify-between gap-3 rounded-sm border-1 border-stroke-input bg-bg px-4 py-3">
           <span className="flex flex-col gap-0.5">
-            <span className="text-body-medium text-text-title">{s.date}</span>
-            <span className="text-text-regular text-text-subtitle">{s.time}</span>
+            <span className="text-body-medium text-text-title">{dayHeading(dayOf(s.date)?.toISOString()) || s.date}</span>
+            <span className="text-text-regular text-text-subtitle">{s.time} - {clockLabel(clockMinutes(s.time) + draft.duration)}</span>
           </span>
           <span className="flex items-center gap-2">
-            <IconBtn label="Edit session"><Edit className="h-4 w-4" /></IconBtn>
-            <IconBtn label="Delete session"><Trash className="h-4 w-4" /></IconBtn>
+            <IconBtn label="Edit session"
+              onClick={() => { set('sessions', draft.sessions.filter((x) => x.id !== s.id)); setDay(s.date); setTime(s.time); toast('Change it below, then Add') }}><Edit className="h-4 w-4" /></IconBtn>
+            <IconBtn label="Delete session"
+              onClick={() => { set('sessions', draft.sessions.filter((x) => x.id !== s.id)); toast('Session removed') }}><Trash className="h-4 w-4" /></IconBtn>
           </span>
         </div>
       ))}
       <div className="flex items-center justify-between gap-3 rounded-sm border-1 border-stroke-input bg-bg px-4 py-3">
         <span className="flex flex-col gap-0.5">
           <span className="text-body-medium text-text-title">Create new session</span>
-          <span className="text-text-regular text-text-subtitle">40 mins duration will be considered for session as set initially</span>
+          <span className="text-text-regular text-text-subtitle">{draft.duration} mins duration will be considered for session as set initially</span>
         </span>
         <span className="flex items-center gap-2">
-          <Button size="none" className="h-[38px] px-4"
-            onClick={() => { set('sessions', [...draft.sessions, { date: 'Aug 22, Sunday', time: '2:00 PM - 2:40 PM' }]); toast('Session added') }}>Add</Button>
-          <IconBtn label="Cancel"><Close className="h-4 w-4" /></IconBtn>
+          {/* The frame draws this row with no way to say when the session is; the date and start time are added so a session is the client's own. */}
+          <DayPick label="Session date" value={day} onChange={setDay} />
+          <TimePick label="Session start time" value={time} onPick={setTime} />
+          <Button size="none" className="h-[38px] px-4" onClick={addSession}>Add</Button>
+          <IconBtn label="Cancel" onClick={() => setDay('')}><Close className="h-4 w-4" /></IconBtn>
         </span>
       </div>
     </Card>
   ) : (
     <Card title="Weekly Hours">
       {DAYS.map((d) => (
-        <div key={d} className="flex items-center gap-3 border-b-1 border-stroke-1 pb-3 last:border-b-0 last:pb-0">
-          <Toggle checked={draft.days.includes(d)} label={d}
-            onChange={(v) => set('days', v ? [...draft.days, d] : draft.days.filter((x) => x !== d))} />
-          <span className="w-[86px] text-text-regular text-text-title">{d}</span>
-          {draft.days.includes(d) ? (
-            <>
-              <Time value="12:00 AM" />
-              <span className="text-text-regular text-text-subtitle">TO</span>
-              <Time value="12:00 AM" />
-              <button type="button" aria-label={`Remove ${d}`}
-                onClick={() => set('days', draft.days.filter((x) => x !== d))}
-                className="text-text-subtitle hover:text-text-title">
-                <Close className="h-4 w-4" />
-              </button>
-            </>
+        <div key={d} className="flex items-start gap-3 border-b-1 border-stroke-1 pb-3 last:border-b-0 last:pb-0">
+          <span className="flex h-[38px] items-center">
+            <Toggle checked={windows(d).length > 0} label={d}
+              onChange={(v) => setWindows(d, v ? [{ ...BLANK_WINDOW }] : [])} />
+          </span>
+          <span className="flex h-[38px] w-[86px] items-center text-text-regular text-text-title">{d}</span>
+          {windows(d).length > 0 ? (
+            <span className="flex flex-col gap-2">
+              {windows(d).map((w, i) => (
+                <span key={i} className="flex items-center gap-3">
+                  <TimePick label={`${d} from`} value={w.from} onPick={(v) => setWindows(d, windows(d).map((x, k) => (k === i ? { ...x, from: v } : x)))} />
+                  <span className="text-text-regular text-text-subtitle">TO</span>
+                  <TimePick label={`${d} to`} value={w.to} onPick={(v) => setWindows(d, windows(d).map((x, k) => (k === i ? { ...x, to: v } : x)))} />
+                  <button type="button" aria-label={`Remove ${d}`}
+                    onClick={() => setWindows(d, windows(d).filter((_, k) => k !== i))}
+                    className="text-text-subtitle hover:text-text-title">
+                    <Close className="h-4 w-4" />
+                  </button>
+                </span>
+              ))}
+            </span>
           ) : (
             <span className="flex h-[38px] items-center rounded-sm bg-bg-2 px-4 text-text-regular text-text-body">Unavailable</span>
           )}
           <span className="flex-1" />
-          <IconBtn label={`Add hours to ${d}`} onClick={() => toast(`A second window added to ${d}`)}><Plus className="h-5 w-5" /></IconBtn>
-          <IconBtn label={`Copy ${d}`} onClick={() => set('days', [...new Set([...draft.days, ...DAYS])])}><Copy className="h-4 w-4" /></IconBtn>
+          <IconBtn label={`Add hours to ${d}`} onClick={() => setWindows(d, [...windows(d), { ...BLANK_WINDOW }])}><Plus className="h-5 w-5" /></IconBtn>
+          <IconBtn label={`Copy ${d}`}
+            onClick={() => { set('hours', Object.fromEntries(DAYS.map((x) => [x, windows(d).map((w) => ({ ...w }))]))); toast(`${d}'s hours copied to every day`) }}><Copy className="h-4 w-4" /></IconBtn>
         </div>
       ))}
     </Card>
@@ -245,7 +257,7 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
         <span className="text-title-s text-text-title">{title}</span>
         <span className="flex-1" />
         <span className="text-text-regular text-text-subtitle">Auto-saved</span>
-        <Button size="row" onClick={onSubmit}>Submit</Button>
+        <Button size="row" onClick={submit}>Submit</Button>
       </div>
 
       {/* The in-person frames disagree on the order: the 1:1 setup
@@ -257,20 +269,25 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
         {!group && (
           <Card title="Date Overrides" action={
             <Button variant="secondary" size="none" className="h-[38px] px-4" leftIcon={<Plus className="h-4 w-4" />}
-              onClick={onOverride}>Add Override</Button>
+              onClick={() => onOverride?.()}>Add Override</Button>
           }>
             <p className="-mt-2 text-text-regular text-text-subtitle">
               Add dates when your availability changes from your daily hours.
             </p>
             {draft.overrides.map((o) => (
-              <div key={o.date} className="flex items-center justify-between gap-3 rounded-sm border-1 border-stroke-input bg-bg px-4 py-3">
+              <div key={o.id} className="flex items-center justify-between gap-3 rounded-sm border-1 border-stroke-input bg-bg px-4 py-3">
                 <span className="flex flex-col gap-0.5">
-                  <span className="text-body-medium text-text-title">{o.date}</span>
-                  <span className="text-text-regular text-text-subtitle">{o.hours}</span>
+                  <span className="text-body-medium text-text-title">
+                    {dayHeading(dayOf(o.from)?.toISOString())}{o.to !== o.from && ` - ${dayHeading(dayOf(o.to)?.toISOString())}`}
+                  </span>
+                  <span className="text-text-regular text-text-subtitle">
+                    {o.windows.length ? o.windows.map((w) => `${w.from} - ${w.to}`).join(', ') : 'Unavailable'}
+                  </span>
                 </span>
                 <span className="flex items-center gap-2">
-                  <IconBtn label="Edit override"><Edit className="h-4 w-4" /></IconBtn>
-                  <IconBtn label="Delete override"><Trash className="h-4 w-4" /></IconBtn>
+                  <IconBtn label="Edit override" onClick={() => onOverride?.(o.id)}><Edit className="h-4 w-4" /></IconBtn>
+                  <IconBtn label="Delete override"
+                    onClick={() => { set('overrides', draft.overrides.filter((x) => x.id !== o.id)); toast('Override removed') }}><Trash className="h-4 w-4" /></IconBtn>
                 </span>
               </div>
             ))}

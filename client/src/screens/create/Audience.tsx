@@ -7,6 +7,9 @@ import { Chip, Field, Section, TextBox, TierBar } from './CreateBits'
 import { useToast } from '../../components/ui/Toast'
 import Picker from '../../components/ui/Picker'
 import { AUDIENCE_OPTIONS } from './CreateBits'
+import { cohort, poolPerson } from '@shared/derive'
+import { audiencePeople } from '@shared/studyForm'
+import { usePlatform } from '../../platform'
 
 const SPARKLE = (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
@@ -88,7 +91,11 @@ export default function Audience() {
     toast('Audience filled in')
   }
   const toast = useToast()
-  const { draft, set } = useDraft()
+  const { draft, set, form } = useDraft()
+  /** The people on the platform who fit what is entered on this step, so the forecast moves with it. */
+  const state = usePlatform()
+  const fit = cohort(audiencePeople(state, form()).map((p) => poolPerson(state, p)))
+  const tier = (t: string) => fit.tiers.find((x) => x.tier === t)?.pct ?? 0
 
   return (
     <CreateShell step="audience">
@@ -178,7 +185,7 @@ export default function Audience() {
                     sub="Turn this on to exclude people who have previously participated in your studies" />
                 </div>
                 <Field label="Profile Tiers">
-                  <TextBox value={draft.tiers} placeholder="Select tiers..." onChange={(v) => set('tiers', v)} />
+                  <Picker value={draft.tiers || 'Select tiers...'} options={AUDIENCE_OPTIONS.tiers} onPick={(v) => set('tiers', v === 'Any tier' ? '' : v)} />
                 </Field>
               </div>
             </Section>
@@ -197,19 +204,19 @@ export default function Audience() {
                 <PoolIcon className="h-4 w-4" />Estimated
               </span>
               <span className="text-[32px] font-semibold leading-10 tracking-[-0.02em] text-brand-primary">
-                ~1.5K <span className="text-body-regular font-normal text-text-subtitle">eligible members</span>
+                ~{fit.count.toLocaleString('en-US')} <span className="text-body-regular font-normal text-text-subtitle">eligible members</span>
               </span>
             </div>
 
             <div className="flex flex-col gap-3 rounded-md border-1 border-stroke-input p-4">
               <span className="text-label uppercase tracking-wide text-text-body">Tier Distribution</span>
-              <TierBar label="Silver" value={50} colour="#7f9ab0" />
-              <TierBar label="Gold" value={42} colour="#f2c200" />
-              <TierBar label="Platinum" value={8} colour="#9139f6" />
+              <TierBar label="Silver" value={tier('silver')} colour="#7f9ab0" />
+              <TierBar label="Gold" value={tier('gold')} colour="#f2c200" />
+              <TierBar label="Platinum" value={tier('platinum')} colour="#9139f6" />
             </div>
 
             <dl className="flex flex-col">
-              {[['Average Score', '86%'], ['Recommended Incentive', '$100-200'], ['Estimated Time To Fill', '15-20 days']].map(([k, v]) => (
+              {[['Average Score', fit.count ? `${fit.averageScore}%` : '—'], ['Recommended Incentive', '$100-200'], ['Estimated Time To Fill', '15-20 days']].map(([k, v]) => (
                 <div key={k} className="flex items-center justify-between border-b-1 border-stroke-input py-2 last:border-b-0">
                   <dt className="text-text-regular text-text-subtitle">{k}</dt>
                   <dd className="text-text-medium text-text-title">{v}</dd>

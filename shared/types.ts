@@ -11,6 +11,8 @@
 
 // ------------------------------------------------------------------ studies
 
+import type { StudyForm } from './studyForm'
+
 export type StudyType = 'survey' | 'video_call' | 'group_video_call' | 'in_person' | 'in_person_group' | 'diary'
 
 /** The study's own state (workflow steps 5 to 11, 45, 53). */
@@ -52,7 +54,8 @@ export type Question = QuestionMeta & (
 /** Workflow 28: the eligibility questions asked before the full screener. */
 export interface PreScreenQuestion { id: string; prompt: string; options: string[]; passing: string[] }
 
-export type Answers = Record<string, string | string[]>
+/** A number question's answer is kept as a number (shared/store.ts, tidyAnswers). */
+export type Answers = Record<string, string | string[] | number>
 
 export interface Location { id: string; label: string; address: string; short?: string }
 
@@ -168,10 +171,17 @@ export interface Study {
   screener: Question[]
   /** Survey and diary questions. */
   tasks?: Question[]
-  diary?: { totalDays: number; minDays: number }
+  /** `unit` and `frequency` are kept as the client chose them; entries are counted in days. */
+  diary?: { totalDays: number; minDays: number; unit?: string; frequency?: string }
   /** Group studies: the sessions people book a seat in. */
   sessions?: Session[]
   setup?: StudySetup
+  /** One-to-one session studies: the gap between sessions and how far ahead a slot must be booked. */
+  schedule?: { bufferMins: number; noticeMins: number }
+  /** The client's choice on the Study step. Payouts are still approved by hand in this build. */
+  autoPay?: boolean
+  /** Everything the client entered in the Create flow, kept whole (shared/studyForm.ts). */
+  form?: StudyForm
   participations: Participation[]
   payments: StudyPayment[]
   /** Workflow 7: changes the team asked for before approving. */

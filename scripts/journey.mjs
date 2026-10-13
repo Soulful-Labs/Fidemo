@@ -93,6 +93,15 @@ const BUILD_SCREENER = `(() => {
   }
   return true })()`
 
+/** Sets Monday to 9 to 5 in the availability composer and copies it to every day, as a client would. */
+const SET_HOURS = `(async () => {
+  const wait = () => new Promise((r) => setTimeout(r, 80))
+  const pick = async (label, t) => { document.querySelector('[aria-label="' + label + '"]').click(); await wait(); [...document.querySelectorAll('[role=option]')].find((o) => o.textContent.trim() === t).click(); await wait() }
+  await pick('Monday from', '09:00 AM'); await pick('Monday to', '05:00 PM')
+  document.querySelector('[aria-label="Copy Monday"]').click(); await wait()
+  return true })()`
+
+
 const results = []
 const step = async (n, name, fn) => {
   errors.length = 0
@@ -131,7 +140,7 @@ await step(1, 'Client creates and publishes a study', async () => {
   // The client's own screener: one eligibility question and two more, in three answer types.
   await C.ev(BUILD_SCREENER)
   await C.click('Continue'); expect((await C.path()).endsWith('/study'), 'Continue did not reach Study setup: ' + await C.path())
-  await C.click('Set Timing Availability'); await C.click('Submit')
+  await C.click('Set Timing Availability'); await C.ev(SET_HOURS); await C.click('Submit')
   await C.click('Proceed to Publish'); expect((await C.path()).endsWith('/publish'), 'did not reach Publish: ' + await C.path())
   await C.ev(`(() => { const f = (ph, v) => __type(document.querySelector('input[placeholder="' + ph + '"]'), v); f('0000 0000 0000 0000', '4242 4242 4242 4242'); f('MM / YYYY', '12 / 2028'); f('000', '123'); f('Enter name', 'Jennifer Lee'); return true })()`)
   await C.click('Publish Study', 900)

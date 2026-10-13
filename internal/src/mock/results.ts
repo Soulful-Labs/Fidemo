@@ -65,9 +65,11 @@ export function useResults(study: Study) {
   return useMemo(() => results(state, study), [state, study])
 }
 
-const answerOf = (q: Question, i: number, prefix: string, value: string | string[] | undefined, missing = 'Not answered'): Answer => {
+const answerOf = (q: Question, i: number, prefix: string, value: string | string[] | number | undefined, missing = 'Not answered'): Answer => {
   const base = { q: `${prefix}${i + 1}`, prompt: q.prompt }
   if (Array.isArray(value)) return { ...base, bullets: value }
+  // A number question's answer is stored as a number (shared/store.ts); 0 is an answer.
+  if (typeof value === 'number') return { ...base, text: String(value) }
   if (value) return { ...base, text: value }
   return { ...base, text: missing }
 }
