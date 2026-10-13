@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trust and Rewards Policy</title>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --muted: #5e5d5b;
+    --rule: #cccccc;
+    --head: #d9d9d9;
+    --flag: #fff4e0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 48px 24px 96px;
+    font-family: Calibri, "Segoe UI", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink);
+    background: #ffffff;
+  }
+  main { max-width: 820px; margin: 0 auto; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  h2 { font-size: 19px; margin: 38px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--rule); }
+  h3 { font-size: 16px; margin: 24px 0 8px; }
+  .meta { color: var(--muted); font-size: 14px; margin: 0 0 28px; }
+  p { margin: 10px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 14px; }
+  th, td { border: 1px solid var(--rule); padding: 7px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--head); font-weight: 600; }
+  td.num { white-space: nowrap; }
+  tr.new td { background: var(--flag); }
+  .tag { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--rule); padding: 1px 5px; border-radius: 3px; margin-left: 6px; white-space: nowrap; }
+  .note { border-left: 3px solid var(--rule); padding: 2px 0 2px 14px; margin: 14px 0; color: var(--muted); }
+  ul { margin: 10px 0; padding-left: 20px; }
+  li { margin: 4px 0; }
+  footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 13px; }
+  @media print { body { padding: 0; } tr.new td { background: #f2f2f2; } }
+  @media (max-width: 600px) { body { padding: 24px 16px 64px; } table { font-size: 13px; } }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Trust and Rewards Policy</h1>
+<p class="meta">Focus Insite &middot; 13 October 2026</p>
+
+<p>This policy governs participant Trust Scores, tiers, reward points, redemption, scheduling and the certificate. Where any design, screen or document states a different figure, this policy is the one to follow.</p>
+
+<p>Rows shaded below are additions or corrections to the previous version. Everything else is unchanged.</p>
+
+<h2>1. Trust Score</h2>
+
+<p>A participant's reputation, earned by behaviour. It is never set by hand.</p>
+
+<table>
+<tr><th>Rule</th><th>Value</th></tr>
+<tr><td>Range</td><td class="num">50 to 100</td></tr>
+<tr><td>Starting score</td><td class="num">50</td></tr>
+<tr><td>Onboarding complete</td><td class="num">+50</td></tr>
+<tr><td>Study completion</td><td class="num">+1 per study, capped at 10 a year</td></tr>
+<tr><td>5-star rating</td><td class="num">+4</td></tr>
+<tr><td>4-star rating</td><td class="num">+3</td></tr>
+<tr><td>3-star rating</td><td class="num">+1</td></tr>
+<tr><td>2-star rating</td><td class="num">&minus;2</td></tr>
+<tr><td>1-star rating</td><td class="num">&minus;3</td></tr>
+<tr><td>Ratings contribution, maximum</td><td class="num">+40</td></tr>
+<tr><td>Ratings counted</td><td class="num">The last 10 studies</td></tr>
+<tr><td>No show</td><td class="num">&minus;4</td></tr>
+<tr><td>Late show up</td><td class="num">&minus;2</td></tr>
+<tr><td>Cancelled session</td><td class="num">&minus;2</td></tr>
+<tr><td>Upheld fraud</td><td class="num">&minus;20</td></tr>
+</table>
+
+<div class="note">Adding a profile picture or an intro video earns reward points but does not affect the Trust Score. The Trust Score is earned by behaviour in studies, not by filling in a profile.</div>
+
+<h2>2. Tiers</h2>
+
+<table>
+<tr><th>Tier</th><th>Trust Score</th></tr>
+<tr><td>Silver</td><td class="num">50 and above</td></tr>
+<tr><td>Gold</td><td class="num">70 and above</td></tr>
+<tr><td>Platinum</td><td class="num">90 and above</td></tr>
+</table>
+
+<p>Tier is derived from the Trust Score. It is never set independently and never stored as a fact of its own.</p>
+
+<h2>3. Reward points</h2>
+
+<table>
+<tr><th>Event</th><th>Points</th></tr>
+<tr><td>Referral (someone you referred joins)</td><td class="num">200</td></tr>
+<tr><td>Being referred (you joined by referral)</td><td class="num">100</td></tr>
+<tr class="new"><td>Adding an intro video <span class="tag">new</span></td><td class="num">75</td></tr>
+<tr><td>Completing your full profile</td><td class="num">50</td></tr>
+<tr><td>Completing a monthly streak</td><td class="num">50</td></tr>
+<tr><td>Completing a study</td><td class="num">25</td></tr>
+<tr class="new"><td>Adding a profile picture <span class="tag">new</span></td><td class="num">25</td></tr>
+</table>
+
+<p>The profile picture and the intro video each earn their points once. Removing either afterwards does not take the points back.</p>
+
+<p>A participant who completes their profile, adds a picture and adds a video earns 150 points in total, which is $1.50.</p>
+
+<h3>Consent</h3>
+
+<p>A profile picture and an intro video each carry their own consent, which is off by default.</p>
+
+<ul>
+  <li>Points are earned for adding the picture or video, whether or not consent is given.</li>
+  <li>A client sees the picture only if consent on the picture is on, and the video only if consent on the video is on.</li>
+  <li>Consent can be withdrawn at any time, and the client stops seeing it immediately.</li>
+  <li>With consent off, a client sees the participant's initial.</li>
+</ul>
+
+<h2>4. Redemption and payouts</h2>
+
+<table>
+<tr><th>Rule</th><th>Value</th></tr>
+<tr><td>Conversion</td><td class="num">100 points = $1</td></tr>
+<tr><td>Minimum redemption</td><td class="num">1,000 points</td></tr>
+<tr><td>Withdrawal fee</td><td class="num">$2 flat</td></tr>
+<tr class="new"><td>Points expiry <span class="tag">clarified</span></td><td class="num">Points do not expire</td></tr>
+<tr><td>Payout timing</td><td class="num">2 to 3 working days</td></tr>
+</table>
+
+<p>Points expiry was not stated in the previous version while one screen claimed points never expire. That is now the policy.</p>
+
+<h2>5. Scheduling</h2>
+
+<table>
+<tr><th>Rule</th><th>Value</th></tr>
+<tr><td>Reschedule</td><td>Twice only, and only more than 24 hours before the session</td></tr>
+<tr class="new"><td>Cancel a session <span class="tag">new</span></td><td>A participant may cancel more than 24 hours before the session, at &minus;2 Trust Score. Inside 24 hours they cannot cancel, and not attending is a no show at &minus;4</td></tr>
+<tr class="new"><td>Cancelled by the client or the team <span class="tag">new</span></td><td>Costs the participant nothing. The participant is told</td></tr>
+<tr><td>Diary completion</td><td>At least 4 of 5 days</td></tr>
+</table>
+
+<p>The previous version deducted 2 points for a cancelled session without saying who could cancel, or how. That is now stated.</p>
+
+<h2>6. Client ratings</h2>
+
+<table>
+<tr class="new"><th>Rule</th><th>Value <span class="tag">corrected</span></th></tr>
+<tr class="new"><td>How a client rates a participant</td><td>Three dimensions at five stars each: Expertise, Reliability and Communication, plus an optional written review</td></tr>
+</table>
+
+<p>The previous version said in one place that client ratings were three states, poor, good or excellent, while its own Trust Score table was denominated in five stars. The two could not both be true. The five-star scale is the operative one, and the three-state wording is withdrawn.</p>
+
+<h2>7. The certificate</h2>
+
+<table>
+<tr><th>Rule</th><th>Value</th></tr>
+<tr class="new"><td>When it is issued <span class="tag">corrected</span></td><td>When identity verification completes. Never before</td></tr>
+<tr class="new"><td>How many <span class="tag">corrected</span></td><td>One per participant, with a unique ID generated once and never reused</td></tr>
+<tr class="new"><td>What it claims <span class="tag">corrected</span></td><td>Identity verified, and profession verified where a profession was checked. Nothing else</td></tr>
+<tr class="new"><td>"Unlocks at 40" <span class="tag">withdrawn</span></td><td>Not implemented. The Trust Score floor is 50, so 40 cannot be a Trust Score threshold</td></tr>
+</table>
+
+<p>The client's business certificate is a separate object with its own ID. It claims only what the platform actually verifies: business registration and billing.</p>
+
+<h2>8. Platform fees</h2>
+
+<p>Charged to clients, not participants.</p>
+
+<table>
+<tr><th>Fee</th><th>Value</th><th>Charged</th></tr>
+<tr><td>Platform fee</td><td class="num">$100</td><td>Once per study</td></tr>
+<tr><td>Moderation fee</td><td class="num">$10</td><td>Per completed participant</td></tr>
+<tr><td>Recruitment fee</td><td class="num">$25 base</td><td>Per completed participant</td></tr>
+<tr><td>Recruitment add-on</td><td class="num">+$25</td><td>For Video Call, In-Person or Diary study types, or Roles targeting</td></tr>
+<tr><td>Recruitment add-on</td><td class="num">+$20</td><td>For Skills targeting</td></tr>
+<tr class="new"><td>Deposit <span class="tag">new</span></td><td colspan="2">The incentives for the full sample, taken at submission. Everything else is billed on delivery</td></tr>
+<tr><td>Client refunds</td><td colspan="2">Paid within 5 to 7 working days</td></tr>
+</table>
+
+<h2>9. Restriction</h2>
+
+<table>
+<tr class="new"><th>Offence</th><th>Restriction <span class="tag">new</span></th></tr>
+<tr class="new"><td>First</td><td class="num">15 days</td></tr>
+<tr class="new"><td>Second</td><td class="num">15 days</td></tr>
+<tr class="new"><td>Third</td><td class="num">30 days</td></tr>
+<tr class="new"><td>Fourth</td><td>Deactivation</td></tr>
+</table>
+
+<p>A restricted participant cannot take part in studies, withdraw earnings or redeem rewards for the period. They are told that they are restricted, which category it was, and when it ends.</p>
+
+<p>A deactivated participant is sent the written reason and can appeal.</p>
+
+<p>This ladder was being applied without appearing in any policy. It is now written down.</p>
+
+<h2>10. Changes to this policy</h2>
+
+<p>A change to any value here is not retrospective. A study keeps the values it was created with.</p>
+
+<footer>
+Focus Insite &middot; Trust and Rewards Policy &middot; 13 October 2026
+</footer>
+
+</main>
+</body>
+</html>
