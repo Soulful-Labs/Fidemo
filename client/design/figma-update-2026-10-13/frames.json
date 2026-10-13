@@ -1,0 +1,3062 @@
+[
+{
+"id": "826:85021",
+"name": "Dashboard",
+"w": 1440.0,
+"h": 1115.0,
+"hidden": false,
+"path": "Dashboard",
+"tag": "frame"
+},
+{
+"id": "1518:71845",
+"name": "Notifications",
+"w": 600.0,
+"h": 800.0,
+"hidden": false,
+"path": "Dashboard",
+"tag": "frame"
+},
+{
+"id": "826:86322",
+"name": "Frame 2147236208",
+"w": 1440.0,
+"h": 980.0,
+"hidden": true,
+"path": "Dashboard",
+"tag": "frame"
+},
+{
+"id": "1704:141690",
+"name": "Respondent Profile Details",
+"w": 600.0,
+"h": 884.0,
+"hidden": false,
+"path": "Dashboard",
+"tag": "frame"
+},
+{
+"id": "2115:125140",
+"name": "Reviews",
+"w": 600.0,
+"h": 909.0,
+"hidden": false,
+"path": "Dashboard",
+"tag": "frame"
+},
+{
+"id": "1484:81400",
+"name": "Select Pricing Plan",
+"w": 1440.0,
+"h": 820.0,
+"hidden": true,
+"path": "",
+"tag": "frame"
+},
+{
+"id": "1484:81319",
+"name": "Sign Up",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Onboarding",
+"tag": "frame"
+},
+{
+"id": "1484:81337",
+"name": "Check Email",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Onboarding",
+"tag": "frame"
+},
+{
+"id": "1794:80317",
+"name": "Check Email",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Onboarding",
+"tag": "frame"
+},
+{
+"id": "1794:80515",
+"name": "Set New Password",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Onboarding",
+"tag": "frame"
+},
+{
+"id": "1484:81364",
+"name": "Sign In",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Onboarding",
+"tag": "frame"
+},
+{
+"id": "1484:81382",
+"name": "Organization Details",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Onboarding",
+"tag": "frame"
+},
+{
+"id": "1512:68177",
+"name": "Payment Method",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Onboarding",
+"tag": "frame"
+},
+{
+"id": "1484:81502",
+"name": "In Review",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Onboarding",
+"tag": "frame"
+},
+{
+"id": "1484:81512",
+"name": "Welcome ",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Onboarding",
+"tag": "frame"
+},
+{
+"id": "1704:80364",
+"name": "Genders",
+"w": 572.0,
+"h": 208.0,
+"hidden": false,
+"path": "Onboarding",
+"tag": "instance"
+},
+{
+"id": "1794:80698",
+"name": "Password has been updated!",
+"w": 460.0,
+"h": 423.0,
+"hidden": false,
+"path": "Onboarding",
+"tag": "frame"
+},
+{
+"id": "1518:90600",
+"name": "2.0 Studies",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Studies",
+"tag": "frame"
+},
+{
+"id": "1518:90624",
+"name": "Drafts \\ Studies",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Studies",
+"tag": "frame"
+},
+{
+"id": "1518:90760",
+"name": "Completed \\ Studies",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Studies",
+"tag": "frame"
+},
+{
+"id": "1518:90959",
+"name": "Ongoing Study options",
+"w": 200.0,
+"h": 207.0,
+"hidden": false,
+"path": "Studies",
+"tag": "instance"
+},
+{
+"id": "1726:77013",
+"name": "Ongoing Study options",
+"w": 200.0,
+"h": 92.0,
+"hidden": false,
+"path": "Studies",
+"tag": "instance"
+},
+{
+"id": "1726:57600",
+"name": "Ongoing Study options",
+"w": 200.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies",
+"tag": "instance"
+},
+{
+"id": "1518:90965",
+"name": "Ongoing Study options",
+"w": 180.0,
+"h": 130.0,
+"hidden": false,
+"path": "Studies",
+"tag": "instance"
+},
+{
+"id": "1518:90966",
+"name": "2.0 Studies",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Studies",
+"tag": "frame"
+},
+{
+"id": "1518:91273",
+"name": "NO Matching Audience - New Study",
+"w": 1440.0,
+"h": 1756.0,
+"hidden": false,
+"path": "Studies",
+"tag": "frame"
+},
+{
+"id": "1518:93678",
+"name": "In-person_Setup - Self-managed",
+"w": 1440.0,
+"h": 1665.0,
+"hidden": false,
+"path": "Studies / Create - In-Person (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1518:93998",
+"name": "In-person 1:1 - saved - Self Managed",
+"w": 1440.0,
+"h": 1460.0,
+"hidden": false,
+"path": "Studies / Create - In-Person (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1749:148342",
+"name": "In-person 1:1 - saved - Self Managed",
+"w": 1440.0,
+"h": 1460.0,
+"hidden": false,
+"path": "Studies / Create - In-Person (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1518:94157",
+"name": "GROUP In-Person Interview - saved - Self Managed",
+"w": 1440.0,
+"h": 1460.0,
+"hidden": false,
+"path": "Studies / Create - In-Person (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1622:87629",
+"name": "Payment &amp; Publish - New Study ",
+"w": 1440.0,
+"h": 980.0,
+"hidden": false,
+"path": "Studies / Create - In-Person (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1518:94316",
+"name": "FOCUS GROUP In-Person Interview - New study",
+"w": 1440.0,
+"h": 1494.0,
+"hidden": false,
+"path": "Studies / Create - In-Person (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1622:81504",
+"name": "2.1.0 About - New Study",
+"w": 1440.0,
+"h": 1330.0,
+"hidden": false,
+"path": "Studies / Create - In-Person (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1622:81615",
+"name": "2.1.1 Audience - New Study",
+"w": 1440.0,
+"h": 1756.0,
+"hidden": false,
+"path": "Studies / Create - In-Person (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1622:81771",
+"name": "2.1.2 Screener - New Study",
+"w": 1440.0,
+"h": 2320.0,
+"hidden": false,
+"path": "Studies / Create - In-Person (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1622:82163",
+"name": "Country Location",
+"w": 572.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - In-Person (Individual/Group) Study",
+"tag": "instance"
+},
+{
+"id": "1622:82164",
+"name": "Age",
+"w": 572.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - In-Person (Individual/Group) Study",
+"tag": "instance"
+},
+{
+"id": "1622:82165",
+"name": "Question menu",
+"w": 164.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - In-Person (Individual/Group) Study",
+"tag": "instance"
+},
+{
+"id": "1622:82166",
+"name": "Profile Tiers",
+"w": 572.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - In-Person (Individual/Group) Study",
+"tag": "instance"
+},
+{
+"id": "1622:82167",
+"name": "Question menu",
+"w": 200.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - In-Person (Individual/Group) Study",
+"tag": "instance"
+},
+{
+"id": "1622:82168",
+"name": "Education",
+"w": 572.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - In-Person (Individual/Group) Study",
+"tag": "instance"
+},
+{
+"id": "1622:82169",
+"name": "Genders",
+"w": 572.0,
+"h": 177.0,
+"hidden": false,
+"path": "Studies / Create - In-Person (Individual/Group) Study",
+"tag": "instance"
+},
+{
+"id": "1749:146504",
+"name": "Card Added to Publish - New Study ",
+"w": 1440.0,
+"h": 980.0,
+"hidden": false,
+"path": "Studies / Create - In-Person (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1518:94580",
+"name": "Diary Study - Self-managed",
+"w": 1440.0,
+"h": 1793.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1518:94742",
+"name": "Diary Study - Self-managed",
+"w": 1440.0,
+"h": 1793.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1622:86775",
+"name": "Payment &amp; Publish - New Study ",
+"w": 1440.0,
+"h": 980.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1518:94904",
+"name": "Diary Study - Self-managed",
+"w": 1440.0,
+"h": 1872.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1518:92891",
+"name": "Video Call Setup - Platform Managed",
+"w": 1440.0,
+"h": 1460.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study / Platform Managed",
+"tag": "frame"
+},
+{
+"id": "1622:78974",
+"name": "2.1.0 About - New Study",
+"w": 1440.0,
+"h": 1364.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1622:79085",
+"name": "2.1.1 Audience - New Study",
+"w": 1440.0,
+"h": 1756.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1622:79241",
+"name": "2.1.2 Screener - New Study",
+"w": 1440.0,
+"h": 2320.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1622:79633",
+"name": "Country Location",
+"w": 572.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1622:79634",
+"name": "Age",
+"w": 572.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1622:79635",
+"name": "Question menu",
+"w": 164.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1753:148801",
+"name": "Question menu",
+"w": 264.0,
+"h": 168.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1753:149089",
+"name": "Question menu",
+"w": 264.0,
+"h": 168.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1753:149400",
+"name": "Question menu",
+"w": 264.0,
+"h": 168.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1753:149756",
+"name": "Question menu",
+"w": 264.0,
+"h": 168.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1753:148882",
+"name": "Question menu",
+"w": 264.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1753:149978",
+"name": "Question menu",
+"w": 264.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1753:149090",
+"name": "Question menu",
+"w": 264.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1753:150051",
+"name": "Question menu",
+"w": 264.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1753:149401",
+"name": "Question menu",
+"w": 264.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1753:150424",
+"name": "Question menu",
+"w": 264.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1753:149757",
+"name": "Question menu",
+"w": 264.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1756:150573",
+"name": "Question menu",
+"w": 264.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1622:79636",
+"name": "Profile Tiers",
+"w": 572.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1622:79637",
+"name": "Question menu",
+"w": 200.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1622:79638",
+"name": "Education",
+"w": 572.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1622:79639",
+"name": "Genders",
+"w": 572.0,
+"h": 177.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1756:150808",
+"name": "Card Added to Publish - New Study ",
+"w": 1440.0,
+"h": 980.0,
+"hidden": false,
+"path": "Studies / Create - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1518:92411",
+"name": "Video Call 1:1 - saved - Self Managed",
+"w": 1440.0,
+"h": 1460.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1518:92570",
+"name": "GROUP Video Call  - saved - Self Managed",
+"w": 1440.0,
+"h": 1460.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1622:84446",
+"name": "Payment &amp; Publish - New Study ",
+"w": 1440.0,
+"h": 980.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1518:92729",
+"name": "Video Call To Setup - Self Managed",
+"w": 1440.0,
+"h": 1460.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1518:92887",
+"name": "Group 254",
+"w": 751.0,
+"h": 374.0,
+"hidden": true,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1518:93042",
+"name": "Video Individual - New study",
+"w": 1440.0,
+"h": 1494.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1518:93335",
+"name": "FOCUS GROUP Video call - New study",
+"w": 1440.0,
+"h": 1494.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1518:93557",
+"name": "Add an override",
+"w": 600.0,
+"h": 502.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1749:143926",
+"name": "Edit override",
+"w": 600.0,
+"h": 502.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1627:95310",
+"name": "Payment Breakdown",
+"w": 600.0,
+"h": 658.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1518:93673",
+"name": "Study Setup &amp; Pricing",
+"w": 2642.0,
+"h": 1154.0,
+"hidden": true,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1622:76444",
+"name": "2.1.0 About - New Study",
+"w": 1440.0,
+"h": 1357.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1622:76555",
+"name": "2.1.1 Audience - New Study",
+"w": 1440.0,
+"h": 1756.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1622:76711",
+"name": "2.1.2 Screener - New Study",
+"w": 1440.0,
+"h": 2320.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1622:77105",
+"name": "Country Location",
+"w": 572.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "instance"
+},
+{
+"id": "1622:77108",
+"name": "Age",
+"w": 572.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "instance"
+},
+{
+"id": "1622:77109",
+"name": "Question menu",
+"w": 164.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "instance"
+},
+{
+"id": "1749:144037",
+"name": "Question menu",
+"w": 270.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "instance"
+},
+{
+"id": "1749:144541",
+"name": "Question menu",
+"w": 120.0,
+"h": 130.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "instance"
+},
+{
+"id": "1622:77104",
+"name": "Profile Tiers",
+"w": 572.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "instance"
+},
+{
+"id": "1622:77103",
+"name": "Question menu",
+"w": 200.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "instance"
+},
+{
+"id": "1622:77107",
+"name": "Education",
+"w": 572.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "instance"
+},
+{
+"id": "1622:77106",
+"name": "Genders",
+"w": 572.0,
+"h": 177.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "instance"
+},
+{
+"id": "1749:144669",
+"name": "Card Added to Publish - New Study ",
+"w": 1440.0,
+"h": 980.0,
+"hidden": false,
+"path": "Studies / Create - Video Call (Individual/Group) Study",
+"tag": "frame"
+},
+{
+"id": "1518:91779",
+"name": "Created Survey_Study- New Study",
+"w": 1440.0,
+"h": 1388.0,
+"hidden": false,
+"path": "Studies / Create - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1518:91922",
+"name": "Survey_Study Setup - New Study",
+"w": 1440.0,
+"h": 1388.0,
+"hidden": false,
+"path": "Studies / Create - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1518:92064",
+"name": "Create Survey_Study - New Study",
+"w": 1440.0,
+"h": 1494.0,
+"hidden": false,
+"path": "Studies / Create - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1756:151489",
+"name": "Uploaded file state",
+"w": 594.9999389648438,
+"h": 152.0,
+"hidden": false,
+"path": "Studies / Create - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1518:92247",
+"name": "Payment &amp; Publish - New Study ",
+"w": 1440.0,
+"h": 980.0,
+"hidden": false,
+"path": "Studies / Create - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1749:141687",
+"name": "Card Added to Publish - New Study ",
+"w": 1440.0,
+"h": 980.0,
+"hidden": false,
+"path": "Studies / Create - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1518:90995",
+"name": "2.1.0 About - New Study",
+"w": 1440.0,
+"h": 1357.0,
+"hidden": false,
+"path": "Studies / Create - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1518:91112",
+"name": "2.1.1 Audience - New Study",
+"w": 1440.0,
+"h": 1770.0,
+"hidden": false,
+"path": "Studies / Create - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1518:91438",
+"name": "2.1.2 Screener - New Study",
+"w": 1440.0,
+"h": 2320.0,
+"hidden": false,
+"path": "Studies / Create - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1518:93598",
+"name": "Question menu",
+"w": 200.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Survey Study",
+"tag": "instance"
+},
+{
+"id": "1543:85715",
+"name": "Profile Tiers",
+"w": 572.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Survey Study",
+"tag": "instance"
+},
+{
+"id": "1574:88814",
+"name": "Country Location",
+"w": 572.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Survey Study",
+"tag": "instance"
+},
+{
+"id": "1574:95170",
+"name": "Genders",
+"w": 572.0,
+"h": 177.0,
+"hidden": false,
+"path": "Studies / Create - Survey Study",
+"tag": "instance"
+},
+{
+"id": "1574:95329",
+"name": "Education",
+"w": 572.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Survey Study",
+"tag": "instance"
+},
+{
+"id": "1574:95568",
+"name": "Age",
+"w": 572.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Survey Study",
+"tag": "instance"
+},
+{
+"id": "1518:93610",
+"name": "Question menu",
+"w": 164.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Survey Study",
+"tag": "instance"
+},
+{
+"id": "1749:141271",
+"name": "Question menu",
+"w": 180.0,
+"h": 92.0,
+"hidden": false,
+"path": "Studies / Create - Survey Study",
+"tag": "instance"
+},
+{
+"id": "1746:96177",
+"name": "Industries",
+"w": 572.0,
+"h": 208.0,
+"hidden": false,
+"path": "Studies / Create - Survey Study",
+"tag": "instance"
+},
+{
+"id": "1518:92376",
+"name": "Published - New Study ",
+"w": 1440.0,
+"h": 980.0,
+"hidden": false,
+"path": "Studies",
+"tag": "frame"
+},
+{
+"id": "1627:95956",
+"name": "2.1 Study Overview - Studies",
+"w": 1440.0,
+"h": 1100.0,
+"hidden": false,
+"path": "Studies / Manage - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1627:96085",
+"name": "Manage Study",
+"w": 1440.0,
+"h": 1401.0,
+"hidden": false,
+"path": "Studies / Manage - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1627:96237",
+"name": "Auto-Matched",
+"w": 1440.0,
+"h": 1401.0,
+"hidden": false,
+"path": "Studies / Manage - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1627:96329",
+"name": "Invited - Auto-Matched",
+"w": 1440.0,
+"h": 1401.0,
+"hidden": false,
+"path": "Studies / Manage - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1627:96535",
+"name": "Recruited",
+"w": 1440.0,
+"h": 1176.0,
+"hidden": false,
+"path": "Studies / Manage - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1627:96628",
+"name": "Results",
+"w": 1440.0,
+"h": 1575.0,
+"hidden": false,
+"path": "Studies / Manage - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1627:96779",
+"name": "Pay while ongoing",
+"w": 1440.0,
+"h": 991.0,
+"hidden": false,
+"path": "Studies / Manage - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1627:96956",
+"name": "Payment",
+"w": 1440.0,
+"h": 991.0,
+"hidden": false,
+"path": "Studies / Manage - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1627:97128",
+"name": "Pay - Due as completed",
+"w": 1440.0,
+"h": 1097.0,
+"hidden": false,
+"path": "Studies / Manage - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1627:97305",
+"name": "Recruited respondent result",
+"w": 1440.0,
+"h": 1365.0,
+"hidden": false,
+"path": "Studies / Manage - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1627:97609",
+"name": "Completed respondent result",
+"w": 1440.0,
+"h": 1365.0,
+"hidden": false,
+"path": "Studies / Manage - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1627:97901",
+"name": "Activity of respondent",
+"w": 1440.0,
+"h": 1365.0,
+"hidden": false,
+"path": "Studies / Manage - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1643:128981",
+"name": "Bottom Bar",
+"w": 822.0,
+"h": 80.0,
+"hidden": false,
+"path": "Studies / Manage - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1643:128989",
+"name": "Bottom Bar",
+"w": 822.0,
+"h": 80.0,
+"hidden": false,
+"path": "Studies / Manage - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1643:128997",
+"name": "Bottom Bar",
+"w": 822.0,
+"h": 80.0,
+"hidden": false,
+"path": "Studies / Manage - Diary Study",
+"tag": "instance"
+},
+{
+"id": "2115:130351",
+"name": "Respondent Profile Details",
+"w": 600.0,
+"h": 884.0,
+"hidden": false,
+"path": "Studies / Manage - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1627:98286",
+"name": "Rate Ferry L.",
+"w": 600.0,
+"h": 697.0,
+"hidden": false,
+"path": "Studies / Manage - Diary Study",
+"tag": "frame"
+},
+{
+"id": "1777:96760",
+"name": "Ongoing Study options",
+"w": 220.0,
+"h": 207.0,
+"hidden": false,
+"path": "Studies / Manage - Diary Study",
+"tag": "instance"
+},
+{
+"id": "1627:100940",
+"name": "2.1 Study Overview - Studies",
+"w": 1440.0,
+"h": 1100.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "frame"
+},
+{
+"id": "1627:101069",
+"name": "Manage Study",
+"w": 1440.0,
+"h": 1401.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "frame"
+},
+{
+"id": "1627:101221",
+"name": "Auto-Matched",
+"w": 1440.0,
+"h": 1401.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "frame"
+},
+{
+"id": "1627:101313",
+"name": "Invited - Auto-Matched",
+"w": 1440.0,
+"h": 1401.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "frame"
+},
+{
+"id": "1627:101519",
+"name": "Recruited",
+"w": 1440.0,
+"h": 1176.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "frame"
+},
+{
+"id": "1627:101612",
+"name": "Recruited",
+"w": 1440.0,
+"h": 1272.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "frame"
+},
+{
+"id": "1627:101705",
+"name": "Results",
+"w": 1440.0,
+"h": 1575.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "frame"
+},
+{
+"id": "1627:101864",
+"name": "Pay while ongoing",
+"w": 1440.0,
+"h": 991.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "frame"
+},
+{
+"id": "1627:102041",
+"name": "Payment",
+"w": 1440.0,
+"h": 991.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "frame"
+},
+{
+"id": "1627:102213",
+"name": "Pay - Due as completed",
+"w": 1440.0,
+"h": 1097.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "frame"
+},
+{
+"id": "1627:102390",
+"name": "Recruited respondent result",
+"w": 1440.0,
+"h": 1365.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "frame"
+},
+{
+"id": "1627:102694",
+"name": "Scheduled Study respondent",
+"w": 1440.0,
+"h": 1252.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "frame"
+},
+{
+"id": "1627:102902",
+"name": "Study Result - completed",
+"w": 1440.0,
+"h": 1252.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "frame"
+},
+{
+"id": "1627:103128",
+"name": "Activity of respondent",
+"w": 1440.0,
+"h": 1365.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "frame"
+},
+{
+"id": "1643:108726",
+"name": "Bottom Bar",
+"w": 822.0,
+"h": 80.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "instance"
+},
+{
+"id": "1643:108734",
+"name": "Bottom Bar",
+"w": 822.0,
+"h": 80.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "instance"
+},
+{
+"id": "1643:108742",
+"name": "Bottom Bar",
+"w": 822.0,
+"h": 80.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "instance"
+},
+{
+"id": "2115:129881",
+"name": "Respondent Profile Details",
+"w": 600.0,
+"h": 884.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "frame"
+},
+{
+"id": "1627:103533",
+"name": "Rate Ferry L.",
+"w": 600.0,
+"h": 720.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "frame"
+},
+{
+"id": "1769:91994",
+"name": "Ongoing Study options",
+"w": 220.0,
+"h": 207.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "instance"
+},
+{
+"id": "1769:93628",
+"name": "After Started state",
+"w": 846.0,
+"h": 423.0,
+"hidden": false,
+"path": "Studies / Manage - In-Person_Individual",
+"tag": "frame"
+},
+{
+"id": "1627:107080",
+"name": "2.1 Study Overview - Studies",
+"w": 1440.0,
+"h": 1100.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "frame"
+},
+{
+"id": "1627:107209",
+"name": "Manage Study",
+"w": 1440.0,
+"h": 1401.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "frame"
+},
+{
+"id": "1627:107361",
+"name": "Auto-Matched",
+"w": 1440.0,
+"h": 1401.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "frame"
+},
+{
+"id": "1627:107453",
+"name": "Invited - Auto-Matched",
+"w": 1440.0,
+"h": 1401.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "frame"
+},
+{
+"id": "1627:107659",
+"name": "Recruited",
+"w": 1440.0,
+"h": 1176.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "frame"
+},
+{
+"id": "1627:107752",
+"name": "Recruited",
+"w": 1440.0,
+"h": 1272.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "frame"
+},
+{
+"id": "1627:107896",
+"name": "Results",
+"w": 1440.0,
+"h": 1688.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "frame"
+},
+{
+"id": "1627:108409",
+"name": "Pay while ongoing",
+"w": 1440.0,
+"h": 991.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "frame"
+},
+{
+"id": "1627:108758",
+"name": "Pay - Due as completed",
+"w": 1440.0,
+"h": 1097.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "frame"
+},
+{
+"id": "1627:108935",
+"name": "Recruited respondent result",
+"w": 1440.0,
+"h": 1365.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "frame"
+},
+{
+"id": "1627:109239",
+"name": "Scheduled Study respondent",
+"w": 1440.0,
+"h": 1774.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "frame"
+},
+{
+"id": "1627:109586",
+"name": "Study Result - completed",
+"w": 1440.0,
+"h": 1774.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "frame"
+},
+{
+"id": "1627:109934",
+"name": "Activity of respondent",
+"w": 1440.0,
+"h": 1365.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "frame"
+},
+{
+"id": "1643:122983",
+"name": "Bottom Bar",
+"w": 822.0,
+"h": 80.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "instance"
+},
+{
+"id": "1643:122991",
+"name": "Bottom Bar",
+"w": 822.0,
+"h": 80.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "instance"
+},
+{
+"id": "1643:122999",
+"name": "Bottom Bar",
+"w": 822.0,
+"h": 80.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "instance"
+},
+{
+"id": "2115:130116",
+"name": "Respondent Profile Details",
+"w": 600.0,
+"h": 884.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "frame"
+},
+{
+"id": "1627:110506",
+"name": "Rate Sarah",
+"w": 600.0,
+"h": 720.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "frame"
+},
+{
+"id": "1627:110569",
+"name": "Download Sessions Results",
+"w": 600.0,
+"h": 256.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "frame"
+},
+{
+"id": "1777:96649",
+"name": "After Started state",
+"w": 1118.0,
+"h": 152.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "instance"
+},
+{
+"id": "1769:93842",
+"name": "Ongoing Study options",
+"w": 220.0,
+"h": 207.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "instance"
+},
+{
+"id": "1697:64138",
+"name": "Bottom Bar",
+"w": 1150.0,
+"h": 74.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "instance"
+},
+{
+"id": "1697:64109",
+"name": "Mark [individual] as No-show",
+"w": 460.0,
+"h": 338.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "frame"
+},
+{
+"id": "1777:95895",
+"name": "Recruited - activity",
+"w": 1440.0,
+"h": 1146.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "frame"
+},
+{
+"id": "1627:108586",
+"name": "Payment",
+"w": 1440.0,
+"h": 991.0,
+"hidden": false,
+"path": "Studies / Manage - In-person Group",
+"tag": "frame"
+},
+{
+"id": "1627:103597",
+"name": "2.1 Study Overview - Studies",
+"w": 1440.0,
+"h": 1100.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1627:103726",
+"name": "Manage Study",
+"w": 1440.0,
+"h": 1401.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1627:103878",
+"name": "Auto-Matched",
+"w": 1440.0,
+"h": 1401.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1627:103970",
+"name": "Invited - Auto-Matched",
+"w": 1440.0,
+"h": 1401.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1627:104176",
+"name": "Recruited",
+"w": 1440.0,
+"h": 1176.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1627:104269",
+"name": "Recruited",
+"w": 1440.0,
+"h": 1272.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1627:104407",
+"name": "Results",
+"w": 1440.0,
+"h": 1688.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1627:104920",
+"name": "Pay while ongoing",
+"w": 1440.0,
+"h": 991.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1627:105097",
+"name": "Payment",
+"w": 1440.0,
+"h": 991.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1627:105269",
+"name": "Pay - Due as completed",
+"w": 1440.0,
+"h": 1097.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1627:105446",
+"name": "Recruited respondent result",
+"w": 1440.0,
+"h": 1365.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1769:90865",
+"name": "Recruited - activity",
+"w": 1440.0,
+"h": 1365.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1627:105750",
+"name": "Scheduled Study respondents",
+"w": 1440.0,
+"h": 1472.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1627:106074",
+"name": "Study Result - completed",
+"w": 1440.0,
+"h": 1204.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1627:106405",
+"name": "Activities of respondent",
+"w": 1440.0,
+"h": 1365.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1643:97305",
+"name": "Bottom Bar",
+"w": 822.0,
+"h": 80.0,
+"hidden": true,
+"path": "Studies / Manage - Group Video Call",
+"tag": "instance"
+},
+{
+"id": "1643:97313",
+"name": "Bottom Bar",
+"w": 822.0,
+"h": 80.0,
+"hidden": true,
+"path": "Studies / Manage - Group Video Call",
+"tag": "instance"
+},
+{
+"id": "1643:97321",
+"name": "Bottom Bar",
+"w": 822.0,
+"h": 80.0,
+"hidden": true,
+"path": "Studies / Manage - Group Video Call",
+"tag": "instance"
+},
+{
+"id": "2115:129646",
+"name": "Respondent Profile Details",
+"w": 600.0,
+"h": 884.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1627:106977",
+"name": "Rate Sarah",
+"w": 600.0,
+"h": 707.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1627:107040",
+"name": "Download Sessions Results",
+"w": 600.0,
+"h": 256.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1697:63580",
+"name": "Mark all as No-show",
+"w": 460.0,
+"h": 335.0,
+"hidden": true,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1697:63643",
+"name": "Mark [individual] as No-show",
+"w": 460.0,
+"h": 338.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1697:63780",
+"name": "Bottom Bar",
+"w": 1150.0,
+"h": 80.0,
+"hidden": true,
+"path": "Studies / Manage - Group Video Call",
+"tag": "instance"
+},
+{
+"id": "1769:87707",
+"name": "Ongoing Study options",
+"w": 220.0,
+"h": 207.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "instance"
+},
+{
+"id": "1769:91859",
+"name": "Group-session - mark all completed",
+"w": 1190.0,
+"h": 205.0,
+"hidden": false,
+"path": "Studies / Manage - Group Video Call",
+"tag": "frame"
+},
+{
+"id": "1627:98350",
+"name": "2.1 Study Overview - Studies",
+"w": 1440.0,
+"h": 1100.0,
+"hidden": false,
+"path": "Studies / Manage - Video Call Individual 1:1",
+"tag": "frame"
+},
+{
+"id": "1627:98479",
+"name": "Manage Study",
+"w": 1440.0,
+"h": 1401.0,
+"hidden": false,
+"path": "Studies / Manage - Video Call Individual 1:1",
+"tag": "frame"
+},
+{
+"id": "1627:98631",
+"name": "Auto-Matched",
+"w": 1440.0,
+"h": 1401.0,
+"hidden": false,
+"path": "Studies / Manage - Video Call Individual 1:1",
+"tag": "frame"
+},
+{
+"id": "1627:98723",
+"name": "Invited - Auto-Matched",
+"w": 1440.0,
+"h": 1401.0,
+"hidden": false,
+"path": "Studies / Manage - Video Call Individual 1:1",
+"tag": "frame"
+},
+{
+"id": "1627:98929",
+"name": "Recruited",
+"w": 1440.0,
+"h": 1176.0,
+"hidden": false,
+"path": "Studies / Manage - Video Call Individual 1:1",
+"tag": "frame"
+},
+{
+"id": "1627:99022",
+"name": "Recruited",
+"w": 1440.0,
+"h": 1272.0,
+"hidden": false,
+"path": "Studies / Manage - Video Call Individual 1:1",
+"tag": "frame"
+},
+{
+"id": "1627:99115",
+"name": "Results",
+"w": 1440.0,
+"h": 1575.0,
+"hidden": false,
+"path": "Studies / Manage - Video Call Individual 1:1",
+"tag": "frame"
+},
+{
+"id": "1627:99266",
+"name": "Pay while ongoing",
+"w": 1440.0,
+"h": 991.0,
+"hidden": false,
+"path": "Studies / Manage - Video Call Individual 1:1",
+"tag": "frame"
+},
+{
+"id": "1627:99443",
+"name": "Payment",
+"w": 1440.0,
+"h": 991.0,
+"hidden": false,
+"path": "Studies / Manage - Video Call Individual 1:1",
+"tag": "frame"
+},
+{
+"id": "1627:99615",
+"name": "Pay - Due as completed",
+"w": 1440.0,
+"h": 1097.0,
+"hidden": false,
+"path": "Studies / Manage - Video Call Individual 1:1",
+"tag": "frame"
+},
+{
+"id": "1627:99792",
+"name": "Recruited respondent result",
+"w": 1440.0,
+"h": 1365.0,
+"hidden": false,
+"path": "Studies / Manage - Video Call Individual 1:1",
+"tag": "frame"
+},
+{
+"id": "1627:100096",
+"name": "Scheduled Study respondent",
+"w": 1440.0,
+"h": 1108.0,
+"hidden": false,
+"path": "Studies / Manage - Video Call Individual 1:1",
+"tag": "frame"
+},
+{
+"id": "1627:100279",
+"name": "Study Result - completed",
+"w": 1440.0,
+"h": 1275.0,
+"hidden": false,
+"path": "Studies / Manage - Video Call Individual 1:1",
+"tag": "frame"
+},
+{
+"id": "1627:100471",
+"name": "Activity of respondent",
+"w": 1440.0,
+"h": 1365.0,
+"hidden": false,
+"path": "Studies / Manage - Video Call Individual 1:1",
+"tag": "frame"
+},
+{
+"id": "1627:100718",
+"name": "Respondent Profile Details",
+"w": 600.0,
+"h": 908.0,
+"hidden": false,
+"path": "Studies / Manage - Video Call Individual 1:1",
+"tag": "frame"
+},
+{
+"id": "1627:100876",
+"name": "Rate Ferry L.",
+"w": 600.0,
+"h": 708.0,
+"hidden": false,
+"path": "Studies / Manage - Video Call Individual 1:1",
+"tag": "frame"
+},
+{
+"id": "1697:63925",
+"name": "Mark [individual] as No-show",
+"w": 460.0,
+"h": 338.0,
+"hidden": false,
+"path": "Studies / Manage - Video Call Individual 1:1",
+"tag": "frame"
+},
+{
+"id": "1769:82319",
+"name": "Ongoing Study options",
+"w": 220.0,
+"h": 207.0,
+"hidden": false,
+"path": "Studies / Manage - Video Call Individual 1:1",
+"tag": "instance"
+},
+{
+"id": "1769:86063",
+"name": "Marked Completed",
+"w": 870.0,
+"h": 432.0,
+"hidden": false,
+"path": "Studies / Manage - Video Call Individual 1:1",
+"tag": "frame"
+},
+{
+"id": "1769:86279",
+"name": "$350 paid successfully!",
+"w": 460.0,
+"h": 423.0,
+"hidden": false,
+"path": "Studies / Manage - Video Call Individual 1:1",
+"tag": "frame"
+},
+{
+"id": "1645:131436",
+"name": "2.1 Study Overview - Studies",
+"w": 1440.0,
+"h": 1100.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1645:131565",
+"name": "Manage Study",
+"w": 1440.0,
+"h": 1401.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1645:131717",
+"name": "Auto-Matched",
+"w": 1440.0,
+"h": 1401.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1769:80096",
+"name": "My Studies / Scheduled / Type Filter",
+"w": 200.0,
+"h": 141.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "instance"
+},
+{
+"id": "1645:131809",
+"name": "Invited - Auto-Matched",
+"w": 1440.0,
+"h": 1401.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1645:132015",
+"name": "Recruited",
+"w": 1440.0,
+"h": 1273.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1645:132108",
+"name": "Results",
+"w": 1440.0,
+"h": 1642.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1645:132259",
+"name": "Pay while ongoing",
+"w": 1440.0,
+"h": 991.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1645:132436",
+"name": "Payment",
+"w": 1440.0,
+"h": 991.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1645:132608",
+"name": "Pay - Due as completed",
+"w": 1440.0,
+"h": 1097.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1645:132785",
+"name": "Recruited respondent result",
+"w": 1440.0,
+"h": 1365.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1645:133089",
+"name": "Completed respondent result",
+"w": 1440.0,
+"h": 1365.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1645:133403",
+"name": "Activity of respondent",
+"w": 1440.0,
+"h": 1365.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1645:133632",
+"name": "Respondent Profile Details",
+"w": 600.0,
+"h": 884.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1767:64247",
+"name": "Respondent Profile Details",
+"w": 600.0,
+"h": 908.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1645:133788",
+"name": "Rate Ferry L.",
+"w": 600.0,
+"h": 705.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1645:134876",
+"name": "Ongoing Study options",
+"w": 220.0,
+"h": 207.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "instance"
+},
+{
+"id": "1645:133852",
+"name": "2.1.0 About - New Study",
+"w": 1440.0,
+"h": 1593.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study / Edit Survey Study",
+"tag": "frame"
+},
+{
+"id": "1645:133969",
+"name": "2.1.1 Audience - New Study",
+"w": 1440.0,
+"h": 1756.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study / Edit Survey Study",
+"tag": "frame"
+},
+{
+"id": "1645:134057",
+"name": "2.1.2 Screener - New Study",
+"w": 1440.0,
+"h": 2296.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study / Edit Survey Study",
+"tag": "frame"
+},
+{
+"id": "1645:134397",
+"name": "Created Survey_Study- New Study",
+"w": 1440.0,
+"h": 1388.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study / Edit Survey Study",
+"tag": "frame"
+},
+{
+"id": "1645:134523",
+"name": "Create Survey_Study - New Study",
+"w": 1440.0,
+"h": 1502.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study / Edit Survey Study",
+"tag": "frame"
+},
+{
+"id": "1645:134709",
+"name": "Payment &amp; Publish - New Study ",
+"w": 1440.0,
+"h": 980.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study / Edit Survey Study",
+"tag": "frame"
+},
+{
+"id": "1645:134838",
+"name": "Published - New Study ",
+"w": 1440.0,
+"h": 980.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study / Edit Survey Study",
+"tag": "frame"
+},
+{
+"id": "1767:63832",
+"name": "Question menu",
+"w": 180.0,
+"h": 207.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "instance"
+},
+{
+"id": "1769:80399",
+"name": "Question menu",
+"w": 160.0,
+"h": 168.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "instance"
+},
+{
+"id": "1768:64481",
+"name": "Question menu",
+"w": 156.0,
+"h": 168.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "instance"
+},
+{
+"id": "1767:63944",
+"name": "Invite to apply?",
+"w": 460.0,
+"h": 269.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1767:63988",
+"name": "Sent",
+"w": 460.0,
+"h": 225.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1769:80372",
+"name": "Screener CTAs",
+"w": 870.0,
+"h": 406.0,
+"hidden": false,
+"path": "Studies / Manage - Survey Study",
+"tag": "frame"
+},
+{
+"id": "1697:54314",
+"name": "2.1 Study Overview - Studies",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Studies / Completed Study Flow",
+"tag": "frame"
+},
+{
+"id": "1697:54448",
+"name": "Manage Study",
+"w": 1440.0,
+"h": 1401.0,
+"hidden": false,
+"path": "Studies / Completed Study Flow",
+"tag": "frame"
+},
+{
+"id": "1697:54966",
+"name": "Results",
+"w": 1440.0,
+"h": 1575.0,
+"hidden": false,
+"path": "Studies / Completed Study Flow",
+"tag": "frame"
+},
+{
+"id": "1697:55119",
+"name": "Pay while ongoing",
+"w": 1440.0,
+"h": 991.0,
+"hidden": true,
+"path": "Studies / Completed Study Flow",
+"tag": "frame"
+},
+{
+"id": "1697:55469",
+"name": "Pay - Due as completed",
+"w": 1440.0,
+"h": 1097.0,
+"hidden": false,
+"path": "Studies / Completed Study Flow",
+"tag": "frame"
+},
+{
+"id": "1697:55648",
+"name": "Qualified - Recruited respondent",
+"w": 1440.0,
+"h": 1365.0,
+"hidden": false,
+"path": "Studies / Completed Study Flow",
+"tag": "frame"
+},
+{
+"id": "1697:55962",
+"name": "Completed respondent result",
+"w": 1440.0,
+"h": 1365.0,
+"hidden": false,
+"path": "Studies / Completed Study Flow",
+"tag": "frame"
+},
+{
+"id": "1697:56276",
+"name": "Activity of respondent",
+"w": 1440.0,
+"h": 1365.0,
+"hidden": false,
+"path": "Studies / Completed Study Flow",
+"tag": "frame"
+},
+{
+"id": "1697:56639",
+"name": "Rate Ferry L.",
+"w": 600.0,
+"h": 705.0,
+"hidden": false,
+"path": "Studies / Completed Study Flow",
+"tag": "frame"
+},
+{
+"id": "1746:95917",
+"name": "RATED",
+"w": 600.0,
+"h": 503.0,
+"hidden": false,
+"path": "Studies / Completed Study Flow",
+"tag": "frame"
+},
+{
+"id": "1697:56712",
+"name": "Ongoing Study options",
+"w": 200.0,
+"h": 92.0,
+"hidden": false,
+"path": "Studies / Completed Study Flow",
+"tag": "instance"
+},
+{
+"id": "1728:95186",
+"name": "Ongoing Study options",
+"w": 160.0,
+"h": 191.0,
+"hidden": false,
+"path": "Studies / Completed Study Flow",
+"tag": "instance"
+},
+{
+"id": "1697:55298",
+"name": "Payment",
+"w": 1440.0,
+"h": 991.0,
+"hidden": true,
+"path": "Studies / Completed Study Flow",
+"tag": "frame"
+},
+{
+"id": "1697:64017",
+"name": "Mark [individual] as No-show",
+"w": 460.0,
+"h": 338.0,
+"hidden": false,
+"path": "Studies",
+"tag": "frame"
+},
+{
+"id": "1697:64046",
+"name": "Bottom Bar",
+"w": 1150.0,
+"h": 74.0,
+"hidden": false,
+"path": "Studies",
+"tag": "instance"
+},
+{
+"id": "1697:64055",
+"name": "Bottom Bar",
+"w": 1150.0,
+"h": 80.0,
+"hidden": false,
+"path": "Studies",
+"tag": "instance"
+},
+{
+"id": "1704:143783",
+"name": "Paused Study - Study Details",
+"w": 1440.0,
+"h": 1134.0,
+"hidden": false,
+"path": "Studies",
+"tag": "frame"
+},
+{
+"id": "1713:144170",
+"name": "Pause Study Participation?",
+"w": 460.0,
+"h": 269.0,
+"hidden": false,
+"path": "Studies",
+"tag": "frame"
+},
+{
+"id": "1726:77088",
+"name": "Delete Study?",
+"w": 460.0,
+"h": 247.0,
+"hidden": false,
+"path": "Studies",
+"tag": "frame"
+},
+{
+"id": "1769:81508",
+"name": "Password has been updated!",
+"w": 460.0,
+"h": 423.0,
+"hidden": false,
+"path": "Studies",
+"tag": "frame"
+},
+{
+"id": "1520:29946",
+"name": "Study Card ",
+"w": 376.0,
+"h": 258.0,
+"hidden": false,
+"path": "Studies",
+"tag": "symbol"
+},
+{
+"id": "2115:120078",
+"name": "Ongoing Study options",
+"w": 200.0,
+"h": 217.0,
+"hidden": false,
+"path": "Studies",
+"tag": "instance"
+},
+{
+"id": "2114:116969",
+"name": "Scheduled Sessions",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Studies",
+"tag": "frame"
+},
+{
+"id": "2115:121043",
+"name": "Calendar",
+"w": 324.0,
+"h": 370.0,
+"hidden": false,
+"path": "Studies",
+"tag": "instance"
+},
+{
+"id": "1645:161430",
+"name": "Pool - Filters View",
+"w": 1440.0,
+"h": 1524.0,
+"hidden": false,
+"path": "Pool",
+"tag": "frame"
+},
+{
+"id": "1777:98738",
+"name": "Pool - Filters Hidden",
+"w": 1440.0,
+"h": 1072.0,
+"hidden": false,
+"path": "Pool",
+"tag": "frame"
+},
+{
+"id": "1645:162885",
+"name": "Respondent Profile Details",
+"w": 600.0,
+"h": 909.0,
+"hidden": false,
+"path": "Pool",
+"tag": "frame"
+},
+{
+"id": "1645:163046",
+"name": "Reviews",
+"w": 600.0,
+"h": 909.0,
+"hidden": false,
+"path": "Pool",
+"tag": "frame"
+},
+{
+"id": "1651:177206",
+"name": "Save to micro-panel",
+"w": 600.0,
+"h": 496.0,
+"hidden": true,
+"path": "Pool",
+"tag": "frame"
+},
+{
+"id": "1645:161580",
+"name": "Pool",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Pool / Micro-Panels",
+"tag": "frame"
+},
+{
+"id": "1645:161734",
+"name": "My Panel - Members",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Pool / Micro-Panels",
+"tag": "frame"
+},
+{
+"id": "1645:161816",
+"name": "Featured Panel - Members",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Pool / Micro-Panels",
+"tag": "frame"
+},
+{
+"id": "1645:161904",
+"name": "Featured Panel - Details",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Pool / Micro-Panels",
+"tag": "frame"
+},
+{
+"id": "1645:162050",
+"name": "My Panel - Matched",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Pool / Micro-Panels",
+"tag": "frame"
+},
+{
+"id": "1645:162132",
+"name": "My Panel - Matched",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Pool / Micro-Panels",
+"tag": "frame"
+},
+{
+"id": "1645:162272",
+"name": "Pool",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Pool / Micro-Panels",
+"tag": "frame"
+},
+{
+"id": "1645:162594",
+"name": "Edit Micro-panel",
+"w": 1440.0,
+"h": 1403.0,
+"hidden": false,
+"path": "Pool / Micro-Panels",
+"tag": "frame"
+},
+{
+"id": "1645:163181",
+"name": "Question menu",
+"w": 120.0,
+"h": 131.0,
+"hidden": false,
+"path": "Pool / Micro-Panels",
+"tag": "instance"
+},
+{
+"id": "1779:104093",
+"name": "Invite To Study",
+"w": 600.0,
+"h": 517.0,
+"hidden": false,
+"path": "Pool / Micro-Panels",
+"tag": "frame"
+},
+{
+"id": "1645:163223",
+"name": "Respondent Profile Details",
+"w": 600.0,
+"h": 909.0,
+"hidden": false,
+"path": "Pool / Micro-Panels",
+"tag": "frame"
+},
+{
+"id": "1777:99979",
+"name": "Sent",
+"w": 460.0,
+"h": 225.0,
+"hidden": false,
+"path": "Pool / Micro-Panels",
+"tag": "frame"
+},
+{
+"id": "1779:104132",
+"name": "Sent",
+"w": 460.0,
+"h": 269.0,
+"hidden": false,
+"path": "Pool / Micro-Panels",
+"tag": "frame"
+},
+{
+"id": "1779:101116",
+"name": "Delete Micro-Panels?",
+"w": 460.0,
+"h": 269.0,
+"hidden": false,
+"path": "Pool / Micro-Panels",
+"tag": "frame"
+},
+{
+"id": "1645:162404",
+"name": "Create Micro-panel",
+"w": 1440.0,
+"h": 1403.0,
+"hidden": false,
+"path": "Pool / Micro-Panels",
+"tag": "frame"
+},
+{
+"id": "1645:162784",
+"name": "Create Micro-panel",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Pool / Micro-Panels",
+"tag": "frame"
+},
+{
+"id": "1777:100042",
+"name": "Discard the micro-panel?",
+"w": 460.0,
+"h": 202.0,
+"hidden": false,
+"path": "Pool / Micro-Panels",
+"tag": "frame"
+},
+{
+"id": "2115:129235",
+"name": "Sent",
+"w": 460.0,
+"h": 247.0,
+"hidden": false,
+"path": "Pool",
+"tag": "frame"
+},
+{
+"id": "1645:163182",
+"name": "Invite To Study",
+"w": 600.0,
+"h": 517.0,
+"hidden": false,
+"path": "Pool",
+"tag": "frame"
+},
+{
+"id": "1663:103326",
+"name": "Payments",
+"w": 1440.0,
+"h": 1314.0,
+"hidden": false,
+"path": "Payments",
+"tag": "frame"
+},
+{
+"id": "1663:103525",
+"name": "Payments",
+"w": 1440.0,
+"h": 1303.0,
+"hidden": false,
+"path": "Payments",
+"tag": "frame"
+},
+{
+"id": "1663:103724",
+"name": "Payments",
+"w": 1440.0,
+"h": 1026.0,
+"hidden": true,
+"path": "Payments",
+"tag": "frame"
+},
+{
+"id": "1663:103923",
+"name": "Add New Card",
+"w": 600.0,
+"h": 438.0,
+"hidden": false,
+"path": "Payments",
+"tag": "frame"
+},
+{
+"id": "1666:127878",
+"name": "Make Payment",
+"w": 600.0,
+"h": 375.0,
+"hidden": false,
+"path": "Payments",
+"tag": "frame"
+},
+{
+"id": "1663:103948",
+"name": "Invoice Details (INV-1024366) - Mobile App Usability Testing",
+"w": 600.0,
+"h": 931.0,
+"hidden": false,
+"path": "Payments",
+"tag": "frame"
+},
+{
+"id": "1664:127262",
+"name": "Invoice Details - To Pay",
+"w": 600.0,
+"h": 931.0,
+"hidden": false,
+"path": "Payments",
+"tag": "frame"
+},
+{
+"id": "1666:128049",
+"name": "Profile Tiers",
+"w": 320.0,
+"h": 184.0,
+"hidden": false,
+"path": "Payments",
+"tag": "instance"
+},
+{
+"id": "1779:104245",
+"name": "$350 paid successfully!",
+"w": 460.0,
+"h": 423.0,
+"hidden": false,
+"path": "Payments",
+"tag": "frame"
+},
+{
+"id": "2118:136635",
+"name": "$34,538 paid successfully!",
+"w": 460.0,
+"h": 445.0,
+"hidden": false,
+"path": "Payments",
+"tag": "frame"
+},
+{
+"id": "1779:104288",
+"name": "Remove ⁕⁕⁕⁕ 4242 Card?",
+"w": 460.0,
+"h": 247.0,
+"hidden": false,
+"path": "Payments",
+"tag": "frame"
+},
+{
+"id": "2118:136425",
+"name": "Pay All Due Invoices",
+"w": 600.0,
+"h": 638.0,
+"hidden": false,
+"path": "Payments",
+"tag": "frame"
+},
+{
+"id": "1663:104077",
+"name": "Notifications",
+"w": 1440.0,
+"h": 1235.0,
+"hidden": false,
+"path": "Notifications",
+"tag": "frame"
+},
+{
+"id": "1663:104191",
+"name": "Help",
+"w": 1440.0,
+"h": 1026.0,
+"hidden": false,
+"path": "Help",
+"tag": "frame"
+},
+{
+"id": "1663:104228",
+"name": "Support Tickets",
+"w": 1440.0,
+"h": 1026.0,
+"hidden": false,
+"path": "Help",
+"tag": "frame"
+},
+{
+"id": "1663:104436",
+"name": "Ticket Chat",
+"w": 1440.0,
+"h": 1026.0,
+"hidden": false,
+"path": "Help",
+"tag": "frame"
+},
+{
+"id": "1663:104484",
+"name": "Ticket Chat",
+"w": 1440.0,
+"h": 1026.0,
+"hidden": false,
+"path": "Help",
+"tag": "frame"
+},
+{
+"id": "1663:104538",
+"name": "Question menu",
+"w": 165.0,
+"h": 92.0,
+"hidden": true,
+"path": "Help",
+"tag": "instance"
+},
+{
+"id": "1663:104539",
+"name": "Mark as solved?",
+"w": 460.0,
+"h": 285.0,
+"hidden": true,
+"path": "Help",
+"tag": "frame"
+},
+{
+"id": "1663:104557",
+"name": "Ask Support",
+"w": 600.0,
+"h": 447.0,
+"hidden": false,
+"path": "Help",
+"tag": "frame"
+},
+{
+"id": "1663:104580",
+"name": "Sent successfully!",
+"w": 460.0,
+"h": 423.0,
+"hidden": false,
+"path": "Help",
+"tag": "frame"
+},
+{
+"id": "1663:104600",
+"name": "Profile",
+"w": 1440.0,
+"h": 1028.0,
+"hidden": false,
+"path": "Account",
+"tag": "frame"
+},
+{
+"id": "1663:104635",
+"name": "Rating &amp; Reviews",
+"w": 1440.0,
+"h": 1028.0,
+"hidden": false,
+"path": "Account",
+"tag": "frame"
+},
+{
+"id": "1663:104813",
+"name": "Certificate",
+"w": 1440.0,
+"h": 1028.0,
+"hidden": false,
+"path": "Account",
+"tag": "frame"
+},
+{
+"id": "1663:104876",
+"name": "Settings",
+"w": 1440.0,
+"h": 1028.0,
+"hidden": false,
+"path": "Account",
+"tag": "frame"
+},
+{
+"id": "1663:104917",
+"name": "Change Password",
+"w": 460.0,
+"h": 410.0,
+"hidden": false,
+"path": "Account",
+"tag": "frame"
+},
+{
+"id": "1663:104938",
+"name": "Deactivate Account",
+"w": 460.0,
+"h": 357.0,
+"hidden": false,
+"path": "Account",
+"tag": "frame"
+},
+{
+"id": "1663:104959",
+"name": "Logout",
+"w": 460.0,
+"h": 285.0,
+"hidden": false,
+"path": "Account",
+"tag": "frame"
+},
+{
+"id": "1671:129377",
+"name": "Password has been updated!",
+"w": 460.0,
+"h": 423.0,
+"hidden": false,
+"path": "Account",
+"tag": "frame"
+},
+{
+"id": "1684:129405",
+"name": "Your account has been deactivated!",
+"w": 460.0,
+"h": 423.0,
+"hidden": false,
+"path": "Account",
+"tag": "frame"
+},
+{
+"id": "1684:129433",
+"name": "Alert - Your account has active studies!",
+"w": 460.0,
+"h": 423.0,
+"hidden": false,
+"path": "Account",
+"tag": "frame"
+},
+{
+"id": "290:16858",
+"name": "Sidebard",
+"w": 2184.0,
+"h": 860.0,
+"hidden": true,
+"path": "",
+"tag": "frame"
+},
+{
+"id": "2079:120753",
+"name": "Dashboard",
+"w": 1440.0,
+"h": 1449.0,
+"hidden": false,
+"path": "Section 1",
+"tag": "frame"
+},
+{
+"id": "2106:157199",
+"name": "2.1 Study Overview - Studies",
+"w": 1440.0,
+"h": 1010.0,
+"hidden": false,
+"path": "Section 1",
+"tag": "frame"
+},
+{
+"id": "2110:167057",
+"name": "Payments",
+"w": 1440.0,
+"h": 1026.0,
+"hidden": false,
+"path": "Section 1",
+"tag": "frame"
+},
+{
+"id": "2115:123907",
+"name": "Scheduled Sessions",
+"w": 1440.0,
+"h": 960.0,
+"hidden": false,
+"path": "Section 1",
+"tag": "frame"
+},
+{
+"id": "2118:136877",
+"name": "Respondent Profile Details",
+"w": 600.0,
+"h": 884.0,
+"hidden": false,
+"path": "Section 1",
+"tag": "frame"
+},
+{
+"id": "2107:157908",
+"name": "Group 256",
+"w": 210.0,
+"h": 80.0,
+"hidden": false,
+"path": "",
+"tag": "frame"
+}
+]

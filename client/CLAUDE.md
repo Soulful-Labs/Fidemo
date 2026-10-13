@@ -6,6 +6,411 @@ Figma: file `Q83MnpAyJuc6RttXYbWudH`, client designs start at node `826:85016`.
 
 ---
 
+## Figma update in progress, paused
+
+**Paused on 13 Oct 2026.** The designer updated the client frames (page `826:85016`).
+Step 1 of the update brief (find what changed) was under way when the Figma MCP
+daily tool call limit was reached (200 calls a day on this account; there is
+also a per-minute limit, about a dozen calls at a time gets through). Nothing
+below has been fixed yet. Pick up from "What is left to do".
+
+### Where things are
+
+- Screenshots saved: **131 of 223** live frames, at 1x, in
+  `client/design/figma-update-2026-10-13/`, named by node id with a dash
+  (`826-85021.png` is node `826:85021`). **This folder is git-ignored** (25 MB),
+  so it exists on this machine only. If it is lost, those frames cost
+  131 tool calls to fetch again.
+- `client/design/figma-update-2026-10-13/frames.json` lists every top-level
+  node on the page (id, name, size, section, hidden), parsed from
+  `get_metadata` on `826:85016`. That call returns 6 MB; parse it with a script.
+- **Frames fixed and committed: none.** No client code has been changed for
+  this update.
+- **Sorted diff queue: not produced.** It needs every frame screenshotted and
+  each one paired with a built route first.
+
+### What the page holds now
+
+340 top-level nodes: 223 live frames, 79 loose menu and
+dropdown instances (not screenshotted, no built state to pair them with one to
+one), and 33 frames that cannot be rendered.
+
+**Three whole sections are switched off**, which `get_screenshot` shows as a
+1x1 image. A hidden section does not mark its frames hidden in the metadata, so
+check the section, not the frame:
+- `2098:70726` **Micro-Panels** (under Pool): all 17 nodes. Our app has
+  `/pool/panels/*` and `/pool/featured/*` built from these frames. They no
+  longer have a live frame. Not removed; to be raised with the designer.
+- `2099:145099` **Section 1**: Dashboard `2079:120753` (1440x1449), Study
+  Overview `2106:157199`, Payments `2110:167057`, Scheduled Sessions
+  `2115:123907`, Respondent Profile Details `2118:136877`. Looks like work in
+  progress.
+- `1518:92890` **Platform Managed**: `1518:92891`, hidden before as well.
+
+### Tokens (done)
+
+`get_variable_defs` does not work on the page node ("nothing selected"); call it
+on a frame. Read on `826:85021`, `2079:120753`, `1627:96085` and `1663:103326`.
+**Every variable value matches `tailwind.config.ts`. No token changed value.**
+Two variables are not in the config yet: `Primary/yellow-50` `#ffeed1` and
+`Primary/yellow-100` `#fee2b5`. So the colour changes are in how frames use
+tokens, not in the tokens: fix them frame by frame, and add the two yellows.
+Only four frames were sampled; sample more before treating this as final.
+
+### Frames that look new (ids from 2079 upward, none recorded before)
+
+- `2114:116969` **Scheduled Sessions** (1440x960, Studies), with a loose
+  `2115:121043` Calendar. No screen in our app. New behaviour: do not build,
+  take to the designer.
+- `2118:136425` **Pay All Due Invoices** (600 panel) and `2118:136635`
+  **"$34,538 paid successfully!"** (Payments). No such action in our app.
+- `2115:125140` **Reviews** panel on the Dashboard.
+- `2115:129235` **Sent** (Pool), `2115:120078` Ongoing Study options menu.
+- Respondent Profile Details redrawn at 600x884 in each Manage section
+  (`2115:130351`, `2115:129881`, `2115:130116`, `2115:129646`); ours was built
+  from the 908 tall one.
+
+### What is left to do
+
+1. Screenshot the 92 missing frames below (about 92 calls, under one day's limit).
+2. Pair every frame with its built route and state, render ours at 1440
+   (`npm run shot`), pixel diff (`python scripts/diff.py`), sort highest first,
+   and show that list before fixing anything. Routes carry their node ids in
+   `src/routes.ts`; the six Manage sections are one screen switched on study
+   type (diary st-pay, in-person st-sleep, in-person group st-travel, group
+   video st-fitness, video 1:1 st-goal, survey st-social).
+3. Then the brief's steps 2 to 4: fix worst first, commit every 5 frames, run
+   containment, the journey (13 of 13) and `npm run verify:shared`, and confirm
+   nothing in `shared/` changed.
+
+### Screenshots saved (131)
+
+**Dashboard**
+
+- `826:85021` Dashboard (1440x1115)
+- `1518:71845` Notifications (600x800)
+- `1704:141690` Respondent Profile Details (600x884)
+- `2115:125140` Reviews (600x909)
+
+**Onboarding**
+
+- `1484:81319` Sign Up (1440x960)
+- `1484:81337` Check Email (1440x960)
+- `1794:80317` Check Email (1440x960)
+- `1794:80515` Set New Password (1440x960)
+- `1484:81364` Sign In (1440x960)
+- `1484:81382` Organization Details (1440x960)
+- `1512:68177` Payment Method (1440x960)
+- `1484:81502` In Review (1440x960)
+- `1484:81512` Welcome (1440x960)
+- `1794:80698` Password has been updated! (460x423)
+
+**Studies**
+
+- `1518:90600` 2.0 Studies (1440x960)
+- `1518:90624` Drafts \ Studies (1440x960)
+- `1518:90760` Completed \ Studies (1440x960)
+- `1518:90966` 2.0 Studies (1440x960)
+- `1518:91273` NO Matching Audience - New Study (1440x1756)
+
+**Create - In-Person (Individual/Group) Study**
+
+- `1518:93678` In-person_Setup - Self-managed (1440x1665)
+- `1518:93998` In-person 1:1 - saved - Self Managed (1440x1460)
+- `1749:148342` In-person 1:1 - saved - Self Managed (1440x1460)
+- `1518:94157` GROUP In-Person Interview - saved - Self Managed (1440x1460)
+- `1622:87629` Payment & Publish - New Study (1440x980)
+- `1518:94316` FOCUS GROUP In-Person Interview - New study (1440x1494)
+- `1622:81504` 2.1.0 About - New Study (1440x1330)
+- `1622:81615` 2.1.1 Audience - New Study (1440x1756)
+- `1622:81771` 2.1.2 Screener - New Study (1440x2320)
+- `1749:146504` Card Added to Publish - New Study (1440x980)
+
+**Create - Diary Study**
+
+- `1518:94580` Diary Study - Self-managed (1440x1793)
+- `1518:94742` Diary Study - Self-managed (1440x1793)
+- `1622:86775` Payment & Publish - New Study (1440x980)
+- `1518:94904` Diary Study - Self-managed (1440x1872)
+- `1622:78974` 2.1.0 About - New Study (1440x1364)
+- `1622:79085` 2.1.1 Audience - New Study (1440x1756)
+- `1622:79241` 2.1.2 Screener - New Study (1440x2320)
+- `1756:150808` Card Added to Publish - New Study (1440x980)
+
+**Create - Video Call (Individual/Group) Study**
+
+- `1518:92411` Video Call 1:1 - saved - Self Managed (1440x1460)
+- `1518:92570` GROUP Video Call  - saved - Self Managed (1440x1460)
+- `1622:84446` Payment & Publish - New Study (1440x980)
+- `1518:92729` Video Call To Setup - Self Managed (1440x1460)
+- `1518:93042` Video Individual - New study (1440x1494)
+- `1518:93335` FOCUS GROUP Video call - New study (1440x1494)
+- `1518:93557` Add an override (600x502)
+- `1749:143926` Edit override (600x502)
+- `1627:95310` Payment Breakdown (600x658)
+- `1622:76444` 2.1.0 About - New Study (1440x1357)
+- `1622:76555` 2.1.1 Audience - New Study (1440x1756)
+- `1622:76711` 2.1.2 Screener - New Study (1440x2320)
+- `1749:144669` Card Added to Publish - New Study (1440x980)
+
+**Create - Survey Study**
+
+- `1518:91779` Created Survey_Study- New Study (1440x1388)
+- `1518:91922` Survey_Study Setup - New Study (1440x1388)
+- `1518:92064` Create Survey_Study - New Study (1440x1494)
+- `1756:151489` Uploaded file state (594x152)
+- `1518:92247` Payment & Publish - New Study (1440x980)
+- `1749:141687` Card Added to Publish - New Study (1440x980)
+- `1518:90995` 2.1.0 About - New Study (1440x1357)
+- `1518:91112` 2.1.1 Audience - New Study (1440x1770)
+- `1518:91438` 2.1.2 Screener - New Study (1440x2320)
+
+**Studies**
+
+- `1518:92376` Published - New Study (1440x980)
+
+**Manage - Diary Study**
+
+- `1627:95956` 2.1 Study Overview - Studies (1440x1100)
+- `1627:96085` Manage Study (1440x1401)
+- `1627:96237` Auto-Matched (1440x1401)
+- `1627:96329` Invited - Auto-Matched (1440x1401)
+- `1627:96535` Recruited (1440x1176)
+- `1627:96628` Results (1440x1575)
+- `1627:96779` Pay while ongoing (1440x991)
+- `1627:96956` Payment (1440x991)
+- `1627:97128` Pay - Due as completed (1440x1097)
+- `1627:97305` Recruited respondent result (1440x1365)
+- `1627:97609` Completed respondent result (1440x1365)
+- `1627:97901` Activity of respondent (1440x1365)
+- `2115:130351` Respondent Profile Details (600x884)
+- `1627:98286` Rate Ferry L. (600x697)
+
+**Manage - In-Person_Individual**
+
+- `1627:100940` 2.1 Study Overview - Studies (1440x1100)
+- `1627:101069` Manage Study (1440x1401)
+- `1627:101221` Auto-Matched (1440x1401)
+- `1627:101313` Invited - Auto-Matched (1440x1401)
+- `1627:101705` Results (1440x1575)
+- `1627:102041` Payment (1440x991)
+- `1627:102213` Pay - Due as completed (1440x1097)
+- `1627:102390` Recruited respondent result (1440x1365)
+- `1627:102902` Study Result - completed (1440x1252)
+- `1627:103128` Activity of respondent (1440x1365)
+- `2115:129881` Respondent Profile Details (600x884)
+- `1769:93628` After Started state (846x423)
+
+**Manage - In-person Group**
+
+- `1627:107080` 2.1 Study Overview - Studies (1440x1100)
+- `1627:107209` Manage Study (1440x1401)
+- `1627:107361` Auto-Matched (1440x1401)
+- `1627:107453` Invited - Auto-Matched (1440x1401)
+- `1627:107752` Recruited (1440x1272)
+- `1627:108409` Pay while ongoing (1440x991)
+- `1627:108935` Recruited respondent result (1440x1365)
+- `1627:109239` Scheduled Study respondent (1440x1774)
+- `1627:109586` Study Result - completed (1440x1774)
+- `1627:109934` Activity of respondent (1440x1365)
+- `2115:130116` Respondent Profile Details (600x884)
+- `1627:110506` Rate Sarah (600x720)
+- `1627:110569` Download Sessions Results (600x256)
+- `1697:64109` Mark [individual] as No-show (460x338)
+- `1627:108586` Payment (1440x991)
+
+**Manage - Survey Study**
+
+- `1645:131436` 2.1 Study Overview - Studies (1440x1100)
+- `1645:131565` Manage Study (1440x1401)
+- `1645:131717` Auto-Matched (1440x1401)
+- `1645:131809` Invited - Auto-Matched (1440x1401)
+- `1645:132015` Recruited (1440x1273)
+
+**Completed Study Flow**
+
+- `1697:54314` 2.1 Study Overview - Studies (1440x960)
+- `1697:54448` Manage Study (1440x1401)
+- `1697:54966` Results (1440x1575)
+- `1697:55469` Pay - Due as completed (1440x1097)
+- `1697:55648` Qualified - Recruited respondent (1440x1365)
+- `1697:55962` Completed respondent result (1440x1365)
+- `1697:56276` Activity of respondent (1440x1365)
+
+**Studies**
+
+- `1704:143783` Paused Study - Study Details (1440x1134)
+- `2114:116969` Scheduled Sessions (1440x960)
+
+**Pool**
+
+- `1645:161430` Pool - Filters View (1440x1524)
+- `1777:98738` Pool - Filters Hidden (1440x1072)
+- `2115:129235` Sent (460x247)
+
+**Payments**
+
+- `1663:103326` Payments (1440x1314)
+- `1663:103525` Payments (1440x1303)
+- `2118:136635` $34,538 paid successfully! (460x445)
+- `2118:136425` Pay All Due Invoices (600x638)
+
+**Notifications**
+
+- `1663:104077` Notifications (1440x1235)
+
+**Help**
+
+- `1663:104191` Help (1440x1026)
+- `1663:104228` Support Tickets (1440x1026)
+- `1663:104436` Ticket Chat (1440x1026)
+- `1663:104484` Ticket Chat (1440x1026)
+
+**Account**
+
+- `1663:104600` Profile (1440x1028)
+- `1663:104635` Rating & Reviews (1440x1028)
+- `1663:104813` Certificate (1440x1028)
+- `1663:104876` Settings (1440x1028)
+
+### Screenshots still missing (92)
+
+**Manage - In-Person_Individual**
+
+- `1627:101519` Recruited (1440x1176)
+- `1627:101612` Recruited (1440x1272)
+- `1627:101864` Pay while ongoing (1440x991)
+- `1627:102694` Scheduled Study respondent (1440x1252)
+- `1627:103533` Rate Ferry L. (600x720)
+
+**Manage - In-person Group**
+
+- `1627:107659` Recruited (1440x1176)
+- `1627:107896` Results (1440x1688)
+- `1627:108758` Pay - Due as completed (1440x1097)
+- `1777:95895` Recruited - activity (1440x1146)
+
+**Manage - Group Video Call**
+
+- `1627:103597` 2.1 Study Overview - Studies (1440x1100)
+- `1627:103726` Manage Study (1440x1401)
+- `1627:103878` Auto-Matched (1440x1401)
+- `1627:103970` Invited - Auto-Matched (1440x1401)
+- `1627:104176` Recruited (1440x1176)
+- `1627:104269` Recruited (1440x1272)
+- `1627:104407` Results (1440x1688)
+- `1627:104920` Pay while ongoing (1440x991)
+- `1627:105097` Payment (1440x991)
+- `1627:105269` Pay - Due as completed (1440x1097)
+- `1627:105446` Recruited respondent result (1440x1365)
+- `1769:90865` Recruited - activity (1440x1365)
+- `1627:105750` Scheduled Study respondents (1440x1472)
+- `1627:106074` Study Result - completed (1440x1204)
+- `1627:106405` Activities of respondent (1440x1365)
+- `2115:129646` Respondent Profile Details (600x884)
+- `1627:106977` Rate Sarah (600x707)
+- `1627:107040` Download Sessions Results (600x256)
+- `1697:63643` Mark [individual] as No-show (460x338)
+- `1769:91859` Group-session - mark all completed (1190x205)
+
+**Manage - Video Call Individual 1:1**
+
+- `1627:98350` 2.1 Study Overview - Studies (1440x1100)
+- `1627:98479` Manage Study (1440x1401)
+- `1627:98631` Auto-Matched (1440x1401)
+- `1627:98723` Invited - Auto-Matched (1440x1401)
+- `1627:98929` Recruited (1440x1176)
+- `1627:99022` Recruited (1440x1272)
+- `1627:99115` Results (1440x1575)
+- `1627:99266` Pay while ongoing (1440x991)
+- `1627:99443` Payment (1440x991)
+- `1627:99615` Pay - Due as completed (1440x1097)
+- `1627:99792` Recruited respondent result (1440x1365)
+- `1627:100096` Scheduled Study respondent (1440x1108)
+- `1627:100279` Study Result - completed (1440x1275)
+- `1627:100471` Activity of respondent (1440x1365)
+- `1627:100718` Respondent Profile Details (600x908)
+- `1627:100876` Rate Ferry L. (600x708)
+- `1697:63925` Mark [individual] as No-show (460x338)
+- `1769:86063` Marked Completed (870x432)
+- `1769:86279` $350 paid successfully! (460x423)
+
+**Manage - Survey Study**
+
+- `1645:132108` Results (1440x1642)
+- `1645:132259` Pay while ongoing (1440x991)
+- `1645:132436` Payment (1440x991)
+- `1645:132608` Pay - Due as completed (1440x1097)
+- `1645:132785` Recruited respondent result (1440x1365)
+- `1645:133089` Completed respondent result (1440x1365)
+- `1645:133403` Activity of respondent (1440x1365)
+- `1645:133632` Respondent Profile Details (600x884)
+- `1767:64247` Respondent Profile Details (600x908)
+- `1645:133788` Rate Ferry L. (600x705)
+
+**Edit Survey Study**
+
+- `1645:133852` 2.1.0 About - New Study (1440x1593)
+- `1645:133969` 2.1.1 Audience - New Study (1440x1756)
+- `1645:134057` 2.1.2 Screener - New Study (1440x2296)
+- `1645:134397` Created Survey_Study- New Study (1440x1388)
+- `1645:134523` Create Survey_Study - New Study (1440x1502)
+- `1645:134709` Payment & Publish - New Study (1440x980)
+- `1645:134838` Published - New Study (1440x980)
+
+**Manage - Survey Study**
+
+- `1767:63944` Invite to apply? (460x269)
+- `1767:63988` Sent (460x225)
+- `1769:80372` Screener CTAs (870x406)
+
+**Completed Study Flow**
+
+- `1697:56639` Rate Ferry L. (600x705)
+- `1746:95917` RATED (600x503)
+
+**Studies**
+
+- `1697:64017` Mark [individual] as No-show (460x338)
+- `1713:144170` Pause Study Participation? (460x269)
+- `1726:77088` Delete Study? (460x247)
+- `1769:81508` Password has been updated! (460x423)
+
+**Pool**
+
+- `1645:162885` Respondent Profile Details (600x909)
+- `1645:163046` Reviews (600x909)
+- `1645:163182` Invite To Study (600x517)
+
+**Payments**
+
+- `1663:103923` Add New Card (600x438)
+- `1666:127878` Make Payment (600x375)
+- `1663:103948` Invoice Details (INV-1024366) - Mobile App Usability Testing (600x931)
+- `1664:127262` Invoice Details - To Pay (600x931)
+- `1779:104245` $350 paid successfully! (460x423)
+- `1779:104288` Remove ⁕⁕⁕⁕ 4242 Card? (460x247)
+
+**Help**
+
+- `1663:104557` Ask Support (600x447)
+- `1663:104580` Sent successfully! (460x423)
+
+**Account**
+
+- `1663:104917` Change Password (460x410)
+- `1663:104938` Deactivate Account (460x357)
+- `1663:104959` Logout (460x285)
+- `1671:129377` Password has been updated! (460x423)
+- `1684:129405` Your account has been deactivated! (460x423)
+- `1684:129433` Alert - Your account has active studies! (460x423)
+
+**(loose on the page)**
+
+- `2107:157908` Group 256 (210x80)
+
+---
+
 ## Rule 1, above everything else
 
 **Figma governs everything visible.** Layout, spacing, colour, type, icons and every string come from the frame. Match it exactly. If Figma has a typo, keep the typo. Behaviour comes in stage two; this stage is the screens.

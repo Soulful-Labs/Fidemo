@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 .vercel
 .env*
+
+# Figma screenshots for the paused client update: 25 MB, kept on this machine only (client/CLAUDE.md)
+client/design/figma-update-2026-10-13/*.png
