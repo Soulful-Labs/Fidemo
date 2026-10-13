@@ -65,6 +65,9 @@ export default {
         'title-l': ['24px', { lineHeight: '31px', letterSpacing: '-0.02em', fontWeight: '600' }],
         // Heading/Size 32, Semibold: a Figma variable on the client frames, used by the landing page's headlines.
         heading: ['32px', { lineHeight: '40px', letterSpacing: '-0.02em', fontWeight: '600' }],
+        // LANDING PAGE ONLY. One size above Heading, for the marketing hero (screens/landing). Not a Figma
+        // variable and not for any in-app screen: the in-app scale stops at heading.
+        display: ['48px', { lineHeight: '56px', letterSpacing: '-0.02em', fontWeight: '600' }],
       },
       // Desktop frame: 1440 wide, 240 nav, 72 top bar, 600 side panels, 460 modals.
       maxWidth: { frame: '1440px', page: '1200px', panel: '600px', modal: '460px' },

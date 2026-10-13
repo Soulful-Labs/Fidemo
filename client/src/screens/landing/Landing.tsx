@@ -81,7 +81,7 @@ export default function Landing() {
         <section className="scroll-mt-[70px] px-6 pb-10 pt-16">
           <div className="mx-auto flex w-[1120px] flex-col items-center text-center">
             <p className="flex h-8 items-center gap-1.5 rounded-full bg-yellow-40 px-3 text-text-medium text-yellow-700"><VerifiedMark className="h-4 w-4" />Research with verified participants</p>
-            <h1 className="max-w-[760px] pt-5 text-heading text-text-title">Recruit verified participants and run your research studies in one place</h1>
+            <h1 className="max-w-[920px] pt-5 text-display text-text-title">Recruit verified participants and run your research studies in one place</h1>
             <p className="max-w-[620px] pt-4 text-body-regular text-text-subtitle">Create a study, screen and match participants, run your sessions and get results. Surveys, video calls, in-person interviews and diary studies, without leaving the app.</p>
             <div className="flex items-center gap-3 pt-7">
               <Button size="none" className="h-12 px-8 text-body-medium" onClick={signUp}>Sign Up</Button>

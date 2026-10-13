@@ -424,9 +424,17 @@ to the dashboard, or back to the onboarding step they left.
   them with `npm run shot` when those screens change.
 - Every claim is a screen that exists. **No customer names, counts, logos or
   quotes: none are real yet.** Do not add any that are not.
-- The headlines use `text-heading` (32, Semibold): the Figma `Heading/Size 32`
-  variable, added to `tailwind.config.ts` for this page. It is the largest size
-  in the system; a bigger hero is a design decision, not a tweak.
+- The section headlines use `text-heading` (32, Semibold): the Figma
+  `Heading/Size 32` variable, added to `tailwind.config.ts` for this page.
+- **`text-display` (48 / 56, Semibold) is a landing page only size.** The
+  in-app scale was built for screens and stops at 32, which is too small for a
+  marketing hero, so one size was added above it on 13 Oct 2026. It is not a
+  Figma variable. It is used once, on the hero headline, and must not be used
+  on any in-app screen.
+- The dashboard capture is taken from a settled state (the demo client's two
+  completed studies paid), so no overdue banner or red shows on a marketing
+  page. To retake it: pay those balances through `shared/store.ts` `payBalance`,
+  load that state, then `npm run shot -- dashboard`. The app is not changed.
 - `node --experimental-websocket scripts/landing-check.mjs` (repo root, against
   the one-origin build) checks containment at 1440 x 900 and 1440 x 1200, the
   sticky header at six scroll positions, and where every button goes.
