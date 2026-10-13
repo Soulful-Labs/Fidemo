@@ -286,7 +286,16 @@ try {
     await sleep(2500)
     const after = await wallet()
     if (after !== before + S.incentive) g.push(`the wallet went from ${before} to ${after}, not up by ${S.incentive}`)
+    // A background tab pauses animation frames, and the balance rolls to its new figure on them; read it as a person would, with the tab in front.
+    await send('Page.bringToFront', {}, R.sid); await sleep(1200)
+    // Being paid opens a celebration; the balance rolls once it is dismissed, so that the change is seen.
+    const overlay = await R.ev(`(document.querySelector('[role=dialog]')?.innerText || '').replace(/\\s+/g, ' ').slice(0, 80)`)
+    if (overlay) { await R.ev(`(() => { const b = [...document.querySelectorAll('[role=dialog] button')].filter(__vis).pop(); b && b.click(); return true })()`); await sleep(400) }
+    for (let i = 0; i < 4 && await R.ev(`Boolean(document.querySelector('[role=dialog]'))`); i++) { await R.ev(`(() => { const b = [...document.querySelectorAll('[role=dialog] button')].filter(__vis).pop(); b && b.click(); return true })()`); await sleep(400) }
+    await sleep(3500)
+    if (overlay) console.log(`       (on the respondent's screen when the payout landed: "${overlay}", dismissed before reading the balance)`)
     const shownAfter = await R.ev(`document.querySelector('main').innerText.replace(/\\s+/g, ' ').slice(0, 60)`)
+    if (!shownAfter.includes('$' + after.toLocaleString('en-US'))) g.push(`the Wallet screen reads "${shownAfter}", not $${after}`)
     if (shownAfter === shownBefore) g.push('the Wallet screen did not change without a reload')
     if (!(await alive())) g.push('a tab reloaded')
     say(4, "A payout approved in the client app reaches the respondent's wallet", g, `8 seconds after completing: not paid, wallet $${before}. The client approved 1 payout on the Pay tab: wallet $${after} (+$${after - before}). Wallet screen before: "${shownBefore}" and after: "${shownAfter}"`)
