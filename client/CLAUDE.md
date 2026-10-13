@@ -18,9 +18,8 @@ below has been fixed yet. Pick up from "What is left to do".
 
 - Screenshots saved: **131 of 223** live frames, at 1x, in
   `client/design/figma-update-2026-10-13/`, named by node id with a dash
-  (`826-85021.png` is node `826:85021`). **This folder is git-ignored** (25 MB),
-  so it exists on this machine only. If it is lost, those frames cost
-  131 tool calls to fetch again.
+  (`826-85021.png` is node `826:85021`). **Committed to the repository**
+  (25 MB) on 13 Oct 2026, so the work does not live on one machine.
 - `client/design/figma-update-2026-10-13/frames.json` lists every top-level
   node on the page (id, name, size, section, hidden), parsed from
   `get_metadata` on `826:85016`. That call returns 6 MB; parse it with a script.
