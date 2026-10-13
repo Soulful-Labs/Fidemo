@@ -1,14 +1,13 @@
 import Button from '../ui/Button'
 import Tag from '../ui/Tag'
-import { Bookmark, Calendar, Clock, Info, InviteIcon } from '../ui/icons'
+import { Bookmark, Calendar, Clock, InviteIcon } from '../ui/icons'
 import { cn } from '../../lib/cn'
 import { bookingShort, dateLong, daysLeft, duration, money } from '../../lib/format'
 import { STATUS, outcomeFor } from '../../lib/labels'
 import { completeBlocker } from '../../lib/session'
 import { useStore } from '../../mock/store'
 import type { Study } from '../../mock/types'
-import { useCallback, useRef, useState } from 'react'
-import DescriptionPopover from './DescriptionPopover'
+import { useCardDescription } from './DescriptionPopover'
 import ScoreDial from './ScoreDial'
 import StudyTypeTag, { STUDY_TYPE_LABEL } from './StudyTypeTag'
 import StatusIcon from './StatusIcon'
@@ -63,10 +62,8 @@ export default function StudyCard({
   // Booked and closed studies swap the description for "$150 • 45 min" / type.
   const brief = booked || history
   const lastAt = study.timeline.at(-1)?.at
-  // Lists show the title alone; the description opens over the card on tap.
-  const [about, setAbout] = useState(false)
-  const aboutButton = useRef<HTMLButtonElement>(null)
-  const closeAbout = useCallback(() => setAbout(false), [])
+  // Lists show the title alone; the description shows over the card while it is hovered, or held on touch.
+  const about = useCardDescription(study.description, study.title)
 
   const bookmark = (
     <button
@@ -93,7 +90,7 @@ export default function StudyCard({
   )
 
   return (
-    <article className={cn('flex flex-col gap-4 rounded-lg bg-bg-1 p-4', compact && 'w-card shrink-0')}>
+    <article {...about.handlers} className={cn('flex select-none flex-col gap-4 rounded-lg bg-bg-1 p-4 [-webkit-touch-callout:none]', compact && 'w-card shrink-0')}>
       {meta.flag && (
         <p className={cn('flex items-center gap-2 text-body-medium', study.status === 'invited_to_apply' ? 'text-brand-primary' : 'text-brand-secondary')}>
           <InviteIcon />
@@ -125,8 +122,7 @@ export default function StudyCard({
         </div>
       )}
 
-      <div className="relative flex items-start gap-2">
-      <button type="button" onClick={onOpen} className="flex min-w-0 flex-1 gap-3 text-left">
+      <button type="button" onClick={onOpen} className="flex gap-3 text-left">
         {study.image && (
           <img src={study.image} alt="" className="h-thumb w-thumb shrink-0 rounded-md object-cover" />
         )}
@@ -141,16 +137,11 @@ export default function StudyCard({
               </span>
             </span>
           ) : null}
+          {/* Read out with the title; sighted users get it by hovering or holding the card. */}
+          {study.description && <span className="sr-only">{study.description}</span>}
         </span>
       </button>
-      {!brief && study.description && (
-        <button ref={aboutButton} type="button" aria-label="About this study" aria-expanded={about} onClick={() => setAbout((o) => !o)}
-          className="-mr-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-text-body hover:text-text-title aria-expanded:text-text-title">
-          <Info className="h-5 w-5" />
-        </button>
-      )}
-      <DescriptionPopover open={about} onClose={closeAbout} text={study.description} title={study.title} anchor={aboutButton} />
-      </div>
+      {about.popover}
 
       {booked && study.booking ? (
         <div className="flex items-center gap-2">

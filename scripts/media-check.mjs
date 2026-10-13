@@ -171,37 +171,28 @@ const tap = async (t, selector) => {
   for (const type of ['mousePressed', 'mouseReleased']) await send('Input.dispatchMouseEvent', { type, x: b.x, y: b.y, button: 'left', clickCount: 1 }, t.sid)
 }
 
-// ---- 1. a description opens on tap and closes on tapping away, at phone width
+// ---- 1. a description shows while a card is held, at phone width (no hover on a phone; scripts/card-check.mjs checks hover too)
 {
   const g = []
   try {
     await R.go('/studies'); await sleep(800)
+    await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 }, R.sid)
     const width = await R.ev('innerWidth')
-    const card = `document.querySelector('main article button[aria-label="About this study"]')`
-    const before = await R.ev(`(() => { const a = document.querySelector('main article'); return { lines: a.innerText.split('\\n').length, text: a.innerText } })()`)
-    const desc = await R.ev(`(() => { const st = __st(); const a = document.querySelector('main article'); const s = st.studies.find((x) => a.innerText.includes(x.title)); return s ? s.description : '' })()`)
-    if (!desc) g.push('could not tell which study the first card is')
-    if (desc && before.text.includes(desc.slice(0, 40))) g.push('the card still shows the description under the title')
-    await tap(R, card)
-    const t0 = Date.now(); let shownAt = 0
-    for (let i = 0; i < 20; i++) { if (await R.ev(`Number(getComputedStyle(document.querySelector('main [role=region][aria-label^="About"]') || document.body).opacity) > 0.99 && Boolean(document.querySelector('main [role=region][aria-label^="About"]'))`)) { shownAt = Date.now() - t0; break } await sleep(20) }
-    const pop = await R.ev(`(() => { const p = document.querySelector('main [role=region][aria-label^="About"]'); if (!p) return null; const r = p.getBoundingClientRect(), a = p.closest('article').getBoundingClientRect(); return { text: p.innerText, inCard: r.top >= a.top && r.left >= a.left && r.right <= a.right + 1, transform: getComputedStyle(p).transform } })()`)
-    if (!pop) g.push('tapping the info button opened nothing')
-    else if (!pop.text.includes(desc.slice(0, 40))) g.push('the popover does not hold the description')
-    // tap away: on the page heading, well clear of the card
-    await tap(R, `document.querySelector('main h1, main h2, header')`)
-    await sleep(300)
-    const gone = !(await R.ev(`Boolean(document.querySelector('main [role=region][aria-label^="About"]'))`))
-    if (!gone) g.push('tapping away did not close it')
-    // and tapping another card closes the first
-    await tap(R, card); await sleep(300)
-    await tap(R, `document.querySelectorAll('main article button[aria-label="About this study"]')[1]`); await sleep(300)
-    const open = await R.ev(`document.querySelectorAll('main [role=region][aria-label^="About"]').length`)
-    if (open !== 1) g.push(`${open} popovers open after tapping a second card's button`)
-    const path = await R.path()
-    if (path !== '/studies') g.push('a tap navigated to ' + path)
-    say(1, 'A study description opens on tap and closes on tapping away, at phone width', g, `${width}px wide; the card shows the title only; opened in about ${shownAt}ms (fade and 4px lift, 160ms, no spring); a tap on the heading closed it; tapping a second card left one open`)
-  } catch (e) { say(1, 'A study description opens on tap and closes on tapping away', [...g, e.message]) }
+    const p = await R.ev(`(() => { const a = document.querySelector('main article'); a.scrollIntoView({ block: 'center' }); const r = a.getBoundingClientRect(); return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + Math.min(r.height - 20, 120)) } })()`)
+    const desc = await R.ev(`(() => { const a = document.querySelector('main article'); const s = __st().studies.find((x) => a.innerText.includes(x.title)); return s ? s.description : '' })()`)
+    const visible = await R.ev(`[...document.querySelector('main article').querySelectorAll('*')].some((e) => e.offsetParent && !e.closest('.sr-only') && e.innerText === ${JSON.stringify(desc)})`)
+    if (visible) g.push('the card still shows the description under the title')
+    if (await R.ev(`Boolean(document.querySelector('main article button[aria-label="About this study"]'))`)) g.push('the info button is still there')
+    await send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [p] }, R.sid); await sleep(750)
+    const held = await R.ev(`document.querySelector('[role=tooltip]')?.innerText ?? ''`)
+    await send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }, R.sid); await sleep(400)
+    const gone = !(await R.ev(`Boolean(document.querySelector('[role=tooltip]'))`))
+    if (held !== desc) g.push('holding the card did not show its description')
+    if (!gone) g.push('lifting did not hide it')
+    if (await R.path() !== '/studies') g.push('the lift opened ' + await R.path())
+    await send('Emulation.setTouchEmulationEnabled', { enabled: false }, R.sid)
+    say(1, 'A study description shows while a card is held and hides on lifting, at phone width', g, `${width}px wide; the card shows the title only, no info button; holding it showed the description, lifting hid it without opening the study`)
+  } catch (e) { say(1, 'A study description shows while a card is held, at phone width', [...g, e.message]) }
 }
 
 // ---- 2. a picture and a video, 25 and 75 points
