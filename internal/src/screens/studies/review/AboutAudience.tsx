@@ -32,6 +32,9 @@ export function AboutTab({ type }: { type: StudyType }) {
       <Rule />
       <Row label="Study Time"><Value>{REVIEW.about.studyTime}</Value></Row>
       <Rule />
+      {/* Not in the frame (1982:104845): when recruiting closes, which the client sets or the 60 day limit does. */}
+      <Row label="Study End Date"><Value>{REVIEW.about.endDate}</Value></Row>
+      <Rule />
       <Row label="Thumbnail"><img src={REVIEW.about.thumbnail} alt="" className="h-[90px] w-40 rounded-sm object-cover" /></Row>
     </div>
   )

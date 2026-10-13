@@ -86,8 +86,9 @@ export function respondent(state: PlatformState, study: Study, personId: string)
     ...study.preScreener.map((q, i) => answerOf({ id: q.id, kind: 'single', prompt: q.prompt, options: q.options }, i, 'Pre-screener - Q', p.answers?.[q.id] ?? (p.prescreener === 'passed' ? 'Passed' : undefined))),
     ...study.screener.map((q, i) => answerOf(q, i, 'Q', p.answers?.[q.id])),
   ]
-  /** Survey and diary answers stay on the respondent's device in this build; the questions are the study's own. */
-  const tasks: Answer[] = (study.tasks ?? []).map((q, i) => answerOf(q, i, 'Q', p.answers?.[q.id], 'Kept on the respondent’s device; not sent to the platform in this build'))
+  /** A survey's answers, and a diary's for each day filled in, as the participant submitted them (shared/questions.ts). */
+  const tasks: Answer[] = (study.tasks ?? []).map((q, i) => answerOf(q, i, 'Q', p.taskAnswers?.[q.id]))
+  const days = (p.diaryDays ?? []).map((day) => ({ day, answers: (study.tasks ?? []).map((q, i) => answerOf(q, i, 'Q', p.diaryAnswers?.[String(day)]?.[q.id])) }))
   const activity: ActivityItem[] = p.events.map((e) => ({ text: e.label, when: monthDayYearTime(e.at) }))
   const booking = p.booking
   return {
@@ -95,7 +96,7 @@ export function respondent(state: PlatformState, study: Study, personId: string)
     state: p.state, participation: p, decidedAt: p.decidedAt, rating: p.rating,
     stage: p.state === 'applied' || p.state === 'qualified' || p.state === 'disqualified' || p.state === 'recruited' ? 'applied' as const
       : p.state === 'scheduled' && !(p.booking && Date.now() >= startOf(p.booking.date, p.booking.slot).getTime()) ? 'booked' as const : 'finished' as const,
-    answers, tasks, activity,
+    answers, tasks, days, activity,
     code: codeOf(p), codeConfirmed: Boolean(p.code?.byParticipant),
     session: booking && {
       date: longDay(booking.date), time: study.type === 'in_person' ? slotRange(booking.slot, study.durationMins) : booking.slot,

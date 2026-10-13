@@ -17,12 +17,13 @@ import type { CatalogueEntry } from './seed/catalogue'
 import { buildPool, starsSumming, targetScore } from './seed/people'
 import { trustInputs } from './derive'
 import { TRUST, starsForRating, trustForStars } from './rules'
+import type { Answers } from './types'
 import type {
   Activity, Client, EarlierReview, Location, Participation, ParticipationState, Person, PlatformState,
   Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudySetup, StudyType, TeamMember, Ticket,
 } from './types'
 
-export const SEED_VERSION = 3
+export const SEED_VERSION = 4
 export const DEMO_PERSON_ID = 'jonathan'
 export const DEMO_PERSON_EMAIL = 'jonathan.reeve@example.com'
 export const DEMO_CLIENT_ID = 'cl-soulful'
@@ -377,7 +378,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
       preScreener: SCREENERS[screenerSet]!.pre, screener: SCREENERS[screenerSet]!.full, tasks,
       locations: inPerson ? CITIES[s.city ?? 'New York'] : undefined,
       availability: s.type === 'video_call' || s.type === 'in_person' ? availabilityFor(n) : undefined,
-      diary: s.type === 'diary' ? { totalDays: 5, minDays: 4 } : undefined,
+      diary: s.type === 'diary' ? { totalDays: 5, minDays: 4, unit: 'Day', frequency: 'Every day' } : undefined,
       setup: setup(SUMMARY[s.type], undefined, `${SCREENERS[screenerSet]!.pre.length + SCREENERS[screenerSet]!.full.length} inputs`),
       participations: [], payments: [], revisions: [],
       ...s,
@@ -512,7 +513,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
       repeatRule: e.repeatRule ?? (['allow', 'prefer_fresh', 'exclude'] as const)[n % 3]!,
     }, e.reward, e.screenerSet, e.tasksSet ? TASKS[e.tasksSet] : undefined)
     study.linkCode = `HL-${String(n).padStart(3, '0')}-${['A', 'B', 'C', 'D'][n % 4]}`
-    if (e.diary) study.diary = { totalDays: e.diary.totalDays, minDays: e.diary.minDays }
+    if (e.diary) study.diary = { totalDays: e.diary.totalDays, minDays: e.diary.minDays, unit: 'Day', frequency: 'Every day' }
     if (e.type === 'group_video_call' || e.type === 'in_person_group') study.sessions = sessionsFor(study, ended ? doneDaysAgo + 1 : 5, ended ? -doneDaysAgo : 4)
     if (e.saved) jonathan.savedStudyIds.push(e.id)
 
@@ -706,6 +707,26 @@ export function buildSeed(now: Date = new Date()): PlatformState {
     ['Created ticket #FI-S562455 for Samuel Lee', 'Support / Tickets / Create', at(-1, 12, 0), 'tm-maya'],
   ] as [string, string, string, string][]).map(([what, path, when, by], i) => ({ id: `ac-${i + 1}`, what, path, at: when, by }))
     .sort((a, b) => b.at.localeCompare(a.at))
+
+  /**
+   * The demo's finished surveys and diaries carry answers, as a real one would
+   * (a participation is its answers). They are picked from each question's own
+   * options, or from a few plain sentences, the same way every time.
+   */
+  const SAID = ['It did what I needed without much effort.', 'I would use it again, with a few changes.', 'The first step took longer than I expected.', 'Clear enough once I had done it twice.']
+  const answersFor = (study: Study, k: number): Answers => Object.fromEntries((study.tasks ?? []).map((q, i): [string, Answers[string]] => {
+    if (q.kind === 'single' || q.kind === 'scale') return [q.id, q.options[(i + k) % q.options.length]!]
+    if (q.kind === 'multi') return [q.id, q.options.filter((_, n) => (n + k) % 2 === 0).slice(0, 2)]
+    if (q.kind === 'image') return [q.id, 'photo.jpg']
+    return [q.id, q.format === 'number' ? 1 + ((i + k) % 5) : SAID[(i + k) % SAID.length]!]
+  }))
+  for (const study of studies) {
+    if (!study.tasks?.length) continue
+    study.participations.forEach((part, k) => {
+      if (study.type === 'survey' && part.state === 'completed') part.taskAnswers = answersFor(study, k)
+      if (study.type === 'diary' && part.diaryDays?.length) part.diaryAnswers = Object.fromEntries(part.diaryDays.map((d) => [String(d), answersFor(study, k + d)]))
+    })
+  }
 
   const state: PlatformState = { version: SEED_VERSION, seededAt: now.toISOString(), people, clients, studies, reports, tickets, team, activity, pending: [] }
 

@@ -4,6 +4,8 @@ import Button from '../../components/ui/Button'
 import { StudyFrame } from '../../components/client/StudyFrame'
 import { Edit, Info, PoolIcon, StudiesIcon } from '../../components/ui/icons'
 import { useParams } from 'react-router-dom'
+import { canEditStudy } from '@shared/lifecycle'
+import { useDraft } from '../../mock/createStore'
 import { useStudy } from '../../platform'
 
 const FORM = (
@@ -40,7 +42,7 @@ function Chip({ label, value, icon }: { label?: string; value: string; icon?: Re
 
 /** One step of the study, read back with a way to edit it. */
 function Step({ icon, title, chip, onEdit, children }: {
-  icon: React.ReactNode; title: string; chip?: React.ReactNode; onEdit: () => void; children: React.ReactNode
+  icon: React.ReactNode; title: string; chip?: React.ReactNode; onEdit?: () => void; children: React.ReactNode
 }) {
   return (
     <section className="rounded-lg bg-bg-1">
@@ -49,8 +51,10 @@ function Step({ icon, title, chip, onEdit, children }: {
         <h2 className="text-body-medium text-text-title">{title}</h2>
         {chip}
         <span className="flex-1" />
-        <Button variant="secondary" size="none" className="h-[38px] px-4" leftIcon={<Edit className="h-4 w-4" />}
-          onClick={onEdit}>Edit</Button>
+        {onEdit && (
+          <Button variant="secondary" size="none" className="h-[38px] px-4" leftIcon={<Edit className="h-4 w-4" />}
+            onClick={onEdit}>Edit</Button>
+        )}
       </div>
       <div className="border-t-1 border-stroke-input px-4 py-4">{children}</div>
     </section>
@@ -78,13 +82,20 @@ export default function ManageStudy() {
   const s = useStudy(id)
   /** A draft has nothing to read back, so the tab is only reachable once it does. */
   const r = s.review
+  const { open } = useDraft()
   if (!r) return null
+  /**
+   * Edit opens this study in the Create flow, on the step it belongs to. A
+   * study can be changed until the team takes it live (shared/lifecycle.ts
+   * canEditStudy); after that there is nothing to edit, so there is no button.
+   */
+  const edit = (step: string) => (canEditStudy(s.state) ? () => { open(s); navigate(`/studies/create/${step}`) } : undefined)
 
   return (
     <AppShell crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
       <StudyFrame study={s} active="manage" minH="min-h-[1315px]" bodyMinH="min-h-[1057px]">
         <div className="flex flex-col gap-4 p-4">
-          <Step icon={<Info className="h-5 w-5" />} title="About" onEdit={() => navigate('/studies/create/about')}>
+          <Step icon={<Info className="h-5 w-5" />} title="About" onEdit={edit('about')}>
             <div className="flex flex-col gap-3.5">
               <Read label="Title" value={s.title} />
               <Read label="Description" value={s.description} />
@@ -107,7 +118,7 @@ export default function ManageStudy() {
                 <Info className="h-4 w-4 text-text-body" />
               </span>
             }
-            onEdit={() => navigate('/studies/create/audience')}>
+            onEdit={edit('audience')}>
             <div className="flex flex-wrap gap-3">
               {r.audience.map((a, i) => (
                 <Chip key={i} label={a.label} value={a.value} icon={a.icon ? ICON[a.icon] : undefined} />
@@ -115,7 +126,7 @@ export default function ManageStudy() {
             </div>
           </Step>
 
-          <Step icon={<StudiesIcon className="h-5 w-5" />} title="Screener" onEdit={() => navigate('/studies/create/screener')}>
+          <Step icon={<StudiesIcon className="h-5 w-5" />} title="Screener" onEdit={edit('screener')}>
             <Chip label={r.screener.label} value={r.screener.value} />
             {/* The questions themselves, in the order they are asked. No frame lists them; the summary chip above is all Figma draws. */}
             <ol className="flex flex-col gap-2 pt-3">
@@ -132,7 +143,7 @@ export default function ManageStudy() {
             </ol>
           </Step>
 
-          <Step icon={FORM} title="Study" onEdit={() => navigate('/studies/create/study')}>
+          <Step icon={FORM} title="Study" onEdit={edit('study')}>
             <div className="flex flex-wrap gap-3">
               <Chip label={r.studyRow.label} value={r.studyRow.value} />
               <Chip label={r.incentive.label} value={r.incentive.value} />

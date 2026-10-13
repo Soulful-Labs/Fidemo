@@ -1,4 +1,4 @@
-import type { PreScreenQuestion, Question } from './types'
+import type { Answers, Participation, PreScreenQuestion, Question } from './types'
 
 /**
  * The questions a client writes in the Create flow, and how a study carries
@@ -147,4 +147,24 @@ export function screenerOutline(study: { preScreener: PreScreenQuestion[]; scree
 export function tasksOutline(study: { tasks?: Question[] }): { id: string; prompt: string; type: string; options?: string[] }[] {
   const TYPE: Record<Question['kind'], string> = { single: 'Single-select', multi: 'Multi-select', text: 'Multi-line input', image: 'File Upload', scale: 'Slider' }
   return (study.tasks ?? []).map((q) => ({ id: q.id, prompt: q.prompt, type: q.authored ?? TYPE[q.kind], options: 'options' in q ? q.options : undefined }))
+}
+
+/** One answered question, as a results screen writes it: text, or a list for a multiple choice. */
+export interface Answered { id: string; prompt: string; type: string; answered: boolean; text?: string; list?: string[] }
+
+function answeredOf(q: { id: string; prompt: string; type: string }, v: Answers[string] | undefined): Answered {
+  if (Array.isArray(v)) return { ...q, answered: v.length > 0, list: v }
+  if (v === undefined || v === '') return { ...q, answered: false }
+  return { ...q, answered: true, text: String(v) }
+}
+
+/**
+ * What a participant answered in the study itself, read off their
+ * participation: a survey's answers as one set, a diary's as one set per day
+ * filled in. The client app's Results and the console read the same thing.
+ */
+export function taskResults(study: { tasks?: Question[] }, p?: Pick<Participation, 'taskAnswers' | 'diaryAnswers' | 'diaryDays'>): { survey: Answered[]; days: { day: number; answers: Answered[] }[] } {
+  const outline = tasksOutline(study)
+  const set = (a?: Answers) => outline.map((q) => answeredOf(q, a?.[q.id]))
+  return { survey: set(p?.taskAnswers), days: (p?.diaryDays ?? []).map((day) => ({ day, answers: set(p?.diaryAnswers?.[String(day)]) })) }
 }

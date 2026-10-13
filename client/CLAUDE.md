@@ -517,6 +517,39 @@ Rules that follow from the frames' own wording, not from a signed document:
 - A new study starts with no address, session or override. The frames draw
   one or two already there; those are example content, not the client's.
 
+Added the same day, in a second pass:
+
+- **A survey's and a diary's answers are the platform's.** They are saved on
+  the participation (`taskAnswers`, and `diaryAnswers` by day) when the
+  respondent submits, and `taskResults` in `shared/questions.ts` reads them
+  for the Study Result tab here and in the console. The drawn sample answers
+  (`DIARY_DAYS`) are no longer shown. The seed gives its finished surveys and
+  diaries answers so the demo's Results are not blank.
+- **One deposit rule: `depositFor` in `shared/platform.ts`.** The incentives
+  for the full sample are taken at submission (workflow 33) and everything
+  else is billed on delivery. `quoteStudy` prices a study from the fee table;
+  Costing Summary, Payment, the Payment Breakdown panel and the Payment
+  Summary all read it. The frames' "$1,900 / $475" and the two "25% of cost"
+  deposit rows are gone: the cards now list Moderation Cost and Platform Fee,
+  and one Incentive deposit row. That is a change to drawn strings, made
+  because the drawn ones stated a rule the store does not follow.
+- **Edit on Manage Study opens that study** on the step it belongs to. A study
+  can be changed while it is a draft or waiting on the team
+  (`canEditStudy`, `shared/lifecycle.ts`); publishing saves over it and takes
+  the deposit again at the new figures. Once it is live the Edit buttons are
+  not drawn. The Ongoing row menu still has its drawn "Edit" item, which opens
+  the read-only Manage Study: flagged, not removed.
+- **Generate adds complete questions**, each with its options and none that
+  screens anyone out, and adds nothing if the set would not pass Publish.
+- **"Auto-saved" is true.** The study being built is kept in this browser as
+  it is typed (`fi-client-create`, per client account), so a reload loses
+  nothing. It is this device's copy; Save Draft & Exit or Publish puts it on
+  the platform.
+- **Upload File reads the file chosen**: a text or CSV file, one open question
+  per line. Nothing is sent anywhere.
+- `node --experimental-websocket scripts/flow-check.mjs` checks these six in a
+  browser.
+
 **Saved, and not yet acted on anywhere:** AutoPay (payouts are still approved
 by hand), the diary's duration unit and frequency (entries are counted in
 days), work functions and skills (not on a participant's profile, so they

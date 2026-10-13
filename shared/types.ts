@@ -99,6 +99,10 @@ export interface Participation {
   code?: { value: string; byParticipant: boolean; byClient: boolean }
   /** Diary studies: the days filled in. */
   diaryDays?: number[]
+  /** A survey's answers, by question id, as the participant submitted them. */
+  taskAnswers?: Answers
+  /** A diary's answers: one set per day filled in, keyed by the day's number. */
+  diaryAnswers?: Record<string, Answers>
   /** Took part but arrived late: paid, with the policy's late show up deduction. */
   lateShow?: boolean
   /** Workflow 44: turned up but was not needed. Paid in full, no penalty. */

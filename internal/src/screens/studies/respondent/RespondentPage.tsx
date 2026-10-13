@@ -64,11 +64,11 @@ export default function RespondentPage() {
 
       {tab === 'result' && study.type === 'diary' && (
         <div className="flex flex-col gap-3">
-          {Array.from({ length: study.raw.diary?.totalDays ?? 0 }, (_, i) => i + 1).filter((d) => p.diaryDays?.includes(d)).map((d, i) => (
+          {r.days.map(({ day: d, answers }, i) => (
             <Fragment key={d}>
               {i > 0 && <hr className="-mx-4 mt-2 border-0 border-t-1 border-stroke-1" />}
               <p className="flex h-7 items-center justify-center rounded-full bg-bg-1 text-text-regular text-text-subtitle">DAY {d}</p>
-              <Answers answers={r.tasks} />
+              <Answers answers={answers} />
             </Fragment>
           ))}
           {!p.diaryDays?.length && <p className="text-text-regular text-text-subtitle">No diary days have been filled in yet.</p>}

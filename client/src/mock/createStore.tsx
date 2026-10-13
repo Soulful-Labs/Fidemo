@@ -1,9 +1,10 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { MARKS, blankForm, blankQuestion, formFromStudy } from '@shared/studyForm'
 import type { FormOption, FormQuestion, FormType, StudyForm } from '@shared/studyForm'
 import type { AuthoredKind } from '@shared/questions'
 import type { Study } from '@shared/types'
+import { useSession } from './session'
 
 /**
  * The study being built in the Create flow. The record itself, and every
@@ -36,9 +37,36 @@ const CreateCtx = createContext<Ctx | null>(null)
 
 const fresh = (): CreateDraft => ({ ...blankForm(), surveyOpen: false })
 
+/**
+ * Work in progress is kept in this browser as it is typed, per client account,
+ * so a reload or a closed tab loses nothing: that is what the composers'
+ * "Auto-saved" says. It is this device's copy only. A study reaches the
+ * platform, and other devices, through Save Draft & Exit or Publish.
+ */
+const KEY = 'fi-client-create'
+interface Kept { owner: string; draft: CreateDraft; draftId?: string }
+function kept(owner: string): Kept | undefined {
+  try {
+    const k = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Kept | null
+    return k && k.owner === owner && k.draft && Array.isArray(k.draft.questions) ? k : undefined
+  } catch { return undefined }
+}
+
 export function CreateProvider({ children }: { children: ReactNode }) {
-  const [draft, setDraft] = useState<CreateDraft>(fresh)
-  const [draftId, setDraftId] = useState<string | undefined>()
+  const owner = useSession().account?.clientId ?? ''
+  const [draft, setDraft] = useState<CreateDraft>(() => (owner && kept(owner)?.draft) || fresh())
+  const [draftId, setDraftId] = useState<string | undefined>(() => (owner ? kept(owner)?.draftId : undefined))
+  /** Another account signing in on this browser starts from its own work, not the last person's. */
+  const [loadedFor, setLoadedFor] = useState(owner)
+  useEffect(() => {
+    if (owner === loadedFor) return
+    const mine = owner ? kept(owner) : undefined
+    setDraft(mine?.draft ?? fresh()); setDraftId(mine?.draftId); setLoadedFor(owner)
+  }, [owner, loadedFor])
+  useEffect(() => {
+    if (!owner || owner !== loadedFor) return
+    try { localStorage.setItem(KEY, JSON.stringify({ owner, draft, draftId } satisfies Kept)) } catch { /* storage full or blocked: the work stays in memory */ }
+  }, [owner, loadedFor, draft, draftId])
   const open = useCallback((study: Study) => { setDraft({ ...formFromStudy(study), surveyOpen: false }); setDraftId(study.id) }, [])
   const reset = useCallback(() => { setDraft(fresh()); setDraftId(undefined) }, [])
   const value = useMemo<Ctx>(() => ({

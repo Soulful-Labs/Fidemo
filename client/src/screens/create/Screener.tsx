@@ -10,6 +10,7 @@ import CreateShell from './CreateShell'
 import ScreenerPreview from './ScreenerPreview'
 import { useToast } from '../../components/ui/Toast'
 import { useState } from 'react'
+import { buildScreener } from '@shared/questions'
 
 const SPARKLE = (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
@@ -305,19 +306,28 @@ export default function Screener() {
    * Generate adds screener questions, Regenerate All replaces the lot. No
    * model here, so they come from a short bank rather than a toast.
    */
-  const BANK = [
-    'Which of these best describes your current role?',
-    'How many years have you worked in this field?',
-    'How often do you use a product like this?',
-    'Which of these have you used in the last six months?',
-    'What is the size of the team you work in?',
+  const BANK: { kind: QuestionKind; text: string; options?: string[] }[] = [
+    { kind: 'Single-select', text: 'Which of these best describes your current role?', options: ['Individual contributor', 'Team lead or manager', 'Director or above', 'Owner or founder'] },
+    { kind: 'Number input', text: 'How many years have you worked in this field?' },
+    { kind: 'Single-select', text: 'How often do you use a product like this?', options: ['Every day', 'Every week', 'Every month', 'Rarely or never'] },
+    { kind: 'Multi-select', text: 'Which of these do you use for work?', options: ['A laptop or desktop', 'A phone', 'A tablet'] },
+    { kind: 'Single-select', text: 'What is the size of the team you work in?', options: ['Just me', '2 to 10', '11 to 50', 'More than 50'] },
   ]
+  /**
+   * Every generated question is complete: it has its options, and none of
+   * them screens anyone out (each is Correct or May Select), because which
+   * answer disqualifies is the client's decision, not a bank's. The set is
+   * checked the way Publish checks it, and nothing is added if it would not pass.
+   */
   const generate = (all: boolean) => {
     const start = all ? 0 : draft.questions.length
-    const made = BANK.slice(0, all ? BANK.length : 2).map((text, i) => ({
-      ...blankQuestion(`Q${start + i + 1}`),
-      text,
-    }))
+    const made = BANK.slice(0, all ? BANK.length : 2).map((b, i) => {
+      const q = blankQuestion(`Q${start + i + 1}`, b.kind)
+      const mark = b.kind === 'Single-select' ? 'Correct' : 'May Select'
+      return { ...q, text: b.text, options: b.options ? b.options.map((text, n) => ({ id: `${q.id}g${n}`, text, mark })) : q.options }
+    })
+    const checked = buildScreener(made)
+    if (!checked.ok) { toast(`Nothing was generated: ${checked.why}`); return }
     set('questions', all ? made : [...draft.questions, ...made])
     toast(all ? 'All questions regenerated' : 'Questions generated')
   }

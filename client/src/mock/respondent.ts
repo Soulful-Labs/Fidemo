@@ -1,3 +1,5 @@
+import { taskResults } from '@shared/questions'
+import type { Answered } from '@shared/questions'
 import type { Participation, Study } from '@shared/types'
 
 /** The invitation to rate, drawn in the rail and again across the Activity tab. */
@@ -28,6 +30,18 @@ export function answersOf(study: Pick<Study, 'preScreener' | 'screener'>, p?: Pa
     return { prompt: q.prompt, answer: Array.isArray(v) ? { kind: 'bullets', values: v } : { kind: 'text', value: v === undefined || v === '' ? 'Not answered' : String(v) } }
   })
   return [...pre, ...main]
+}
+
+const qa = (a: Answered): QA => ({ prompt: a.prompt, answer: a.list ? { kind: 'bullets', values: a.list } : { kind: 'text', value: a.text ?? 'Not answered' } })
+
+/**
+ * The study itself as this respondent answered it (shared/questions.ts
+ * taskResults): a survey's answers under one heading, a diary's under a bar
+ * for each day filled in.
+ */
+export function resultsOf(study: Pick<Study, 'tasks' | 'type'>, p?: Participation): { label?: string; answers: QA[] }[] {
+  const r = taskResults(study, p)
+  return study.type === 'diary' ? r.days.map((d) => ({ label: `DAY ${d.day}`, answers: d.answers.map(qa) })) : [{ answers: r.survey.map(qa) }]
 }
 
 const SITUATION = 'Which of the following best describes your current situation?'

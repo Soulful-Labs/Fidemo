@@ -1390,6 +1390,29 @@ No frame draws an empty list. Each is one plain line in the list's own box
 
 ---
 
+## Review shows the whole study (13 Oct 2026)
+
+A study built in the client's Create flow carries everything the client
+entered (`shared/studyForm.ts`), and Review now shows the parts it left out.
+Each is a field added to a frame that does not draw it, or a drawn value that
+was fixed text:
+
+| Where | Was | Now |
+|---|---|---|
+| About | no end date | "Study End Date", under Study Time |
+| Study, Limits | "15 minutes" and "10 Minutes" on every study | the study's own buffer and minimum notice, or "Not set" |
+| Study, Weekly Hours | read off dated slots | the hours the client set, every window of every day |
+| Study, Date Overrides | the study's dated slots, with slot counts | the client's overrides and their hours; none when the study has none |
+| Study, Address | the first address | every address |
+| Study, Diary Study Setup | "Days" and "Every day" on every diary | the diary's own unit and frequency, or "Not set" |
+
+A respondent's survey and diary answers are on the platform now
+(`taskResults`, `shared/questions.ts`), so the respondent page's Study Result
+tab shows what was answered, a diary day by day, instead of a note that the
+answers stay on the device.
+
+---
+
 ## Rules invented in this build, needing sign-off
 
 No signed document states these. Each is the build's reading of the designs,

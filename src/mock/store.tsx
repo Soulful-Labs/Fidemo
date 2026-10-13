@@ -264,8 +264,9 @@ export function useStoreValue() {
     /** Workflow 42, the participant's half: the code shown at the end of the session. */
     confirmPin: (id: string, code?: string) => run(p.confirmPin(id, me, code ?? world.studies.find((s) => s.id === id)?.participations.find((x) => x.personId === me)?.code?.value ?? '')),
     /** Completed now; the payout follows once the client approves it (workflow 46, shared/platform.ts TIMINGS). */
-    completeStudy: (id: string) => run(p.complete(id, me, actor)),
-    completeDiaryDay: (id: string, day: number) => run(p.completeDiaryDay(id, me, day)),
+    completeStudy: (id: string) => run(p.complete(id, me, actor, local.answers[`${id}:survey`])),
+    /** The day's answers go to the platform with the day, so the client and the team can read them. */
+    completeDiaryDay: (id: string, day: number) => run(p.completeDiaryDay(id, me, day, local.answers[`${id}:day${day}`])),
     rateClient: (id: string, review: NonNullable<Study['userReview']>) => run(p.reviewClient(id, me, review)),
 
     // --- support ---
@@ -294,7 +295,10 @@ export function useStoreValue() {
     for (const s of world.studies) {
       const mine = s.participations.find((x) => x.personId === me)
       // The platform keeps a number answer as a number; the field it is typed into holds text.
-      if (mine?.answers) saved[s.id] = Object.fromEntries(Object.entries(mine.answers).map(([k, v]) => [k, typeof v === 'number' ? String(v) : v]))
+      const typed = (a: Record<string, string | string[] | number>): Answers => Object.fromEntries(Object.entries(a).map(([k, v]) => [k, typeof v === 'number' ? String(v) : v]))
+      if (mine?.answers) saved[s.id] = typed(mine.answers)
+      if (mine?.taskAnswers) saved[`${s.id}:survey`] = typed(mine.taskAnswers)
+      for (const [day, a] of Object.entries(mine?.diaryAnswers ?? {})) saved[`${s.id}:day${day}`] = typed(a)
     }
     return { ...saved, ...local.answers }
   }, [world, me, local.answers])

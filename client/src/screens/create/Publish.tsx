@@ -8,6 +8,8 @@ import { summarise } from '@shared/studyForm'
 import { useDraft } from '../../mock/createStore'
 import CreateShell, { SaveDraftButton } from './CreateShell'
 import BreakdownPanel from './BreakdownPanel'
+import { laterLine, useQuote } from './StudyBits'
+import { money } from '@shared/format'
 import { useStudies } from '../../platform'
 import { AddCardPanel } from '../payments/PaymentPanels'
 import { useWorkspace } from '../../mock/workspace'
@@ -69,13 +71,15 @@ export default function Publish() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const { draft, form, draftId, reset } = useDraft()
-  const { submitStudy, state } = useStudies()
+  const { submitStudy, state, study } = useStudies()
+  const resubmitting = study(draftId)?.state === 'in_review'
   /** The four steps as they were built, in the frame's own chips (shared/studyForm.ts). */
   const built = summarise(state, form())
   const TypeIcon = draft.type === 'survey' ? SurveyIcon : draft.type === 'video_call' ? VideoIcon : draft.type === 'in_person' ? InPersonIcon : DiaryBookIcon
   const toast = useToast()
   const { cards } = useWorkspace()
   const [breakdown, setBreakdown] = useState(false)
+  const quote = useQuote()
   const [addCard, setAddCard] = useState(false)
   const [saveCard, setSaveCard] = useState(false)
   const [card, setCard] = useState<Record<string, string>>({})
@@ -93,7 +97,7 @@ export default function Publish() {
     && /\d{2}\s*\/\s*\d{2,4}/.test(card['Expiry Date'] ?? '')
     && (card['CVV'] ?? '').length >= 3
     && (card['Name on Card'] ?? '').trim().length > 0
-  const ready = params.get('state') === 'ready' || typed || cards.length > cardsAtOpen.current
+  const ready = params.get('state') === 'ready' || typed || cards.length > cardsAtOpen.current || resubmitting
 
   /**
    * Workflow steps 7 and 11, which the frame already agrees with: Publish
@@ -163,7 +167,7 @@ export default function Publish() {
           </div>
 
           <div className="flex flex-col">
-            {[['Total Study Cost', '$1,900'], ['To pay upfront', '$475']].map(([k, v]) => (
+            {[['Total Study Cost', money(quote.total)], ['To pay upfront', money(quote.deposit)]].map(([k, v]) => (
               <div key={k} className="flex items-center justify-between gap-4 border-b-1 border-stroke-input py-2 last:border-b-0">
                 <span className="text-text-regular text-text-title">{k}</span>
                 <span className="text-text-regular text-text-title">{v}</span>
@@ -205,7 +209,7 @@ export default function Publish() {
           </ul>
           <span className="border-t-1 border-stroke-input" />
           <ul className="flex list-disc flex-col gap-1 pl-4 text-text-regular text-text-subtitle marker:text-text-body">
-            <li>The remaining project costs ($1,050 for incentives and $375 for recruitment) will be billed as participants complete their sessions.</li>
+            <li>{laterLine(quote)}</li>
             <li>You are only charged for participants that complete your research. If available, add the estimated recruitment and incentives credits to &ldquo;study deposits&rdquo; upon publishing.</li>
             <li>Studies recruits until filled or till defined deadline or <span className="text-text-title">max 60 days from publish.</span></li>
             <li>This card will be added to your team for future payments.</li>

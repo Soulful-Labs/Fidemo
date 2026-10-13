@@ -1,6 +1,7 @@
 import { createContext, useContext, useMemo } from 'react'
 import { billing, clientById, durationLabel, paymentStats, sessionSeats, studiesOf, studyById, teamById } from '@shared/derive'
 import { monthDayYear, monthDayYearTime, money } from '@shared/format'
+import { WEEKDAYS as FORM_DAYS, dayOf } from '@shared/studyForm'
 import type { PlatformState, PreScreenQuestion, Question as SharedQuestion, Study } from '@shared/types'
 import { consoleType, studyPictures, usePlatform } from '../platform'
 import { clientPhoto } from './clients'
@@ -51,7 +52,15 @@ export function review(state: PlatformState, s: Study) {
     const day = WEEKDAYS[(new Date(a.date).getDay() + 6) % 7]!
     if (a.slots.length) byDay.set(day, [...(byDay.get(day) ?? []), `${a.slots[0]}|${slotRange(a.slots.at(-1)!, s.durationMins).split(' - ')[1]}`])
   }
-  const week = WEEKDAYS.filter((d) => byDay.has(d)).map((d) => [d, [...new Set(byDay.get(d))].map((r) => r.split('|') as [string, string])] as [string, [string, string][]])
+  /**
+   * A study built in the Create flow carries the hours the client set, every
+   * window of every day, so those are shown as they were entered. An older
+   * study has only its dated slots, and the week is read off them as before.
+   */
+  const entered = s.form && FORM_DAYS.filter((d) => (s.form!.hours[d] ?? []).length > 0).map((d) => [d, s.form!.hours[d]!.map((w) => [w.from, w.to] as [string, string])] as [string, [string, string][]])
+  const week = entered ?? WEEKDAYS.filter((d) => byDay.has(d)).map((d) => [d, [...new Set(byDay.get(d))].map((r) => r.split('|') as [string, string])] as [string, [string, string][]])
+  const overDay = (v: string) => { const d = dayOf(v); return d ? cardDay(d.toISOString()) : v }
+  const mins = (n: number) => (n % 1440 === 0 && n > 0 ? `${n / 1440} Day${n === 1440 ? '' : 's'}` : n % 60 === 0 && n > 0 ? `${n / 60} Hour${n === 60 ? '' : 's'}` : `${n} minutes`)
   const location = s.locations?.[0]
   const seats = sessionSeats(s)
 
@@ -59,7 +68,7 @@ export function review(state: PlatformState, s: Study) {
     REVIEW: {
       title: s.title, thumb: pics.thumb, participants: String(s.required), cost: money(bill.totalCost),
       submitted: monthDayYearTime(s.submittedAt ?? s.createdAt),
-      about: { description: s.description, studyTime: durationLabel(s.durationMins), thumbnail: pics.thumb },
+      about: { description: s.description, studyTime: durationLabel(s.durationMins), endDate: monthDayYear(s.endsAt), thumbnail: pics.thumb },
     },
     type: consoleType(s.type),
     CLIENT: {
@@ -78,12 +87,22 @@ export function review(state: PlatformState, s: Study) {
     screenerLabels: [...s.preScreener.map((_, i) => `Pre-screener - Q${i + 1}`), ...s.screener.map((_, i) => `Q${s.preScreener.length + i + 1}`)],
     tasks: (s.tasks ?? []).map(question),
     DIARY: s.diary && {
-      setup: [['Duration Unit:', 'Days'], ['Frequency:', 'Every day'], ['Study Duration:', `${s.diary.totalDays} days`], ['Minimum Required:', `${s.diary.minDays} days`]],
+      setup: [['Duration Unit:', s.diary.unit ?? 'Not set'], ['Frequency:', s.diary.frequency ?? 'Not set'], ['Study Duration:', `${s.diary.totalDays} days`], ['Minimum Required:', `${s.diary.minDays} days`]],
       days: Array.from({ length: s.diary.totalDays }, (_, i) => `DAY ${i + 1}`),
     },
     week,
-    dates: (s.availability ?? []).map((a) => [cardDay(a.date), `${a.slots.length} slot${a.slots.length === 1 ? '' : 's'}`] as [string, string]),
+    /** Date Overrides: the client's own, with the hours they set. A study that holds none lists none; its dated slots are not overrides. */
+    dates: s.form
+      ? s.form.overrides.map((o) => [`${overDay(o.from)}${o.to && o.to !== o.from ? ` - ${overDay(o.to)}` : ''}`, o.windows.length ? o.windows.map((w) => `${w.from} - ${w.to}`).join(', ') : 'Unavailable'] as [string, string])
+      : [],
+    /** The limits as the client chose them, or as the study holds them; "Not set" when it holds neither. */
+    LIMITS: {
+      buffer: s.form?.buffer ?? (s.schedule ? mins(s.schedule.bufferMins) : 'Not set'),
+      notice: (s.form?.notice ?? (s.schedule ? mins(s.schedule.noticeMins) : 'Not set')).replace(/\s+/g, ' '),
+    },
     ADDRESS: location && { name: location.label, line: location.address },
+    /** Every address on the study, not only the first. */
+    ADDRESSES: (s.locations ?? []).map((l) => ({ name: l.label, line: l.address })),
     GROUP: {
       seats: `${s.sessions?.[0]?.seats ?? 0} seats`,
       sessions: seats.map((x, i) => [`Session ${i + 1}`, cardDay(x.date), slotRange(x.slot, s.durationMins), addressOf(s, x.locationId) ?? ''] as [string, string, string, string]),

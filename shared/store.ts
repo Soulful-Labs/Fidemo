@@ -10,9 +10,9 @@
  * by the others through the storage event, without a reload.
  */
 import { billing, diaryReady, hasTakenPartWith, sessionNotStarted, openAvailability, personById, personFigures, profileCompletion, restrictionCount } from './derive'
-import { canMoveParticipation, canMoveStudy, isLive, participationOf } from './lifecycle'
+import { canEditStudy, canMoveParticipation, canMoveStudy, isLive, participationOf } from './lifecycle'
 import {
-  DECISION_UNDO_MS, DEMO_SESSION_CODE, RESTRICTION_DAYS, TIMINGS, canReschedule, canWithdraw, isSessionType, priceStudy,
+  DECISION_UNDO_MS, DEMO_SESSION_CODE, RESTRICTION_DAYS, TIMINGS, canReschedule, canWithdraw, depositFor, isSessionType, priceStudy,
 } from './platform'
 import { canRedeem, starsForRating, starsFromDimensions } from './rules'
 import { sessionStartOf as sessionStart } from './derive'
@@ -191,7 +191,9 @@ export function createPlatform(options: Options = {}) {
     submitStudy: (clientId: string, form: StudyForm, draftId?: string) => move<{ id: string }>((s) => {
       if (!s.clients.some((c) => c.id === clientId)) return no('No such client')
       const draft = draftId ? s.studies.find((x) => x.id === draftId && x.clientId === clientId) : undefined
-      if (draftId && draft?.state !== 'draft') return no('That draft is gone')
+      if (draftId && !draft) return no('That study is gone')
+      // A draft is submitted in place; a study still waiting on the team can be changed and sent again. A live one cannot.
+      if (draft && !canEditStudy(draft.state)) return no('This study is live and can no longer be edited')
       const built = buildStudy(form, clock())
       if (!built.ok) return no(built.why)
       const id = draft?.id ?? uid('st')
@@ -199,9 +201,9 @@ export function createPlatform(options: Options = {}) {
       const study: Study = {
         id, clientId, state: 'in_review', createdAt: draft?.createdAt ?? iso(), submittedAt: iso(), image: draft?.image,
         linkCode: draft?.linkCode || `HL-${id.slice(-3).toUpperCase()}-A`, ...built.study,
-        setup: summarise(s, kept, clock()), form: kept, participations: [], payments: [], revisions: [],
+        setup: summarise(s, kept, clock()), form: kept, participations: [], payments: [], revisions: draft?.revisions ?? [],
       }
-      study.payments.push({ id: `${id}-deposit`, kind: 'deposit', amount: study.rates.incentivePer * study.required, at: iso() })
+      study.payments.push({ id: `${id}-deposit`, kind: 'deposit', amount: depositFor(study.rates, study.required), at: iso() })
       if (draft) s.studies.splice(s.studies.indexOf(draft), 1)
       s.studies.unshift(study)
       return yes({ id })
@@ -215,7 +217,7 @@ export function createPlatform(options: Options = {}) {
     saveStudyDraft: (clientId: string, form: StudyForm, draftId?: string) => move<{ id: string }>((s) => {
       if (!s.clients.some((c) => c.id === clientId)) return no('No such client')
       const draft = draftId ? s.studies.find((x) => x.id === draftId && x.clientId === clientId) : undefined
-      if (draftId && draft?.state !== 'draft') return no('That draft is gone')
+      if (draftId && draft?.state !== 'draft') return no(draft ? 'This study has already been submitted. Publish it to save your changes.' : 'That draft is gone')
       const kept = structuredClone(form)
       const type = studyTypeOf(kept)
       const required = /^\d+$/.test(kept.participants.trim()) ? Number(kept.participants) : 0
@@ -252,7 +254,7 @@ export function createPlatform(options: Options = {}) {
       if (study.state === 'in_review' && to === 'recruiting' && actor.kind !== 'team') return no('Only the team can take a study live')
       if (study.state === 'draft' && to === 'in_review') {
         study.submittedAt = iso()
-        if (!study.payments.some((p) => p.kind === 'deposit') && study.required > 0) study.payments.push({ id: `${study.id}-deposit`, kind: 'deposit', amount: study.rates.incentivePer * study.required, at: iso() })
+        if (!study.payments.some((p) => p.kind === 'deposit') && study.required > 0) study.payments.push({ id: `${study.id}-deposit`, kind: 'deposit', amount: depositFor(study.rates, study.required), at: iso() })
       }
       if (to === 'recruiting' && !study.approvedAt) { study.approvedAt = iso(); log(s, actor, `Approved ${study.title} to publish`, 'Studies / Review / Approve') }
       if (to === 'paused') { study.pausedReason = reason; log(s, actor, `Paused ${study.title}`, 'Studies / Manage / Pause') }
@@ -473,7 +475,7 @@ export function createPlatform(options: Options = {}) {
      * is in; the client or the team needs the code from both sides. The
      * payout is approved `completionToPaid` later (workflow 46).
      */
-    complete: (studyId: string, personId: string, actor: Actor) => move((s) => {
+    complete: (studyId: string, personId: string, actor: Actor, taskAnswers?: Answers) => move((s) => {
       const hit = find(s, studyId, personId)
       if (!hit) return no('Not on this study')
       const { study, p } = hit
@@ -483,8 +485,13 @@ export function createPlatform(options: Options = {}) {
       if (session && actor.kind === 'participant' && sessionNotStarted(p.booking, clock())) return no('Your session has not started yet. Complete the study once it has run.')
       if (session && actor.kind !== 'participant' && !(p.code?.byClient && p.code?.byParticipant)) return no('No code, no payment. Both sides have to enter the session code.')
       if (!diaryReady(study, p)) return no(`At least ${study.diary?.minDays} of ${study.diary?.totalDays} days must be filled`)
+      // A survey is its answers: a participant cannot hand in one with a question left out.
+      const unanswered = study.type === 'survey' && actor.kind === 'participant' && taskAnswers
+        ? (study.tasks ?? []).findIndex((q) => { const v = taskAnswers[q.id]; return v === undefined || v === '' || (Array.isArray(v) && v.length === 0) }) : -1
+      if (unanswered >= 0) return no(`Question ${unanswered + 1} has not been answered`)
       const moved = shift(p, 'completed')
       if (!moved.ok) return moved
+      if (taskAnswers && study.type === 'survey') p.taskAnswers = tidyAnswers(study, taskAnswers)
       p.completedAt = iso()
       p.events.push({ label: actor.kind === 'participant' ? 'Completed' : 'Marked as completed', at: p.completedAt }, { label: 'Earnings credited', at: p.completedAt })
       s.pending.push({ kind: 'pay', studyId, personId, dueAt: clock().getTime() + TIMINGS.completionToPaid })
@@ -529,11 +536,13 @@ export function createPlatform(options: Options = {}) {
       return yes()
     }),
 
-    completeDiaryDay: (studyId: string, personId: string, day: number) => move((s) => {
+    /** One diary entry: the day is marked filled and its answers are kept with it. */
+    completeDiaryDay: (studyId: string, personId: string, day: number, answers?: Answers) => move((s) => {
       const hit = find(s, studyId, personId)
       if (!hit || !hit.study.diary) return no('This is not a diary study')
       if (day < 1 || day > hit.study.diary.totalDays) return no('No such diary day')
       hit.p.diaryDays = [...new Set([...(hit.p.diaryDays ?? []), day])].sort((a, b) => a - b)
+      if (answers) hit.p.diaryAnswers = { ...hit.p.diaryAnswers, [String(day)]: tidyAnswers(hit.study, answers) }
       return yes()
     }),
 

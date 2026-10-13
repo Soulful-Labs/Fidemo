@@ -170,3 +170,10 @@ export function respondentStatus(type: StudyType, p: Participation | undefined):
 /** The participation of one person on a study, if any. */
 export const participationOf = (study: Study, personId: string): Participation | undefined =>
   study.participations.find((p) => p.personId === personId)
+
+/**
+ * Whether the client can still change a study: while it is a draft, and while
+ * it waits on the team's review (workflow 7: the team may ask for changes).
+ * Once the team has taken it live it is fixed.
+ */
+export const canEditStudy = (state: StudyState): boolean => state === 'draft' || state === 'in_review'

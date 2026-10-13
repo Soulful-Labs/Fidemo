@@ -272,9 +272,10 @@ console.log('\n3. The console sees the same (Review, every tab)')
 for (const s of STUDIES.filter((x) => x.id)) {
   let text = ''
   for (const t of ['about', 'audience', 'screener', 'study', 'payment']) { await I.go(`/internal/studies/review/${s.id}?tab=${t}`); text += '\n' + await I.ev('document.body.innerText') }
-  const want = [s.title, s.description, ...durationShown(s.duration), s.participants, ...AUDIENCE_SHOWN, ...promptsOf(s.screener), `$${s.incentive}`, ...s.console, dmy(s.end)]
-  note(3, s.key, want.filter((x) => !text.includes(x)))
-  if (s.key === 'video 1:1') console.log('        the week as the console writes it: ' + (text.match(/(Monday|Tuesday)[^\n]*\n?[^\n]*\n?[^\n]*/g) || []).slice(0, 2).map((x) => x.replace(/\n/g, ' ')).join(' | '))
+  // The console writes the end date as "Nov 12, 2026" and splits the notice into a number and a unit, so both sides are compared without spaces.
+  const want = [s.title, s.description, ...durationShown(s.duration), s.participants, ...AUDIENCE_SHOWN, ...promptsOf(s.screener), `$${s.incentive}`, ...s.console, s.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })]
+  const squashed = text.replace(/\s+/g, '')
+  note(3, s.key, want.filter((x) => !squashed.includes(x.replace(/\s+/g, ''))))
   await I.click('Approve to Publish', 800)
 }
 

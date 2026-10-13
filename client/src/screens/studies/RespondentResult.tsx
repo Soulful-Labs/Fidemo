@@ -9,7 +9,7 @@ import NoShowModal from './NoShowModal'
 import { ActivityList, DayBar, NotesCard, PinCard, QARow, SessionCard } from './respondentBits'
 import { CheckCircle, Clock, Close, DiaryBookIcon, NoteIcon, SurveyIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import { DIARY_DAYS, answersOf } from '../../mock/respondent'
+import { answersOf, resultsOf } from '../../mock/respondent'
 import { clockTime, longDay, monthDayYearTime } from '@shared/format'
 import { sessionStart } from '@shared/store'
 import { useToast } from '../../components/ui/Toast'
@@ -156,9 +156,9 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                 <QARow key={i} n={i + 1} qa={qa} first={i === 0} />
               ))}
 
-              {tab === 'result' && !session && DIARY_DAYS.map((d) => (
-                <div key={d.label}>
-                  <DayBar label={d.label} />
+              {tab === 'result' && !session && resultsOf(s, person?.participation).map((d, k) => (
+                <div key={d.label ?? k}>
+                  {d.label && <DayBar label={d.label} />}
                   {d.answers.map((qa, i) => <QARow key={i} n={i + 1} qa={qa} first={i === 0} />)}
                 </div>
               ))}

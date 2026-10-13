@@ -11,10 +11,10 @@ import {
   billing, consoleDashboard, counts, financeTotals, personFigures, pointsRows, recruit, refundsPending, respondentStudies, trustInputs,
 } from '../shared/derive'
 import { respondentStatus, participationOf } from '../shared/lifecycle'
-import { FEES, TIMINGS } from '../shared/platform'
+import { FEES, TIMINGS, depositFor, quoteStudy } from '../shared/platform'
 import { POINTS, REDEEM, TIERS, TRUST, starsForRating, starsFromDimensions, trustScore } from '../shared/rules'
 import { DEMO_CLIENT_ID, DEMO_PERSON_ID, MASTER_ADMIN_ID, buildSeed } from '../shared/seed'
-import { buildScreener, screenerOutline } from '../shared/questions'
+import { buildScreener, screenerOutline, taskResults } from '../shared/questions'
 import type { AuthoredQuestion } from '../shared/questions'
 import { blankForm, blankQuestion, buildStudy, estimateAudience, formFromStudy, formId, studyDetails, summarise } from '../shared/studyForm'
 import type { FormQuestion, StudyForm } from '../shared/studyForm'
@@ -241,6 +241,46 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   clock += TIMINGS.screenerToInvite + 100; p.tick()
   return status('st-01') === 'invited_to_schedule'
 })())
+
+// ------------------------------------------------ answers, money and editing
+{
+  p.reset(); clock = now.getTime()
+  const me: Actor = { kind: 'participant', id: DEMO_PERSON_ID }
+  const mine = (id: string) => participationOf(st().studies.find((x) => x.id === id)!, DEMO_PERSON_ID)!
+  const open = (form: StudyForm) => { const m = p.submitStudy(DEMO_CLIENT_ID, form); const id = (m as { id: string }).id; p.moveStudy(id, 'recruiting', team); p.startApplication(id, DEMO_PERSON_ID); p.submitScreener(id, DEMO_PERSON_ID, { q2: ['A watch'], q3: '4' }); p.decide(id, DEMO_PERSON_ID, 'qualified', team); return id }
+
+  const survey = open(formOf({ type: 'survey', title: 'Answers survey', tasksSubmitted: true, tasks: asForm([{ kind: 'Single-select', text: 'How often?', options: [{ text: 'Weekly' }, { text: 'Monthly' }] }, { kind: 'Number input', text: 'How many?' }, { kind: 'Multi-line input', text: 'Why?' }]) }))
+  check('answers: a survey handed in with a question left out is refused', (() => { const r = p.complete(survey, DEMO_PERSON_ID, me, { t1: 'Weekly', t2: '3' }); return !r.ok && r.why === 'Question 3 has not been answered' })())
+  check('answers: a survey\'s answers are saved with the participation', p.complete(survey, DEMO_PERSON_ID, me, { t1: 'Weekly', t2: '3', t3: 'Because it is quick.' }).ok && mine(survey).taskAnswers?.t3 === 'Because it is quick.' && mine(survey).taskAnswers?.t2 === 3)
+  const read = taskResults(st().studies.find((x) => x.id === survey)!, mine(survey))
+  check('answers: they read back in order, each with its question', read.survey.map((a) => `${a.prompt}=${a.text}`).join(' | ') === 'How often?=Weekly | How many?=3 | Why?=Because it is quick.', read.survey.map((a) => `${a.prompt}=${a.text}`).join(' | '))
+
+  const diary = open(formOf({ type: 'diary', title: 'Answers diary', studyDuration: '3 days', minimumRequired: '2 days', tasksSubmitted: true, tasks: asForm([{ kind: 'Multi-line input', text: 'What happened today?' }]) }))
+  check('answers: each diary day keeps its own answers', p.completeDiaryDay(diary, DEMO_PERSON_ID, 1, { t1: 'Day one entry' }).ok && p.completeDiaryDay(diary, DEMO_PERSON_ID, 2, { t1: 'Day two entry' }).ok
+    && taskResults(st().studies.find((x) => x.id === diary)!, mine(diary)).days.map((d) => `${d.day}:${d.answers[0]!.text}`).join(' | ') === '1:Day one entry | 2:Day two entry')
+  check('answers: the seed\'s finished surveys and diaries carry answers too', st().studies.filter((x) => x.tasks?.length && (x.type === 'survey' || x.type === 'diary')).every((x) => x.participations.filter((q) => q.state === 'completed').every((q) => (x.type === 'survey' ? q.taskAnswers : q.diaryAnswers) !== undefined)))
+
+  const q = quoteStudy('video_call', 8, 150)
+  check('money: a quote is the fee table, line by line', q.incentives === 1200 && q.recruitment === 8 * (FEES.RECRUITMENT_BASE + FEES.RECRUITMENT_TYPE_ADDON) && q.moderation === 8 * FEES.MODERATION && q.platformFee === FEES.PLATFORM && q.total === 1200 + 400 + 80 + 100, JSON.stringify(q))
+  check('money: one deposit rule, the incentives for the full sample', q.deposit === 1200 && q.later === q.total - 1200 && depositFor(q.rates, 8) === q.deposit && quoteStudy('survey', 12, 60).recruitment === 12 * FEES.RECRUITMENT_BASE)
+  const paid = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Money study', participants: '8', incentive: 150 }))
+  const money = paid.ok ? st().studies.find((x) => x.id === paid.id)! : undefined
+  check('money: the store takes that deposit, and the bill projects that total', money?.payments[0]?.amount === q.deposit && billing(money!).deposit === q.deposit && billing(money!).totalCost === q.total, money ? `${money.payments[0]?.amount} / ${billing(money).totalCost}` : '')
+
+  check('edit: a study waiting on the team can be changed and sent again, in place', (() => {
+    if (!paid.ok) return false
+    const again = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Money study, revised', participants: '10', incentive: 150 }), paid.id)
+    const now2 = st().studies.find((x) => x.id === paid.id)!
+    return again.ok && again.id === paid.id && now2.title === 'Money study, revised' && now2.required === 10 && now2.state === 'in_review' && now2.payments.length === 1 && now2.payments[0]!.amount === 1500 && st().studies.filter((x) => x.title.startsWith('Money study')).length === 1
+  })())
+  check('edit: a live study is refused, and saving a submitted study as a draft is refused', (() => {
+    if (!paid.ok) return false
+    const asDraft = p.saveStudyDraft(DEMO_CLIENT_ID, formOf({ title: 'x' }), paid.id)
+    p.moveStudy(paid.id, 'recruiting', team)
+    const live = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Changed while live' }), paid.id)
+    return !asDraft.ok && !live.ok && live.why.includes('live') && st().studies.find((x) => x.id === paid.id)!.title === 'Money study, revised'
+  })())
+}
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nall checks passed')
 if (failed) process.exit(1)

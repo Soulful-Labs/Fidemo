@@ -8,17 +8,19 @@ import { QuestionList } from './Questions'
 const Label = ({ children }: { children: string }) => <p className="text-text-regular leading-5 text-text-subtitle">{children}</p>
 const Help = ({ children }: { children: string }) => <p className="text-text-regular leading-5 text-text-body">{children}</p>
 
-/** Address (In-Person 1984:130558, In-Person Group 1984:132092): the one address in a bg-2 box. */
+/** Address (In-Person 1984:130558, In-Person Group 1984:132092): each of the study's addresses in a bg-2 box. The frame draws one. */
 function AddressCard() {
-  const { ADDRESS } = useReview()
-  if (!ADDRESS) return null
+  const { ADDRESSES } = useReview()
+  if (ADDRESSES.length === 0) return null
   return (
     <Card title="Address">
       <p className="pt-0.5 text-text-regular leading-5 text-text-subtitle">Add your commercial addresses for participants to book in-person interviews at.</p>
-      <div className="mt-4 rounded-md bg-bg-2 px-3 py-3">
-        <p className="text-text-regular leading-5 text-text-title">{ADDRESS.name}</p>
-        <p className="pt-1 text-text-regular leading-5 text-text-subtitle">{ADDRESS.line}</p>
-      </div>
+      {ADDRESSES.map((a, i) => (
+        <div key={`${a.name}${a.line}`} className={`${i === 0 ? 'mt-4' : 'mt-2'} rounded-md bg-bg-2 px-3 py-3`}>
+          <p className="text-text-regular leading-5 text-text-title">{a.name}</p>
+          <p className="pt-1 text-text-regular leading-5 text-text-subtitle">{a.line}</p>
+        </div>
+      ))}
     </Card>
   )
 }
@@ -29,11 +31,14 @@ function AddressCard() {
  * notice) and Date Overrides. Right: Weekly Hours, each day's 100px time boxes
  * either side of "TO", and for in-person the Address card under it.
  */
-/** Buffer and minimum notice are not stored by the Create flow; the frame's values are shown. */
-const A = { buffer: '15 minutes', bufferHelp: 'It is a duration gap added between consecutive scheduled meetings.', notice: '10', noticeUnit: 'Minutes', noticeHelp: 'Set how much notice time is required to scheduled a slot before the current time.', overridesHelp: 'Add dates when your availability changes from your daily hours.' }
+/** The help lines under the limits, as the frame writes them. The values are the study's own (mock/review.ts LIMITS). */
+const A = { bufferHelp: 'It is a duration gap added between consecutive scheduled meetings.', noticeHelp: 'Set how much notice time is required to scheduled a slot before the current time.', overridesHelp: 'Add dates when your availability changes from your daily hours.' }
 
 function Availability({ address }: { address: boolean }) {
-  const { week, dates } = useReview()
+  const { week, dates, LIMITS } = useReview()
+  /** "1 Hour" is drawn as the number, then the unit by the chevron. Anything that is not a number and a unit is written whole. */
+  const parts = /^(\d+)\s+(.+)$/.exec(LIMITS.notice)
+  const notice = parts ? parts[1] : LIMITS.notice, unit = parts ? parts[2] : ''
   return (
     <div>
       <h2 className="text-body-medium text-text-title">Availability</h2>
@@ -42,12 +47,12 @@ function Availability({ address }: { address: boolean }) {
           <Card title="Limits" className="pb-4">
             <div className="flex flex-col gap-1 pt-4">
               <Label>Buffer between meetings</Label>
-              <ValueBox className="justify-between">{A.buffer}<ChevronDown className="h-5 w-5" /></ValueBox>
+              <ValueBox className="justify-between">{LIMITS.buffer}<ChevronDown className="h-5 w-5" /></ValueBox>
               <Help>{A.bufferHelp}</Help>
             </div>
             <div className="flex flex-col gap-1 pt-6">
               <Label>Minimum notice duration</Label>
-              <ValueBox className="justify-between">{A.notice}<span className="flex items-center gap-1">{A.noticeUnit}<ChevronDown className="h-5 w-5" /></span></ValueBox>
+              <ValueBox className="justify-between">{notice}<span className="flex items-center gap-1">{unit}<ChevronDown className="h-5 w-5" /></span></ValueBox>
               <Help>{A.noticeHelp}</Help>
             </div>
           </Card>

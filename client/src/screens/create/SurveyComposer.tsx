@@ -39,6 +39,20 @@ export default function SurveyComposer({
   const label = (n: number) => (dayGroup ? `Q${n}` : `SQ ${n}`)
   const fresh = (n: number, k: QuestionKind = kind): Question => blankQuestion(label(n), k, marksFor(k))
   const write = (next: Question[]) => set('tasks', next.map((q, i) => ({ ...q, label: label(i + 1) })))
+  /**
+   * Upload File reads a text or CSV file on this device: each line (a CSV
+   * row's first cell) becomes an open question. Nothing is sent anywhere, and
+   * a file with no readable line adds nothing.
+   */
+  const upload = async (f: File | undefined) => {
+    if (!f) return
+    const lines = (await f.text()).split(/\r?\n/).map((l) => (/^"((?:[^"]|"")*)"/.exec(l)?.[1]?.replace(/""/g, '"') ?? l.split(',')[0] ?? '').trim()).filter(Boolean).slice(0, 50)
+    if (lines.length === 0) { toast(`${f.name} has no questions to read`); return }
+    const kept = questions.filter((q) => q.text.trim())
+    write([...kept, ...lines.map((text, i) => ({ ...fresh(kept.length + i + 1, 'Multi-line input'), text }))])
+    setFile(f.name)
+    toast(`${lines.length} question${lines.length === 1 ? '' : 's'} read from ${f.name}`)
+  }
 
   /** The frame opens the composer with its first questions already there, empty. */
   useEffect(() => {
@@ -85,7 +99,9 @@ export default function SurveyComposer({
             Enter survey context/questions or upload file to let our AI-assitant generate questions
           </p>
           <div className="flex items-center justify-between gap-3">
-            <Button variant="tertiary" size="row" leftIcon={<Upload className="h-4 w-4" />} onClick={() => { setFile('questions.csv'); toast('questions.csv attached') }}>{file ?? 'Upload File'}</Button>
+            <input id="questions-file" type="file" accept=".txt,.csv,text/plain,text/csv" className="sr-only"
+              onChange={(e) => { void upload(e.target.files?.[0]); e.target.value = '' }} />
+            <Button variant="tertiary" size="row" leftIcon={<Upload className="h-4 w-4" />} onClick={() => document.getElementById('questions-file')?.click()}>{file ?? 'Upload File'}</Button>
             <Button size="row" leftIcon={SPARKLE} onClick={generate}>Generate</Button>
           </div>
         </div>

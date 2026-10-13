@@ -7,8 +7,7 @@
  * Everything is a pure function of the PlatformState (and the clock).
  */
 import {
-  DIARY, FEES, PAGE_SIZE, STREAK_TARGET, TAX_FORM_THRESHOLD, isSessionType,
-} from './platform'
+  DIARY, FEES, PAGE_SIZE, STREAK_TARGET, TAX_FORM_THRESHOLD, isSessionType, depositFor } from './platform'
 import {
   clientTag, consoleStudyTab, hasApplied, hasQualified, isApproved, isCharged, isLive, isPayable,
   participationOf, recruitingTab, respondentStatus, STUDY_TAG,
@@ -667,7 +666,7 @@ export function billing(study: Study): Billing {
     { label: 'Moderation Fee', amount: moderationPer * delivered, sub: `$${moderationPer} x ${delivered} participants`, info: true },
   ]
   const total = sum(lines, (l) => l.amount)
-  const deposit = incentivePer * study.required
+  const deposit = depositFor(study.rates, study.required)
   const projected = platformFee + (recruitingPer + incentivePer + moderationPer) * study.required
   const totalCost = study.state === 'completed' ? total : projected
   const net = total - deposit

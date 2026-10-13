@@ -46,6 +46,37 @@ export const priceStudy = (type: StudyType, incentivePer: number): StudyRates =>
   moderationPer: FEES.MODERATION,
 })
 
+/**
+ * The one deposit rule (workflow 33): the incentives for the full sample are
+ * taken when the study is submitted. Recruitment, moderation and the platform
+ * fee are billed on the people actually delivered (workflow 54). Every screen
+ * that states a deposit, and the store that takes it, reads this.
+ */
+export const depositFor = (rates: Pick<StudyRates, 'incentivePer'>, required: number): number => rates.incentivePer * Math.max(0, required)
+
+/** What a study will cost at its full sample, line by line, from the fee table above. */
+export interface Quote {
+  participants: number
+  rates: StudyRates
+  incentives: number
+  recruitment: number
+  moderation: number
+  platformFee: number
+  total: number
+  /** Taken at submission (depositFor). */
+  deposit: number
+  /** Billed as participants complete: everything that is not the deposit. */
+  later: number
+}
+export function quoteStudy(type: StudyType, required: number, incentivePer: number): Quote {
+  const rates = priceStudy(type, Math.max(0, incentivePer || 0))
+  const participants = Math.max(0, required || 0)
+  const incentives = rates.incentivePer * participants, recruitment = rates.recruitingPer * participants, moderation = rates.moderationPer * participants
+  const total = rates.platformFee + incentives + recruitment + moderation
+  const deposit = depositFor(rates, participants)
+  return { participants, rates, incentives, recruitment, moderation, platformFee: rates.platformFee, total, deposit, later: total - deposit }
+}
+
 /** The flat withdrawal fee on its own, as the respondent screens print it. */
 export const WITHDRAWAL_FEE = FEES.WITHDRAWAL
 
