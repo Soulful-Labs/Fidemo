@@ -411,6 +411,29 @@ Only four frames were sampled; sample more before treating this as final.
 
 ---
 
+## The landing page (`/`, served at `/client`)
+
+Not drawn in Figma. `src/screens/landing/Landing.tsx`, desktop only at 1440,
+built from this app's tokens, type scale and `Button`. `Root` in
+`app/Guards.tsx` shows it to a signed-out visitor only; anyone signed in goes
+to the dashboard, or back to the onboarding step they left.
+
+- One primary action, **Sign Up**: in the sticky header, the hero and the close.
+  Log In is the quiet button beside it each time.
+- Every picture is a capture of this app with its demo data, in
+  `public/img/landing/` (dashboard, create, matched, sessions, results). Retake
+  them with `npm run shot` when those screens change.
+- Every claim is a screen that exists. **No customer names, counts, logos or
+  quotes: none are real yet.** Do not add any that are not.
+- The headlines use `text-heading` (32, Semibold): the Figma `Heading/Size 32`
+  variable, added to `tailwind.config.ts` for this page. It is the largest size
+  in the system; a bigger hero is a design decision, not a tweak.
+- `node --experimental-websocket scripts/landing-check.mjs` (repo root, against
+  the one-origin build) checks containment at 1440 x 900 and 1440 x 1200, the
+  sticky header at six scroll positions, and where every button goes.
+
+---
+
 ## Rule 1, above everything else
 
 **Figma governs everything visible.** Layout, spacing, colour, type, icons and every string come from the frame. Match it exactly. If Figma has a typo, keep the typo. Behaviour comes in stage two; this stage is the screens.

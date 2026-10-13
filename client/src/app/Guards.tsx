@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useSession } from '../mock/session'
+import Landing from '../screens/landing/Landing'
 
 /** Where an unsigned visitor is sent, and where a signed-in one lands. */
 export const SIGN_IN = '/signin'
@@ -38,10 +39,13 @@ export function nextOnboardingStep(account: { company?: string; cardLast4?: stri
   return '/in-review'
 }
 
-/** `/` is a decision, not a screen: home when signed in, sign-in when not. */
+/**
+ * `/` is a decision: the landing page for a signed-out visitor, and never for
+ * anyone signed in, who goes home (or back to the onboarding step they left).
+ */
 export function Root() {
   const { account } = useSession()
-  if (!account) return <Navigate to={SIGN_IN} replace />
+  if (!account) return <Landing />
   if (!account.onboarded) return <Navigate to={nextOnboardingStep(account)} replace />
   return <Navigate to={HOME} replace />
 }

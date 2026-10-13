@@ -63,6 +63,8 @@ export default {
         // Measured off the frames: a 24px title sits in a 31px line box
         // (1777:96823, 1777:96835), not a 24px one.
         'title-l': ['24px', { lineHeight: '31px', letterSpacing: '-0.02em', fontWeight: '600' }],
+        // Heading/Size 32, Semibold: a Figma variable on the client frames, used by the landing page's headlines.
+        heading: ['32px', { lineHeight: '40px', letterSpacing: '-0.02em', fontWeight: '600' }],
       },
       // Desktop frame: 1440 wide, 240 nav, 72 top bar, 600 side panels, 460 modals.
       maxWidth: { frame: '1440px', page: '1200px', panel: '600px', modal: '460px' },

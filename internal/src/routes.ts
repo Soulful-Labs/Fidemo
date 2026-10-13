@@ -5,6 +5,7 @@ import type { ComponentType } from 'react'
 import Guard, { SignedOut } from './app/Guard'
 import SignUp, { VerifyCode } from './screens/auth/SignUp'
 import KitchenSink from './screens/kitchen-sink/KitchenSink'
+import Entrance from './screens/auth/Entrance'
 import SignIn from './screens/auth/SignIn'
 import ResetPassword from './screens/auth/ResetPassword'
 import CheckEmail from './screens/auth/CheckEmail'
@@ -43,7 +44,8 @@ const inside = <P extends object>(C: ComponentType<P>, props?: P) => createEleme
 const outside = (C: ComponentType) => createElement(SignedOut, null, createElement(C))
 
 const routes: RouteObject[] = [
-  { path: '/', element: createElement(Navigate, { to: '/signin', replace: true }) },
+  /** The entrance: shown to a signed-out visitor only; anyone signed in goes to where they land. */
+  { path: '/', element: outside(Entrance) },
   { path: '/signin', element: outside(SignIn) },
   { path: '/signup', element: outside(SignUp) },
   { path: '/signup/verify', element: outside(VerifyCode) },

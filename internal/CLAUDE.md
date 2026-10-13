@@ -1330,6 +1330,14 @@ sign-in (`src/session.ts`, `src/app/Guard.tsx`, `shared/store.ts` signInTeam).
   rule Change Password already draws. The new person becomes the master admin
   of a completely empty platform (`shared/seed.ts` buildEmpty).
 
+### The entrance (`/`, served at `/internal`)
+
+Not drawn in Figma and not a marketing page. `src/screens/auth/Entrance.tsx` is
+one screen on the sign-in layout (`AuthLayout`): the mark and "Admin Panel", one
+line saying what the console is, **Log In** (primary), a quieter **Sign Up**,
+and "Access is for Focus Insite team members only." Nothing else, by brief. A
+signed-out visitor sees it; anyone signed in goes to where they land.
+
 ### Must change before production
 
 1. **Open sign-up is wrong for an internal console.** It is built for the demo
