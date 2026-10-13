@@ -12,7 +12,7 @@ export default function Select({
     <div className="flex flex-col gap-1.5">
       {label && <span className="text-text-regular text-text-subtitle">{label}</span>}
       <button type="button" onClick={onClick}
-        className={cn('flex items-center justify-between gap-3 rounded-sm border-1 border-stroke-input bg-bg px-3 text-body-regular text-text-title', h, className)}>
+        className={cn('flex items-center justify-between gap-3 rounded-lg border-1 border-stroke-input bg-bg-0 px-3 text-body-regular text-text-title', h, className)}>
         <span className="truncate">{value}</span>
         <ChevronDown className="h-5 w-5 shrink-0 text-text-subtitle" />
       </button>

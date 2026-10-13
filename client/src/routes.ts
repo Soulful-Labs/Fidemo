@@ -78,6 +78,7 @@ const routes: ScreenRoute[] = [
   { path: '/studies', label: 'Studies, Ongoing', node: '1518:90600 (table), 1518:90966 (cards)', section: 'Studies', kind: 'page', element: guard(createElement(StudiesList, { tab: 'ongoing' })) },
   { path: '/studies/drafts', label: 'Studies, Drafts', node: '1518:90624', section: 'Studies', kind: 'page', element: guard(createElement(StudiesList, { tab: 'drafts' })) },
   { path: '/studies/completed', label: 'Studies, Completed', node: '1518:90760', section: 'Studies', kind: 'page', element: guard(createElement(StudiesList, { tab: 'completed' })) },
+  { path: '/studies/sessions', label: 'Studies, Scheduled Sessions', node: 'export of 13 Oct 2026', section: 'Studies', kind: 'page', element: guard(createElement(StudiesList, { tab: 'sessions' })) },
 
   // ----- Create, one flow for every type (see CLAUDE.md) -----
   { path: '/studies/create/about', label: 'Create, About', node: '1622:81504', section: 'Create', kind: 'page', element: guard(createElement(About)) },

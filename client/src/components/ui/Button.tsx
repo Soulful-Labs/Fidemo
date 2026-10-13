@@ -17,10 +17,10 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  * ("View Profile", "Cancel") and the red destructive ("Delete").
  */
 const ENABLED = {
-  primary: 'border-b-2 border-yellow-700 bg-gradient-to-b from-[#fdc86f] to-[#fca311] text-cta-primaryText hover:to-yellow-700',
+  primary: 'border-b-2 border-yellow-700 bg-gradient-to-b from-[#fdbd55] to-[#fca311] text-cta-primaryText hover:to-yellow-700',
   secondary: 'bg-cta-secondary text-cta-secondaryText hover:bg-yellow-300',
-  tertiary: 'border-1 border-cta-tertiaryStroke bg-bg text-text-title hover:bg-bg-1',
-  danger: 'bg-[#e33a38] text-white hover:opacity-90',
+  tertiary: 'border-1 border-cta-tertiaryStroke bg-bg-0 text-text-title hover:bg-bg-1',
+  danger: 'bg-red-600 text-white hover:opacity-90',
   ghost: 'text-text-subtitle hover:text-text-title',
 }
 const DISABLED = {
@@ -38,10 +38,11 @@ const DISABLED = {
  * frame and pushed whatever followed it along the row.
  */
 const SIZES = {
-  md: 'h-btn rounded-sm px-4 text-text-medium',
-  row: 'h-[38px] rounded-sm px-3 text-text-medium',
-  sm: 'h-btn-sm rounded-sm px-3 text-text-medium',
-  none: 'rounded-sm px-4 text-text-medium',
+  // 12px corners on every button, measured off the 13 Oct 2026 exports (they were 8).
+  md: 'h-btn rounded-md px-4 text-text-medium',
+  row: 'h-[38px] rounded-md px-3 text-text-medium',
+  sm: 'h-btn-sm rounded-md px-3 text-text-medium',
+  none: 'rounded-md px-4 text-text-medium',
 }
 
 export default function Button({

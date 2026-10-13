@@ -2,12 +2,13 @@ import Button from '../ui/Button'
 import TierChip from './TierChip'
 import { Star, VerifiedMark, Info } from '../ui/icons'
 import { RATE_PROMPT } from '../../mock/respondent'
-import { useProfile } from '../../platform'
+import { personById } from '@shared/derive'
+import { usePlatform, useProfile } from '../../platform'
 
 /** A section of the rail, under the hairline that separates it from the one above. */
 function Block({ title, children }: { title?: string; children: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-2 border-t-1 border-stroke-1 px-4 py-4">
+    <section className="flex flex-col gap-2 border-t-1 border-stroke-1 px-3 pb-[13px] pt-3">
       {title && <h3 className="text-text-regular text-text-subtitle">{title}</h3>}
       {children}
     </section>
@@ -56,27 +57,29 @@ export default function RespondentRail({ rate, onRate, person }: {
 }) {
   /** Everything the rail says about this person is the platform's record of them. */
   const r = useProfile(person?.id)
+  /** The picture and the intro video are on the person's own record; a person without one shows an initial, and no video block. */
+  const record = personById(usePlatform(), person?.id ?? '')
   if (!r) return null
   return (
-    <aside className="flex h-fit w-[304px] shrink-0 self-start flex-col overflow-hidden rounded-lg border-1 border-stroke-input bg-bg-0">
+    <aside className="flex h-fit w-[304px] shrink-0 self-start flex-col overflow-hidden rounded-lg border-1 border-stroke-1 bg-bg-0">
       {rate && <RatePrompt onRate={onRate} name={person?.name} />}
 
-      <div className="flex flex-col gap-2 px-4 pb-4 pt-4">
+      <div className="flex flex-col gap-2 px-3 pb-[13px] pt-3">
         <p className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-bg-2 text-label text-text-subtitle">
-            {r.name[0]}
-          </span>
-          <span className="text-text-large text-text-title">{r.name}</span>
+          {record?.photo
+            ? <img src={record.photo} alt="" className="h-6 w-6 rounded-full object-cover" />
+            : <span className="flex h-6 w-6 items-center justify-center rounded-full bg-bg-2 text-label text-text-subtitle">{r.name[0]}</span>}
+          <span className="text-body-medium text-text-title">{r.name}</span>
         </p>
-        <p className="text-title-s leading-[22px] text-text-title">{r.role}</p>
-        <p className="text-text-regular text-text-subtitle">{r.experience}</p>
-        <p className="text-text-regular text-text-subtitle">{r.location}</p>
-        <p className="text-text-regular text-text-body">{r.cert}</p>
+        <p className="text-title-s leading-[26px] text-text-title">{r.role}</p>
+        <p className="text-text-regular text-text-title">{r.experience}</p>
+        <p className="text-text-regular text-text-title">{r.location}</p>
+        <p className="text-text-regular text-text-subtitle">{r.cert}</p>
       </div>
 
       <Block title="Trust Score">
         <p className="flex items-center gap-3">
-          <span className="text-title-l text-text-title">{r.trustScore}</span>
+          <span className="text-[26px] font-semibold leading-8 tracking-[-0.02em] text-text-title">{r.trustScore}</span>
           <TierChip tier={r.tier} />
         </p>
         <h3 className="pt-1 text-text-regular text-text-subtitle">Performance Ratings</h3>
@@ -86,10 +89,10 @@ export default function RespondentRail({ rate, onRate, person }: {
             return (
               <div key={x.label} className="flex flex-col gap-1">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="inline-flex items-center gap-1 text-text-regular text-text-subtitle">
-                    {x.label} <Info className="h-4 w-4 text-text-body" />
+                  <span className="inline-flex items-center gap-1.5 text-text-regular text-text-title">
+                    {x.label} <Info className="h-4 w-4 text-text-subtitle" />
                   </span>
-                  <span className={`text-text-medium ${text}`}>{x.value}</span>
+                  <span className={`text-text-regular ${text}`}>{x.value}</span>
                 </div>
                 <span className="h-1 w-full rounded-full bg-bg-3">
                   <span className={`block h-full rounded-full ${bar}`} style={{ width: x.value }} />
@@ -100,12 +103,25 @@ export default function RespondentRail({ rate, onRate, person }: {
         </div>
       </Block>
 
+      {record?.profile.introVideo && (
+        <section className="flex items-center gap-3 border-t-1 border-stroke-1 px-3 py-3">
+          {/* The export draws a still from the video and the date it was updated. The platform keeps the file's name and neither of those. */}
+          <span className="flex h-[60px] w-[90px] shrink-0 items-center justify-center rounded-sm bg-bg-2 text-brand-primary">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#fdfdfc" stroke="currentColor" strokeWidth="1.5" /><path d="m10.5 9 4 3-4 3V9Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg>
+          </span>
+          <span className="flex min-w-0 flex-col gap-1">
+            <span className="text-text-regular text-text-title">Intro Video</span>
+            <span className="truncate text-text-regular text-text-body">{record.profile.introVideo}</span>
+          </span>
+        </section>
+      )}
+
       <Block title="About">
-        <dl className="flex flex-col gap-2">
-          {r.aboutRows.filter((a) => a.label !== 'Occupation' && a.label !== 'Industry').map((a) => (
-            <div key={a.label} className="flex items-center justify-between gap-3">
-              <dt className="text-text-regular text-text-subtitle">{a.label}</dt>
-              <dd className="text-text-regular text-text-title">{a.value}</dd>
+        <dl className="flex flex-col">
+          {[['Education', r.about.education || '—'], ['Gender', r.about.gender || '—'], ['Age', r.about.age ? `${r.about.age} years` : '—']].map(([label, value]) => (
+            <div key={label} className="flex h-[33px] items-center justify-between gap-3 border-t-1 border-stroke-1 first:h-7 first:border-t-0 last:h-7">
+              <dt className="text-text-regular text-text-subtitle">{label}</dt>
+              <dd className="text-text-regular text-text-title">{value}</dd>
             </div>
           ))}
         </dl>
@@ -115,7 +131,7 @@ export default function RespondentRail({ rate, onRate, person }: {
         <ul className="flex flex-col gap-2">
           {r.verified.map((v) => (
             <li key={v} className="inline-flex items-center gap-2 text-text-regular text-text-title">
-              <VerifiedMark className="h-5 w-5 text-brand-secondary" />{v}
+              <VerifiedMark className="h-[18px] w-[18px] text-green-ok" />{v}
             </li>
           ))}
         </ul>

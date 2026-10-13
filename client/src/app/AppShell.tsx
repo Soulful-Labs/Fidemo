@@ -30,20 +30,20 @@ export function SideNav() {
     .split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join('') || 'FI'
   const { pathname } = useLocation()
   return (
-    <nav className="sticky top-0 flex h-screen w-nav shrink-0 flex-col border-r-1 border-stroke-input bg-yellow-20">
-      {/* The wordmark block stays 68; only the title bar is 70. */}
-      <div className="flex h-[68px] items-center px-6">
+    <nav className="sticky top-0 flex h-screen max-h-[960px] w-nav shrink-0 flex-col border-r-1 border-stroke-warm bg-yellow-20">
+      {/* The wordmark sits over the same rule the top bar ends on (y 68 in every 13 Oct 2026 export). */}
+      <div className="flex h-[69px] shrink-0 items-center border-b-1 border-stroke-warm pl-7">
         <span className="text-title-l text-text-title">Focus Insite</span>
       </div>
 
-      <ul className="flex flex-1 flex-col gap-2 px-4 pt-5">
+      <ul className="flex flex-1 flex-col gap-1.5 pl-4 pr-[18px] pt-[19px]">
         {NAV.map(({ to, label, Icon }) => {
           const on = pathname === to || pathname.startsWith(`${to}/`)
           return (
             <li key={to}>
               <NavLink to={to}
-                className={cn('flex h-11 items-center gap-3 rounded-sm px-3 text-body-regular transition-colors',
-                  on ? 'bg-bg text-brand-primary shadow-[0_1px_2px_rgba(32,30,25,0.06)]' : 'text-text-subtitle hover:bg-bg/60 hover:text-text-title')}>
+                className={cn('flex h-[46px] items-center gap-2 rounded-md px-4 text-body-regular transition-colors',
+                  on ? 'bg-bg-0 text-brand-primary shadow-[0_1px_2px_rgba(32,30,25,0.08)]' : 'text-text-subtitle hover:bg-bg-0/60 hover:text-text-title')}>
                 <Icon className="h-5 w-5" />
                 {label}
               </NavLink>
@@ -52,12 +52,14 @@ export function SideNav() {
         })}
       </ul>
 
-      <div className="mx-4 border-t-1 border-stroke-input" />
-      <NavLink to="/account" className="m-4 flex items-center gap-3 rounded-sm bg-bg p-3 shadow-[0_1px_2px_rgba(32,30,25,0.06)] hover:bg-bg-1">
-        <span className="flex h-9 w-9 items-center justify-center rounded-sm bg-bg-2 text-text-medium text-text-subtitle">{initials}</span>
+      <div className="ml-4 mr-[18px] border-t-1 border-stroke-warm" />
+      <NavLink to="/account" className="mb-4 ml-4 mr-[18px] mt-4 flex h-[58px] items-center gap-2 rounded-md bg-bg-0 px-2 hover:bg-bg-1">
+        {account?.photo
+          ? <img src={account.photo} alt="" className="h-10 w-10 shrink-0 rounded-sm object-cover" />
+          : <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-bg-2 text-text-medium text-text-subtitle">{initials}</span>}
         <span className="flex min-w-0 flex-col">
           <span className="truncate text-text-medium text-text-title">{account?.name ?? 'Signed out'}</span>
-          <span className="truncate text-label text-text-body">{account?.role || account?.company || 'Client'}</span>
+          <span className="truncate text-text-regular text-text-body">{account?.role || account?.company || 'Client'}</span>
         </span>
       </NavLink>
     </nav>
@@ -87,25 +89,26 @@ export default function AppShell({
       <SideNav />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-topbar shrink-0 items-center justify-between gap-4 border-b-1 border-stroke-input bg-yellow-20 px-4">
+        <header className="sticky top-0 z-30 flex h-[69px] shrink-0 items-center justify-between gap-4 border-b-1 border-stroke-warm bg-yellow-20 px-4">
           <nav className="flex items-center gap-1 text-body-regular text-text-subtitle" aria-label="Breadcrumb">
             {crumbs.map((c, i) => (
               <span key={c.label} className="flex items-center gap-1">
                 {i > 0 && <span className="text-text-body">/</span>}
-                {c.to ? <NavLink to={c.to} className="hover:text-text-title">{c.label}</NavLink> : <span className="text-text-title">{c.label}</span>}
+                {c.to ? <NavLink to={c.to} className="hover:text-text-title">{c.label}</NavLink> : <span className={crumbs.length === 1 ? 'text-body-medium text-text-title' : 'text-text-title'}>{c.label}</span>}
               </span>
             ))}
           </nav>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3.5">
             {action ?? (
               <>
                 <button type="button" aria-label="Notifications" onClick={() => setNotifications(true)}
-                  className="relative flex h-[38px] w-[38px] items-center justify-center rounded-full border-1 border-stroke-input bg-bg text-text-subtitle hover:text-text-title">
+                  className="relative flex h-9 w-9 items-center justify-center rounded-md border-1 border-stroke-input text-text-title hover:bg-bg-0">
                   <BellIcon className="h-5 w-5" />
-                  {unread > 0 && <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-cta-primary" />}
+                  {/* The exports draw the bell with no mark. The count is kept for screen readers and the panel shows it. */}
+                  {unread > 0 && <span className="sr-only">{unread} unread</span>}
                 </button>
                 {!hideCreate && (
-                  <Button size="row" leftIcon={<Plus className="h-4 w-4" />} onClick={newStudy}>Create Study</Button>
+                  <Button size="row" leftIcon={<Plus className="h-5 w-5" />} onClick={newStudy}>Create Study</Button>
                 )}
               </>
             )}
@@ -113,7 +116,7 @@ export default function AppShell({
         </header>
 
         {/* The title bar is 70 tall and the page starts at 78 (1627:95962). */}
-        <main className="flex-1 px-2 pb-2 pt-2">{children}</main>
+        <main className="flex-1 px-2 pb-2 pt-[9px]">{children}</main>
       </div>
 
       <NotificationsPanel open={notifications} rows={rows} onClose={() => setNotifications(false)}

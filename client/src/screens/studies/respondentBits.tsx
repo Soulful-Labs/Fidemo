@@ -79,7 +79,7 @@ function Ans({ a }: { a: Answer }) {
 /** A question and its answer, under the hairline that separates it from the one above. */
 export function QARow({ n, qa, first }: { n: number; qa: QA; first?: boolean }) {
   return (
-    <div className={cn('flex flex-col gap-[3px] px-4 pb-[11px]', first ? 'pt-4' : 'border-t-1 border-bgAlt-2 pt-3')}>
+    <div className={cn('mx-4 flex flex-col gap-[5px] pb-[17px]', first ? 'pt-[18px]' : 'border-t-1 border-stroke-1 pt-[17px]')}>
       <div className="flex items-start gap-2">
         <span className="flex h-7 w-9 shrink-0 items-center justify-center rounded-sm bg-bgAlt-2 text-text-regular text-text-subtitle">
           Q{n}

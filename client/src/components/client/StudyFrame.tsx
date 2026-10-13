@@ -27,10 +27,10 @@ import { copyText } from '../../lib/copy'
  */
 export function HeadStat({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
   return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-text-regular text-text-subtitle">{label}</span>
-      <span className="flex items-baseline gap-1 text-title-l text-text-title">
-        {value}{suffix && <span className="text-body-regular text-text-subtitle">{suffix}</span>}
+    <div className="flex flex-col gap-1">
+      <span className="text-text-regular text-text-body">{label}</span>
+      <span className="flex items-baseline gap-1 text-title-m leading-[26px] text-text-title">
+        {value}{suffix && <span className="text-body-regular">{suffix}</span>}
       </span>
     </div>
   )
@@ -50,8 +50,9 @@ export function StudyHeader({ study }: { study: Study }) {
   return (
     <section className="rounded-lg bg-bgAlt-1 p-4">
       <div className="flex items-start gap-6">
-        <span className="h-[182px] w-[240px] shrink-0 overflow-hidden rounded-md bg-bg-2">
-          <img src={study.image} alt="" className="h-full w-full object-cover" />
+        {/* 228 by 171 in the 13 Oct 2026 export, on a card 203 tall. */}
+        <span className="h-[171px] w-[228px] shrink-0 overflow-hidden rounded-md bg-bg-2">
+          {study.image && <img src={study.image} alt="" className="h-full w-full object-cover" />}
         </span>
         {/*
           * 1777:96814: the content column is three rows at y 0, 50 and 129
@@ -59,23 +60,23 @@ export function StudyHeader({ study }: { study: Study }) {
           * row two is the 31px title and the 28px tag row 8px under it, and
           * row three is the 53px figure block. Twelve between the rows.
           */}
-        <div className="flex min-w-0 flex-1 flex-col gap-3">
+        <div className="flex min-w-0 flex-1 flex-col">
           <div className="flex h-[38px] items-center justify-between gap-4">
             {/* the Manage and Create frames draw Diary as a book; only the
                 Studies cards frame draws it as bars */}
             <StudyTypeTag type={study.type} className="h-8"
               icon={study.type === 'diary' ? <DiaryBookIcon className="h-4 w-4" /> : undefined} />
-            <div className="flex items-center gap-2">
-              <Tag tone={status.tone}>{status.label}</Tag>
+            <div className="flex items-center gap-3">
+              <Tag tone={status.tone} className="h-8 border-0 bg-bgAlt-2 px-3">{status.label}</Tag>
               <button type="button" aria-label="Copy study link"
                 onClick={async () => toast(await copyText(study.shareLink ?? '') ? 'Link copied' : 'Could not reach the clipboard')}
-                className="flex h-btn w-btn items-center justify-center rounded-full border-1 border-stroke-input text-text-subtitle hover:text-text-title">
-                <LinkIcon className="h-4 w-4" />
+                className="flex h-[38px] w-[38px] items-center justify-center rounded-md border-1 border-stroke-input text-text-title hover:bg-bg-0">
+                <LinkIcon className="h-5 w-5" />
               </button>
               <span className="relative flex">
                 <button type="button" aria-label="Study options" onClick={() => setMenu((m) => !m)}
-                  className="flex h-btn w-btn items-center justify-center rounded-full border-1 border-stroke-input text-text-subtitle hover:text-text-title">
-                  <MoreVertical className="h-4 w-4" />
+                  className="flex h-[38px] w-[38px] items-center justify-center rounded-md border-1 border-stroke-input text-text-title hover:bg-bg-0">
+                  <MoreVertical className="h-5 w-5" />
                 </button>
                 {menu && (
                   <span className="absolute right-0 top-full z-30 mt-1 flex w-[200px] flex-col rounded-sm border-1 border-stroke-input bg-bg-0 py-1 shadow-lg">
@@ -94,15 +95,15 @@ export function StudyHeader({ study }: { study: Study }) {
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <h1 className="text-title-l text-text-title">{study.title}</h1>
-            <div className="flex items-center gap-2">
-              <Tag tone="neutral" icon={<Clock className="h-4 w-4" />}>{study.duration}</Tag>
-              <Tag tone="neutral">{study.industry}</Tag>
-            </div>
+          <div className="flex flex-col gap-1.5 pt-[13px]">
+            <h1 className="text-title-l font-medium text-text-title">{study.title}</h1>
+            <p className="flex items-center gap-1 text-body-regular text-text-subtitle">
+              <Clock className="h-5 w-5 text-text-title" />{study.duration}
+              {study.industry && <><span className="px-2 text-text-title">&bull;</span>{study.industry}</>}
+            </p>
           </div>
 
-          <div className="grid grid-cols-[repeat(4,158px)] gap-6">
+          <div className="grid grid-cols-[repeat(4,160px)] gap-6 pt-[11px]">
             <HeadStat label="Completed" value={String(c.completed)} suffix={`/${study.required}`} />
             <HeadStat label="Qualified" value={String(c.everQualified)} suffix={`/${c.everApplied} applied`} />
             <HeadStat label="Days Remaining" value={String(study.daysRemaining)} />

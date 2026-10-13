@@ -21,21 +21,25 @@ export default {
         bg: { DEFAULT: '#ffffff', 0: '#fdfdfc', 1: '#f8f8f7', 2: '#f3f2f1', 3: '#eeedec', 4: '#e9e8e7' },
         bgAlt: { 0: '#fbfefd', 1: '#f5f9f7', 2: '#edf3f0' },
         text: { title: '#201e19', subtitle: '#5e5d5b', body: '#9d9d9d', disabled: '#b4b4b4' },
-        stroke: { input: '#e9e8e7', 1: '#edf3f0', 2: '#e3edea', 3: '#dae7e1' },
+        // `warm` is the rule between the navigation, the top bar and the page, sampled off the 13 Oct 2026 exports.
+        stroke: { input: '#e9e8e7', 1: '#edf3f0', 2: '#e3edea', 3: '#dae7e1', warm: '#e8e0d4' },
         cta: {
           primary: '#fca311', primaryText: '#15130f',
           secondary: '#fed592', secondaryText: '#513303',
           tertiaryStroke: '#e1e1e1', tertiaryStrokeDisabled: '#e9e8e7',
         },
-        yellow: { 20: '#f7f4f0', 30: '#fff7ea', 40: '#fff3e0', 300: '#fdc160', 400: '#fdb541', 500: '#fca311', 700: '#b3740c' },
-        green: { 50: '#ecf8f3', 200: '#a7dfc6', 700: '#2d835e' },
+        yellow: { 20: '#f7f4f0', 30: '#fff7ea', 40: '#fff3e0', 100: '#fee2b5', 300: '#fdc160', 400: '#fdb541', 500: '#fca311', 700: '#b3740c' },
+        // 100 is the unfilled part of a progress bar; `ok` the tick beside a verified item. Both sampled off the exports.
+        green: { 50: '#ecf8f3', 100: '#c3e9d9', 200: '#a7dfc6', 700: '#2d835e', ok: '#009951' },
+        // Only for things that are wrong or destructive (Disqualify, Delete).
+        red: { 50: '#fee9e7', 600: '#e33a38' },
         purple: { 100: '#f5f2ff', 600: '#9780fa' },
         blue: { 100: '#ecf6fd', 600: '#42a4ed' },
         neutral: { 500: '#e9e8e7', 700: '#e0dedc', 800: '#dad9d7', 1000: '#ceccca' },
         // Tier chips, measured off the respondent cards (826:85021).
         tier: {
-          gold: '#e4b300', goldBg: '#f8f0d2',
-          platinum: '#9139f6', platinumBg: '#ebdcfa',
+          gold: '#e4b300', goldBg: '#faf4df',
+          platinum: '#9139f6', platinumBg: '#efe4fb',
           silver: '#7f9fb1', silverBg: '#e7edef',
         },
       },

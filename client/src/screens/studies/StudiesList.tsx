@@ -14,30 +14,35 @@ import { cn } from '../../lib/cn'
 import type { StudyType } from '../../lib/studyTypes'
 import type { ClientStudy as Study } from '../../platform'
 import { useStudies } from '../../platform'
-import { counts } from '@shared/derive'
+import { counts, progressPct } from '@shared/derive'
+import SessionsTab from './SessionsTab'
+import { Calendar, Search } from '../../components/ui/icons'
 import { studyTab } from '@shared/lifecycle'
 import { CompletedMenu, DeleteStudyModal, DraftMenu, OngoingMenu, PauseStudyModal, StudyTypeMenu } from './StudyMenus'
 import { useToast } from '../../components/ui/Toast'
 import { copyText } from '../../lib/copy'
 
-export type StudiesTab = 'ongoing' | 'drafts' | 'completed'
+export type StudiesTab = 'ongoing' | 'drafts' | 'completed' | 'sessions'
 
 const TABS = [
   { key: 'ongoing', label: 'Ongoing', to: '/studies' },
   { key: 'drafts', label: 'Drafts', to: '/studies/drafts' },
   { key: 'completed', label: 'Completed', to: '/studies/completed' },
+  { key: 'sessions', label: 'Sessions', to: '/studies/sessions' },
 ]
 
 /** Which columns each tab draws, and in which order. */
-const COLUMNS: Record<StudiesTab, { key: string; header: string; sortable?: boolean; width?: string }[]> = {
+const COLUMNS: Record<Exclude<StudiesTab, 'sessions'>, { key: string; header: string; sortable?: boolean; width?: string }[]> = {
+  // Measured off the 13 Oct 2026 export: the table is 1150 wide and the columns start at 265, 602, 777, 887, 997, 1122 and 1262.
   ongoing: [
-    { key: 'name', header: 'Study Name', width: '36%' },
-    { key: 'type', header: 'Type', width: '15.5%' },
-    { key: 'required', header: 'Required', sortable: true, width: '10.9%' },
-    { key: 'qualified', header: 'Qualified', sortable: true, width: '10.9%' },
-    { key: 'completed', header: 'Completed', sortable: true, width: '10.9%' },
-    { key: 'created', header: 'Created', sortable: true, width: '11.6%' },
-    { key: 'menu', header: '', width: '4.2%' },
+    { key: 'name', header: 'Study Name', width: '27.91%' },
+    { key: 'type', header: 'Type', width: '15.22%' },
+    { key: 'required', header: 'Required', sortable: true, width: '9.57%' },
+    { key: 'qualified', header: 'Qualified', sortable: true, width: '9.57%' },
+    { key: 'completed', header: 'Completed', sortable: true, width: '10.87%' },
+    { key: 'progress', header: 'Progress', sortable: true, width: '12.17%' },
+    { key: 'created', header: 'Created', sortable: true, width: '9.57%' },
+    { key: 'menu', header: '', width: '5.12%' },
   ],
   drafts: [
     { key: 'name', header: 'Study Name', width: '51.9%' },
@@ -74,13 +79,14 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
   const [sort, setSort] = useState<{ key: string; dir: 1 | -1 } | null>(null)
   const [pausing, setPausing] = useState<Study | null>(null)
   const [deleting, setDeleting] = useState<Study | null>(null)
+  const [search, setSearch] = useState('')
   const { studies, moveStudy } = useStudies()
   const toast = useToast()
 
   /** Which tab a study is under is its state's business, never a separate list. */
   const rows = useMemo(() => {
     const list = studies
-      .filter((s) => studyTab(s.state) === tab)
+      .filter((s) => studyTab(s.state) === (tab === 'sessions' ? 'ongoing' : tab))
       .filter((s) => types.length === 0 || types.includes(s.type))
     if (!sort) return list
     const figure = (s: Study, key: string) => {
@@ -88,6 +94,7 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
       if (key === 'required') return s.required
       if (key === 'qualified') return c.everQualified
       if (key === 'completed') return c.completed
+      if (key === 'progress') return progressPct(s)
       return 0
     }
     return [...list].sort((a, b) => {
@@ -120,17 +127,31 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
         {tab === 'completed' && <h1 className="pb-2 text-title-s text-text-title">My Studies</h1>}
 
         <div className="flex items-center justify-between gap-4 pb-6">
-          <Tabs variant="segmented" className="w-[341px]" value={tab} items={TABS} />
+          <Tabs variant="segmented" className="w-[435px]" value={tab} items={TABS} />
           <div className="flex items-center gap-3">
+            {/* The export labels this search "Study Type", the same as the filter beside it. Built as drawn and flagged. */}
+            {tab === 'sessions' && (
+              <label className="relative flex">
+                <Search className="pointer-events-none absolute left-3 top-3 h-6 w-6 text-text-title" />
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Study Type" aria-label="Search sessions"
+                  className="h-input w-[200px] rounded-lg border-1 border-stroke-input bg-bg-0 pl-[43px] pr-3 text-body-regular text-text-title placeholder:text-text-title" />
+              </label>
+            )}
             <div className="relative">
               <Select value="Study Type" className="w-[200px]" onClick={() => setTypeMenu((m) => !m)} />
               <StudyTypeMenu open={typeMenu} onClose={() => setTypeMenu(false)} value={types} onChange={setTypes} />
             </div>
             {tab === 'ongoing' && <ViewToggle view={view} onChange={setView} />}
+            {tab === 'sessions' && (
+              <button type="button" aria-label="Calendar view" onClick={() => toast('A calendar view of sessions has not been designed yet')}
+                className="flex h-input w-input shrink-0 items-center justify-center rounded-lg border-1 border-stroke-input bg-bg-0 text-text-title hover:bg-bg-1">
+                <Calendar className="h-6 w-6" />
+              </button>
+            )}
           </div>
         </div>
 
-        {tab === 'ongoing' && view === 'grid' ? (
+        {tab === 'sessions' ? <SessionsTab search={search} types={types} /> : tab === 'ongoing' && view === 'grid' ? (
           <div className="grid grid-cols-3 gap-3">
             {cards.map((s) => (
               <StudyCard key={s.id} onOpen={() => open(s)} onMenu={() => setRowMenu(s.id)}
@@ -139,12 +160,12 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
             ))}
           </div>
         ) : (
-          <div className="overflow-hidden rounded-md border-1 border-stroke-input">
+          <div className="overflow-hidden rounded-lg border-1 border-stroke-1">
             <table className="w-full table-fixed border-collapse text-left">
               <thead>
-                <tr className="border-b-1 border-stroke-input bg-bg-1">
-                  {COLUMNS[tab].map((c) => (
-                    <th key={c.key} style={{ width: c.width }} className="h-row px-[22px] text-text-regular font-normal text-text-subtitle">
+                <tr className="border-b-1 border-stroke-1 bg-bg-1">
+                  {COLUMNS[tab as Exclude<StudiesTab, 'sessions'>].map((c) => (
+                    <th key={c.key} style={{ width: c.width }} className="h-[52px] px-4 text-text-regular font-normal text-text-subtitle">
                       {c.sortable ? (
                         <button type="button" onClick={() => toggleSort(c.key)} className="inline-flex items-center gap-1.5 hover:text-text-title">
                           {c.header}
@@ -158,7 +179,7 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
               <tbody>
                 {rows.length === 0 && (
                   <tr>
-                    <td colSpan={COLUMNS[tab].length} className="px-[22px] py-16 text-center">
+                    <td colSpan={COLUMNS[tab as Exclude<StudiesTab, 'sessions'>].length} className="px-[22px] py-16 text-center">
                       <p className="text-body-medium text-text-title">
                         {tab === 'drafts' ? 'No drafts yet.'
                           : tab === 'completed' ? 'Nothing has been completed yet.'
@@ -178,12 +199,15 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
                   </tr>
                 )}
                 {rows.map((s) => (
-                  <tr key={s.id} className="border-b-1 border-stroke-input last:border-b-0 hover:bg-bg-1">
-                    {COLUMNS[tab].map((c) => (
-                      <td key={c.key} className="h-row px-[22px] align-middle text-body-regular text-text-title">
+                  <tr key={s.id} className="border-b-1 border-stroke-1 last:border-b-0 hover:bg-bg-1">
+                    {COLUMNS[tab as Exclude<StudiesTab, 'sessions'>].map((c) => (
+                      <td key={c.key} className={cn('h-16 align-middle text-text-regular text-text-title', c.key === 'name' ? 'pl-3 pr-4' : 'px-4')}>
                         {c.key === 'name' && (
-                          <span className="flex items-center gap-2">
-                            <button type="button" onClick={() => open(s)} className="text-left hover:text-brand-primary">{s.name}</button>
+                          <span className="flex items-center gap-3">
+                            <span className="h-10 w-10 shrink-0 overflow-hidden rounded-sm bg-bg-2">
+                              {s.image && <img src={s.image} alt="" className="h-full w-full object-cover" />}
+                            </span>
+                            <button type="button" onClick={() => open(s)} className="line-clamp-2 text-left text-text-medium hover:text-brand-primary">{s.name}</button>
                             {/* No frame draws this pill: the Drafts table has no status
                                 column, and a study waiting on the team is not a draft. */}
                             {s.state === 'in_review' && (
@@ -198,6 +222,15 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
                         {c.key === 'required' && String(s.required)}
                         {c.key === 'qualified' && String(counts(s).everQualified)}
                         {c.key === 'completed' && String(counts(s).completed)}
+                        {c.key === 'progress' && (
+                          <span className="flex w-[108px] flex-col gap-1.5">
+                            <span className="flex h-2 gap-0.5">
+                              {progressPct(s) > 0 && <span className="h-full rounded-full bg-brand-secondary" style={{ width: `${progressPct(s)}%` }} />}
+                              {progressPct(s) < 100 && <span className="h-full flex-1 rounded-full bg-green-100" />}
+                            </span>
+                            <span className="text-label text-text-subtitle">{progressPct(s)}% complete</span>
+                          </span>
+                        )}
                         {c.key === 'menu' && (
                           <span className="relative flex justify-end">
                             <button type="button" aria-label="Study options" onClick={() => setRowMenu(rowMenu === s.id ? null : s.id)}
@@ -242,7 +275,7 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
 /** The ⇅ mark on a sortable header. */
 function SortMark({ active, dir }: { active?: boolean; dir?: 1 | -1 }) {
   return (
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true" className="shrink-0">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true" className="shrink-0 text-text-body">
       <path d="M8 4v16m0 0-3-3m3 3 3-3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"
         className={cn(active && dir === 1 ? 'text-brand-primary' : undefined)} opacity={active && dir === -1 ? 0.4 : 1} />
       <path d="M16 20V4m0 0-3 3m3-3 3 3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"

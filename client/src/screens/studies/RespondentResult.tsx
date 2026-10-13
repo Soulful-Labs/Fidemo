@@ -24,16 +24,15 @@ type Tab = 'screener' | 'result' | 'activity'
 function StudyStrip({ s }: { s: Study }) {
   return (
     <div className="flex h-[102px] items-center gap-4 rounded-lg bg-bgAlt-1 p-4">
-      <img src={s.image} alt="" className="h-[70px] w-[92px] shrink-0 rounded-md object-cover" />
+      {s.image ? <img src={s.image} alt="" className="h-[70px] w-[92px] shrink-0 rounded-md object-cover" /> : <span className="h-[70px] w-[92px] shrink-0 rounded-md bg-bg-2" />}
       <div className="flex flex-col gap-3">
         <p className="text-title-s leading-[22px] text-text-title">{s.title}</p>
-        <div className="flex items-center gap-2">
-          <StudyTypeTag type={s.type} icon={s.type === 'diary' ? <DiaryBookIcon className="h-4 w-4" /> : undefined} />
-          <span className="flex h-8 items-center gap-2 rounded-full border-1 border-stroke-input px-3 text-text-regular text-text-subtitle">
-            <Clock className="h-4 w-4" />{s.duration}
-          </span>
-          <span className="flex h-8 items-center rounded-full border-1 border-stroke-input px-3 text-text-regular text-text-subtitle">
-            {s.industry}
+        {/* The duration and industry are plain text beside the type tag in the 13 Oct 2026 export, not pills of their own. */}
+        <div className="flex items-center gap-3">
+          <StudyTypeTag type={s.type} className="h-8 px-3" icon={s.type === 'diary' ? <DiaryBookIcon className="h-4 w-4" /> : undefined} />
+          <span className="flex items-center gap-1 text-text-regular text-text-subtitle">
+            <Clock className="h-[18px] w-[18px] text-text-title" />{s.duration}
+            {s.industry && <><span className="px-1.5 text-text-title">&bull;</span>{s.industry}</>}
           </span>
         </div>
       </div>
@@ -127,13 +126,13 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
       // in the row that opens it; a live build cannot show both.
       { label: person?.name ?? '' },
     ]}>
-      <div className={cn('rounded-lg bg-bg-0 p-4', session ? 'min-h-[1173px]' : 'min-h-[1286px]')}>
+      <div className="min-h-[874px] rounded-lg bg-bg-0 p-4">
         <div className="flex flex-col gap-3">
           <StudyStrip s={s} />
 
-          <div className="flex gap-6">
-            <section className={cn('flex flex-1 flex-col overflow-hidden rounded-lg border-1 border-stroke-input',
-                session ? (running ? 'min-h-[1028px]' : 'min-h-[945px]') : 'min-h-[1129px]')}>
+          <div className="flex items-start gap-6">
+            {/* The card is as tall as what it holds, with the decision bar closing it (13 Oct 2026 export). */}
+            <section className="flex flex-1 flex-col overflow-hidden rounded-lg border-1 border-stroke-1">
               <div className="flex h-11 items-center gap-8 border-b-1 border-stroke-1 bg-bg-1 px-4">
                 {tabs.map((t) => (
                   <button key={t.key} type="button" onClick={() => nav(to(t.key))}
@@ -182,7 +181,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                   so it does not wait for a slot to be sat. Only the completed
                   bar on a session study does, which is what `running` gates. */}
               {tab !== 'activity' && (!done || (session ? running : true)) && (
-                <div className={cn('flex items-center justify-between gap-4 bg-bgAlt-1 px-4', session ? 'h-[73px]' : 'mt-[11px] h-[81px]')}>
+                <div className={cn('flex items-center justify-between gap-4 border-t-1 border-stroke-1 bg-bg-1 px-4', session ? 'h-[73px]' : 'mt-[11px] h-20')}>
                   {/* The decision is only open while they are waiting on it. Someone
                       already qualified, disqualified, recruited or scheduled is past
                       this point, so their standing is stated rather than offered
@@ -204,15 +203,15 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                         <span className="text-text-title">The action can be undone within 1 hour only after it is taken.</span>
                       </p>
                       <span className="flex items-center gap-3">
-                        <Button variant="ghost" size="none" className="h-12 w-[154px] bg-[#fee9e7] text-[#e33a38] hover:text-[#e33a38]"
+                        <Button variant="ghost" size="none" className="h-12 w-[154px] bg-red-50 text-body-medium text-red-600 hover:text-red-600"
                           onClick={() => {
                             const res = moveRespondent(s.id, person.id, 'disqualified')
                             toast(res.ok ? `${person.name} disqualified` : res.why)
-                          }} leftIcon={<Close className="h-4 w-4" />}>Disqualify</Button>
-                        <Button size="none" className="h-12 w-[154px]" onClick={() => {
+                          }} leftIcon={<Close className="h-5 w-5" />}>Disqualify</Button>
+                        <Button size="none" className="h-12 w-[154px] text-body-medium" onClick={() => {
                           const res = moveRespondent(s.id, person.id, 'qualified')
                           toast(res.ok ? `${person.name} qualified` : res.why)
-                        }} leftIcon={<CheckCircle className="h-4 w-4" />}>Qualify</Button>
+                        }} leftIcon={<CheckCircle className="h-5 w-5" />}>Qualify</Button>
                       </span>
                     </>
                   )}

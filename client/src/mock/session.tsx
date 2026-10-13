@@ -43,6 +43,8 @@ export interface Account {
   location?: string
   /** Payment Method, filled during onboarding. */
   cardLast4?: string
+  /** The account's picture, where there is one. Only the demo account has one; anyone else shows their initials. */
+  photo?: string
 }
 
 /** The demo sign-in. Who she is, her company and her card are the shared seed's; only the password lives here. */
@@ -53,6 +55,7 @@ export const DEMO_ACCOUNT: Account = {
   name: '', role: '', company: '',
   seeded: true,
   onboarded: true,
+  photo: '/img/jennifer.png',
 }
 
 /** An account with the name, role and company the platform holds for it. */
