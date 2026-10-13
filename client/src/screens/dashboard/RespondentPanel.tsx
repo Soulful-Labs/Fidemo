@@ -5,12 +5,13 @@ import { Avatar } from '../../components/client/RespondentCard'
 import type { Respondent } from '../../components/client/RespondentCard'
 import { ChevronRight, Info, VerifiedMark } from '../../components/ui/icons'
 import { useToast } from '../../components/ui/Toast'
-import { useProfile } from '../../platform'
+import { personById } from '@shared/derive'
+import { usePlatform, useProfile } from '../../platform'
 
 /** One card of the panel body: a heading and its rows. */
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-4 rounded-lg border-1 border-stroke-input bg-bg-0 p-4">
+    <section className="flex flex-col gap-4 rounded-lg border-1 border-stroke-1 bg-bg-0 p-4">
       <h3 className="text-text-medium text-text-subtitle">{title}</h3>
       {children}
     </section>
@@ -44,17 +45,19 @@ export default function RespondentPanel({
   onReviews?: () => void; title?: string }) {
   const toast = useToast()
   const d = useProfile(respondent?.id)
+  /** The picture and the intro video are on the person's own record; without one there is an initial and no video block. */
+  const record = personById(usePlatform(), respondent?.id ?? '')
   if (!respondent || !d) return null
 
   return (
-    <SidePanel open={open} onClose={onClose} title={title ?? respondent.name} headerClassName="h-[50px]" bodyClassName="flex flex-col gap-3 p-4"
+    <SidePanel open={open} onClose={onClose} title={title ?? respondent.name} headerClassName="h-14" bodyClassName="flex flex-col gap-3 p-4"
       footer={
         <div className="flex gap-3 [&_button]:h-12 [&_button]:flex-1 [&_button]:text-body-medium">
-          <Button onClick={() => (onInvite ? onInvite() : toast('Invite them from the Pool or a study\'s Matched tab'))}>Invite To Study</Button>
+          <Button size="none" onClick={() => (onInvite ? onInvite() : toast('Invite them from the Pool or a study\'s Matched tab'))}>Invite To Study</Button>
         </div>
       }>
       <div className="flex items-start gap-3 px-1 pb-[11px]">
-        <Avatar name={respondent.name} size={56} />
+        {record?.photo ? <img src={record.photo} alt="" className="h-14 w-14 shrink-0 rounded-full object-cover" /> : <Avatar name={respondent.name} size={56} />}
         <div className="flex min-w-0 flex-col gap-1">
           <p className="text-title-s text-text-title">{respondent.role}</p>
           <p className="text-text-regular text-text-subtitle">{d.meta}</p>
@@ -102,6 +105,18 @@ export default function RespondentPanel({
         </div>
       </div>
 
+      {record?.profile.introVideo && (
+        <section className="flex items-center gap-3 rounded-lg border-1 border-stroke-1 p-3">
+          <span className="flex h-[60px] w-[90px] shrink-0 items-center justify-center rounded-sm bg-bg-2 text-brand-primary">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#fdfdfc" stroke="currentColor" strokeWidth="1.5" /><path d="m10.5 9 4 3-4 3V9Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg>
+          </span>
+          <span className="flex min-w-0 flex-col gap-1">
+            <span className="text-text-regular text-text-title">Intro Video</span>
+            <span className="truncate text-text-regular text-text-body">{record.profile.introVideo}</span>
+          </span>
+        </section>
+      )}
+
       <Block title="About">
         <dl className="grid grid-cols-3 gap-x-4 gap-y-4">
           {d.aboutRows.map((a) => (
@@ -113,26 +128,29 @@ export default function RespondentPanel({
         </dl>
       </Block>
 
-      <Block title="Verified">
-        <ul className="grid grid-cols-2 gap-x-4 gap-y-3">
-          {d.verified.map((v) => (
-            <li key={v} className="inline-flex items-center gap-2 text-text-regular text-text-title">
-              <VerifiedMark className="h-5 w-5 text-brand-secondary" />{v}
-            </li>
-          ))}
-        </ul>
-      </Block>
-
-      <Block title="Metrics">
-        <dl className="grid grid-cols-3 gap-4">
-          {d.metricRows.map((m) => (
-            <div key={m.label} className="flex flex-col gap-1">
-              <dt className="text-text-regular text-text-subtitle">{m.label}</dt>
-              <dd className="text-title-s text-brand-primary">{m.value}</dd>
-            </div>
-          ))}
-        </dl>
-      </Block>
+      {/* Verified and the three figures sit side by side under About (13 Oct 2026 export). */}
+      <div className="grid grid-cols-2 gap-3">
+        <section className="rounded-lg border-1 border-stroke-1 p-4">
+          <ul className="flex flex-col gap-2.5">
+            {d.verified.map((v) => (
+              <li key={v} className="inline-flex items-center gap-2 text-text-regular text-text-title">
+                <VerifiedMark className="h-[18px] w-[18px] text-green-ok" />{v}
+              </li>
+            ))}
+            {d.verified.length === 0 && <li className="text-text-regular text-text-subtitle">Nothing verified yet</li>}
+          </ul>
+        </section>
+        <section className="rounded-lg border-1 border-stroke-1 p-4">
+          <dl className="flex flex-col gap-3">
+            {d.metricRows.map((m) => (
+              <div key={m.label} className="flex items-baseline gap-1.5">
+                <dd className="text-title-s leading-6 text-brand-primary">{m.value}</dd>
+                <dt className="text-text-regular text-text-subtitle">{m.label}</dt>
+              </div>
+            ))}
+          </dl>
+        </section>
+      </div>
     </SidePanel>
   )
 }

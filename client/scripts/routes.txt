@@ -2,6 +2,9 @@ dashboard
 studies
 studies/drafts
 studies/completed
+studies/sessions
+payments?panel=payall
+payments?panel=paidall
 studies/create/about
 studies/create/audience
 studies/create/audience/no-match

@@ -22,7 +22,7 @@ export function NotificationItem({ n, onAction }: { n: NotificationRow; onAction
   return (
     /* The whole row opens what it is about; the action button does the same
        thing, which is what the PRD's notification table asks for. */
-    <li className={cn('flex gap-3 border-b-1 border-stroke-1 px-3 pb-[13px] pt-3 transition-colors',
+    <li className={cn('flex gap-3 border-b-1 border-stroke-1 px-3 pb-[14px] pt-3 transition-colors',
       n.unread ? 'bg-yellow-30 hover:bg-yellow-40' : 'bg-bg-0 hover:bg-bg-1')}>
       <span className={cn('flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-md text-brand-primary',
         n.unread ? 'bg-bg-0' : 'bg-bg-1')}>
@@ -32,11 +32,12 @@ export function NotificationItem({ n, onAction }: { n: NotificationRow; onAction
         <button type="button" onClick={() => onAction(n)} className="flex flex-col gap-1 text-left">
           <span className="text-text-medium text-text-title">{n.title}</span>
           <span className="text-text-regular text-text-subtitle"><Body n={n} /></span>
-          <span className="text-label text-text-body">{n.ago}</span>
+          <span className="text-label text-text-subtitle">{n.ago}</span>
         </button>
         {n.action && (
           <span className="pt-1">
-            <Button size="row" variant={n.unread ? 'primary' : 'secondary'}
+            {/* 13 Oct 2026 exports: an unread row's action is the filled pale button, a read row's is the ringed one. */}
+            <Button size="row" variant={n.unread ? 'secondary' : 'tertiary'}
               onClick={() => onAction(n)}>{n.action}</Button>
           </span>
         )}
