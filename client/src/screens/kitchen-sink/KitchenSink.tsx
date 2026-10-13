@@ -127,7 +127,7 @@ export default function KitchenSink() {
         <Section title="Cards">
           <div className="grid w-full grid-cols-3 gap-4">
             <StudyCard study={STUDY} />
-            <RespondentCard respondent={RESPONDENT} saveable />
+            <RespondentCard respondent={RESPONDENT} />
             <RespondentCard respondent={{ ...RESPONDENT, id: 'r2', name: 'Sophie A.', role: 'Clinical Psychologist', score: 89, tier: 'gold' }}
               actions={<><Button variant="secondary" className="flex-1">Invite To Study</Button><Button variant="tertiary" className="flex-1">View Profile</Button></>} />
           </div>

@@ -2,10 +2,9 @@ import type { ReactNode } from 'react'
 import Button from '../ui/Button'
 import Tag from '../ui/Tag'
 import TierChip from './TierChip'
-import { ChevronRight, Star, TrustMark, VerifiedMark } from '../ui/icons'
+import { ChevronRight, TrustMark, VerifiedMark } from '../ui/icons'
 import { cn } from '../../lib/cn'
 import type { Tier } from '../../lib/studyTypes'
-import { useToast } from '../ui/Toast'
 
 export interface Respondent {
   id: string
@@ -48,13 +47,14 @@ export function RespondentMeta({ r }: { r: Respondent }) {
  * so they are passed in; the card itself never changes.
  */
 export default function RespondentCard({
-  respondent, actions, onView, saveable, onSave, className,
-}: { respondent: Respondent; actions?: ReactNode; onView?: () => void; saveable?: boolean
-  /** The star saves them into a micro-panel; without it the card just confirms. */
-  onSave?: () => void; className?: string }) {
-  const toast = useToast()
+  respondent, actions, onView, onInvite, viewButton, className,
+}: { respondent: Respondent; actions?: ReactNode; onView?: () => void
+  /** Invite To Study, the card's own button in the 13 Oct 2026 exports. */
+  onInvite?: () => void
+  /** The Pool with its filters open draws View Profile beside it. */
+  viewButton?: boolean; className?: string }) {
   return (
-    <article className={cn('flex flex-col gap-3.5 rounded-lg bg-bg-1 p-3', className)}>
+    <article className={cn('flex flex-col gap-3 rounded-lg bg-bg-1 px-3 pb-3 pt-[14px]', className)}>
       <div className="flex items-center gap-2">
         <Avatar name={respondent.name} />
         <div className="flex min-w-0 flex-col">
@@ -74,15 +74,13 @@ export default function RespondentCard({
 
       <div className="flex items-center gap-2">
         {actions ?? (
-          <Button variant="tertiary" className="flex-1" onClick={onView} rightIcon={<ChevronRight className="h-4 w-4" />}>
-            View Profile
-          </Button>
-        )}
-        {(saveable || onSave) && (
-          <button type="button" aria-label="Save to micro-panel" onClick={() => (onSave ? onSave() : toast('Saved to micro-panel'))}
-            className="flex h-btn w-btn shrink-0 items-center justify-center rounded-sm border-1 border-cta-tertiaryStroke text-text-subtitle hover:text-text-title">
-            <Star className="h-5 w-5" />
-          </button>
+          <>
+            {/* The exports also draw a star here on one Pool frame. It saved a person into a micro-panel, which the design has switched off, so there is nothing for it to do and it is not drawn. */}
+            <Button variant="tertiary" size="row" className="mt-0.5 flex-1" onClick={onInvite ?? onView} rightIcon={<ChevronRight className="h-4 w-4" />}>
+              {onInvite ? 'Invite To Study' : 'View Profile'}
+            </Button>
+            {viewButton && <Button variant="tertiary" size="row" className="mt-0.5 flex-1 text-text-subtitle" onClick={onView}>View Profile</Button>}
+          </>
         )}
       </div>
     </article>

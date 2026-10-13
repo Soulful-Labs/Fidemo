@@ -72,8 +72,10 @@ export function SideNav() {
  * carrying the breadcrumb, the bell and Create Study, and the page area.
  */
 export default function AppShell({
-  crumbs = [], action, children, bare, hideCreate,
+  crumbs = [], action, children, bare, hideCreate, heading,
 }: { crumbs?: Crumb[]; action?: ReactNode; children: ReactNode; bare?: boolean;
+  /** The Dashboard's top bar carries a greeting where every other screen carries its breadcrumb. */
+  heading?: string;
   /** Bill Payment (1627:96956) keeps the bell and drops Create Study. */
   hideCreate?: boolean }) {
   const newStudy = useNewStudy()
@@ -91,7 +93,8 @@ export default function AppShell({
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-[69px] shrink-0 items-center justify-between gap-4 border-b-1 border-stroke-warm bg-yellow-20 px-4">
           <nav className="flex items-center gap-1 text-body-regular text-text-subtitle" aria-label="Breadcrumb">
-            {crumbs.map((c, i) => (
+            {heading && <h1 className="text-title-m leading-7 text-text-title">{heading}</h1>}
+            {!heading && crumbs.map((c, i) => (
               <span key={c.label} className="flex items-center gap-1">
                 {i > 0 && <span className="text-text-body">/</span>}
                 {c.to ? <NavLink to={c.to} className="hover:text-text-title">{c.label}</NavLink> : <span className={crumbs.length === 1 ? 'text-body-medium text-text-title' : 'text-text-title'}>{c.label}</span>}

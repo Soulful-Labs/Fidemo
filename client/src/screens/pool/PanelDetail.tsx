@@ -189,7 +189,6 @@ export default function PanelDetail({ featured }: { featured?: boolean }) {
               {shown.map((p) => (
                 <RespondentCard key={p.id} respondent={p}
                   className="px-4 pb-2 pt-4"
-                  saveable={tab === 'members'}
                   actions={tab === 'members'
                     ? <Button variant="tertiary" size="none" className="h-11 flex-1" onClick={() => setSent(true)}>Invite To Study</Button>
                     : <AddToPanel onAdd={() => {

@@ -2,10 +2,10 @@ import AppShell from '../../app/AppShell'
 import { StudyFrame } from '../../components/client/StudyFrame'
 import { useParams } from 'react-router-dom'
 import { useStudies, useStudy } from '../../platform'
-import type { ClientStudy } from '../../platform'
 import { averageScore, counts, progressPct } from '@shared/derive'
 import { money } from '@shared/format'
 import { cn } from '../../lib/cn'
+import { paceOf } from '../../lib/insight'
 
 /** The Overview tiles of the paused study (1704:143783), in the warm tint that frame draws them in. */
 export function OverviewTile({ label, value, suffix, ring }: { label: string; value: string; suffix?: string; ring?: number }) {
@@ -34,23 +34,6 @@ const SPARKLE = (
       stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
   </svg>
 )
-const DAY = 86_400_000
-
-/**
- * How the study is going against the time it has left, from two facts the
- * platform holds: how many have completed since it went live, and how many
- * days it has left. No pace can be read before the first completion, and
- * then there is nothing to say, so the banner and the forecast say nothing.
- */
-function paceOf(s: ClientStudy, completed: number, now: Date = new Date()) {
-  const left = Math.max(0, s.required - completed)
-  if (left === 0) return { state: 'done' as const, daysToFinish: 0 }
-  const since = s.approvedAt ? Math.max(1, (now.getTime() - new Date(s.approvedAt).getTime()) / DAY) : 0
-  if (!since || completed === 0) return undefined
-  const daysToFinish = Math.ceil(left / (completed / since))
-  return { state: daysToFinish <= s.daysRemaining ? 'ahead' as const : 'behind' as const, daysToFinish, perWeek: Math.ceil((left / Math.max(1, s.daysRemaining)) * 7) }
-}
-
 /** One step of the funnel: its count on its own block, each block shorter than the last. */
 function Funnel({ steps }: { steps: number[] }) {
   const BLOCK = ['h-[126px] bg-cta-secondary', 'h-[94px] bg-yellow-400', 'h-[62px] bg-brand-primary']

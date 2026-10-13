@@ -3,11 +3,6 @@ import { cn } from '../../lib/cn'
 
 export type TileTint = 'yellow' | 'green' | 'purple' | 'blue' | 'none'
 
-/** The frame fades each tile from its tint at the top to the page below it. */
-const TINT: Record<TileTint, string> = {
-  yellow: 'from-yellow-40/50', green: 'from-green-50/50',
-  purple: 'from-purple-100/50', blue: 'from-blue-100/50', none: 'from-bg-1',
-}
 const BADGE: Record<TileTint, string> = {
   yellow: 'bg-yellow-40', green: 'bg-green-50', purple: 'bg-purple-100', blue: 'bg-blue-100', none: 'bg-bg-1',
 }
@@ -21,16 +16,15 @@ export default function StatTile({
   label, value, icon, tint = 'none', className,
 }: { label: string; value: string; icon?: ReactNode; tint?: TileTint; className?: string }) {
   return (
-    <div className={cn('flex h-[84px] flex-col gap-2 rounded-lg border-1 border-stroke-1 bg-gradient-to-b to-transparent p-3',
-      TINT[tint], className)}>
+    <div className={cn('flex h-[84px] flex-col gap-[7px] rounded-lg border-1 border-stroke-1 px-[11px] pt-[11px]', className)}>
       <span className="text-text-regular text-text-subtitle">{label}</span>
       <span className="flex items-center gap-2">
         {icon && (
           /* The frame draws a rounded square, not a circle, and a 40px one. */
-          <span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-md [&>svg]:h-5 [&>svg]:w-5',
+          <span className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-sm [&>svg]:h-5 [&>svg]:w-5',
             BADGE[tint], ACCENT[tint])}>{icon}</span>
         )}
-        <span className="text-title-l text-text-title">{value}</span>
+        <span className="text-title-m leading-7 text-text-title">{value}</span>
       </span>
     </div>
   )

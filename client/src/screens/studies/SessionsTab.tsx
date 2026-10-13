@@ -1,13 +1,11 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { recruits, sessionSeats, sessionStartOf } from '@shared/derive'
-import { isLive } from '@shared/lifecycle'
+import { upcomingSessions } from '../../lib/insight'
+import type { SessionRow as Row } from '../../lib/insight'
 import Button from '../../components/ui/Button'
 import { STUDY_TYPE } from '../../lib/studyTypes'
 import type { StudyType } from '../../lib/studyTypes'
 import { useStudies } from '../../platform'
-
-interface Row { key: string; at: Date; title: string; type: StudyType; study: string; details: string; start: string }
 
 /**
  * Scheduled Sessions (exported 13 Oct 2026, no node id on record): every
@@ -25,31 +23,10 @@ export default function SessionsTab({ search, types }: { search: string; types: 
   const { studies, state } = useStudies()
 
   const days = useMemo(() => {
-    const today = new Date(); today.setHours(0, 0, 0, 0)
-    const rows: Row[] = []
-    for (const s of studies.filter((x) => isLive(x.state))) {
-      if (s.sessions) {
-        sessionSeats(s).forEach((x, i) => rows.push({
-          key: `${s.id}-${x.id}`, at: sessionStartOf({ date: x.date, slot: x.slot }), type: s.type, study: s.title,
-          title: `Session ${i + 1} with ${x.taken} participant${x.taken === 1 ? '' : 's'}`,
-          details: `/studies/${s.id}/recruited`, start: `/studies/${s.id}/recruited`,
-        }))
-      } else {
-        for (const r of recruits(state, s)) {
-          const b = r.participation.booking
-          if (r.participation.state !== 'scheduled' || !b) continue
-          const page = `/studies/${s.id}/respondent/${r.id}/result`
-          rows.push({
-            key: `${s.id}-${r.id}`, at: sessionStartOf(b), type: s.type, study: s.title,
-            title: `${s.type === 'in_person' ? 'In-person session' : 'Video Call'} with ${r.name}.`,
-            details: page, start: `${page}?session=running`,
-          })
-        }
-      }
-    }
+    const rows = upcomingSessions(state, studies)
     const q = search.trim().toLowerCase()
     const shown = rows
-      .filter((r) => r.at >= today && (types.length === 0 || types.includes(r.type)) && (!q || r.study.toLowerCase().includes(q) || r.title.toLowerCase().includes(q)))
+      .filter((r) => (types.length === 0 || types.includes(r.type)) && (!q || r.study.toLowerCase().includes(q) || r.title.toLowerCase().includes(q)))
       .sort((a, b) => a.at.getTime() - b.at.getTime())
     const byDay = new Map<string, Row[]>()
     for (const r of shown) byDay.set(r.at.toDateString(), [...(byDay.get(r.at.toDateString()) ?? []), r])
