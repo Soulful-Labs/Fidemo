@@ -6,6 +6,74 @@ Figma: file `Q83MnpAyJuc6RttXYbWudH`, client designs start at node `826:85016`.
 
 ---
 
+## The designer's exports of 13 Oct 2026
+
+Sixteen PNGs in `client/figma-export/` (2x, so halve them to compare at 1440).
+They are the truth for how these screens look; behaviour is what was already
+built. **Where a section below describes one of these screens differently, the
+export wins and that section is history.**
+
+| Export | Screen | Route |
+|---|---|---|
+| Dashboard | Dashboard | `/dashboard` |
+| 2.0 Studies, 2.0 Studies-1 | Studies table and cards | `/studies` |
+| Scheduled Sessions | **new**, the fourth Studies tab | `/studies/sessions` |
+| 2.1 Study Overview - Studies | Study Overview, every study type | `/studies/:id` |
+| Recruited respondent result, -1 | Respondent result, every study type | `/studies/:id/respondent/:rid` |
+| Respondent Profile Details | the profile panel | from the Pool and the Dashboard |
+| Pool - Filters View, Filters Hidden | Pool | `/pool`, `/pool?filters=hidden` |
+| Payments, Payments-1 | Payments, pending and completed | `/payments`, `/payments/history` |
+| Pay All Due Invoices | **new** panel | `/payments?panel=payall` |
+| $34,538 paid successfully! | **new** dialog | after Pay All |
+| Notifications, Notifications-1 | the panel and the page | the bell, `/notifications` |
+
+**Tokens.** Every colour sampled off the exports matched `tailwind.config.ts`;
+the page behind the panel was already the warm `yellow-20`. Added, because the
+exports use them and the config had no name for them: `stroke.warm` (the rules
+around the navigation and top bar), `green.100` (the empty part of a progress
+bar), `green.ok` (a verified tick), `yellow.100`, `red.50` and `red.600`, and
+lighter `tier.goldBg` / `tier.platinumBg`. What changed globally is shape, fixed
+once in the shared components: 12px corners on buttons, the nav pill and the
+tab pill (they were 8 and fully round), 16px on selects and the tab track, a
+square bell with no dot, a rule under the wordmark, a 68px top bar, and the
+account card with the account's picture.
+
+**What the new screens are made of** (`lib/insight.ts`): pace is completions
+since the study went live against the days it has left; upcoming sessions are
+the bookings and group sessions on live studies; Needs Your Attention lists
+only what is actually waiting (applications, a study behind pace, balances
+owed, completed people not rated, sessions today); the Super Insights card
+pages through the same facts. Spend By Month adds up the studies' own
+payments. None of it is in the seed and none of it is a forecast model.
+
+**Not tracked, so shown empty or left out:**
+- Impressions and Clicks on the Study Overview say "Not tracked yet".
+- Respondent photos: nobody in the pool has one, so cards show an initial.
+- Intro Video: shown only for a person whose record has one, with the file's
+  name; the still and the "Updated" date are not kept.
+- The star on a respondent card saved to a micro-panel, which is gone, so it
+  is not drawn.
+
+**Drawn one way, built another, on purpose:**
+- "Due Date (auto-debit)" is "Due Date": nothing debits a card on its own.
+- The Payments insight does not say "AutoPay is on"; that toggle is about
+  participant payouts, not invoices.
+- The Dashboard's unpaid alert (workflow 53, "a red alert") is now the
+  "Invoices are due" row of Needs Your Attention, in the export's colours.
+- Scheduled Sessions has a search box and a filter both labelled "Study
+  Type", as drawn. The calendar button has no screen to open and says so.
+
+**Micro-Panels was removed** on 13 Oct 2026 (the section is switched off in
+Figma), as its own commit. Everything further down this file about
+`/pool/panels/*`, `/pool/featured/*`, Create Micro-panel and Save To
+Micropanel describes screens that no longer exist.
+
+`BASE_URL=http://localhost:5180/client node --experimental-websocket
+scripts/containment.mjs` checks every route in `scripts/routes.txt` at
+1440 x 900 and 1440 x 1200.
+
+---
+
 ## Figma update in progress, paused
 
 **Paused on 13 Oct 2026.** The designer updated the client frames (page `826:85016`).

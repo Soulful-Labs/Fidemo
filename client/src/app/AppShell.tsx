@@ -32,11 +32,11 @@ export function SideNav() {
   return (
     <nav className="sticky top-0 flex h-screen max-h-[960px] w-nav shrink-0 flex-col border-r-1 border-stroke-warm bg-yellow-20">
       {/* The wordmark sits over the same rule the top bar ends on (y 68 in every 13 Oct 2026 export). */}
-      <div className="flex h-[69px] shrink-0 items-center border-b-1 border-stroke-warm pl-7">
+      <div className="flex h-[68px] shrink-0 items-center border-b-1 border-stroke-warm pl-7">
         <span className="text-title-l text-text-title">Focus Insite</span>
       </div>
 
-      <ul className="flex flex-1 flex-col gap-1.5 pl-4 pr-[18px] pt-[19px]">
+      <ul className="flex flex-1 flex-col gap-1.5 pl-4 pr-[18px] pt-5">
         {NAV.map(({ to, label, Icon }) => {
           const on = pathname === to || pathname.startsWith(`${to}/`)
           return (
@@ -91,7 +91,7 @@ export default function AppShell({
       <SideNav />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-[69px] shrink-0 items-center justify-between gap-4 border-b-1 border-stroke-warm bg-yellow-20 px-4">
+        <header className="sticky top-0 z-30 flex h-[68px] shrink-0 items-center justify-between gap-4 border-b-1 border-stroke-warm bg-yellow-20 px-4 pt-[3px]">
           <nav className="flex items-center gap-1 text-body-regular text-text-subtitle" aria-label="Breadcrumb">
             {heading && <h1 className="text-title-m leading-7 text-text-title">{heading}</h1>}
             {!heading && crumbs.map((c, i) => (
@@ -119,7 +119,7 @@ export default function AppShell({
         </header>
 
         {/* The title bar is 70 tall and the page starts at 78 (1627:95962). */}
-        <main className="flex-1 px-2 pb-2 pt-[9px]">{children}</main>
+        <main className="flex-1 px-2 pb-2 pt-2.5">{children}</main>
       </div>
 
       <NotificationsPanel open={notifications} rows={rows} onClose={() => setNotifications(false)}
