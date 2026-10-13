@@ -23,7 +23,8 @@ import { ClientAbout, ClientHeader } from './parts'
 
 type Tab = 'about' | 'studies' | 'payments'
 const TYPES = ['survey', 'video', 'video-group', 'in-person', 'in-person-group', 'diary']
-const STUDY_MENU = ['Copy Study Link', 'Pause Study', 'Duplicate to Drafts']
+/** Duplicate to Drafts is gone, as on Manage Study: the console does not create studies (final sweep, 13 Oct 2026). */
+const STUDY_MENU = ['Copy Study Link', 'Pause Study']
 
 const Stat = ({ label, value, note, tint }: { label: string; value: string; note: string; tint?: boolean }) => (
   <div className={cn('flex h-[88px] flex-1 items-center gap-4 rounded-lg px-4', tint ? 'bg-yellow-30' : 'border-1 border-stroke-1')}>
@@ -72,7 +73,7 @@ export default function ClientProfile() {
         <button type="button" aria-label="Study options" onClick={(e) => { e.stopPropagation(); setRowMenu(rowMenu === r.id ? null : r.id) }} className="flex h-8 w-8 items-center justify-center"><DotsIcon className="h-5 w-5" /></button>
         {rowMenu === r.id && (
           <ul role="menu" className="absolute right-2 top-11 z-30 w-[220px] rounded-lg bg-bg-0 p-2 shadow-[0_4px_16px_rgba(32,30,25,0.12)]">
-            {STUDY_MENU.map((m) => <li key={m} role="none" className={m === 'Duplicate to Drafts' ? 'border-t-1 border-stroke-1' : undefined}><button role="menuitem" type="button" onClick={(e) => { e.stopPropagation(); setRowMenu(null) }} className="flex h-[38px] w-full items-center rounded-sm px-3 text-body-regular text-text-title hover:bg-bg-1">{m}</button></li>)}
+            {STUDY_MENU.map((m) => <li key={m} role="none"><button role="menuitem" type="button" onClick={(e) => { e.stopPropagation(); setRowMenu(null) }} className="flex h-[38px] w-full items-center rounded-sm px-3 text-body-regular text-text-title hover:bg-bg-1">{m}</button></li>)}
           </ul>
         )}
       </>
