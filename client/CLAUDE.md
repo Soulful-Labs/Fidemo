@@ -646,9 +646,16 @@ And a third pass, the same day:
   them on the Pay tab.
 - `node --experimental-websocket scripts/final-check.mjs` checks these seven.
 
-**Saved, and not yet acted on anywhere:** the diary's duration unit and
-frequency (entries are counted in days), and work functions and skills (not
-on a participant's profile, so they cannot narrow the audience).
+**Final sweep, 13 Oct 2026.** A diary's entries are counted in the unit the
+client chose (Hour, Day or Week): Study Duration and Minimum Required are
+offered and stored in that unit, and every screen in all three apps names an
+entry with `diaryWords(unit)` from `shared/platform.ts`. Frequency is stored
+and shown, not yet enforced. Work functions and skills are now on a
+participant's profile (`WORK_FUNCTIONS`, `SKILLS`; the respondent edits them on
+My Profile, Professional Info, optional and outside the completion count) and
+narrow the audience and Matched like every other criterion. Every seeded
+person has a drawn, faceless picture from `shared/avatar.ts`, never a
+photograph.
 
 `node --experimental-websocket scripts/create-check.mjs` (repo root, against
 the one-origin build) builds a study of each of the six types, reads each back

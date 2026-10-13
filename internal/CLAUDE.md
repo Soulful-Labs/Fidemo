@@ -432,9 +432,11 @@ title or description (survey, video 1:1, in-person). Titles are sentence case he
 title case on the list. Built as drawn.
 
 Built choices, not drawn: Resume Study clears the paused state; Mark as completed goes
-to Studies > Completed; Duplicate to Drafts, Stop-complete Study and Edit close the
-menu and do nothing (no destination is drawn; the Edit screens are the hidden,
-discarded section).
+to Studies > Completed. Since the final sweep (13 Oct 2026) the menu is Copy Study
+Link, Pause Study and Stop-complete Study on every running study: Stop-complete moves
+the study to completed through the shared store, refusing with the store's reason
+where it cannot. Duplicate to Drafts is removed (the console does not create studies)
+and Edit is removed (no live study is editable anywhere).
 
 Shared changes: the study tab strip (`PanelTabs`) and `Pill` moved to
 `components/app`, the content column is `min-h-screen` so a panel can fill the window,
