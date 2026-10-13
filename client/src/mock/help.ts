@@ -17,7 +17,7 @@
  * - underfilling: step 54
  * - completion: steps 42, 44 and 45
  * - the Pool: steps 23 and 24, and step 4 for what is not in this build
- * - audiences: steps 6 and 7, and micro-panels
+ * - audiences: steps 6 and 7, and the Pool
  * - editing after launch: step 7
  *
  * Flagged in docs/Client-Screens-Not-In-Figma.md for the writer to approve.
@@ -53,7 +53,7 @@ export const FAQS = [
   },
   {
     q: 'Do I need to create my own audience, or can I utilize an existing one?',
-    a: 'Either. You can define the audience for a new study — the segmentation, the groups and the sample size — and the team turns that into screening questions. Or you can recruit from a micro-panel you have already built and saved, which is faster and cheaper than recruiting from scratch. Most studies also need people from outside the Pool, and the team sources those for you.',
+    a: 'Either. You can define the audience for a new study — the segmentation, the groups and the sample size — and the team turns that into screening questions. Or you can search the Pool and invite the people you want to a live study yourself. Most studies also need people from outside the Pool, and the team sources those for you.',
   },
   {
     q: 'Is it possible to edit a study after it has been launched?',

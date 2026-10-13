@@ -27,16 +27,6 @@ studies/st-pay/pay
 studies/st-pay/pay?state=due
 studies/st-pay/payment
 pool
-pool?view=panels
-pool?view=panels&sub=featured
-pool/panels/p1
-pool/panels/p1?tab=matches
-pool/panels/p1?tab=details
-pool/featured/f1
-pool/featured/f1?tab=details
-pool/panels/new
-pool/panels/new?step=2
-pool/panels/p1/edit
 payments
 payments?tab=completed
 notifications

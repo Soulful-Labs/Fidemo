@@ -1,61 +1,11 @@
-import { NavLink } from 'react-router-dom'
-import Button from '../../components/ui/Button'
 import Select from '../../components/ui/Select'
-import { Calendar, Close, GoldMark, MoreVertical, PlatinumMark, Plus, SilverMark, UsersIcon } from '../../components/ui/icons'
+import { Close, GoldMark, PlatinumMark, SilverMark } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { POOL_FILTERS, usePool } from '../../mock/pool'
-import type { PanelCard, PoolFilters } from '../../mock/pool'
+import type { PoolFilters } from '../../mock/pool'
 import { useState } from 'react'
-import { useToast } from '../../components/ui/Toast'
 
 const MARK: Record<string, typeof GoldMark> = { Silver: SilverMark, Gold: GoldMark, Platinum: PlatinumMark }
-
-/** The add action the Eligible Matches tab swaps into the respondent card. */
-export function AddToPanel({ onAdd }: { onAdd?: () => void }) {
-  const toast = useToast()
-  return (
-    <Button variant="tertiary" size="none" className="h-11 w-full" leftIcon={<Plus className="h-4 w-4" />}
-      onClick={() => (onAdd ? onAdd() : toast('Added to this panel'))}>
-      Add To This Panel
-    </Button>
-  )
-}
-
-/** A micro-panel tile: mine list their roles, featured ones their description. */
-export function PanelTile({ c, to, onDelete }: { c: PanelCard; to: string; onDelete?: () => void }) {
-  return (
-    <NavLink to={to} className="flex flex-col rounded-lg border-1 border-stroke-input p-4 hover:bg-bg-1">
-      <span className="flex items-start justify-between gap-3">
-        <span className="flex flex-col gap-1">
-          <span className="text-title-s leading-[22px] text-text-title">{c.title}</span>
-          <span className="text-text-regular text-text-subtitle">{c.domain}</span>
-        </span>
-        {c.roles && (
-          <button type="button" aria-label="Panel options"
-            onClick={(e) => { e.preventDefault(); onDelete?.() }}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-1 border-stroke-input text-text-subtitle hover:text-text-title">
-            <MoreVertical className="h-4 w-4" />
-          </button>
-        )}
-      </span>
-      {c.roles && (
-        <span className="flex items-center gap-1.5 pt-3 text-text-regular text-text-title">
-          <span className="shrink-0 text-text-body">&#9878;</span>
-          <span className="truncate">{c.roles}</span>
-        </span>
-      )}
-      {c.description && <span className="line-clamp-2 pt-3 text-text-regular text-text-subtitle">{c.description}</span>}
-      <span className="flex items-center gap-2 pt-4">
-        <span className="inline-flex h-8 items-center gap-2 rounded-full bg-bg-1 px-3 text-text-regular text-text-title">
-          <UsersIcon className="h-4 w-4 text-text-subtitle" />{c.members}
-        </span>
-        <span className="inline-flex h-8 items-center gap-2 rounded-full bg-bg-1 px-3 text-text-regular text-text-body">
-          <Calendar className="h-4 w-4" />{c.updated}
-        </span>
-      </span>
-    </NavLink>
-  )
-}
 
 /** A group's heading: 14px capitals in the subtitle colour. */
 const HEAD = 'flex h-7 items-center text-text-regular uppercase text-text-subtitle'

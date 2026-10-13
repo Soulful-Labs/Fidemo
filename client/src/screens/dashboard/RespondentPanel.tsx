@@ -5,7 +5,6 @@ import { Avatar } from '../../components/client/RespondentCard'
 import type { Respondent } from '../../components/client/RespondentCard'
 import { ChevronRight, Info, VerifiedMark } from '../../components/ui/icons'
 import { useToast } from '../../components/ui/Toast'
-import { useWorkspace } from '../../mock/workspace'
 import { useProfile } from '../../platform'
 
 /** One card of the panel body: a heading and its rows. */
@@ -43,7 +42,6 @@ export default function RespondentPanel({
   onInvite?: () => void
   /** The Pool frames title it "Profile of …" and wire Reviews to a second page. */
   onReviews?: () => void; title?: string }) {
-  const { panels, addToPanel } = useWorkspace()
   const toast = useToast()
   const d = useProfile(respondent?.id)
   if (!respondent || !d) return null
@@ -52,13 +50,7 @@ export default function RespondentPanel({
     <SidePanel open={open} onClose={onClose} title={title ?? respondent.name} headerClassName="h-[50px]" bodyClassName="flex flex-col gap-3 p-4"
       footer={
         <div className="flex gap-3 [&_button]:h-12 [&_button]:flex-1 [&_button]:text-body-medium">
-          <Button onClick={() => (onInvite ? onInvite() : toast('Invitation sent'))}>Invite To Study</Button>
-          <Button variant="secondary" onClick={() => {
-            const target = panels[0]
-            if (!target) { toast('Build a micro-panel first, then save people into it'); return }
-            const res = addToPanel(target.id, respondent?.id ?? '')
-            toast(res.ok ? `Saved to ${target.title}` : res.why!)
-          }}>Save To Micropanel</Button>
+          <Button onClick={() => (onInvite ? onInvite() : toast('Invite them from the Pool or a study\'s Matched tab'))}>Invite To Study</Button>
         </div>
       }>
       <div className="flex items-start gap-3 px-1 pb-[11px]">

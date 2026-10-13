@@ -13,7 +13,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 /**
  * The four button fills drawn across the client file: the yellow CTA
  * ("Create Study", "Continue", "Publish Study"), the pale yellow secondary
- * ("Invite To Study", "Save To Micropanel"), the white tertiary with a hairline
+ * ("Invite To Study", "Raise Incentive"), the white tertiary with a hairline
  * ("View Profile", "Cancel") and the red destructive ("Delete").
  */
 const ENABLED = {

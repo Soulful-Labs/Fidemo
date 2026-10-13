@@ -192,7 +192,7 @@ export default function KitchenSink() {
         <PauseStudyModal open={pause} onClose={() => setPause(false)} onConfirm={() => setPause(false)} />
 
         <SidePanel open={panel} onClose={() => setPanel(false)} title="Ferry L."
-          footer={<div className="flex gap-3"><Button className="flex-1">Invite To Study</Button><Button variant="secondary" className="flex-1">Save To Micropanel</Button></div>}>
+          footer={<div className="flex gap-3"><Button className="flex-1">Invite To Study</Button></div>}>
           <RespondentCard respondent={RESPONDENT} />
         </SidePanel>
 

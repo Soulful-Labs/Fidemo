@@ -13,8 +13,6 @@ import ResultsTab from './screens/studies/ResultsTab'
 import PayTab from './screens/studies/PayTab'
 import BillPayment from './screens/studies/BillPayment'
 import Pool from './screens/pool/Pool'
-import PanelDetail from './screens/pool/PanelDetail'
-import CreatePanel from './screens/pool/CreatePanel'
 import Payments from './screens/payments/Payments'
 import NotificationsPage from './screens/NotificationsPage'
 import Help from './screens/help/Help'
@@ -105,10 +103,6 @@ const routes: ScreenRoute[] = [
   { path: '/studies/:id/paused', label: 'Paused study', node: '1704:143783', section: 'Manage', kind: 'page', element: guard(createElement(PausedStudy)) },
 
   { path: '/pool', label: 'Pool of Participants', node: '1645:161430, 1777:98738, 1645:161580, 1645:162272', section: 'Pool', kind: 'page', element: guard(createElement(Pool)) },
-  { path: '/pool/panels/:panelId', label: 'My Panel', node: '1645:161734, 1645:162050, 1645:162132', section: 'Pool', kind: 'page', element: guard(createElement(PanelDetail)) },
-  { path: '/pool/featured/:panelId', label: 'Featured Panel', node: '1645:161816, 1645:161904', section: 'Pool', kind: 'page', element: guard(createElement(PanelDetail, { featured: true })) },
-  { path: '/pool/panels/new', label: 'Create Micro-panel', node: '1645:162404, 1645:162784', section: 'Pool', kind: 'page', element: guard(createElement(CreatePanel)) },
-  { path: '/pool/panels/:panelId/edit', label: 'Edit Micro-panel', node: '1645:162594', section: 'Pool', kind: 'page', element: guard(createElement(CreatePanel, { edit: true })) },
   { path: '/payments', label: 'Payments', node: '1663:103326 (pending), 1663:103525 (completed)', section: 'Payments', kind: 'page', element: guard(createElement(Payments)) },
 
   // ----- Payments (1663:103325) -----
