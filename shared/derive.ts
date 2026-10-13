@@ -618,7 +618,7 @@ export const recruit = (state: PlatformState, study: Study, personId: string): R
 export function studyCertificate(state: PlatformState, study: Study, now: Date = new Date()) {
   const done = study.participations.filter((p) => p.state === 'completed')
   const verified = done.filter((p) => personById(state, p.personId)?.identity.state === 'verified').length
-  const id = `HL-C-${accountCode(study.id, 4)}-${accountCode(study.id + '#', 4)}`
+  const id = `${CERTIFICATE.ID_PREFIX}-C-${accountCode(study.id, 4)}-${accountCode(study.id + '#', 4)}`
   return { verified, total: done.length, id, issuedAt: study.completedAt ?? now.toISOString() }
 }
 
