@@ -9,7 +9,7 @@
  * reads and writes the same platform: a change made in one app is picked up
  * by the others through the storage event, without a reload.
  */
-import { billing, diaryReady, hasTakenPartWith, sessionNotStarted, openAvailability, personById, personFigures, profileCompletion, restrictionCount } from './derive'
+import { applyRepeatRule, billing, diaryReady, hasTakenPartWith, sessionNotStarted, openAvailability, personById, personFigures, profileCompletion, restrictionCount } from './derive'
 import { canEditStudy, canMoveParticipation, canMoveStudy, isLive, participationOf } from './lifecycle'
 import {
   DECISION_UNDO_MS, DEMO_SESSION_CODE, RESTRICTION_DAYS, TIMINGS, canReschedule, canWithdraw, depositFor, isSessionType, priceStudy,
@@ -17,7 +17,7 @@ import {
 import { canRedeem, starsForRating, starsFromDimensions } from './rules'
 import { sessionStartOf as sessionStart } from './derive'
 import { EMPTY_PROFILE } from './seed/people'
-import { MAX_RUN_DAYS, buildStudy, studyTypeOf, summarise } from './studyForm'
+import { MAX_RUN_DAYS, buildStudy, fitsStudy, studyTypeOf, summarise } from './studyForm'
 import type { StudyForm } from './studyForm'
 import { DEMO_TEAM_PASSWORD, MASTER_ADMIN_ID, SEED_VERSION, buildEmpty, buildSeed } from './seed'
 import type {
@@ -199,8 +199,8 @@ export function createPlatform(options: Options = {}) {
       const id = draft?.id ?? uid('st')
       const kept = structuredClone(form)
       const study: Study = {
-        id, clientId, state: 'in_review', createdAt: draft?.createdAt ?? iso(), submittedAt: iso(), image: draft?.image,
-        linkCode: draft?.linkCode || `HL-${id.slice(-3).toUpperCase()}-A`, ...built.study,
+        id, clientId, state: 'in_review', createdAt: draft?.createdAt ?? iso(), submittedAt: iso(),
+        linkCode: draft?.linkCode || `HL-${id.slice(-3).toUpperCase()}-A`, ...built.study, image: built.study.image ?? draft?.image,
         setup: summarise(s, kept, clock()), form: kept, participations: [], payments: [], revisions: draft?.revisions ?? [],
       }
       study.payments.push({ id: `${id}-deposit`, kind: 'deposit', amount: depositFor(study.rates, study.required), at: iso() })
@@ -224,6 +224,7 @@ export function createPlatform(options: Options = {}) {
       const fields = {
         title: kept.title.trim() || 'Untitled study', description: kept.description, type, durationMins: Number(kept.duration) || 0, required,
         industry: kept.industries, targetProfession: kept.roles, rates: priceStudy(type, kept.incentive), autoPay: kept.autoPay, form: kept,
+        ...(kept.image ? { image: kept.image } : {}),
       }
       if (draft) { Object.assign(draft, fields); return yes({ id: draft.id }) }
       const id = uid('st')
@@ -256,7 +257,17 @@ export function createPlatform(options: Options = {}) {
         study.submittedAt = iso()
         if (!study.payments.some((p) => p.kind === 'deposit') && study.required > 0) study.payments.push({ id: `${study.id}-deposit`, kind: 'deposit', amount: depositFor(study.rates, study.required), at: iso() })
       }
-      if (to === 'recruiting' && !study.approvedAt) { study.approvedAt = iso(); log(s, actor, `Approved ${study.title} to publish`, 'Studies / Review / Approve') }
+      if (to === 'recruiting' && !study.approvedAt) {
+        study.approvedAt = iso(); log(s, actor, `Approved ${study.title} to publish`, 'Studies / Review / Approve')
+        /**
+         * Workflow 24: the search runs when the study goes live. Matched is the
+         * people who fit the audience the client set, less anyone its repeat
+         * rule shuts out. A study with no audience on record matches no one.
+         */
+        for (const person of applyRepeatRule(s, study, fitsStudy(s, study, clock()))) {
+          if (!participationOf(study, person.id)) study.participations.push({ personId: person.id, state: 'matched', events: [] })
+        }
+      }
       if (to === 'paused') { study.pausedReason = reason; log(s, actor, `Paused ${study.title}`, 'Studies / Manage / Pause') }
       if (to === 'completed') { study.completedAt = iso(); log(s, actor, `Marked ${study.title} as completed`, 'Studies / Manage / Complete') }
       study.state = to
@@ -328,7 +339,7 @@ export function createPlatform(options: Options = {}) {
     }),
 
     /** Workflow 15, 17, 57: the person starts the screener, if nothing stands in front of applying. */
-    startApplication: (studyId: string, personId: string) => move((s) => {
+    startApplication: (studyId: string, personId: string, preAnswers?: Answers) => move((s) => {
       const study = s.studies.find((x) => x.id === studyId)
       const person = personById(s, personId)
       if (!study || !person) return no('No such study')
@@ -342,6 +353,8 @@ export function createPlatform(options: Options = {}) {
       if (!p) { p = { personId, state: 'matched', events: [] }; study.participations.push(p) }
       const moved = shift(p, 'applying')
       if (!moved.ok) return moved
+      // The eligibility answers they passed with are kept, beside the fact that they passed.
+      if (preAnswers && study.preScreener.length > 0) { p.preAnswers = Object.fromEntries(study.preScreener.filter((q) => preAnswers[q.id] !== undefined).map((q) => [q.id, preAnswers[q.id]!])); p.prescreener = 'passed' }
       stamp(p, 'Application started')
       return yes()
     }),
@@ -494,7 +507,8 @@ export function createPlatform(options: Options = {}) {
       if (taskAnswers && study.type === 'survey') p.taskAnswers = tidyAnswers(study, taskAnswers)
       p.completedAt = iso()
       p.events.push({ label: actor.kind === 'participant' ? 'Completed' : 'Marked as completed', at: p.completedAt }, { label: 'Earnings credited', at: p.completedAt })
-      s.pending.push({ kind: 'pay', studyId, personId, dueAt: clock().getTime() + TIMINGS.completionToPaid })
+      // AutoPay (the client's choice on the Study step): on, the payout follows by itself; off, it waits for the client to approve it on the Pay tab.
+      if (study.autoPay !== false) s.pending.push({ kind: 'pay', studyId, personId, dueAt: clock().getTime() + TIMINGS.completionToPaid })
       if (actor.kind !== 'participant') log(s, actor, `Marked ${nameOf(s, personId)} as completed on ${study.title}`, 'Studies / Sessions / Complete')
       return yes()
     }),

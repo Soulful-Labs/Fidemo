@@ -1,3 +1,4 @@
+import { canEditStudy } from '@shared/lifecycle'
 import type { ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import StudyTypeTag from './StudyTypeTag'
@@ -78,8 +79,11 @@ export function StudyHeader({ study }: { study: Study }) {
                 </button>
                 {menu && (
                   <span className="absolute right-0 top-full z-30 mt-1 flex w-[200px] flex-col rounded-sm border-1 border-stroke-input bg-bg-0 py-1 shadow-lg">
-                    <button type="button" onClick={() => { setMenu(false); nav(`/studies/${study.id}/manage`) }}
-                      className="px-3 py-2 text-left text-text-regular text-text-title hover:bg-bg-1">Edit study</button>
+                    {/* Only while the study can still be changed (shared/lifecycle.ts): a live study has no Edit. */}
+                    {canEditStudy(study.state) && (
+                      <button type="button" onClick={() => { setMenu(false); nav(`/studies/${study.id}/manage`) }}
+                        className="px-3 py-2 text-left text-text-regular text-text-title hover:bg-bg-1">Edit study</button>
+                    )}
                     <button type="button" onClick={() => { setMenu(false); nav(`/studies/${study.id}/pay`) }}
                       className="px-3 py-2 text-left text-text-regular text-text-title hover:bg-bg-1">View billing</button>
                     <button type="button" onClick={() => { setMenu(false); nav('/studies') }}

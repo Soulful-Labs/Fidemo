@@ -1,4 +1,5 @@
 import { useDraft } from '../../mock/createStore'
+import { useNewStudy } from '../create/useNewStudy'
 import { useMemo, useState } from 'react'
 import Button from '../../components/ui/Button'
 import { useNavigate } from 'react-router-dom'
@@ -105,6 +106,7 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
     return [...rows].sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id))
   }, [rows])
 
+  const newStudy = useNewStudy()
   const { open: openDraft } = useDraft()
   /** A draft reopens in the Create flow with everything it was saved with; anything else opens as a study. */
   const open = (s: Study) => {
@@ -168,7 +170,7 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
                             : 'Create a study and our team will review it and take it live.'}
                       </p>
                       {tab === 'ongoing' && (
-                        <Button size="row" className="mt-4" onClick={() => navigate('/studies/create/about')}>
+                        <Button size="row" className="mt-4" onClick={newStudy}>
                           Create Study
                         </Button>
                       )}
@@ -287,5 +289,5 @@ function RowMenu({
   if (tab === 'drafts') return <DraftMenu open={open} onClose={onClose} onDelete={onDelete} onEdit={edit} onDuplicate={duplicate} />
   if (tab === 'completed') return <CompletedMenu open={open} onClose={onClose} onCopy={copy} onDuplicate={duplicate} />
   return <OngoingMenu open={open} onClose={onClose} onPause={onPause} onCopy={copy}
-    onComplete={complete} onEdit={edit} onDuplicate={duplicate} />
+    onComplete={complete} onDuplicate={duplicate} />
 }

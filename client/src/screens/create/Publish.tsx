@@ -196,18 +196,7 @@ export default function Publish() {
 
           <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" onClick={() => setAddCard(true)}>Add Card to Publish</Button>
 
-          <ul className="flex list-disc flex-col gap-1 pl-4 text-text-regular text-text-subtitle marker:text-text-body">
-            <li>
-              3% merchant processing fee applies when using a credit card.{' '}
-              {/* Drawn as emphasised text, but it reads as a link and the screen
-                  already holds what it promises: the Payment Breakdown panel
-                  itemises the fee this sentence is about. Same classes, so the
-                  frame is unchanged. */}
-              <button type="button" onClick={() => setBreakdown(true)}
-                className="text-text-title hover:underline">Learn about payment options</button>
-            </li>
-          </ul>
-          <span className="border-t-1 border-stroke-input" />
+          {/* The frame's first note, a 3% card processing fee, is not here: no fee table holds it and nothing charges it. */}
           <ul className="flex list-disc flex-col gap-1 pl-4 text-text-regular text-text-subtitle marker:text-text-body">
             <li>{laterLine(quote)}</li>
             <li>You are only charged for participants that complete your research. If available, add the estimated recruitment and incentives credits to &ldquo;study deposits&rdquo; upon publishing.</li>

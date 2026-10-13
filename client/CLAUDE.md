@@ -550,12 +550,37 @@ Added the same day, in a second pass:
 - `node --experimental-websocket scripts/flow-check.mjs` checks these six in a
   browser.
 
-**Saved, and not yet acted on anywhere:** AutoPay (payouts are still approved
-by hand), the diary's duration unit and frequency (entries are counted in
-days), work functions and skills (not on a participant's profile, so they
-cannot narrow the estimate), and the audience as a whole (the Matched tab
-still ranks the pool without it). The thumbnail keeps the chosen file's name
-only; nothing uploads.
+And a third pass, the same day:
+
+- **A live study has no Edit.** The Ongoing row menu's drawn "Edit" row and
+  the study header menu's "Edit study" are gone for a study that can no
+  longer be changed (`canEditStudy`). The console's study menu lost its
+  do-nothing "Edit" too.
+- **The "3% merchant processing fee" sentence is gone** from Publish and Bill
+  Payment. No fee table holds it and nothing charged it.
+- **Create Study always starts a new study** (`useNewStudy`). Whatever was in
+  progress is saved to Drafts first, so nothing typed is lost and nothing is
+  carried into the new study. Resuming is from Drafts.
+- **Pre-screener answers are kept** (`preAnswers` on the participation) and
+  written with the rest of the screener answers here and in the console. A
+  respondent who fails the pre-screener still leaves nothing behind.
+- **Matched is the audience.** When the team takes a study live the platform
+  matches it (workflow 24): everyone verified and active who fits the audience
+  that was set (`fitsStudy`), less anyone the repeat rule shuts out. That is
+  the same test as the Estimated Audience. Before this a study built in the
+  Create flow had nobody under Matched at all. The match runs once, at
+  approval; people who join later are not added.
+- **The thumbnail is a real picture.** The About step reads the JPEG or PNG
+  that is chosen (2 MB at most, as the frame says), scales it to 640 by 480 at
+  most and keeps it as the study's `image`, which is what all three apps draw.
+- **AutoPay decides who releases a payout.** On, a completed participant is
+  paid automatically, as before. Off, nobody is paid until the client approves
+  them on the Pay tab.
+- `node --experimental-websocket scripts/final-check.mjs` checks these seven.
+
+**Saved, and not yet acted on anywhere:** the diary's duration unit and
+frequency (entries are counted in days), and work functions and skills (not
+on a participant's profile, so they cannot narrow the audience).
 
 `node --experimental-websocket scripts/create-check.mjs` (repo root, against
 the one-origin build) builds a study of each of the six types, reads each back

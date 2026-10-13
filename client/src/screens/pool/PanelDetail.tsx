@@ -1,3 +1,4 @@
+import { useNewStudy } from '../create/useNewStudy'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
@@ -90,6 +91,7 @@ function Criteria({ created }: { created?: boolean }) {
  * drops Eligible Matches, Launch Study and the kebab.
  */
 export default function PanelDetail({ featured }: { featured?: boolean }) {
+  const newStudy = useNewStudy()
   const nav = useNavigate()
   const { panelId = 'p1' } = useParams()
   const [params, setParams] = useSearchParams()
@@ -129,7 +131,7 @@ export default function PanelDetail({ featured }: { featured?: boolean }) {
               <Button variant="secondary" size="row" onClick={() => setSent(true)}>Invite All To Study</Button>
               {!featured && (
                 <>
-                  <Button variant="tertiary" size="row" onClick={() => nav('/studies/create/about')}>Launch Study</Button>
+                  <Button variant="tertiary" size="row" onClick={newStudy}>Launch Study</Button>
                   <button type="button" aria-label="Panel options" onClick={() => nav(`/pool/panels/${panelId}/edit`)}
                     className="flex h-[38px] w-[38px] items-center justify-center rounded-sm border-1 border-stroke-input text-text-subtitle hover:text-text-title">
                     <MoreVertical className="h-4 w-4" />

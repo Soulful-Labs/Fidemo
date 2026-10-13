@@ -94,6 +94,8 @@ export interface Participation {
   heldForReview?: boolean
   /** Screener answers, kept while a draft and after submission. */
   answers?: Answers
+  /** What they answered to the eligibility questions they passed (workflow 28). */
+  preAnswers?: Answers
   booking?: Booking
   /** Workflow 42: a code at the end of every session, entered by both sides. */
   code?: { value: string; byParticipant: boolean; byClient: boolean }
@@ -182,7 +184,11 @@ export interface Study {
   setup?: StudySetup
   /** One-to-one session studies: the gap between sessions and how far ahead a slot must be booked. */
   schedule?: { bufferMins: number; noticeMins: number }
-  /** The client's choice on the Study step. Payouts are still approved by hand in this build. */
+  /**
+   * The client's choice on the Study step. On, or not set: a completed
+   * participant is paid automatically. Off: nobody is paid until the client
+   * approves the payout on the Pay tab (workflow 46).
+   */
   autoPay?: boolean
   /** Everything the client entered in the Create flow, kept whole (shared/studyForm.ts). */
   form?: StudyForm

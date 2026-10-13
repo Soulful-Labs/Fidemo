@@ -15,10 +15,14 @@ function Item({ children, onClick }: { children: string; onClick?: () => void })
   )
 }
 
-/** Ongoing study options (1518:90959): a rule sits above Edit. */
-export function OngoingMenu({ open, onClose, onPause, onCopy, onComplete, onEdit, onDuplicate }: {
+/**
+ * Ongoing study options (1518:90959). The frame draws an Edit row under the
+ * rule; a live study cannot be edited (shared/lifecycle.ts canEditStudy), so
+ * the row is not there.
+ */
+export function OngoingMenu({ open, onClose, onPause, onCopy, onComplete, onDuplicate }: {
   open: boolean; onClose: () => void; onPause: () => void; onCopy: () => void
-  onComplete: () => void; onEdit: () => void; onDuplicate: () => void
+  onComplete: () => void; onDuplicate: () => void
 }) {
   return (
     <Popover open={open} onClose={onClose} width={200}>
@@ -26,7 +30,6 @@ export function OngoingMenu({ open, onClose, onPause, onCopy, onComplete, onEdit
       <Item onClick={onPause}>Pause Study</Item>
       <Item onClick={onComplete}>Stop-complete Study</Item>
       <div className="my-1 border-t-1 border-stroke-input" />
-      <Item onClick={onEdit}>Edit</Item>
       <Item onClick={onDuplicate}>Duplicate to Drafts</Item>
     </Popover>
   )

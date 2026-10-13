@@ -1,3 +1,4 @@
+import type { Answers } from '../../../mock/storeTypes'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import EmptyState from '../../../components/app/EmptyState'
@@ -46,9 +47,9 @@ export default function Screener() {
     }, TIMINGS.fakeServer)
   }
 
-  const startFull = () => {
-    // Only now does the study leave Explore / Invites and become an application.
-    if (study.status === 'available' || study.status === 'invited_to_apply') applyToStudy(study.id)
+  const startFull = (passedWith: Answers) => {
+    // Only now does the study leave Explore / Invites and become an application. The eligibility answers go with it.
+    if (study.status === 'available' || study.status === 'invited_to_apply') applyToStudy(study.id, passedWith)
     // And when every question was an eligibility one, passing them is the whole screener.
     if (study.screener.length === 0) { submit(); return }
     setStage('full')

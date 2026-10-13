@@ -1,3 +1,4 @@
+import { useNewStudy } from '../screens/create/useNewStudy'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
@@ -73,6 +74,7 @@ export default function AppShell({
 }: { crumbs?: Crumb[]; action?: ReactNode; children: ReactNode; bare?: boolean;
   /** Bill Payment (1627:96956) keeps the bell and drops Create Study. */
   hideCreate?: boolean }) {
+  const newStudy = useNewStudy()
   const [notifications, setNotifications] = useState(false)
   const { notifications: rows, markNotificationsRead, markNotificationRead } = useWorkspace()
   const { studies } = useStudies()
@@ -103,9 +105,7 @@ export default function AppShell({
                   {unread > 0 && <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-cta-primary" />}
                 </button>
                 {!hideCreate && (
-                  <NavLink to="/studies/create/about">
-                    <Button size="row" leftIcon={<Plus className="h-4 w-4" />}>Create Study</Button>
-                  </NavLink>
+                  <Button size="row" leftIcon={<Plus className="h-4 w-4" />} onClick={newStudy}>Create Study</Button>
                 )}
               </>
             )}

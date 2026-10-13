@@ -83,7 +83,7 @@ export function respondent(state: PlatformState, study: Study, personId: string)
   const p = r.participation
   const years = (n: number) => `${n} year${n === 1 ? '' : 's'}`
   const answers: Answer[] = [
-    ...study.preScreener.map((q, i) => answerOf({ id: q.id, kind: 'single', prompt: q.prompt, options: q.options }, i, 'Pre-screener - Q', p.answers?.[q.id] ?? (p.prescreener === 'passed' ? 'Passed' : undefined))),
+    ...study.preScreener.map((q, i) => answerOf({ id: q.id, kind: 'single', prompt: q.prompt, options: q.options }, i, 'Pre-screener - Q', p.preAnswers?.[q.id] ?? (p.prescreener === 'passed' ? 'Passed' : undefined))),
     ...study.screener.map((q, i) => answerOf(q, i, 'Q', p.answers?.[q.id])),
   ]
   /** A survey's answers, and a diary's for each day filled in, as the participant submitted them (shared/questions.ts). */

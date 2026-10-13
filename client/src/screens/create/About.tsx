@@ -2,6 +2,7 @@ import Toggle from '../../components/ui/Toggle'
 import { Calendar, Clock, DiaryBookIcon, InPersonIcon, Info, SurveyIcon, TaskIcon, Upload, VideoIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { useDraft } from '../../mock/createStore'
+import { useToast } from '../../components/ui/Toast'
 import type { CreateType } from '../../mock/createStore'
 import CreateShell from './CreateShell'
 import { Field, Section, TextBox } from './CreateBits'
@@ -49,8 +50,31 @@ function TypeCard({ t }: { t: (typeof TYPES)[number] }) {
  * 2.1.0 About, New Study (1622:81504): the step that chooses the study type,
  * its duration and what participants will see. One centred 600px column.
  */
+/** The frame's own limits: a JPEG or PNG of 2 MB at most. */
+const MAX_BYTES = 2 * 1024 * 1024
+/** Thumbnails are drawn at 4:3 and never wider than 243px, so the picture is kept at 640 by 480 at most. */
+async function readPicture(file: File): Promise<string> {
+  const url = URL.createObjectURL(file)
+  try {
+    const img = new Image()
+    await new Promise<void>((done, fail) => { img.onload = () => done(); img.onerror = () => fail(new Error('unreadable')); img.src = url })
+    const scale = Math.min(1, 640 / img.naturalWidth, 480 / img.naturalHeight)
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(img.naturalWidth * scale)); canvas.height = Math.max(1, Math.round(img.naturalHeight * scale))
+    canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height)
+    return canvas.toDataURL('image/jpeg', 0.85)
+  } finally { URL.revokeObjectURL(url) }
+}
+
 export default function About() {
   const { draft, set } = useDraft()
+  const toast = useToast()
+  const choose = async (file: File | undefined) => {
+    if (!file) return
+    if (!/^image\/(jpeg|png)$/.test(file.type)) { toast('The thumbnail has to be a .jpeg or .png file'); return }
+    if (file.size > MAX_BYTES) { toast('The thumbnail can be 2 MB at most'); return }
+    try { set('image', await readPicture(file)); set('thumbnail', file.name) } catch { toast(`${file.name} could not be read as a picture`) }
+  }
 
   return (
     <CreateShell step="about">
@@ -97,13 +121,13 @@ export default function About() {
                   className="h-[90px] w-full resize-none rounded-sm border-1 border-stroke-input bg-bg px-4 py-3 text-body-regular text-text-title placeholder:text-text-body" />
               </Field>
               <Field label="Thumbnail Image">
-                {/* The file's name is kept with the study. Nothing uploads in this build, so there is no picture to show yet. */}
+                {/* The picture is read here and kept with the study (shared/studyForm.ts `image`); it is the study's image in all three apps. */}
                 <input id="thumbnail-file" type="file" accept="image/jpeg,image/png" className="sr-only"
-                  onChange={(e) => { const f = e.target.files?.[0]; if (f) set('thumbnail', f.name) }} />
+                  onChange={(e) => { void choose(e.target.files?.[0]); e.target.value = '' }} />
                 <button type="button" onClick={() => document.getElementById('thumbnail-file')?.click()}
                   className="flex h-[100px] flex-col items-center justify-center gap-1 rounded-sm border-1 border-stroke-input bg-bg">
                   <span className="flex items-center gap-2 text-body-medium text-text-title">
-                    <Upload className="h-5 w-5" />{draft.thumbnail || 'Upload Thumbnail Image'}
+                    {draft.image ? <img src={draft.image} alt="" className="h-9 w-12 rounded-sm object-cover" /> : <Upload className="h-5 w-5" />}{draft.thumbnail || 'Upload Thumbnail Image'}
                   </span>
                   <span className="text-text-regular text-text-subtitle">Keep image in 4:3 aspect ratio</span>
                   <span className="text-text-regular text-text-subtitle">.jpeg or .png file&nbsp; |&nbsp; 2 MB max.</span>

@@ -252,7 +252,7 @@ export function useStoreValue() {
       applyBlockerCopy(applyBlocker(world, id, me), v.studies.find((s) => s.id === id)?.client.name ?? 'This client'),
     clientReviews: (clientId: string): ClientReviewRow[] => clientReviews(world, clientId),
     toggleSaved: (id: string) => run(p.toggleSaved(me, id)),
-    applyToStudy: (id: string) => run(p.startApplication(id, me)),
+    applyToStudy: (id: string, preAnswers?: Answers) => run(p.startApplication(id, me, preAnswers)),
     saveDraft: (id: string, answers: Answers) => run(p.saveDraft(id, me, answers)),
     /** Applied now; a simulated client decides on the platform's timer, a real one from the client app or the console. */
     submitScreener: (id: string) => run(p.submitScreener(id, me, local.answers[id])),

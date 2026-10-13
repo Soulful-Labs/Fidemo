@@ -20,11 +20,12 @@ export type Answer =
 export interface QA { prompt: string; answer: Answer }
 
 /**
- * The screener as this respondent answered it (shared participation). The
- * pre-screener's answers are not kept, only that it was passed (workflow 28).
+ * The screener as this respondent answered it (shared participation): the
+ * eligibility questions first, then the full screener.
  */
 export function answersOf(study: Pick<Study, 'preScreener' | 'screener'>, p?: Participation): QA[] {
-  const pre: QA[] = study.preScreener.map((q) => ({ prompt: q.prompt, answer: { kind: 'text', value: p?.prescreener === 'passed' ? 'Passed' : 'Not answered' } }))
+  // Their own answer where it was kept; an application from before answers were kept only says that it passed.
+  const pre: QA[] = study.preScreener.map((q) => ({ prompt: q.prompt, answer: { kind: 'text', value: p?.preAnswers?.[q.id] !== undefined ? String(p.preAnswers[q.id]) : p?.prescreener === 'passed' ? 'Passed' : 'Not answered' } }))
   const main: QA[] = study.screener.map((q) => {
     const v = p?.answers?.[q.id]
     return { prompt: q.prompt, answer: Array.isArray(v) ? { kind: 'bullets', values: v } : { kind: 'text', value: v === undefined || v === '' ? 'Not answered' : String(v) } }

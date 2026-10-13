@@ -16,7 +16,7 @@ import { POINTS, REDEEM, TIERS, TRUST, starsForRating, starsFromDimensions, trus
 import { DEMO_CLIENT_ID, DEMO_PERSON_ID, MASTER_ADMIN_ID, buildSeed } from '../shared/seed'
 import { buildScreener, screenerOutline, taskResults } from '../shared/questions'
 import type { AuthoredQuestion } from '../shared/questions'
-import { blankForm, blankQuestion, buildStudy, estimateAudience, formFromStudy, formId, studyDetails, summarise } from '../shared/studyForm'
+import { audiencePeople, blankForm, blankQuestion, buildStudy, estimateAudience, formFromStudy, formId, studyDetails, summarise } from '../shared/studyForm'
 import type { FormQuestion, StudyForm } from '../shared/studyForm'
 import { createPlatform } from '../shared/store'
 import type { Actor } from '../shared/store'
@@ -280,6 +280,40 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
     const live = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Changed while live' }), paid.id)
     return !asDraft.ok && !live.ok && live.why.includes('live') && st().studies.find((x) => x.id === paid.id)!.title === 'Money study, revised'
   })())
+}
+
+// ------------------------------------------------ matching, eligibility answers, AutoPay, the picture
+{
+  p.reset(); clock = now.getTime()
+  const me: Actor = { kind: 'participant', id: DEMO_PERSON_ID }
+  const narrow = formOf({ type: 'survey', title: 'Narrow audience', ...SURVEY, countries: [], gender: 'Female', education: '', ageRanges: [], roles: '', industries: 'Healthcare', tiers: '', image: 'data:image/jpeg;base64,AAAA', thumbnail: 'cover.jpg', autoPay: false })
+  const made2 = p.submitStudy(DEMO_CLIENT_ID, narrow)
+  const id2 = (made2 as { id: string }).id
+  const study2 = () => st().studies.find((x) => x.id === id2)!
+  check('picture: the image that was read is the study\'s image', made2.ok && study2().image === 'data:image/jpeg;base64,AAAA' && study2().form?.thumbnail === 'cover.jpg')
+  check('matching: nobody is matched while the study waits on the team', study2().participations.length === 0)
+  p.moveStudy(id2, 'recruiting', team)
+  const fit = audiencePeople(st(), narrow, new Date(clock)).map((x) => x.id).sort()
+  const matched = study2().participations.filter((x) => x.state === 'matched').map((x) => x.personId).sort()
+  const everyone = st().people.filter((x) => x.status === 'active' && x.identity.state === 'verified').length
+  check('matching: going live matches exactly the people who fit the audience', fit.length > 0 && fit.length < everyone && JSON.stringify(matched) === JSON.stringify(fit), `${matched.length} matched, ${fit.length} fit, ${everyone} in the pool`)
+  check('matching: every one of them is a woman in healthcare, as the audience says', matched.every((pid) => { const x = st().people.find((y) => y.id === pid)!; return x.profile.gender === 'Female' && x.profile.industry.toLowerCase().includes('healthcare') }))
+
+  const pre = study2().preScreener[0]!
+  check('eligibility: the answers they passed with are kept', p.startApplication(id2, DEMO_PERSON_ID, { [pre.id]: pre.passing[0]!, stray: 'x' }).ok
+    && JSON.stringify(participationOf(study2(), DEMO_PERSON_ID)!.preAnswers) === JSON.stringify({ [pre.id]: pre.passing[0] }) && participationOf(study2(), DEMO_PERSON_ID)!.prescreener === 'passed')
+  p.submitScreener(id2, DEMO_PERSON_ID, { q2: ['A watch'], q3: '2' }); p.decide(id2, DEMO_PERSON_ID, 'qualified', team)
+  check('eligibility: they survive the rest of the screener being submitted', participationOf(study2(), DEMO_PERSON_ID)!.preAnswers?.[pre.id] === pre.passing[0])
+
+  p.complete(id2, DEMO_PERSON_ID, me, { t1: 'Nothing much.' })
+  clock += TIMINGS.completionToPaid * 3; p.tick()
+  check('AutoPay off: a completed participant is not paid by the timer', participationOf(study2(), DEMO_PERSON_ID)!.state === 'completed' && !participationOf(study2(), DEMO_PERSON_ID)!.paidAt && st().pending.every((x) => !(x.kind === 'pay' && x.studyId === id2)))
+  check('AutoPay off: they are paid when the client approves the payout', p.approvePayouts(id2, [DEMO_PERSON_ID]).ok && Boolean(participationOf(study2(), DEMO_PERSON_ID)!.paidAt))
+  const auto = p.submitStudy(DEMO_CLIENT_ID, formOf({ type: 'survey', title: 'AutoPay on', ...SURVEY, autoPay: true }))
+  const id3 = (auto as { id: string }).id
+  p.moveStudy(id3, 'recruiting', team); p.startApplication(id3, DEMO_PERSON_ID); p.submitScreener(id3, DEMO_PERSON_ID, { q2: ['A watch'], q3: '2' }); p.decide(id3, DEMO_PERSON_ID, 'qualified', team)
+  p.complete(id3, DEMO_PERSON_ID, me, { t1: 'Nothing much.' }); clock += TIMINGS.completionToPaid + 100; p.tick()
+  check('AutoPay on: they are paid without anyone approving', Boolean(participationOf(st().studies.find((x) => x.id === id3)!, DEMO_PERSON_ID)!.paidAt))
 }
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nall checks passed')

@@ -52,8 +52,10 @@ export interface StudyForm {
   endDate: string
   title: string
   description: string
-  /** The chosen file's name. No file is uploaded in this build. */
+  /** The chosen picture's file name. */
   thumbnail: string
+  /** The picture itself, as the browser read it (a data URL, scaled down). It is the study's image everywhere. */
+  image: string
   // 2. Audience
   participants: string
   countries: string[]
@@ -124,7 +126,7 @@ export const BLANK_WINDOW: TimeWindow = { from: '12:00 AM', to: '12:00 AM' }
 export function blankForm(): StudyForm {
   return {
     type: 'in_person', groupVideo: false, groupInPerson: false,
-    duration: 40, endDate: '', title: '', description: '', thumbnail: '',
+    duration: 40, endDate: '', title: '', description: '', thumbnail: '', image: '',
     participants: '10',
     countries: ['United States of America', 'United Kingdom'],
     gender: 'All Genders', education: "Graduate or Bachelor's",
@@ -259,6 +261,8 @@ export function audiencePeople(state: PlatformState, f: StudyForm, now: Date = n
     return true
   })
 }
+/** The same test for a study: the people its audience describes. A study that was not built in the Create flow has no audience to test. */
+export const fitsStudy = (state: PlatformState, study: Study, now: Date = new Date()): Person[] => (study.form ? audiencePeople(state, study.form, now) : [])
 export const estimateAudience = (state: PlatformState, f: StudyForm, now: Date = new Date()): number => audiencePeople(state, f, now).length
 
 const CONDITION: Record<StudyForm['condition'], { rule: RepeatRule; label?: string }> = {
@@ -339,7 +343,7 @@ export function studyDetails(f: StudyForm): { label: string; value: string }[] {
 
 /** The fields of a study that come from the form. The store adds the id, the client, the dates it stamps and the people. */
 export type BuiltStudy = Pick<Study,
-  'title' | 'description' | 'type' | 'industry' | 'durationMins' | 'endsAt' | 'required' | 'repeatRule' | 'rates' | 'targetProfession'
+  'title' | 'description' | 'image' | 'type' | 'industry' | 'durationMins' | 'endsAt' | 'required' | 'repeatRule' | 'rates' | 'targetProfession'
   | 'city' | 'locations' | 'availability' | 'schedule' | 'preScreener' | 'screener' | 'tasks' | 'diary' | 'sessions' | 'autoPay'>
 
 /**
@@ -369,7 +373,7 @@ export function buildStudy(f: StudyForm, now: Date = new Date()): { ok: true; st
   // 4. Study
   if (!Number.isFinite(f.incentive) || f.incentive <= 0) return no('Set the incentive amount on the Study step')
   const study: BuiltStudy = {
-    title: f.title.trim(), description: f.description.trim(), type, industry: list(f.industries).join(', '), durationMins,
+    title: f.title.trim(), description: f.description.trim(), image: f.image || undefined, type, industry: list(f.industries).join(', '), durationMins,
     endsAt: endsAt.toISOString(), required, repeatRule: CONDITION[f.condition].rule, rates: priceStudy(type, f.incentive),
     targetProfession: list(f.roles).join(', '), preScreener: screener.preScreener, screener: screener.screener, autoPay: f.autoPay,
   }
@@ -488,7 +492,7 @@ export function formFromStudy(s: Study): StudyForm {
   const tasks = (s.tasks ?? []).map((q, i) => questionOf(q, s.type === 'diary' ? `Q${i + 1}` : `SQ ${i + 1}`, TASK_MARKS))
   return {
     ...f, type, groupVideo: s.type === 'group_video_call', groupInPerson: s.type === 'in_person_group',
-    duration: s.durationMins || f.duration, title: s.title === 'Untitled study' ? '' : s.title, description: s.description,
+    duration: s.durationMins || f.duration, title: s.title === 'Untitled study' ? '' : s.title, description: s.description, image: s.image ?? '',
     participants: s.required > 0 ? String(s.required) : f.participants, roles: s.targetProfession, industries: s.industry,
     condition: s.repeatRule === 'exclude' ? 'never' : s.repeatRule === 'prefer_fresh' ? 'fresh' : 'na',
     questions: pre.length + full.length ? [...pre, ...full] : f.questions,

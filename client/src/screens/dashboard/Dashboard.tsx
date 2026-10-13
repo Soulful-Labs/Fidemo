@@ -1,3 +1,4 @@
+import { useNewStudy } from '../create/useNewStudy'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AppShell, { ViewAll } from '../../app/AppShell'
@@ -39,6 +40,7 @@ function Blank({ line, cta, onClick }: { line: string; cta: string; onClick: () 
  * that no other screen agreed with.
  */
 export default function Dashboard({ empty = false }: { empty?: boolean }) {
+  const newStudy = useNewStudy()
   const navigate = useNavigate()
   const [profile, setProfile] = useState<Respondent | null>(null)
   const { studies: all, state: world } = useStudies()
@@ -105,7 +107,7 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
         <section className="pt-6">
           <SectionHead title="Ongoing Studies" action={<ViewAll to="/studies" />} />
           {studies.length === 0 ? (
-            <Blank line="No ongoing studies yet." cta="Create Study" onClick={() => navigate('/studies/create/about')} />
+            <Blank line="No ongoing studies yet." cta="Create Study" onClick={newStudy} />
           ) : (
           <div className="grid grid-cols-3 gap-3 pt-2">
             {studies.map((s) => (

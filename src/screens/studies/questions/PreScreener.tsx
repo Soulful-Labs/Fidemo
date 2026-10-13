@@ -12,13 +12,13 @@ import QuestionFlow from './QuestionFlow'
  */
 export default function PreScreener({
   questions, onPass, onFail, onExit,
-}: { questions: PreScreenQuestion[]; onPass: () => void; onFail: () => void; onExit: () => void }) {
+}: { questions: PreScreenQuestion[]; onPass: (answers: Answers) => void; onFail: () => void; onExit: () => void }) {
   const [answers, setAnswers] = useState<Answers>({})
   const asQuestions: Question[] = questions.map((q) => ({ id: q.id, kind: 'single', prompt: q.prompt, options: q.options }))
 
   const check = () => {
     const passed = questions.every((q) => q.passing.includes(String(answers[q.id] ?? '')))
-    if (passed) onPass()
+    if (passed) onPass(answers)
     else onFail()
   }
 

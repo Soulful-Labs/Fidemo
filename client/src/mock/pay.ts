@@ -85,7 +85,6 @@ const BILL_COPY = {
     zip: '023548',
   },
   notes: [
-    { text: '3% merchant processing fee applies when using a credit card. ', link: 'Learn about payment options' },
     { text: 'You are only charged for participants that complete your research.' },
   ] as { text: string; link?: string }[],
 }

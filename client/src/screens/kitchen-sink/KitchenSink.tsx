@@ -172,7 +172,7 @@ export default function KitchenSink() {
           <Row label="Row menus">
             <span className="relative"><Button variant="tertiary" onClick={() => setStudyMenu(studyMenu === 'ongoing' ? null : 'ongoing')}>Ongoing</Button>
               <OngoingMenu open={studyMenu === 'ongoing'} onClose={() => setStudyMenu(null)} onPause={() => { setStudyMenu(null); setPause(true) }} onCopy={() => setStudyMenu(null)}
-                onComplete={() => setStudyMenu(null)} onEdit={() => setStudyMenu(null)} onDuplicate={() => setStudyMenu(null)} /></span>
+                onComplete={() => setStudyMenu(null)} onDuplicate={() => setStudyMenu(null)} /></span>
             <span className="relative"><Button variant="tertiary" onClick={() => setStudyMenu(studyMenu === 'draft' ? null : 'draft')}>Drafts</Button>
               <DraftMenu open={studyMenu === 'draft'} onClose={() => setStudyMenu(null)} onDelete={() => { setStudyMenu(null); setModal(true) }}
                 onEdit={() => setStudyMenu(null)} onDuplicate={() => setStudyMenu(null)} /></span>

@@ -32,6 +32,8 @@ interface Ctx {
   open: (study: Study) => void
   /** A new, empty study. */
   reset: () => void
+  /** Something has been typed, chosen or opened that a new study would replace. */
+  inProgress: () => boolean
 }
 const CreateCtx = createContext<Ctx | null>(null)
 
@@ -71,6 +73,8 @@ export function CreateProvider({ children }: { children: ReactNode }) {
   const reset = useCallback(() => { setDraft(fresh()); setDraftId(undefined) }, [])
   const value = useMemo<Ctx>(() => ({
     draft, draftId, open, reset,
+    inProgress: () => Boolean(draftId) || Boolean(draft.title.trim() || draft.description.trim() || draft.thumbnail || draft.tasks.length || draft.addresses.length || draft.sessions.length
+      || draft.availabilitySet || draft.questions.some((q) => q.text.trim())),
     set: (k, v) => setDraft((d) => ({ ...d, [k]: v })),
     form: () => { const { surveyOpen: _open, ...form } = draft; return form },
   }), [draft, draftId, open, reset])
