@@ -23,7 +23,7 @@ const REASON: Record<PointsEntry['kind'], (e: PointsEntry) => string> = {
   referral: (e) => `For Referring ${e.detail}`,
   study: () => 'For Completing a Study',
   streak: () => 'For Your Monthly Streak',
-  bonus: (e) => (e.detail === 'Joined by referral' ? 'For Being Referred' : `For ${e.detail}`),
+  bonus: (e) => (e.detail === 'Joined by referral' ? 'For Being Referred' : e.detail === 'Profile picture added' ? 'For Adding Your Profile Picture' : e.detail === 'Intro video added' ? 'For Adding Your Intro Video' : `For ${e.detail}`),
 }
 
 /** Reward points earned, as drawn (Figma 1433:50642): coin, amount, reason pill, Done. */

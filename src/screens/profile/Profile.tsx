@@ -13,7 +13,8 @@ import { useStore } from '../../mock/store'
 import { CertificateIcon, ReferIcon, SettingsIcon, SignOutIcon, SupportIcon } from './profileIcons'
 
 /** Initials avatar inside the green progress ring drawn on the profile card. */
-export function Avatar({ name, completion, size = 80 }: { name: string; completion?: number; size?: number }) {
+/** Their picture when they have one (their own app always shows it; consent governs only what clients see), else their initials. */
+export function Avatar({ name, completion, size = 80, photo }: { name: string; completion?: number; size?: number; photo?: string }) {
   const initials = name.split(' ').map((n) => n[0]).slice(0, 2).join('')
   const r = 46
   const c = 2 * Math.PI * r
@@ -47,9 +48,9 @@ export function Avatar({ name, completion, size = 80 }: { name: string; completi
           <circle ref={piece} cx="50" cy="50" r={r} fill="none" strokeWidth="4" stroke="currentColor" strokeLinecap="round" style={{ opacity: 0 }} className="text-brand-secondary" />
         </svg>
       )}
-      <span className="flex h-[80%] w-[80%] items-center justify-center rounded-full bg-bg-2 text-title-m text-text-title">
+      {photo ? <img src={photo} alt="" className="h-[80%] w-[80%] rounded-full object-cover" /> : <span className="flex h-[80%] w-[80%] items-center justify-center rounded-full bg-bg-2 text-title-m text-text-title">
         {initials || <svg viewBox="0 0 24 24" fill="none" width="40%" height="40%"><circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.5" /><path d="M4 20c0-3.5 3.6-6 8-6s8 2.5 8 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>}
-      </span>
+      </span>}
     </span>
   )
 }
@@ -79,7 +80,7 @@ export default function Profile() {
   return (
     <div className="flex min-h-full flex-col gap-3 px-4 pb-6 pt-4">
       <section className="flex items-center gap-4 rounded-lg bg-bg-1 bg-green-fade p-4">
-        <Avatar name={user.name} completion={user.profileCompletion} />
+        <Avatar name={user.name} completion={user.profileCompletion} photo={user.photo} />
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           {user.name && <p className="truncate text-body-medium text-text-title">{user.name}</p>}
           <p className="text-text-regular text-brand-secondary"><RollingNumber value={user.profileCompletion} format={String} memory="profile-pct" />% completed</p>

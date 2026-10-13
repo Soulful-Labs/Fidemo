@@ -1,3 +1,4 @@
+import { Avatar } from '../../components/client/RespondentCard'
 import { useNavigate, useParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
@@ -101,7 +102,7 @@ export default function ResultsTab() {
                   )}
                   {shown.rows.map((r) => (
                     <tr key={r.id} className="border-b-1 border-stroke-input last:border-b-0">
-                      <td className="h-[70px] px-[18px] text-text-regular text-text-title">{r.name}</td>
+                      <td className="h-[70px] px-[18px] text-text-regular text-text-title"><span className="flex items-center gap-2"><Avatar name={r.name} photo={r.photo} size={28} />{r.name}</span></td>
                       <td className="h-[70px] px-[18px] text-text-regular text-text-title">{r.role}</td>
                       <td className="h-[70px] px-[18px] text-text-regular text-text-title">{monthDayYear(r.participation.completedAt)}</td>
                       <td className="h-[70px] px-[18px]"><ScoreCell score={r.score} tier={r.tier} /></td>

@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import FileField from '../../components/app/FileField'
 import Input from '../../components/ui/Input'
 import TabBar from '../../components/ui/TabBar'
-import { useStore } from '../../mock/store'
 import { AREA_TYPES, ETHNICITIES, INCOME_RANGES, LANGUAGES, NATIONALITIES, PETS } from '../onboarding/options'
 import { Field, MultiPickField, PickField, SectionHead } from './formBits'
+import MediaFields from './MediaFields'
 import { filled, requiredError } from './MyProfile'
 import type { Draft } from './MyProfile'
 
@@ -14,7 +13,6 @@ const ABOUT_ME: (keyof Draft)[] = ['languages', 'nationality', 'income', 'ethnic
 
 /** Profile Details tab (PRD 12, Figma 979:74128). */
 export default function ProfileDetailsTab({ draft, patch, touched = false }: { draft: Draft; patch: (p: Partial<Draft>) => void; touched?: boolean }) {
-  const { toast } = useStore()
   const [open, setOpen] = useState({ profile: true, about: true })
   const count = (keys: (keyof Draft)[]) => keys.filter((k) => filled(draft, k)).length
 
@@ -25,8 +23,8 @@ export default function ProfileDetailsTab({ draft, patch, touched = false }: { d
       {open.profile && (
         <>
           <Input label="Full Name" placeholder="Enter Name" value={draft.name} onChange={(e) => patch({ name: e.target.value })} />
-          <FileField fieldLabel="Intro Video" label="Upload Short Video" description="Share about you, what you do, your interests, etc."
-            hint=".mp4 file | 50 MB max." accept="video/mp4" fileName={draft.introVideo} onPick={(name) => { patch({ introVideo: name }); toast('Video selected') }} />
+          {/* The picture and the intro video save as they change, each with its own consent (MediaFields). */}
+          <MediaFields />
           <PickField label="Gender" value={draft.gender} placeholder="Select gender" options={['Male', 'Female', 'Other']} onChange={(gender) => patch({ gender })} />
           <Input label="Address" placeholder="City, Country" value={draft.address} onChange={(e) => patch({ address: e.target.value })} error={requiredError(draft, 'address', touched)} />
           <PickField label="Area Type" value={draft.areaType} placeholder="Select area type" options={AREA_TYPES} onChange={(areaType) => patch({ areaType })} />

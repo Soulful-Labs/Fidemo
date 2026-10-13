@@ -93,9 +93,11 @@ export default function RatePanel({
         </div>
       )}>
       <div className="flex items-center gap-3 pb-1">
-        <span className="flex h-10 w-10 items-center justify-center rounded-md bg-bg-2 text-body-medium text-text-subtitle">
-          {name.charAt(0)}
-        </span>
+        {r?.photo ? <img src={r.photo} alt="" className="h-10 w-10 shrink-0 rounded-md object-cover" /> : (
+          <span className="flex h-10 w-10 items-center justify-center rounded-md bg-bg-2 text-body-medium text-text-subtitle">
+            {name.charAt(0)}
+          </span>
+        )}
         <span className="flex flex-col">
           <span className="text-text-regular text-text-subtitle">{name}</span>
           <span className="text-body-medium text-text-title">{role}</span>

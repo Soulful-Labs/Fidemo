@@ -1,3 +1,5 @@
+import { sharedPhoto } from '@shared/derive'
+import { initialFor } from '@shared/avatar'
 import { useMemo } from 'react'
 import { clientById, personById, shortName, tierOf, trustScoreOf } from '@shared/derive'
 import { isLive } from '@shared/lifecycle'
@@ -16,14 +18,13 @@ export interface Participant { id: string; photo: string; name: string; role: st
 
 const TIER_NAME: Record<'silver' | 'gold' | 'platinum', Tier> = { silver: 'Silver', gold: 'Gold', platinum: 'Platinum' }
 
-/** The ten portraits the frames were drawn with, five of each; a person keeps the same one on every screen. */
-const MEN = [1, 2, 5, 7, 9], WOMEN = [3, 4, 6, 8, 10]
-const hash = (s: string) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 0)
-export const photoFor = (p: Pick<Person, 'id' | 'photo' | 'profile'>): string => {
-  if (p.photo) return p.photo
-  const pool = p.profile.gender === 'Female' ? WOMEN : MEN
-  return `/img/participants/p${pool[hash(p.id) % pool.length]}.png`
-}
+/**
+ * The picture the console shows for a participant: theirs only while they
+ * consent to share it (sharedPhoto), and otherwise their initial. It used to
+ * fall back to the portraits the frames were drawn with; a stock face beside
+ * a real participant's name is neither theirs nor consented to.
+ */
+export const photoFor = (p: Pick<Person, 'name' | 'photo' | 'photoConsent'>): string => sharedPhoto(p) ?? initialFor(p.name)
 
 export const tierName = (state: PlatformState, id: string): Tier => TIER_NAME[tierOf(state, id)]
 

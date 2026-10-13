@@ -1,3 +1,4 @@
+import IntroVideo from '../../../components/app/IntroVideo'
 import type { ReactNode } from 'react'
 import TierTag from '../../../components/app/TierTag'
 import Button from '../../../components/ui/Button'
@@ -58,7 +59,8 @@ export default function AboutTab({ onReviews, view }: { onReviews: () => void; v
         </ul>
       </Card>
       <Card title="Personal Details">
-        <div><p className="pb-1 text-text-regular leading-5 text-text-subtitle">Intro Video</p><File thumb="/img/participants/intro.png" name="samuel-intro.mp4" meta="5 MB  |  Updated on Jan 10, 2026" /></div>
+        {/* The participant's own video, only while they consent to share it. It was a drawn sample file, the same for everyone. */}
+        <div><p className="pb-1 text-text-regular leading-5 text-text-subtitle">Intro Video</p>{PERSON.video ? <IntroVideo video={PERSON.video} /> : <p className="text-body-regular leading-[22px] text-text-body">Not shared</p>}</div>
         {PERSONAL.map(([l, v]) => <Field key={l} label={l!} value={v!} />)}
       </Card>
       <Card title="Account Details">

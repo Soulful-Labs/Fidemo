@@ -161,7 +161,7 @@ const slugEmail = (name: string) => `${name.toLowerCase().replace(/[^a-z]+/g, '.
 
 function fromRow([id, name, role, industry, location, gender, studies, score, verified, language]: Row, n: number, clock: PeopleClock): Person {
   return {
-    id, name, photo: avatarFor(id, gender), email: slugEmail(name), phone: `+1 555 01${String(10 + n).padStart(2, '0')} ${String(100 + ((n * 37) % 900))}`,
+    id, name, photo: avatarFor(id, gender), photoConsent: true, email: slugEmail(name), phone: `+1 555 01${String(10 + n).padStart(2, '0')} ${String(100 + ((n * 37) % 900))}`,
     joinedAt: clock.at(-(120 + ((n * 23) % 400)), 9, 0), lastActiveAt: clock.at(-((n * 5) % 60), 8 + (n % 10), (n * 7) % 60),
     status: 'active', location,
     profile: {

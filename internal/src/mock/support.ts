@@ -1,3 +1,5 @@
+import { photoFor } from './participants'
+import { personById } from '@shared/derive'
 import { useMemo } from 'react'
 import { awaitingTeam, teamById, ticketOwnerName, ticketStage, ticketsIn } from '@shared/derive'
 import { clockTime, count, dayHeading, monthDayYear, monthDayYearTime } from '@shared/format'
@@ -40,6 +42,8 @@ export function useTicket(id?: string) {
       messages: t.messages.map((m) => ({ ...m, time: clockTime(m.at), who: speaker(state, t, m) })),
       closedAt: monthDayYearTime(t.closedAt),
       profile: t.owner.kind === 'client' ? `/clients/${t.owner.id}` : `/participants/${t.owner.id}`,
+      /** The participant's picture or initial on the User profile chip (photoFor: theirs only with consent). A client's chip carries none. */
+      photo: t.owner.kind === 'participant' ? (() => { const who = personById(state, t.owner.id); return who ? photoFor(who) : undefined })() : undefined,
       /** What the ticket is about, when the team opened it from a verification. */
       about: t.createdByTeam && t.owner.kind === 'participant' ? `/participants/verifications/iv-${t.owner.id}` : undefined,
     }

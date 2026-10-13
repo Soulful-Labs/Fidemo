@@ -180,6 +180,14 @@ function streakMonths(entries: Entry[]): { month: string; at: string }[] {
   })
 }
 
+/**
+ * What a client or the console may see of a person's picture and intro video:
+ * each only while its own consent is on, and nothing otherwise. Every screen
+ * outside the respondent's own app reads them through these two.
+ */
+export const sharedPhoto = (p: Pick<Person, 'photo' | 'photoConsent'>): string | undefined => (p.photoConsent ? p.photo : undefined)
+export const sharedVideo = (p: Pick<Person, 'video' | 'videoConsent'>): Person['video'] | undefined => (p.videoConsent ? p.video : undefined)
+
 /** Every award of points, newest first. All of it is the policy's section 4. */
 export function pointsRows(state: PlatformState, personId: string): PointsRow[] {
   const person = personById(state, personId)
@@ -188,6 +196,8 @@ export function pointsRows(state: PlatformState, personId: string): PointsRow[] 
   const rows: PointsRow[] = [
     ...(person.sourceCode ? [{ id: 'pt-referred', kind: 'bonus' as const, label: 'Bonus', detail: 'Joined by referral', at: new Date(new Date(person.joinedAt).getTime() + 5 * 60_000).toISOString(), amount: POINTS.BEING_REFERRED }] : []),
     ...(person.fullProfileAt ? [{ id: 'pt-profile', kind: 'bonus' as const, label: 'Bonus', detail: 'Full profile completion', at: person.fullProfileAt, amount: POINTS.FULL_PROFILE }] : []),
+    ...(person.pictureAddedAt ? [{ id: 'pt-picture', kind: 'bonus' as const, label: 'Bonus', detail: 'Profile picture added', at: person.pictureAddedAt, amount: POINTS.PROFILE_PICTURE }] : []),
+    ...(person.videoAddedAt ? [{ id: 'pt-video', kind: 'bonus' as const, label: 'Bonus', detail: 'Intro video added', at: person.videoAddedAt, amount: POINTS.INTRO_VIDEO }] : []),
     ...entries.filter((e) => isPaid(e.p)).map((e) => ({ id: `pt-${e.study.id}`, kind: 'study' as const, label: 'Study', detail: e.study.title, at: e.p.paidAt!, amount: POINTS.STUDY_COMPLETION })),
     ...person.referrals.filter((r) => r.status === 'completed').map((r) => ({ id: `pt-${r.id}`, kind: 'referral' as const, label: 'Referral', detail: r.name, at: r.at, amount: POINTS.REFERRAL })),
     ...streakMonths(entries).map((s) => ({ id: `pt-streak-${s.month}`, kind: 'streak' as const, label: 'Streak', detail: s.month, at: s.at, amount: POINTS.STREAK })),
@@ -571,7 +581,9 @@ export interface Recruit {
   name: string
   /** The full name. The console shows it; the client app never does. */
   fullName: string
+  /** Only what the participant has consented to share (sharedPhoto, sharedVideo). */
   photo?: string
+  video?: Person['video']
   role: string
   location: string
   experienceYears: number
@@ -589,7 +601,7 @@ export function recruits(state: PlatformState, study: Study, tab?: 'matched' | '
     if (tab && recruitingTab(pt.state) !== tab) return []
     const score = trustScoreOf(state, p.id, now)
     return [{
-      id: p.id, name: shortName(p.name), fullName: p.name, photo: p.photo, role: p.profile.occupation, location: p.location,
+      id: p.id, name: shortName(p.name), fullName: p.name, photo: sharedPhoto(p), video: sharedVideo(p), role: p.profile.occupation, location: p.location,
       experienceYears: Number.parseInt(p.profile.experience, 10) || 0, professionVerified: p.profession.state === 'verified',
       score, tier: tierFor(score), state: clientTag(pt), participation: pt,
     }]
@@ -739,7 +751,9 @@ export interface PoolPerson {
   id: string; name: string; role: string; score: number; tier: Tier
   domain: string; gender: string; location: string; language: string; lastActiveWeeks: number
   professionVerified: boolean; experienceYears: number
+  /** Only what the participant has consented to share (sharedPhoto, sharedVideo). */
   photo?: string
+  video?: Person['video']
 }
 
 export function poolPerson(state: PlatformState, p: Person, now: Date = new Date()): PoolPerson {
@@ -749,7 +763,7 @@ export function poolPerson(state: PlatformState, p: Person, now: Date = new Date
     gender: p.profile.gender, location: p.location, language: p.profile.languages[0] ?? 'English',
     lastActiveWeeks: Math.max(0, Math.round((now.getTime() - new Date(p.lastActiveAt).getTime()) / (7 * DAY))),
     professionVerified: p.profession.state === 'verified', experienceYears: Number.parseInt(p.profile.experience, 10) || 0,
-    photo: p.photo,
+    photo: sharedPhoto(p), video: sharedVideo(p),
   }
 }
 

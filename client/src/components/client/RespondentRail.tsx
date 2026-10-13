@@ -1,3 +1,5 @@
+import IntroVideo from './IntroVideo'
+import { sharedPhoto, sharedVideo } from '@shared/derive'
 import Button from '../ui/Button'
 import TierChip from './TierChip'
 import { Star, VerifiedMark, Info } from '../ui/icons'
@@ -57,8 +59,10 @@ export default function RespondentRail({ rate, onRate, person }: {
 }) {
   /** Everything the rail says about this person is the platform's record of them. */
   const r = useProfile(person?.id)
-  /** The picture and the intro video are on the person's own record; a person without one shows an initial, and no video block. */
+  /** The picture and the intro video, each only if the participant consented to share it; otherwise an initial, and no video block. */
   const record = personById(usePlatform(), person?.id ?? '')
+  const photo = record && sharedPhoto(record)
+  const video = record && sharedVideo(record)
   if (!r) return null
   return (
     <aside className="flex h-fit w-[304px] shrink-0 self-start flex-col overflow-hidden rounded-lg border-1 border-stroke-1 bg-bg-0">
@@ -66,8 +70,8 @@ export default function RespondentRail({ rate, onRate, person }: {
 
       <div className="flex flex-col gap-2 px-3 pb-[13px] pt-3">
         <p className="flex items-center gap-2">
-          {record?.photo
-            ? <img src={record.photo} alt="" className="h-6 w-6 rounded-full object-cover" />
+          {photo
+            ? <img src={photo} alt="" className="h-6 w-6 rounded-full object-cover" />
             : <span className="flex h-6 w-6 items-center justify-center rounded-full bg-bg-2 text-label text-text-subtitle">{r.name[0]}</span>}
           <span className="text-body-medium text-text-title">{r.name}</span>
         </p>
@@ -103,18 +107,8 @@ export default function RespondentRail({ rate, onRate, person }: {
         </div>
       </Block>
 
-      {record?.profile.introVideo && (
-        <section className="flex items-center gap-3 border-t-1 border-stroke-1 px-3 py-3">
-          {/* The export draws a still from the video and the date it was updated. The platform keeps the file's name and neither of those. */}
-          <span className="flex h-[60px] w-[90px] shrink-0 items-center justify-center rounded-sm bg-bg-2 text-brand-primary">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#fdfdfc" stroke="currentColor" strokeWidth="1.5" /><path d="m10.5 9 4 3-4 3V9Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg>
-          </span>
-          <span className="flex min-w-0 flex-col gap-1">
-            <span className="text-text-regular text-text-title">Intro Video</span>
-            <span className="truncate text-text-regular text-text-body">{record.profile.introVideo}</span>
-          </span>
-        </section>
-      )}
+      {/* Only with the participant's consent: sharedVideo gives nothing otherwise, and nothing is drawn. */}
+      {video && <IntroVideo video={video} compact />}
 
       <Block title="About">
         <dl className="flex flex-col">

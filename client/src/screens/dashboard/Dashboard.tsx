@@ -2,14 +2,14 @@ import { useNewStudy } from '../create/useNewStudy'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AppShell, { ViewAll } from '../../app/AppShell'
-import StudyCard from '../../components/client/StudyCard'
 import RespondentCard from '../../components/client/RespondentCard'
 import type { Respondent } from '../../components/client/RespondentCard'
 import StatTile from '../../components/client/StatTile'
 import Button from '../../components/ui/Button'
-import { ChevronLeft, ChevronRight, Clock, DollarCircle, ShieldIcon, UsersIcon } from '../../components/ui/icons'
+import { ChevronRight, Clock, DollarCircle, ShieldIcon, UsersIcon } from '../../components/ui/icons'
 import { DASHBOARD_STUDY_IDS } from '../../mock/dashboard'
 import RespondentPanel from './RespondentPanel'
+import { AttentionPanel, NeedRow, StepArrow, StudyCarousel } from './DashboardParts'
 import { InvitePanel } from '../pool/PoolPanels'
 import { SentModal } from '../pool/PoolModals'
 import { useStudies } from '../../platform'
@@ -18,7 +18,6 @@ import { counts, dashboardStats, rankedPool } from '@shared/derive'
 import { isLive, studyTab } from '@shared/lifecycle'
 import { attention, upcomingSessions } from '../../lib/insight'
 import { STUDY_TYPE } from '../../lib/studyTypes'
-import { cn } from '../../lib/cn'
 
 const SPARKLE = (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
@@ -53,6 +52,7 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
   const [inviting, setInviting] = useState<Respondent | null>(null)
   const [sent, setSent] = useState(false)
   const [insightAt, setInsightAt] = useState(0)
+  const [allNeeds, setAllNeeds] = useState(false)
   const { studies: every, state: world } = useStudies()
   const { account } = useSession()
   const all = empty ? [] : every
@@ -62,10 +62,10 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
     .map((id) => live.find((s) => s.id === id))
     .filter((s): s is NonNullable<typeof s> => Boolean(s))
     .concat(live.filter((s) => !DASHBOARD_STUDY_IDS.includes(s.id)))
-    .slice(0, 3)
   const d = dashboardStats(world, all)
   const toHire = all.filter((s) => isLive(s.state)).reduce((n, s) => n + Math.max(0, s.required - counts(s).delivered), 0)
-  const sessions = upcomingSessions(world, all).slice(0, 4)
+  /** Two here; View All opens the Scheduled Sessions tab with the rest. */
+  const sessions = upcomingSessions(world, all).slice(0, 2)
   const needs = attention(world, all)
   const insight = needs[Math.min(insightAt, needs.length - 1)]
   /** Step 24: the pool ranked by score and tier. */
@@ -113,15 +113,8 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
                 <div className="flex items-center justify-between">
                   <h2 className="flex items-center gap-2 text-body-regular text-brand-secondary">{SPARKLE}Super Insights</h2>
                   <span className="flex items-center gap-1.5">
-                    {([[-1, ChevronLeft, 'Previous insight'], [1, ChevronRight, 'Next insight']] as const).map(([step, Icon, label]) => {
-                      const to = insightAt + step, off = to < 0 || to >= needs.length
-                      return (
-                        <button key={label} type="button" aria-label={label} disabled={off} onClick={() => setInsightAt(to)}
-                          className={cn('flex h-7 w-7 items-center justify-center rounded-sm border-1 border-stroke-3', off ? 'text-text-disabled' : 'text-text-title hover:bg-bg-0')}>
-                          <Icon className="h-4 w-4" />
-                        </button>
-                      )
-                    })}
+                    <StepArrow dir={-1} label="Previous insight" disabled={insightAt <= 0} onClick={() => setInsightAt(insightAt - 1)} />
+                    <StepArrow dir={1} label="Next insight" disabled={insightAt + 1 >= needs.length} onClick={() => setInsightAt(insightAt + 1)} />
                   </span>
                 </div>
                 {insight ? (
@@ -144,34 +137,30 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
             <h2 className="flex items-center gap-2.5 pb-[10px] pl-1 text-body-medium text-text-title">
               <span className="flex h-4 w-4 items-center justify-center rounded-full bg-yellow-100"><span className="h-2 w-2 rounded-full bg-cta-primary" /></span>
               Needs Your Attention
+              {needs.length > 3 && (
+                <button type="button" onClick={() => setAllNeeds(true)} className="ml-auto flex items-center gap-1 text-text-medium text-text-subtitle hover:text-text-title">
+                  View all <span className="text-text-regular">({needs.length})</span> <ChevronRight className="h-4 w-4" />
+                </button>
+              )}
             </h2>
             {needs.length === 0 && <Blank line="Nothing needs you right now." />}
-            {needs.map((n) => (
-              <button key={n.key} type="button" onClick={() => navigate(n.to)}
-                className="flex h-[69px] items-center border-t-1 border-stroke-input pl-1 text-left first-of-type:border-t-0">
-                <span className="flex w-[100px] shrink-0 items-baseline gap-0.5 text-title-l font-medium text-text-title">
-                  {n.figure}{n.suffix && <span className="text-text-regular text-text-body">{n.suffix}</span>}
-                </span>
-                <span className="flex min-w-0 flex-col gap-1">
-                  <span className="flex items-center gap-1 text-text-medium text-text-title">{n.title}<ChevronRight className="h-4 w-4 text-brand-primary" /></span>
-                  <span className="truncate text-text-regular text-text-body">{n.sub}</span>
-                </span>
-              </button>
-            ))}
+            {needs.slice(0, 3).map((n) => <NeedRow key={n.key} n={n} />)}
           </section>
         </div>
 
         <section className="pt-[25px]">
-          <div className="flex items-center justify-between pb-2.5">
-            <h2 className="text-body-medium text-text-title">Ongoing Studies</h2>
-            <ViewAll to="/studies" />
-          </div>
           {studies.length === 0 ? (
-            <div className="flex rounded-lg border-1 border-stroke-1 bg-bg-1"><Blank line="No ongoing studies yet." cta="Create Study" onClick={newStudy} /></div>
+            <>
+              <div className="flex items-center justify-between pb-2.5"><h2 className="text-body-medium text-text-title">Ongoing Studies</h2><ViewAll to="/studies" /></div>
+              <div className="flex rounded-lg border-1 border-stroke-1 bg-bg-1"><Blank line="No ongoing studies yet." cta="Create Study" onClick={newStudy} /></div>
+            </>
           ) : (
-            <div className="grid grid-cols-3 gap-3">
-              {studies.map((s) => <StudyCard key={s.id} onOpen={() => navigate(`/studies/${s.id}`)} onMenu={() => navigate('/studies')} study={s} />)}
-            </div>
+            <StudyCarousel studies={studies} head={(arrows) => (
+              <div className="flex items-center justify-between gap-4 pb-2.5">
+                <h2 className="text-body-medium text-text-title">Ongoing Studies</h2>
+                <span className="flex items-center gap-4">{arrows}<ViewAll to="/studies" /></span>
+              </div>
+            )} />
           )}
         </section>
 
@@ -195,6 +184,7 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
       <InvitePanel open={inviting !== null} name={inviting?.name.split(' ')[0]} personId={inviting?.id} onClose={() => setInviting(null)}
         onSent={() => { setInviting(null); setSent(true) }} />
       <SentModal open={sent} onClose={() => setSent(false)} />
+      <AttentionPanel open={allNeeds} onClose={() => setAllNeeds(false)} needs={needs} />
     </AppShell>
   )
 }

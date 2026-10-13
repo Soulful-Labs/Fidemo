@@ -8,7 +8,7 @@
  * is refused with a reason.
  */
 import {
-  billing, consoleDashboard, counts, financeTotals, personFigures, pointsRows, recruit, refundsPending, respondentStudies, trustInputs,
+  billing, consoleDashboard, counts, financeTotals, personFigures, pointsRows, poolPerson, recruit, refundsPending, respondentStudies, sharedPhoto, sharedVideo, trustInputs,
 } from '../shared/derive'
 import { respondentStatus, participationOf } from '../shared/lifecycle'
 import { FEES, TIMINGS, depositFor, diaryWords, quoteStudy } from '../shared/platform'
@@ -320,7 +320,8 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
 {
   p.reset(); clock = now.getTime()
   const people = st().people
-  check('pictures: every seeded person has one, drawn and not a photograph', people.every((x) => x.photo?.startsWith('data:image/svg+xml,')) && new Set(people.map((x) => x.photo)).size > people.length / 2, `${people.filter((x) => x.photo).length} of ${people.length}`)
+  const pool = people.filter((x) => x.id !== DEMO_PERSON_ID)
+  check('pictures: every seeded pool person has one, drawn and not a photograph; the demo participant starts with none', pool.every((x) => x.photo?.startsWith('data:image/svg+xml,')) && new Set(pool.map((x) => x.photo)).size > pool.length / 2 && !people.find((x) => x.id === DEMO_PERSON_ID)?.photo, `${pool.filter((x) => x.photo).length} of ${pool.length}`)
   check('profiles: every seeded person has work functions and skills', people.every((x) => x.profile.workFunctions.length > 0 && x.profile.skills.length > 0))
   const wide = formOf({ countries: [], gender: 'All Genders', education: '', ageRanges: [] })
   const all = audiencePeople(st(), wide, now).length
@@ -331,6 +332,30 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   check('audience: a function nobody has matches nobody', audiencePeople(st(), { ...wide, functions: 'Beekeeping' }, now).length === 0)
   const weekly = buildStudy(formOf({ title: 't', type: 'diary', durationUnit: 'Week', frequency: 'Weekly', studyDuration: '5 weeks', minimumRequired: '4 weeks', tasks: asForm([{ kind: 'Multi-line input', text: 'What changed this week?' }]), tasksSubmitted: true }), now)
   check('diary: entries are counted in the unit chosen', weekly.ok && weekly.study.diary?.unit === 'Week' && weekly.study.diary.totalDays === 5 && weekly.study.diary.minDays === 4 && diaryWords(weekly.study.diary.unit).Unit === 'Week' && diaryWords(weekly.study.diary.unit).units === 'weeks' && diaryWords(undefined).Unit === 'Day')
+}
+
+// ------------------------------------------------ picture, intro video and their consent
+{
+  p.reset(); clock = now.getTime()
+  const me = () => st().people.find((x) => x.id === DEMO_PERSON_ID)!
+  const pts = () => personFigures(st(), DEMO_PERSON_ID, new Date(clock)).points
+  const pic = 'data:image/jpeg;base64,/9j/4AAQ'
+  const vid = { id: 'vid-test', name: 'me.webm', type: 'video/webm', bytes: 1234 }
+  check('consent: a picture or video cannot be shared before there is one', !p.setMediaConsent(DEMO_PERSON_ID, 'photo', true).ok && !p.setMediaConsent(DEMO_PERSON_ID, 'video', true).ok)
+  check('consent: only an image is taken as a picture', !p.setPicture(DEMO_PERSON_ID, 'data:text/html,<b>x</b>').ok)
+  const p0 = pts()
+  p.setPicture(DEMO_PERSON_ID, pic); const p1 = pts()
+  p.setVideo(DEMO_PERSON_ID, vid); const p2 = pts()
+  check('points: a picture earns 25 and a video 75', POINTS.PROFILE_PICTURE === 25 && POINTS.INTRO_VIDEO === 75 && p1 - p0 === 25 && p2 - p1 === 75, `${p0} -> ${p1} -> ${p2}`)
+  check('consent: both start off, and with it off a client sees neither', !me().photoConsent && !me().videoConsent && sharedPhoto(me()) === undefined && sharedVideo(me()) === undefined && poolPerson(st(), me()).photo === undefined)
+  p.setMediaConsent(DEMO_PERSON_ID, 'photo', true); p.setMediaConsent(DEMO_PERSON_ID, 'video', true)
+  check('consent: on, a client sees the picture and the video', poolPerson(st(), me()).photo === pic && poolPerson(st(), me()).video?.id === 'vid-test')
+  p.setMediaConsent(DEMO_PERSON_ID, 'photo', false)
+  check('consent: each is its own: the picture off leaves the video shared', poolPerson(st(), me()).photo === undefined && poolPerson(st(), me()).video?.id === 'vid-test')
+  p.setPicture(DEMO_PERSON_ID, null); p.setVideo(DEMO_PERSON_ID, null)
+  check('points: removing the picture and the video does not take the points back', pts() === p2 && !me().photo && !me().video && !me().videoConsent)
+  p.setPicture(DEMO_PERSON_ID, pic); p.setVideo(DEMO_PERSON_ID, vid)
+  check('points: adding them again does not pay twice, and consent stays off', pts() === p2 && !me().photoConsent && !me().videoConsent)
 }
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nall checks passed')

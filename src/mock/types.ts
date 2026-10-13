@@ -25,7 +25,7 @@ export type RedeemEntry = RedeemRow
 export type Outcome = 'green' | 'yellow' | 'red'
 
 /** The signed-in person, with every figure the platform derives for them. */
-export type User = Pick<Person, 'name' | 'email' | 'phone' | 'profile' | 'onboarded' | 'taxFormDone' | 'sourceCode' | 'joinedAt' | 'consent' | 'emailPrefs'>
+export type User = Pick<Person, 'name' | 'email' | 'phone' | 'profile' | 'onboarded' | 'taxFormDone' | 'sourceCode' | 'joinedAt' | 'consent' | 'emailPrefs' | 'photo' | 'photoConsent' | 'video' | 'videoConsent'>
   & { verified: { govId: boolean; livePhoto: boolean; license: boolean } }
   & PersonFigures
 

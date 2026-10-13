@@ -1,3 +1,5 @@
+import IntroVideo from '../../components/client/IntroVideo'
+import { sharedPhoto, sharedVideo } from '@shared/derive'
 import SidePanel from '../../components/ui/SidePanel'
 import Button from '../../components/ui/Button'
 import TierChip from '../../components/client/TierChip'
@@ -45,8 +47,10 @@ export default function RespondentPanel({
   onReviews?: () => void; title?: string }) {
   const toast = useToast()
   const d = useProfile(respondent?.id)
-  /** The picture and the intro video are on the person's own record; without one there is an initial and no video block. */
+  /** The picture and the intro video, each only if the participant consented to share it; otherwise an initial, and no video block. */
   const record = personById(usePlatform(), respondent?.id ?? '')
+  const photo = record && sharedPhoto(record)
+  const video = record && sharedVideo(record)
   if (!respondent || !d) return null
 
   return (
@@ -57,7 +61,7 @@ export default function RespondentPanel({
         </div>
       }>
       <div className="flex items-start gap-3 px-1 pb-[11px]">
-        {record?.photo ? <img src={record.photo} alt="" className="h-14 w-14 shrink-0 rounded-full object-cover" /> : <Avatar name={respondent.name} size={56} />}
+        {photo ? <img src={photo} alt="" className="h-14 w-14 shrink-0 rounded-full object-cover" /> : <Avatar name={respondent.name} size={56} />}
         <div className="flex min-w-0 flex-col gap-1">
           <p className="text-title-s text-text-title">{respondent.role}</p>
           <p className="text-text-regular text-text-subtitle">{d.meta}</p>
@@ -105,17 +109,8 @@ export default function RespondentPanel({
         </div>
       </div>
 
-      {record?.profile.introVideo && (
-        <section className="flex items-center gap-3 rounded-lg border-1 border-stroke-1 p-3">
-          <span className="flex h-[60px] w-[90px] shrink-0 items-center justify-center rounded-sm bg-bg-2 text-brand-primary">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#fdfdfc" stroke="currentColor" strokeWidth="1.5" /><path d="m10.5 9 4 3-4 3V9Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg>
-          </span>
-          <span className="flex min-w-0 flex-col gap-1">
-            <span className="text-text-regular text-text-title">Intro Video</span>
-            <span className="truncate text-text-regular text-text-body">{record.profile.introVideo}</span>
-          </span>
-        </section>
-      )}
+      {/* Only with the participant's consent: sharedVideo gives nothing otherwise, and nothing is drawn. */}
+      {video && <IntroVideo video={video} />}
 
       <Block title="About">
         <dl className="grid grid-cols-3 gap-x-4 gap-y-4">

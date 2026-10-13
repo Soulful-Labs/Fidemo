@@ -1,3 +1,5 @@
+import IntroVideo from '../../../components/app/IntroVideo'
+import { sharedVideo } from '@shared/derive'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -99,6 +101,8 @@ export default function VerificationDetail() {
     }
   }
 
+  /** The participant's intro video, only while they consent to share it. */
+  const shownVideo = sharedVideo(person)
   const subject = isId
     ? { title: person.profile.idType || 'Government ID', text: c.check?.reason ?? '' }
     : { title: 'Professional License', text: c.check?.reason ?? '' }
@@ -175,7 +179,7 @@ export default function VerificationDetail() {
               <div className="flex flex-col gap-3 border-t-1 border-stroke-input pt-3">{ACCOUNT.map(([l, v]) => <Field key={l} label={l!} value={v!} />)}</div>
             </Card>
             <Card title="Personal Details">
-              <div><p className="pb-1 text-text-regular leading-5 text-text-subtitle">Intro Video</p><File thumb="/img/participants/intro.png" name="samuel-intro.mp4" meta="5 MB  |  Updated on Jan 10, 2026" /></div>
+              <div><p className="pb-1 text-text-regular leading-5 text-text-subtitle">Intro Video</p>{shownVideo ? <IntroVideo video={shownVideo} /> : <p className="text-body-regular leading-[22px] text-text-body">Not shared</p>}</div>
               {PERSONAL.map(([l, v]) => <Field key={l} label={l!} value={v!} />)}
             </Card>
           </div>

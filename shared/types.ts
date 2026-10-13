@@ -287,7 +287,19 @@ export interface Person {
   name: string
   email: string
   phone: string
+  /**
+   * Their picture. A seeded person's is a drawn figure (shared/avatar.ts); a
+   * participant who uploads one replaces it. Clients and the console see it
+   * only while `photoConsent` is on: read it through `sharedPhoto`, never directly.
+   */
   photo?: string
+  photoConsent?: boolean
+  /** The first time they added a picture of their own: the points award is read from it, and it is never cleared. */
+  pictureAddedAt?: string
+  /** Their intro video. The file is kept in this browser's IndexedDB under `id` (shared/media.ts); only the reference lives here. */
+  video?: { id: string; name: string; type: string; bytes: number }
+  videoConsent?: boolean
+  videoAddedAt?: string
   joinedAt: string
   lastActiveAt: string
   status: 'active' | 'restricted' | 'deactivated'

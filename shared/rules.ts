@@ -166,6 +166,10 @@ export const POINTS = {
   STUDY_COMPLETION: 25,
   FULL_PROFILE: 50,
   STREAK: 50,
+  /** Adding a profile picture, once. Removing it later does not take the points back. */
+  PROFILE_PICTURE: 25,
+  /** Adding an intro video, once. Removing it later does not take the points back. */
+  INTRO_VIDEO: 75,
 } as const
 
 /**

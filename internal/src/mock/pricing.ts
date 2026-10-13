@@ -31,6 +31,7 @@ export const DEDUCTED_EDIT = DEDUCTED
 export const POINTS = [
   ['Referral', String(P.REFERRAL), 'When someone refers users to join'], ['Being Referred', String(P.BEING_REFERRED), 'Refer someone who joins'], ['Study Completion', String(P.STUDY_COMPLETION), 'Per study'],
   ['Full Profile Completion', String(P.FULL_PROFILE), 'One-rime when user completes profile 100%'], ['Streak Completion', String(P.STREAK), `When user completes ${STREAK_TARGET} studies in one month`],
+  ['Profile Picture', String(P.PROFILE_PICTURE), 'One-time when user adds a profile picture'], ['Intro Video', String(P.INTRO_VIDEO), 'One-time when user adds an intro video'],
 ]
 
 export const TRUST_NOTES = [`Onboarding is fixed at ${TRUST.ONBOARDING} and is the minimum Trust Score.`, `Study completion contributes up to ${TRUST.STUDY_COMPLETION_CAP_PER_YEAR} per year (max ${TRUST.STUDY_COMPLETION_CAP_PER_YEAR} studies).`, `Ratings are based on your last ${TRUST.RATINGS_WINDOW} ratings and can add up to ${TRUST.RATINGS_MAX}.`,

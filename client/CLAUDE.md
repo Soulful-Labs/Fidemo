@@ -1536,3 +1536,23 @@ that saved nothing and the PIN card were hiding.
 `scripts/healthcheck.mjs` covers the fourth kind: a route in the map with no
 screen behind it. `/help/tickets` and `/studies/:id/pay/due` both drew the
 Not-Found placeholder while the audit reported every route clean.
+
+## Pictures and intro videos are shown only with consent (13 Oct 2026)
+
+A participant adds a picture (JPEG or PNG, up to 2 MB, scaled to fit 640 by
+480) and an intro video on My Profile in the respondent app. Each has its own
+consent switch, off by default. Every screen outside the respondent's own app
+reads them through `sharedPhoto` and `sharedVideo` (shared/derive.ts), which
+give nothing while consent is off, so the client app and the console draw the
+initial and no video block. Never read `person.photo` or `person.video`
+directly here. The video file lives in this browser's IndexedDB
+(shared/media.ts, database `fi-media`); the shared state holds only its
+reference. Points: `POINTS.PROFILE_PICTURE` 25 and `POINTS.INTRO_VIDEO` 75, once
+each, read from `pictureAddedAt` and `videoAddedAt`, never taken back. The seed's
+pool people carry their drawn figures with picture consent on; the demo
+participant starts with no picture.
+
+The dashboard shows less at once: Ongoing Studies is a two-up carousel of every
+ongoing study (160ms slide, ease-out, no overshoot), Needs Your Attention shows
+three rows with "View all" opening a panel of the rest, Upcoming Sessions shows
+two. `scripts/media-check.mjs` (repo root) checks all of this in three tabs.

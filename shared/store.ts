@@ -650,6 +650,38 @@ export function createPlatform(options: Options = {}) {
       return yes()
     }),
 
+    /**
+     * The participant's own picture, a data URL already cut down to 640 by 480
+     * at most, or null to remove it. Adding one the first time earns its points;
+     * removing it does not take them back. A new picture keeps the consent as it was.
+     */
+    setPicture: (personId: string, dataUrl: string | null) => move((s) => {
+      const person = personById(s, personId)
+      if (!person) return no('No such account')
+      if (dataUrl && !dataUrl.startsWith('data:image/')) return no('A picture must be an image')
+      if (dataUrl) { person.photo = dataUrl; person.pictureAddedAt ??= iso() } else { delete person.photo; person.photoConsent = false }
+      person.lastActiveAt = iso()
+      return yes()
+    }),
+
+    /** The intro video's reference (the file itself is in IndexedDB), or null to remove it. Points as for the picture. */
+    setVideo: (personId: string, video: Person['video'] | null) => move((s) => {
+      const person = personById(s, personId)
+      if (!person) return no('No such account')
+      if (video) { person.video = video; person.videoAddedAt ??= iso(); person.profile.introVideo = video.name } else { delete person.video; person.videoConsent = false; person.profile.introVideo = '' }
+      person.lastActiveAt = iso()
+      return yes()
+    }),
+
+    /** Consent to show clients (and the console) the picture or the video. Off is immediate everywhere: every other screen reads sharedPhoto and sharedVideo. */
+    setMediaConsent: (personId: string, what: 'photo' | 'video', on: boolean) => move((s) => {
+      const person = personById(s, personId)
+      if (!person) return no('No such account')
+      if (on && !(what === 'photo' ? person.photo : person.video)) return no(what === 'photo' ? 'Add a picture first' : 'Add a video first')
+      if (what === 'photo') person.photoConsent = on; else person.videoConsent = on
+      return yes()
+    }),
+
     setConsent: (personId: string, key: keyof Person['consent'], value: boolean) => move((s) => {
       const person = personById(s, personId)
       if (!person) return no('No such account')

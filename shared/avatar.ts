@@ -27,3 +27,14 @@ export function avatarFor(id: string, gender?: string): string {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><rect width="80" height="80" fill="${back}"/><path d="M12 80c2-16 13-24 28-24s26 8 28 24Z" fill="${top}"/><rect x="35" y="46" width="10" height="12" rx="4" fill="${skin}"/><circle cx="40" cy="36" r="14" fill="${skin}"/>${cut}</svg>`
   return `data:image/svg+xml,${encodeURIComponent(svg)}`
 }
+
+/**
+ * The initial on a tile, as an image, for screens that only know how to draw
+ * a picture: what the console shows when a participant has not consented to
+ * share theirs.
+ */
+export function initialFor(name: string): string {
+  const letter = (name.trim()[0] ?? '?').toUpperCase().replace(/[<>&"']/g, '')
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><rect width="80" height="80" fill="#e7edef"/><text x="40" y="52" text-anchor="middle" font-family="Geist, system-ui, sans-serif" font-size="34" font-weight="500" fill="#5e5d5b">${letter}</text></svg>`
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`
+}

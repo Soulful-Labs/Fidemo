@@ -1,3 +1,4 @@
+import { Avatar } from '../../components/client/RespondentCard'
 import { useState } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
@@ -129,7 +130,7 @@ export default function RecruitedTab() {
                       ? paginate(scheduled, page).rows.map((r, i) => (
                         <tr key={r.id} className="border-b-1 border-stroke-input last:border-b-0">
                           <td className="h-[60px] px-[18px] text-text-regular text-text-title">
-                            <Link to={`/studies/${s.id}/respondent/${r.id}?state=recruited`} className="hover:underline">{r.name}</Link>
+                            <span className="flex items-center gap-2"><Avatar name={r.name} photo={r.photo} size={28} /><Link to={`/studies/${s.id}/respondent/${r.id}?state=recruited`} className="hover:underline">{r.name}</Link></span>
                           </td>
                           <td className="h-[60px] px-[18px] text-text-regular text-text-title">{r.role}</td>
                           <td className="h-[60px] px-[18px]"><ScoreCell score={r.score} tier={r.tier} /></td>
@@ -155,7 +156,7 @@ export default function RecruitedTab() {
                       : shownApplications.rows.map((r) => (
                         <tr key={r.id} className="border-b-1 border-stroke-input last:border-b-0">
                           <td className="h-row px-[18px] text-text-regular text-text-title">
-                            <Link to={`/studies/${s.id}/respondent/${r.id}?state=recruited`} className="hover:underline">{r.name}</Link>
+                            <span className="flex items-center gap-2"><Avatar name={r.name} photo={r.photo} size={28} /><Link to={`/studies/${s.id}/respondent/${r.id}?state=recruited`} className="hover:underline">{r.name}</Link></span>
                           </td>
                           <td className="h-row px-[18px] text-text-regular text-text-title">{r.role}</td>
                           <td className="h-row px-[18px]">

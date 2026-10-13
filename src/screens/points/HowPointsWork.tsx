@@ -31,6 +31,8 @@ const WAYS = [
   { title: 'Study Completion', sub: 'Complete a study and get paid', value: POINTS.STUDY_COMPLETION },
   { title: 'Full Profile Completion', sub: 'Fill in every section of your profile', value: POINTS.FULL_PROFILE },
   { title: 'Streak Completion', sub: 'Maintain your participation streak', value: POINTS.STREAK },
+  { title: 'Profile Picture', sub: 'Add a picture to your profile, once', value: POINTS.PROFILE_PICTURE },
+  { title: 'Intro Video', sub: 'Add a short intro video, once', value: POINTS.INTRO_VIDEO },
 ]
 
 function Row({ icon, title, sub, value, note }: { icon: React.ReactNode; title: string; sub: string; value: number; note?: string }) {

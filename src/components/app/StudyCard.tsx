@@ -1,12 +1,14 @@
 import Button from '../ui/Button'
 import Tag from '../ui/Tag'
-import { Bookmark, Calendar, Clock, InviteIcon } from '../ui/icons'
+import { Bookmark, Calendar, Clock, Info, InviteIcon } from '../ui/icons'
 import { cn } from '../../lib/cn'
 import { bookingShort, dateLong, daysLeft, duration, money } from '../../lib/format'
 import { STATUS, outcomeFor } from '../../lib/labels'
 import { completeBlocker } from '../../lib/session'
 import { useStore } from '../../mock/store'
 import type { Study } from '../../mock/types'
+import { useCallback, useRef, useState } from 'react'
+import DescriptionPopover from './DescriptionPopover'
 import ScoreDial from './ScoreDial'
 import StudyTypeTag, { STUDY_TYPE_LABEL } from './StudyTypeTag'
 import StatusIcon from './StatusIcon'
@@ -61,6 +63,10 @@ export default function StudyCard({
   // Booked and closed studies swap the description for "$150 • 45 min" / type.
   const brief = booked || history
   const lastAt = study.timeline.at(-1)?.at
+  // Lists show the title alone; the description opens over the card on tap.
+  const [about, setAbout] = useState(false)
+  const aboutButton = useRef<HTMLButtonElement>(null)
+  const closeAbout = useCallback(() => setAbout(false), [])
 
   const bookmark = (
     <button
@@ -119,7 +125,8 @@ export default function StudyCard({
         </div>
       )}
 
-      <button type="button" onClick={onOpen} className="flex gap-3 text-left">
+      <div className="relative flex items-start gap-2">
+      <button type="button" onClick={onOpen} className="flex min-w-0 flex-1 gap-3 text-left">
         {study.image && (
           <img src={study.image} alt="" className="h-thumb w-thumb shrink-0 rounded-md object-cover" />
         )}
@@ -133,11 +140,17 @@ export default function StudyCard({
                 {booked ? duration(study.durationMins) : STUDY_TYPE_LABEL[study.type]}
               </span>
             </span>
-          ) : (
-            <span className="line-clamp-2 text-body-regular text-text-body">{study.description}</span>
-          )}
+          ) : null}
         </span>
       </button>
+      {!brief && study.description && (
+        <button ref={aboutButton} type="button" aria-label="About this study" aria-expanded={about} onClick={() => setAbout((o) => !o)}
+          className="-mr-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-text-body hover:text-text-title aria-expanded:text-text-title">
+          <Info className="h-5 w-5" />
+        </button>
+      )}
+      <DescriptionPopover open={about} onClose={closeAbout} text={study.description} title={study.title} anchor={aboutButton} />
+      </div>
 
       {booked && study.booking ? (
         <div className="flex items-center gap-2">

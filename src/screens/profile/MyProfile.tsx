@@ -54,7 +54,8 @@ export default function MyProfile() {
     setTimeout(() => {
       const { name, ...profile } = draft
       // Workflow 17: a licence number is checked against the public register automatically.
-      updateUser({ name: name.trim() || user.name, profile, verified: { ...user.verified, license: profile.licenseId.trim().length >= 6 } })
+      // The intro video is saved by MediaFields as it changes; the draft's copy of its name may be older.
+      updateUser({ name: name.trim() || user.name, profile: { ...profile, introVideo: user.profile.introVideo }, verified: { ...user.verified, license: profile.licenseId.trim().length >= 6 } })
       setSaving(false)
       toast('Saved')
     }, TIMINGS.fakeServer)

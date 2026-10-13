@@ -82,6 +82,7 @@ export type Action =
 const userOf = (person: Person, figures: ReturnType<typeof personFigures>): User => ({
   name: person.name, email: person.email, phone: person.phone, profile: person.profile, onboarded: person.onboarded,
   taxFormDone: person.taxFormDone, sourceCode: person.sourceCode, joinedAt: person.joinedAt, consent: person.consent, emailPrefs: person.emailPrefs,
+  photo: person.photo, photoConsent: Boolean(person.photoConsent), video: person.video, videoConsent: Boolean(person.videoConsent),
   verified: { govId: person.identity.state === 'verified', livePhoto: person.livePhoto, license: person.profession.state === 'verified' },
   ...figures,
 })
@@ -236,6 +237,10 @@ export function useStoreValue() {
       identityVerified: patch.verified?.govId, licenseVerified: patch.verified?.license,
     })),
     setConsent: (key: keyof User['consent'], value: boolean) => run(p.setConsent(me, key, value)),
+    /** Their own picture and intro video, and the consent to show each to clients (shared/store.ts). */
+    setPicture: (dataUrl: string | null) => run(p.setPicture(me, dataUrl)),
+    setVideo: (video: User['video'] | null) => run(p.setVideo(me, video)),
+    setMediaConsent: (what: 'photo' | 'video', on: boolean) => run(p.setMediaConsent(me, what, on)),
     setEmailPref: (key: keyof User['emailPrefs'], value: boolean) => run(p.setEmailPref(me, key, value)),
     markAllRead: () => run(p.markNotificationsRead(me)),
     markRead: (id: string) => run(p.markNotificationsRead(me, id)),

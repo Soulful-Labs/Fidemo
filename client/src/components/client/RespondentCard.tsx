@@ -13,7 +13,7 @@ export interface Respondent {
   score: number
   tier: Tier
   professionVerified?: boolean
-  /** Their picture, where the platform holds one. */
+  /** Their picture, only when they consented to share it (sharedPhoto); otherwise their initial is drawn. */
   photo?: string
 }
 
@@ -21,7 +21,7 @@ export interface Respondent {
 export function Avatar({ name, size = 40, photo }: { name: string; size?: number; photo?: string }) {
   if (photo) return <img src={photo} alt="" style={{ width: size, height: size }} className="shrink-0 rounded-full object-cover" />
   return (
-    <span style={{ width: size, height: size }}
+    <span style={{ width: size, height: size }} aria-hidden="true"
       className="flex shrink-0 items-center justify-center rounded-full bg-bg-2 text-text-medium text-text-subtitle">
       {name.charAt(0).toUpperCase()}
     </span>

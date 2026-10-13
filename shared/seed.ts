@@ -15,7 +15,6 @@ import { SCREENERS, TASKS } from './seed/screeners'
 import { catalogue } from './seed/catalogue'
 import type { CatalogueEntry } from './seed/catalogue'
 import { buildPool, starsSumming, targetScore } from './seed/people'
-import { avatarFor } from './avatar'
 import { trustInputs } from './derive'
 import { TRUST, starsForRating, trustForStars } from './rules'
 import type { Answers } from './types'
@@ -24,7 +23,7 @@ import type {
   Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudySetup, StudyType, TeamMember, Ticket,
 } from './types'
 
-export const SEED_VERSION = 5
+export const SEED_VERSION = 6
 export const DEMO_PERSON_ID = 'jonathan'
 export const DEMO_PERSON_EMAIL = 'jonathan.reeve@example.com'
 export const DEMO_CLIENT_ID = 'cl-soulful'
@@ -176,7 +175,8 @@ export function buildSeed(now: Date = new Date()): PlatformState {
   const byId = new Map(pool.map((p) => [p.id, p]))
 
   const jonathan: Person = {
-    id: DEMO_PERSON_ID, name: 'Jonathan Reeve', photo: avatarFor(DEMO_PERSON_ID, 'Male'), email: DEMO_PERSON_EMAIL, phone: '+1 555 0142 889',
+    // The demo participant starts with no picture, so adding one (and the consent to show it) can be shown from the start.
+    id: DEMO_PERSON_ID, name: 'Jonathan Reeve', photoConsent: false, email: DEMO_PERSON_EMAIL, phone: '+1 555 0142 889',
     joinedAt: at(-420, 9, 0), lastActiveAt: at(0, 8, 30), status: 'active', location: 'New York, US',
     profile: {
       gender: 'Male', address: 'Brooklyn, New York', areaType: 'Urban', aboutMe: '', languages: ['English'],
