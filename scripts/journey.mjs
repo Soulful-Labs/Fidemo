@@ -78,6 +78,21 @@ async function tab(name, width, height, mobile) {
   return t
 }
 
+/** Fills three of the builder's question blocks, as a client would: text, then each option. */
+const SCREENER = [
+  { at: 0, text: 'Do you use a sleep tracker at the moment?', options: ['Yes, most nights', 'No'] },
+  { at: 1, text: 'Which kinds of tracker have you used?', options: ['A watch', 'A ring', 'A phone app'] },
+  { at: 3, text: 'How many nights a week do you wear it?', options: [] },
+]
+const BUILD_SCREENER = `(() => {
+  const blocks = [...document.querySelectorAll('input[placeholder="Enter question text..."]')]
+  for (const q of ${JSON.stringify(SCREENER)}) {
+    __type(blocks[q.at], q.text)
+    const opts = [...blocks[q.at].closest('.py-4').querySelectorAll('input[placeholder="Enter option"]')]
+    q.options.forEach((o, i) => __type(opts[i], o))
+  }
+  return true })()`
+
 const results = []
 const step = async (n, name, fn) => {
   errors.length = 0
@@ -113,6 +128,8 @@ await step(1, 'Client creates and publishes a study', async () => {
   await C.ev(`(() => { __type(document.querySelector('input[placeholder="Enter title of your study"]'), ${JSON.stringify(TITLE)}); __type(document.querySelector('textarea[placeholder="Enter study description"]'), 'How people use sleep trackers week to week.'); return true })()`)
   await C.click('Continue'); expect((await C.path()).endsWith('/audience'), 'Continue did not reach Audience: ' + await C.path())
   await C.click('Continue'); expect((await C.path()).endsWith('/screener'), 'Continue did not reach Screener: ' + await C.path())
+  // The client's own screener: one eligibility question and two more, in three answer types.
+  await C.ev(BUILD_SCREENER)
   await C.click('Continue'); expect((await C.path()).endsWith('/study'), 'Continue did not reach Study setup: ' + await C.path())
   await C.click('Set Timing Availability'); await C.click('Submit')
   await C.click('Proceed to Publish'); expect((await C.path()).endsWith('/publish'), 'did not reach Publish: ' + await C.path())
@@ -160,6 +177,7 @@ await step(5, 'The respondent applies and completes the screener', async () => {
       const q = pre.find((x) => __has(x.prompt));
       if (q) { const pick = q.passing[0]; __click(pick); return 'pre:' + pick }
       const ta = document.querySelector('textarea'); if (ta) { __type(ta, 'I use it every night and check the weekly trend.'); return 'text' }
+      const num = document.querySelector('main input[inputmode=decimal]'); if (num) { __type(num, '5'); return 'number' }
       const opt = [...document.querySelectorAll('[role=radio], [role=checkbox]')].find(__vis); if (opt) { opt.click(); return 'option' }
       return 'none' })()`)
     await sleep(250)

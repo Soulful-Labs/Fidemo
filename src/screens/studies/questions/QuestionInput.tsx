@@ -90,6 +90,13 @@ export default function QuestionInput({
 
   if (question.kind === 'text') {
     const text = typeof value === 'string' ? value : ''
+    // A number question from the client's builder (shared/questions.ts): one line, digits only.
+    if (question.format === 'number') {
+      return (
+        <Input inputMode="decimal" value={text} placeholder={question.placeholder ?? 'Enter a number'} aria-label={question.prompt}
+          onChange={(e) => onChange(e.target.value.replace(/[^0-9.\-]/g, ''))} />
+      )
+    }
     return (
       <Input multiline rows={4} maxLength={500} showCount value={text} placeholder={question.placeholder ?? 'Type your answer here..'}
         onChange={(e) => onChange(e.target.value)} aria-label={question.prompt} />

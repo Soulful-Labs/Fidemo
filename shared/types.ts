@@ -28,12 +28,26 @@ export type Stars = 1 | 2 | 3 | 4 | 5
 /** The client's rating control (policy sign-off, workflow 52). Stored as stars, see rules.ts. */
 export type RatingState = 'poor' | 'good' | 'excellent'
 
-export type Question =
+/**
+ * What a question built in the client's Create flow carries beyond how it is
+ * asked (shared/questions.ts): the answer type the client chose, the verdict
+ * they gave each option, and whether a text answer is a number.
+ */
+export interface QuestionMeta {
+  /** The client builder's answer type, e.g. "Number input". Absent on seeded questions. */
+  authored?: string
+  /** Option text to the builder's verdict: Correct, Incorrect, May Select or Must Select. */
+  marks?: Record<string, string>
+  format?: 'number'
+}
+
+export type Question = QuestionMeta & (
   | { id: string; kind: 'single'; prompt: string; options: string[] }
   | { id: string; kind: 'multi'; prompt: string; helper?: string; options: string[] }
   | { id: string; kind: 'text'; prompt: string; placeholder?: string }
   | { id: string; kind: 'image'; prompt: string }
   | { id: string; kind: 'scale'; prompt: string; options: string[] }
+)
 
 /** Workflow 28: the eligibility questions asked before the full screener. */
 export interface PreScreenQuestion { id: string; prompt: string; options: string[]; passing: string[] }

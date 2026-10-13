@@ -21,11 +21,14 @@ const KIND: Record<SharedQuestion['kind'], string> = { single: 'Single-select', 
 /** A pre-screener question marks its passing answers Correct and the rest Incorrect (workflow 28). */
 const preQuestion = (q: PreScreenQuestion): Question => ({ kind: 'Single-select', prompt: q.prompt, answers: q.options.map((o) => [o, q.passing.includes(o) ? 'Correct' : 'Incorrect']) })
 /** A screener or task question: the options the participant will choose from; none is right or wrong. */
+const VERDICTS: Verdict[] = ['Correct', 'Incorrect', 'May Select', 'Must Select']
+const verdict = (q: SharedQuestion, option: string): Verdict => VERDICTS.find((v) => v === q.marks?.[option]) ?? 'May Select'
+/** Named by the answer type the client chose (shared/questions.ts), with the verdict they gave each option. */
 const question = (q: SharedQuestion): Question => q.kind === 'text'
-  ? { kind: KIND.text, prompt: q.prompt, placeholder: q.placeholder ?? 'Participants will enter a short text response here…' }
+  ? { kind: q.authored ?? KIND.text, prompt: q.prompt, placeholder: q.placeholder ?? 'Participants will enter a short text response here…' }
   : q.kind === 'image'
-    ? { kind: KIND.image, prompt: q.prompt, placeholder: 'Participants will upload an image here…' }
-    : { kind: KIND[q.kind], prompt: q.prompt, answers: q.options.map((o) => [o, 'May Select'] as [string, Verdict]) }
+    ? { kind: q.authored ?? KIND.image, prompt: q.prompt, placeholder: 'Participants will upload an image here…' }
+    : { kind: q.authored ?? KIND[q.kind], prompt: q.prompt, answers: q.options.map((o) => [o, verdict(q, o)] as [string, Verdict]) }
 
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 

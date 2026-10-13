@@ -1,3 +1,4 @@
+import { useToast } from '../../components/ui/Toast'
 import { useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Button from '../../components/ui/Button'
@@ -68,6 +69,7 @@ export default function Publish() {
   const [params] = useSearchParams()
   const { draft } = useDraft()
   const { submitStudy } = useStudies()
+  const toast = useToast()
   const { cards } = useWorkspace()
   const [breakdown, setBreakdown] = useState(false)
   const [addCard, setAddCard] = useState(false)
@@ -96,7 +98,8 @@ export default function Publish() {
    * created `in_review` and the team takes it to recruiting.
    */
   const publish = () => {
-    submitStudy({
+    /** The store refuses a study it cannot ask the screener of, and says which question. Nothing is created then. */
+    const made = submitStudy({
       title: draft.title || 'Untitled study',
       description: draft.description,
       type: draft.type === 'video_call' && draft.groupVideo ? 'group_video_call'
@@ -105,7 +108,9 @@ export default function Publish() {
       required: Number(draft.participants) || 0,
       incentive: draft.incentive,
       duration: Number(draft.duration) || 0,
+      screener: draft.questions,
     })
+    if (!made.ok) { toast(made.why); return }
     navigate('/studies/create/published')
   }
 

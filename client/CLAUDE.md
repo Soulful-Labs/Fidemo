@@ -441,6 +441,40 @@ to the dashboard, or back to the onboarding step they left.
 
 ---
 
+## The screener a client builds is the screener the study has
+
+Fixed 13 Oct 2026. Publish used to hand the store a study with no questions,
+and the store filled the gap with another study's, so what a client built on
+the Screener step was never saved.
+
+- `shared/questions.ts` turns the builder's questions into the study's
+  screener. `submitStudy` in `shared/store.ts` now requires them and refuses a
+  study it cannot ask, naming the question ("Screener question 2 needs at
+  least two options"). Publish shows that and creates nothing.
+- **Blank blocks are left out.** The builder opens with nine empty questions,
+  as the frame draws; only the ones with text are saved, in the client's order.
+- **Nine builder types, five respondent kinds.** Each question is stored as the
+  kind a respondent is asked in and keeps the client's type in `authored`:
+  Single-select, Multi-select, Single-line / Multi-line input as they are;
+  Number input as a one-line number; Slider as a scale (a number when it has
+  more than 11 steps); Ranking as a tick-in-order list; File Upload as a picture
+  upload; Mattrix as one question per row.
+- **Eligibility.** The band on the Screener step calls the first three questions
+  the pre-screener. Only a leading Single-select with a Correct answer can
+  decide eligibility on its own (workflow 28), so those, up to three, are the
+  pre-screener and everything after is the full screener.
+- Manage Study lists the questions under the Screening chip. No frame draws
+  that list; the chip is all Figma shows.
+- `node --experimental-websocket scripts/screener-check.mjs` follows three
+  questions from the builder to the client app, the console and a respondent.
+
+**Still lost in the Create flow, not fixed:** see the turn report of 13 Oct.
+The survey and diary form builder saves a fixed set, not what is typed;
+Save Draft & Exit saves nothing; audience, availability, sessions, address and
+diary settings are not stored (a new study borrows them or gets defaults).
+
+---
+
 ## Rule 1, above everything else
 
 **Figma governs everything visible.** Layout, spacing, colour, type, icons and every string come from the frame. Match it exactly. If Figma has a typo, keep the typo. Behaviour comes in stage two; this stage is the screens.

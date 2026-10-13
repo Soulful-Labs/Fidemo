@@ -115,6 +115,19 @@ export default function ManageStudy() {
 
           <Step icon={<StudiesIcon className="h-5 w-5" />} title="Screener" onEdit={() => navigate('/studies/create/screener')}>
             <Chip label={r.screener.label} value={r.screener.value} />
+            {/* The questions themselves, in the order they are asked. No frame lists them; the summary chip above is all Figma draws. */}
+            <ol className="flex flex-col gap-2 pt-3">
+              {s.screenerOutline.map((q, i) => (
+                <li key={q.id} className="flex items-start gap-2 text-text-regular">
+                  <span className="flex h-7 shrink-0 items-center rounded-full bg-bg-1 px-3 text-text-title">{q.eligibility ? `Pre-screener - Q${i + 1}` : `Q${i + 1}`}</span>
+                  <span className="flex min-w-0 flex-1 flex-col pt-1">
+                    <span className="text-text-title">{q.prompt}</span>
+                    {q.options && <span className="text-text-subtitle">{q.options.join(' · ')}</span>}
+                  </span>
+                  <span className="flex h-7 shrink-0 items-center rounded-full border-1 border-stroke-input px-3 text-text-subtitle">{q.type}</span>
+                </li>
+              ))}
+            </ol>
           </Step>
 
           <Step icon={FORM} title="Study" onEdit={() => navigate('/studies/create/study')}>

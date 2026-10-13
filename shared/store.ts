@@ -17,6 +17,8 @@ import {
 import { canRedeem, starsForRating, starsFromDimensions } from './rules'
 import { sessionStartOf as sessionStart } from './derive'
 import { EMPTY_PROFILE } from './seed/people'
+import { buildScreener, buildTasks } from './questions'
+import type { AuthoredQuestion } from './questions'
 import { DEMO_TEAM_PASSWORD, MASTER_ADMIN_ID, SEED_VERSION, buildEmpty, buildSeed } from './seed'
 import type {
   Answers, AppNotification, Booking, Check, Client, ClientReview, Module, ParticipantRating, Participation, ParticipationState,
@@ -36,6 +38,9 @@ interface Options { storage?: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'
 const no = (why: string): Result<never> => ({ ok: false, why })
 const yes = <T extends object>(extra?: T): Result<T> => ({ ok: true, ...(extra as T) })
 const uid = (prefix: string) => `${prefix}-${Date.now().toString(36)}${Math.floor(Math.random() * 1296).toString(36)}`
+
+/** "Screening: 3 inputs", as the Manage and Review screens write a screener's size. */
+const screenerSummary = (b: { preScreener: unknown[]; screener: unknown[] }) => { const n = b.preScreener.length + b.screener.length; return `${n} input${n === 1 ? '' : 's'}` }
 
 export function createPlatform(options: Options = {}) {
   const storage = options.storage === undefined ? (typeof localStorage === 'undefined' ? null : localStorage) : options.storage
@@ -173,24 +178,34 @@ export function createPlatform(options: Options = {}) {
     submitStudy: (clientId: string, d: {
       title: string; description: string; type: StudyType; required: number; incentive: number; durationMins: number
       image?: string; setup?: StudySetup; industry?: string; targetProfession?: string
+      /** The screener the client built, in their order (shared/questions.ts). A study is not submitted without one. */
+      screener: AuthoredQuestion[]
+      /** A survey's or diary's own questions, from the client's form builder. */
+      tasks?: AuthoredQuestion[]
     }) => move<{ id: string }>((s) => {
       if (!s.clients.some((c) => c.id === clientId)) return no('No such client')
       if (d.required <= 0) return no('A study needs a sample size')
+      const built = buildScreener(d.screener ?? [])
+      if (!built.ok) return no(built.why)
+      const form = buildTasks(d.tasks ?? [])
+      if (!form.ok) return no(form.why)
       const id = uid('st')
+      /** Where a study still borrows: the parts of the Create flow that are not stored yet (address, diary length, and a survey's form when none was built). */
       const template = s.studies.find((x) => x.type === d.type && x.screener.length > 0)
       const study: Study = {
         id, clientId, title: d.title || 'Untitled study', description: d.description, image: d.image, type: d.type, state: 'in_review',
         industry: d.industry ?? '', durationMins: d.durationMins, createdAt: iso(), submittedAt: iso(),
         endsAt: new Date(clock().getTime() + 30 * 86_400_000).toISOString(), required: d.required, repeatRule: 'prefer_fresh',
         rates: priceStudy(d.type, d.incentive), targetProfession: d.targetProfession ?? '', linkCode: `HL-${id.slice(-3).toUpperCase()}-A`,
-        /** The Create flow's screener builder is not wired to questions, so a new study borrows a set for its type. */
-        preScreener: template?.preScreener ?? [], screener: template?.screener ?? [], tasks: template?.tasks, diary: template?.diary,
+        /** The client's own screener, never another study's. */
+        preScreener: built.preScreener, screener: built.screener,
+        tasks: form.tasks.length ? form.tasks : template?.tasks, diary: template?.diary,
         locations: template?.locations, city: template?.city,
         availability: d.type === 'video_call' || d.type === 'in_person'
           ? [2, 3, 5, 6].map((n) => ({ date: new Date(clock().getTime() + n * 86_400_000).toISOString(), slots: ['09:00 AM', '10:30 AM', '12:00 PM', '02:30 PM', '04:00 PM'] })) : undefined,
         sessions: d.type === 'group_video_call' || d.type === 'in_person_group'
           ? [3, 6].map((n, i) => ({ id: `s${i + 1}`, date: new Date(clock().getTime() + n * 86_400_000).toISOString(), slot: '10:00 AM', seats: Math.ceil(d.required / 2) })) : undefined,
-        setup: d.setup, participations: [], payments: [], revisions: [],
+        setup: d.setup && { ...d.setup, screenerSummary: screenerSummary(built) }, participations: [], payments: [], revisions: [],
       }
       study.payments.push({ id: `${id}-deposit`, kind: 'deposit', amount: d.incentive * d.required, at: iso() })
       s.studies.unshift(study)

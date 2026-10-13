@@ -34,13 +34,9 @@ export default function Screener() {
   // A draft, or a screener already in progress, skips straight to the full screener.
   const resumed = study.status === 'draft' || study.status === 'applying'
   const current = answers[study.id] ?? {}
-  const phase = stage ?? (resumed ? 'full' : 'pre')
-
-  const startFull = () => {
-    // Only now does the study leave Explore / Invites and become an application.
-    if (study.status === 'available' || study.status === 'invited_to_apply') applyToStudy(study.id)
-    setStage('full')
-  }
+  // A client's screener may have no eligibility questions (shared/questions.ts): then there is nothing to pass first.
+  const noPre = study.preScreener.length === 0
+  const phase = stage ?? (resumed || noPre ? 'full' : 'pre')
 
   const submit = () => {
     setSubmitting(true)
@@ -48,6 +44,14 @@ export default function Screener() {
       submitScreener(study.id)
       navigate(`/studies/${study.id}/applied`, { replace: true })
     }, TIMINGS.fakeServer)
+  }
+
+  const startFull = () => {
+    // Only now does the study leave Explore / Invites and become an application.
+    if (study.status === 'available' || study.status === 'invited_to_apply') applyToStudy(study.id)
+    // And when every question was an eligibility one, passing them is the whole screener.
+    if (study.screener.length === 0) { submit(); return }
+    setStage('full')
   }
 
   if (phase === 'failed') {
@@ -89,7 +93,7 @@ export default function Screener() {
         questions={study.screener}
         answers={current}
         onAnswer={(qid, value) => dispatch({ type: 'SAVE_ANSWERS', id: study.id, answers: { ...current, [qid]: value } })}
-        onSubmit={submitting ? () => undefined : submit}
+        onSubmit={submitting ? () => undefined : () => { if (study.status === 'available' || study.status === 'invited_to_apply') applyToStudy(study.id); submit() }}
         onExit={() => setExit(true)}
         onInfo={() => setWhy(true)}
         header={

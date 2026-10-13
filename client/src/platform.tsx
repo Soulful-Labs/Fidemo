@@ -1,3 +1,5 @@
+import { screenerOutline } from '@shared/questions'
+import type { AuthoredQuestion } from '@shared/questions'
 import { useEffect, useMemo, useSyncExternalStore } from 'react'
 import { clientById, daysRemaining, durationLabel, profileCard, shareLink, studiesOf, studyById } from '@shared/derive'
 import { dayMonthYear, longDateTime, money, monthDay, slotDay } from '@shared/format'
@@ -53,19 +55,30 @@ export interface ClientStudy extends Study {
   shareLink?: string
   daysRemaining: number
   review?: StudyReview
+  /** The screener in the order it is asked, each question named as the client built it (shared/questions.ts). */
+  screenerOutline: ReturnType<typeof screenerOutline>
 }
 
 export function clientStudy(study: Study, now: Date = new Date()): ClientStudy {
+  const outline = screenerOutline(study)
   return {
     ...study,
     name: study.title, breadcrumb: study.title, duration: durationLabel(study.durationMins),
     created: dayMonthYear(study.createdAt), dates: study.approvedAt ? `${monthDay(study.approvedAt)} – ${monthDay(study.endsAt)}` : undefined, activeSince: study.approvedAt ? longDateTime(study.approvedAt) : undefined,
     shareLink: study.approvedAt ? shareLink(study) : undefined, daysRemaining: daysRemaining(study, now),
-    review: study.setup && {
-      studyTime: durationLabel(study.durationMins), estimatedAudience: study.setup.estimatedAudience, audience: study.setup.audience,
-      screener: { label: 'Screening', value: study.setup.screenerSummary }, studyRow: study.setup.studySummary,
+    /**
+     * A study the Create flow made carries no saved summary of its setup, and
+     * Manage Study drew nothing at all for it. What can be read off the study
+     * itself is, so a new study opens like any other.
+     */
+    review: {
+      studyTime: durationLabel(study.durationMins), estimatedAudience: study.setup?.estimatedAudience ?? '—',
+      audience: study.setup?.audience ?? [{ value: String(study.required), icon: 'people' }],
+      screener: { label: 'Screening', value: study.setup?.screenerSummary ?? `${outline.length} input${outline.length === 1 ? '' : 's'}` },
+      studyRow: study.setup?.studySummary ?? { label: 'Study Time', value: durationLabel(study.durationMins) },
       incentive: { label: 'Incentive', value: money(study.rates.incentivePer) },
     },
+    screenerOutline: outline,
   }
 }
 
@@ -126,6 +139,8 @@ interface Draft {
   title: string; description: string; type: StudyType; required: number; incentive: number
   /** Minutes. */
   duration: number; image?: string; review?: StudyReview
+  /** The screener as the Create flow built it. The store keeps the client's own questions (shared/questions.ts). */
+  screener: AuthoredQuestion[]
 }
 
 export function useStudies() {
@@ -159,14 +174,12 @@ export function useStudies() {
       payBalance: (studyId: string): Result => p.payBalance(studyId),
       duplicateStudy: (studyId: string) => p.duplicateStudy(studyId),
       /** Workflow 5 and 7: the client submits a study; the team takes it live from the console. */
-      submitStudy: (d: Draft): string => {
-        const made = p.submitStudy(clientId, {
+      submitStudy: (d: Draft) =>
+        p.submitStudy(clientId, {
           title: d.title, description: d.description, type: d.type, required: d.required, incentive: d.incentive,
-          durationMins: d.duration, image: d.image,
+          durationMins: d.duration, image: d.image, screener: d.screener,
           setup: d.review && { estimatedAudience: d.review.estimatedAudience, audience: d.review.audience, screenerSummary: d.review.screener.value, studySummary: d.review.studyRow },
-        })
-        return made.ok ? made.id : ''
-      },
+        }),
     }
   }, [state, clientId, actor])
 }

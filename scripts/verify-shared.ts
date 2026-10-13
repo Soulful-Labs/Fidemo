@@ -14,6 +14,8 @@ import { respondentStatus, participationOf } from '../shared/lifecycle'
 import { FEES, TIMINGS } from '../shared/platform'
 import { POINTS, REDEEM, TIERS, TRUST, starsForRating, starsFromDimensions, trustScore } from '../shared/rules'
 import { DEMO_CLIENT_ID, DEMO_PERSON_ID, MASTER_ADMIN_ID, buildSeed } from '../shared/seed'
+import { buildScreener, screenerOutline } from '../shared/questions'
+import type { AuthoredQuestion } from '../shared/questions'
 import { createPlatform } from '../shared/store'
 import type { Actor } from '../shared/store'
 
@@ -82,7 +84,35 @@ const st = () => p.getState()
 const fig = () => personFigures(st(), DEMO_PERSON_ID, new Date(clock))
 const status = (id: string) => { const s = st().studies.find((x) => x.id === id)!; return respondentStatus(s.type, participationOf(s, DEMO_PERSON_ID)) }
 
-const made = p.submitStudy(DEMO_CLIENT_ID, { title: 'Journey study', description: 'Created by the verify script.', type: 'video_call', required: 5, incentive: 120, durationMins: 45 })
+/** A screener as the client's builder holds it: nine blocks, three filled in, in three answer types. */
+const BUILT: AuthoredQuestion[] = [
+  { kind: 'Single-select', text: 'Do you track your sleep?', options: [{ text: 'Yes', mark: 'Correct' }, { text: 'No', mark: 'Incorrect' }] },
+  { kind: 'Multi-select', text: '' , options: [{ text: '', mark: 'May Select' }] },
+  { kind: 'Multi-select', text: 'Which trackers have you used?', options: [{ text: 'A watch', mark: 'May Select' }, { text: 'A ring', mark: 'Must Select' }, { text: '', mark: 'Incorrect' }] },
+  { kind: 'Single-line input', text: '   ' },
+  { kind: 'Number input', text: 'How many nights a week do you wear it?' },
+]
+const made = p.submitStudy(DEMO_CLIENT_ID, { title: 'Journey study', description: 'Created by the verify script.', type: 'video_call', required: 5, incentive: 120, durationMins: 45, screener: BUILT })
+{
+  const mine = made.ok ? p.getState().studies.find((x) => x.id === made.id)! : undefined
+  const outline = mine ? screenerOutline(mine) : []
+  check('screener: the three questions the client built are saved, in order, with their types', outline.map((q) => `${q.prompt}|${q.type}`).join(' / ') === 'Do you track your sleep?|Single-select / Which trackers have you used?|Multi-select / How many nights a week do you wear it?|Number input', outline.map((q) => `${q.prompt}|${q.type}`).join(' / '))
+  check('screener: blank questions and blank options are left out', outline.length === 3 && outline[1]!.options!.join() === 'A watch,A ring')
+  check('screener: nothing is borrowed from another study', mine !== undefined && !p.getState().studies.some((x) => x.id !== mine.id && x.screener.some((q) => mine.screener.some((m) => m.prompt === q.prompt))))
+  check('screener: a leading single-select with a Correct answer decides eligibility', mine?.preScreener.length === 1 && mine.preScreener[0]!.passing.join() === 'Yes' && mine.screener.length === 2)
+  check('screener: the verdicts set in the builder are kept', mine?.screener[0]!.marks?.['A ring'] === 'Must Select')
+  check('screener: a number question is asked as a number', mine?.screener[1]!.kind === 'text' && mine.screener[1]!.format === 'number')
+  const none = p.submitStudy(DEMO_CLIENT_ID, { title: 'x', description: 'x', type: 'survey', required: 5, incentive: 10, durationMins: 10, screener: [{ kind: 'Single-select', text: '' }] })
+  check('screener: a study with no question is refused, and none is created', !none.ok && none.why.includes('at least one screener question') && !p.getState().studies.some((x) => x.title === 'x'))
+  const bad = p.submitStudy(DEMO_CLIENT_ID, { title: 'x', description: 'x', type: 'survey', required: 5, incentive: 10, durationMins: 10, screener: [{ kind: 'Number input', text: 'Age?' }, { kind: 'Multi-select', text: 'Pick', options: [{ text: 'Only one' }] }] })
+  check('screener: a select with one option is refused by its number', !bad.ok && bad.why === 'Screener question 2 needs at least two options', bad.ok ? '' : bad.why)
+  const kinds = buildScreener([
+    { kind: 'Slider', text: 'Rate it', min: '1', max: '5', gap: '1' }, { kind: 'Slider', text: 'Age', min: '18', max: '80', gap: '1' },
+    { kind: 'Ranking', text: 'Rank', options: [{ text: 'A' }, { text: 'B' }] }, { kind: 'File Upload', text: 'Photo' },
+    { kind: 'Mattrix', text: 'Rate each', rows: ['Speed', 'Price'], columns: ['Bad', 'Good'] }, { kind: 'Multi-line input', text: 'Why?' },
+  ])
+  check('screener: all nine builder types become something a respondent can be asked', kinds.ok && kinds.screener.map((q) => q.kind).join() === 'scale,text,multi,image,single,single,text' && kinds.screener[0]!.kind === 'scale' && kinds.screener[0]!.options.join() === '1,2,3,4,5', kinds.ok ? kinds.screener.map((q) => q.kind).join() : kinds.why)
+}
 check('1. client publishes a study, it waits in review', made.ok && st().studies[0]!.state === 'in_review')
 const id = made.ok ? made.id : ''
 check('2. it is in the console\'s To Review queue', st().studies.filter((s) => s.state === 'in_review').some((s) => s.id === id))
@@ -145,7 +175,7 @@ p.reset()
   check('console rating: stored as the mean of the dimensions and logged', p.rateParticipant('st-social', unrated.personId, 'dimensions', { expertise: 4, reliability: 4, communication: 3 }, team).ok && unrated.personId !== undefined
     && st().studies.find((s) => s.id === 'st-social')!.participations.find((x) => x.personId === unrated.personId)!.rating?.stars === 4 && lastBy() === MASTER_ADMIN_ID)
   check('console approves the study a client submitted', (() => {
-    const made = p.submitStudy(DEMO_CLIENT_ID, { title: 'Console approval check', description: 'x', type: 'survey', industry: 'Tech', durationMins: 30, required: 5, incentive: 50, targetProfession: 'Engineer' })
+    const made = p.submitStudy(DEMO_CLIENT_ID, { title: 'Console approval check', description: 'x', type: 'survey', industry: 'Tech', durationMins: 30, required: 5, incentive: 50, targetProfession: 'Engineer', screener: BUILT })
     if (!made.ok) return false
     const id = (made as { id: string }).id
     return st().studies.find((s) => s.id === id)?.state === 'in_review' && p.moveStudy(id, 'recruiting', team).ok && lastBy() === MASTER_ADMIN_ID
