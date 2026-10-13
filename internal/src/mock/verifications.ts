@@ -65,7 +65,7 @@ export function useVerificationCase(id: string) {
       kind, report, person, check, outcome: outcome as 'pending' | 'verified' | 'rejected' | 'restricted' | 'deactivated',
       who: {
         name: person.name, first: person.name.split(' ')[0] ?? '', role: person.profile.occupation, place: person.location,
-        photo: person.id === 'samuel-l' ? '/img/participants/samuel.png' : person.id === 'maya-j' ? '/img/verifications/maya.png' : photoFor(person),
+        photo: photoFor(person),
         verified: person.profession.state === 'verified', score: String(trustScoreOf(state, person.id)), tier: tierName(state, person.id),
       },
       reporter: report ? (report.reportedBy === 'system' ? 'System (Algo)' : clientById(state, report.reportedBy)?.name ?? '') : '',

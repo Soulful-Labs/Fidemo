@@ -1,3 +1,4 @@
+import { diaryWords } from '@shared/platform'
 import { Fragment, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { canUndoDecision, decide, markCompleted, markNoShow, undoAttendance } from '../../../mock/attendance'
@@ -67,7 +68,7 @@ export default function RespondentPage() {
           {r.days.map(({ day: d, answers }, i) => (
             <Fragment key={d}>
               {i > 0 && <hr className="-mx-4 mt-2 border-0 border-t-1 border-stroke-1" />}
-              <p className="flex h-7 items-center justify-center rounded-full bg-bg-1 text-text-regular text-text-subtitle">DAY {d}</p>
+              <p className="flex h-7 items-center justify-center rounded-full bg-bg-1 text-text-regular text-text-subtitle">{diaryWords(study.raw.diary?.unit).UNIT} {d}</p>
               <Answers answers={answers} />
             </Fragment>
           ))}

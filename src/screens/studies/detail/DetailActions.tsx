@@ -1,3 +1,4 @@
+import { diaryWords } from '@shared/platform'
 import Button from '../../../components/ui/Button'
 import CtaBar from '../../../components/ui/CtaBar'
 import { STATUS } from '../../../lib/labels'
@@ -36,7 +37,7 @@ export default function DetailActions({ study, onPrimary, onSecondary }: DetailA
     study.status === 'available' ? 'Apply'
       // Figma draws "Schedule" on the detail screen and "Schedule Session" on the card.
       : study.status === 'invited_to_schedule' ? 'Schedule'
-      : diaryOpen && study.diary!.completedDays.length > 0 ? resumeLabel(study.diary!.completedDays, study.diary!.totalDays)
+      : diaryOpen && study.diary!.completedDays.length > 0 ? resumeLabel(study.diary!.completedDays, study.diary!.totalDays, diaryWords(study.diary!.unit))
           // Rate Client lives in the Paid banner; the bar only repeats it until it is done.
           : (study.status === 'paid' || study.status === 'late_show') && study.userReview ? undefined
             : meta.primary

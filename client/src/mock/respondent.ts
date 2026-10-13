@@ -1,4 +1,5 @@
 import { taskResults } from '@shared/questions'
+import { diaryWords } from '@shared/platform'
 import type { Answered } from '@shared/questions'
 import type { Participation, Study } from '@shared/types'
 
@@ -40,9 +41,9 @@ const qa = (a: Answered): QA => ({ prompt: a.prompt, answer: a.list ? { kind: 'b
  * taskResults): a survey's answers under one heading, a diary's under a bar
  * for each day filled in.
  */
-export function resultsOf(study: Pick<Study, 'tasks' | 'type'>, p?: Participation): { label?: string; answers: QA[] }[] {
+export function resultsOf(study: Pick<Study, 'tasks' | 'type' | 'diary'>, p?: Participation): { label?: string; answers: QA[] }[] {
   const r = taskResults(study, p)
-  return study.type === 'diary' ? r.days.map((d) => ({ label: `DAY ${d.day}`, answers: d.answers.map(qa) })) : [{ answers: r.survey.map(qa) }]
+  return study.type === 'diary' ? r.days.map((d) => ({ label: `${diaryWords(study.diary?.unit).UNIT} ${d.day}`, answers: d.answers.map(qa) })) : [{ answers: r.survey.map(qa) }]
 }
 
 const SITUATION = 'Which of the following best describes your current situation?'

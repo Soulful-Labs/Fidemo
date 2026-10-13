@@ -49,7 +49,7 @@ export function useProfile(personId?: string) {
 
     const cert = hasCertificate(p) ? `Cert. ID: ${certificateId(p.email)}` : 'Not yet verified'
     const PERSON = {
-      id: p.id, name: p.name, role: p.profile.occupation, place: p.location, cert, photo: p.id === 'samuel-l' ? '/img/participants/samuel.png' : photoFor(p),
+      id: p.id, name: p.name, role: p.profile.occupation, place: p.location, cert, photo: photoFor(p),
       completion: `${profileCompletion(p)}% profile completed`, score: String(f.trustScore), tier: tierName(state, p.id),
       professionVerified: p.profession.state === 'verified', email: p.email,
       lastActive: `Last active on ${monthDayYear(p.lastActiveAt)}`, deactivated: p.status === 'deactivated', statusNote: p.statusNote,

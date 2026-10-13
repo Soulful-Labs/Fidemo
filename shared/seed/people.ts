@@ -1,3 +1,4 @@
+import { avatarFor } from '../avatar'
 import { RATING_DELTA, TRUST } from '../rules'
 import type { Check, Person, ProfileDetails, Stars } from '../types'
 
@@ -43,7 +44,7 @@ export const targetScore = (id: string): number | undefined => [...ROWS, ...GENE
 export const EMPTY_PROFILE: ProfileDetails = {
   gender: '', address: '', areaType: '', aboutMe: '', languages: [], nationality: '', income: '', ethnicity: '',
   pets: [], homeOwner: '', occupation: '', experience: '', licenseId: '', industry: '', education: '', topics: [],
-  dob: '', idType: '',
+  workFunctions: [], skills: [], dob: '', idType: '',
 }
 
 const VERIFIED: Check = { state: 'verified' }
@@ -135,20 +136,39 @@ const GENERATED: Row[] = Array.from({ length: 40 }, (_, i) => {
   return [`gen-${String(i + 1).padStart(2, '0')}`, `${first} ${last}`, role, industry, CITIES[i % CITIES.length]!, i % 2 ? 'Female' : 'Male', studies, 58 + ((i * 7) % 36), i % 4 === 0]
 })
 
+/** What people in each industry do and are good at, in the words profiles choose from (shared/platform.ts). */
+const WORK: Record<string, { functions: string[]; skills: string[] }> = {
+  Healthcare: { functions: ['Consultation', 'Patient Care', 'Research'], skills: ['Diagnosis', 'Triage', 'Clinical Research'] },
+  Pharma: { functions: ['Research', 'Consultation'], skills: ['Clinical Research', 'Data Analysis', 'Writing'] },
+  'Fitness & Nutrition': { functions: ['Consultation', 'Teaching'], skills: ['Coaching', 'Public Speaking'] },
+  IT: { functions: ['Engineering', 'Product', 'Design'], skills: ['Programming', 'Data Analysis', 'Project Management'] },
+  Finance: { functions: ['Finance', 'Operations'], skills: ['Budgeting', 'Forecasting', 'Data Analysis'] },
+  Consultancy: { functions: ['Management', 'Operations'], skills: ['Project Management', 'Negotiation', 'Public Speaking'] },
+  Marketing: { functions: ['Marketing', 'Design'], skills: ['Writing', 'Data Analysis', 'Public Speaking'] },
+  Media: { functions: ['Marketing', 'Design'], skills: ['Writing', 'Public Speaking'] },
+  Retail: { functions: ['Sales', 'Operations'], skills: ['Negotiation', 'Budgeting'] },
+}
+/** Two of the industry's functions and two of its skills, turning with the person's place in the pool so the pool is not uniform. */
+export function workOf(industry: string, n: number): { workFunctions: string[]; skills: string[] } {
+  const w = WORK[industry] ?? { functions: ['Operations'], skills: ['Project Management'] }
+  const two = (xs: string[]) => [...new Set([xs[n % xs.length]!, xs[(n + 1) % xs.length]!])]
+  return { workFunctions: two(w.functions), skills: two(w.skills) }
+}
+
 export interface PeopleClock { at: (offsetDays: number, hour?: number, minute?: number) => string }
 
 const slugEmail = (name: string) => `${name.toLowerCase().replace(/[^a-z]+/g, '.')}@example.com`
 
 function fromRow([id, name, role, industry, location, gender, studies, score, verified, language]: Row, n: number, clock: PeopleClock): Person {
   return {
-    id, name, email: slugEmail(name), phone: `+1 555 01${String(10 + n).padStart(2, '0')} ${String(100 + ((n * 37) % 900))}`,
+    id, name, photo: avatarFor(id, gender), email: slugEmail(name), phone: `+1 555 01${String(10 + n).padStart(2, '0')} ${String(100 + ((n * 37) % 900))}`,
     joinedAt: clock.at(-(120 + ((n * 23) % 400)), 9, 0), lastActiveAt: clock.at(-((n * 5) % 60), 8 + (n % 10), (n * 7) % 60),
     status: 'active', location,
     profile: {
       ...EMPTY_PROFILE, gender, address: location, areaType: 'Urban', languages: [language ?? 'English'], nationality: 'American',
       occupation: role, industry, experience: `${4 + (n % 14)} years`, education: 'Bachelors Degree',
       dob: `${String(1 + (n % 27)).padStart(2, '0')} / ${String(1 + (n % 12)).padStart(2, '0')} / ${1975 + (n % 22)}`, idType: 'Passport',
-      licenseId: verified ? String(98765012340000 + n) : '',
+      licenseId: verified ? String(98765012340000 + n) : '', ...workOf(industry, n),
     },
     onboarded: true, taxFormDone: true,
     identity: VERIFIED, profession: verified ? VERIFIED : NONE, livePhoto: false,

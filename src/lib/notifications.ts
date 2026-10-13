@@ -1,3 +1,4 @@
+import { diaryWords } from '@shared/platform'
 import { dateTime } from './format'
 import type { AppNotification, Payout, PayoutMethod, PointsEntry, Referral, Study, Ticket } from '../mock/types'
 
@@ -94,7 +95,7 @@ export function buildNotifications(src: Sources): AppNotification[] {
       case 'in_process':
         if (s.diary) add({ id: `nt-${s.id}-diary`, kind: 'study', title: 'Daily diary entry reminder!',
           body: `Complete today's entry for the ${s.title} diary study. Entry #${(s.diary?.completedDays.length ?? 0) + 1} of ${s.diary?.totalDays ?? 5} is due today.`, at: shift(last(s, 'Diary completed') ?? s.endsAt, -24 * 60),
-          actionLabel: `Resume Study - Day${s.diary.completedDays.length}/${s.diary.totalDays}`, to: `/studies/${s.id}/diary` })
+          actionLabel: `Resume Study - ${diaryWords(s.diary.unit).Unit}${s.diary.completedDays.length}/${s.diary.totalDays}`, to: `/studies/${s.id}/diary` })
         break
       case 'paid':
         add({ id: `nt-${s.id}-paid`, kind: 'money', title: `You've received $${s.reward}!`,

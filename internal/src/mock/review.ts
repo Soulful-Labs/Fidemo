@@ -2,6 +2,7 @@ import { createContext, useContext, useMemo } from 'react'
 import { billing, clientById, durationLabel, paymentStats, sessionSeats, studiesOf, studyById, teamById } from '@shared/derive'
 import { monthDayYear, monthDayYearTime, money } from '@shared/format'
 import { WEEKDAYS as FORM_DAYS, dayOf } from '@shared/studyForm'
+import { diaryWords } from '@shared/platform'
 import type { PlatformState, PreScreenQuestion, Question as SharedQuestion, Study } from '@shared/types'
 import { consoleType, studyPictures, usePlatform } from '../platform'
 import { clientPhoto } from './clients'
@@ -87,8 +88,8 @@ export function review(state: PlatformState, s: Study) {
     screenerLabels: [...s.preScreener.map((_, i) => `Pre-screener - Q${i + 1}`), ...s.screener.map((_, i) => `Q${s.preScreener.length + i + 1}`)],
     tasks: (s.tasks ?? []).map(question),
     DIARY: s.diary && {
-      setup: [['Duration Unit:', s.diary.unit ?? 'Not set'], ['Frequency:', s.diary.frequency ?? 'Not set'], ['Study Duration:', `${s.diary.totalDays} days`], ['Minimum Required:', `${s.diary.minDays} days`]],
-      days: Array.from({ length: s.diary.totalDays }, (_, i) => `DAY ${i + 1}`),
+      setup: [['Duration Unit:', s.diary.unit ?? 'Not set'], ['Frequency:', s.diary.frequency ?? 'Not set'], ['Study Duration:', `${s.diary.totalDays} ${diaryWords(s.diary.unit).units}`], ['Minimum Required:', `${s.diary.minDays} ${diaryWords(s.diary.unit).units}`]],
+      days: Array.from({ length: s.diary.totalDays }, (_, i) => `${diaryWords(s.diary!.unit).UNIT} ${i + 1}`),
     },
     week,
     /** Date Overrides: the client's own, with the hours they set. A study that holds none lists none; its dated slots are not overrides. */

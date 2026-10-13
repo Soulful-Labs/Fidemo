@@ -1,3 +1,4 @@
+import { diaryWords } from '@shared/platform'
 import type { ReactNode } from 'react'
 import { cn } from '../../../lib/cn'
 import { bookingLong, dateTime, money } from '../../../lib/format'
@@ -121,8 +122,8 @@ export function diaryBannerFor(study: Study): BannerContent | null {
   const { completedDays, totalDays, minDays } = study.diary
   return {
     tone: 'yellow',
-    title: `${completedDays.length}/${totalDays} days completed`,
-    body: `At least ${minDays} days needs to be filled out of ${totalDays} to complete this study and get reward.`,
+    title: `${completedDays.length}/${totalDays} ${diaryWords(study.diary.unit).units} completed`,
+    body: `At least ${minDays} ${diaryWords(study.diary.unit).units} needs to be filled out of ${totalDays} to complete this study and get reward.`,
   }
 }
 

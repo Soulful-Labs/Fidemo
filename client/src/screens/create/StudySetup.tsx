@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import { ChevronRight, Edit } from '../../components/ui/icons'
 import { studySummary } from '@shared/studyForm'
+import { diaryWords } from '@shared/platform'
 import { setupDone, useDraft } from '../../mock/createStore'
 import CreateShell, { SaveDraftButton } from './CreateShell'
 import { Section } from './CreateBits'
@@ -57,12 +58,15 @@ const DIARY_FIELDS: { key: 'durationUnit' | 'frequency' | 'studyDuration' | 'min
   { key: 'minimumRequired', label: 'Minimum Required', note: 'To qualify for reward' },
 ]
 
-/** What each diary field offers. */
-const DIARY_OPTIONS: Record<string, string[]> = {
-  durationUnit: ['Hour', 'Day', 'Week'],
-  frequency: ['Every day', 'Every 2 days', 'Every 3 days', 'Weekly'],
-  studyDuration: ['3 days', '5 days', '7 days', '14 days'],
-  minimumRequired: ['2 days', '3 days', '4 days', '5 days'],
+/** What each diary field offers. The two counts are counts of entries, so they are written in the unit an entry is (shared/platform.ts diaryWords). */
+const diaryOptions = (unit: string): Record<string, string[]> => {
+  const u = diaryWords(unit).units
+  return {
+    durationUnit: ['Hour', 'Day', 'Week'],
+    frequency: ['Every day', 'Every 2 days', 'Every 3 days', 'Weekly'],
+    studyDuration: [3, 5, 7, 14].map((n) => `${n} ${u}`),
+    minimumRequired: [2, 3, 4, 5].map((n) => `${n} ${u}`),
+  }
 }
 
 /** Diary Study Settings (1518:94580): the schedule, then the study form. */
@@ -70,6 +74,15 @@ function DiarySettings() {
   const { draft, set } = useDraft()
   const [params] = useSearchParams()
   const made = params.get('state') === 'created' || draft.tasksSubmitted
+  const DIARY_OPTIONS = diaryOptions(draft.durationUnit)
+  /** Changing the unit rewrites the two counts in it: "5 days" becomes "5 weeks", the number kept. */
+  const pick = (key: (typeof DIARY_FIELDS)[number]['key'], v: string) => {
+    set(key, v)
+    if (key !== 'durationUnit') return
+    const u = diaryWords(v).units
+    set('studyDuration', `${Number.parseInt(draft.studyDuration, 10) || 5} ${u}`)
+    set('minimumRequired', `${Number.parseInt(draft.minimumRequired, 10) || 4} ${u}`)
+  }
   return (
     <Section icon={TARGET} title="Diary Study Settings" sub="Setup your Diary study for the participants" headPad="pb-4" titleLead="leading-[22px]" pad="py-4">
       <div className="flex flex-col gap-3.5 rounded-lg bg-yellow-30 p-4">
@@ -85,7 +98,7 @@ function DiarySettings() {
             <label key={f.key} className="flex flex-col gap-1">
               <span className="text-text-regular text-text-subtitle">{f.label}</span>
               <Picker value={draft[f.key]} className="w-full" options={DIARY_OPTIONS[f.key]}
-                onPick={(v) => set(f.key, v)} />
+                onPick={(v) => pick(f.key, v)} />
               {f.note && <span className="text-text-regular text-text-subtitle">{f.note}</span>}
             </label>
           ))}
@@ -106,7 +119,7 @@ function DiarySettings() {
           <>
             <button type="button" onClick={() => set('surveyOpen', true)}
               className="flex h-[38px] items-center justify-between gap-3 rounded-sm border-1 border-stroke-input bg-bg px-4 text-text-regular text-text-title">
-              {draft.tasksSubmitted ? studySummary(draft).value : '5 questions, 5 days logs'}
+              {draft.tasksSubmitted ? studySummary(draft).value : `5 questions, 5 ${diaryWords(draft.durationUnit).units} logs`}
               <ChevronRight className="h-4 w-4 text-text-subtitle" />
             </button>
             <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" leftIcon={<Edit className="h-5 w-5" />}

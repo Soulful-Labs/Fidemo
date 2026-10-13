@@ -1,3 +1,4 @@
+import { diaryWords } from '@shared/platform'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAppNav } from '../../../app/useAppNav'
 import EmptyState from '../../../components/app/EmptyState'
@@ -17,10 +18,10 @@ export function nextDiaryDay(completed: number[], total: number): number | undef
   return undefined
 }
 
-/** "Resume Study Day 2" per PRD 6.13. */
-export function resumeLabel(completed: number[], total: number): string {
+/** "Resume Study Day 2" per PRD 6.13, in the unit the diary counts its entries in. */
+export function resumeLabel(completed: number[], total: number, w: ReturnType<typeof diaryWords> = diaryWords()): string {
   const next = nextDiaryDay(completed, total)
-  return next ? `Resume Study Day ${next}` : 'All days completed'
+  return next ? `Resume Study ${w.Unit} ${next}` : `All ${w.units} completed`
 }
 
 /**
@@ -39,6 +40,8 @@ export default function DiaryOverview() {
   }
 
   const { totalDays, minDays, completedDays } = study.diary
+  /** An entry is an hour, a day or a week, whichever the client chose (shared/platform.ts). */
+  const w = diaryWords(study.diary.unit)
   const next = nextDiaryDay(completedDays, totalDays)
   const canFinish = diaryComplete(completedDays, minDays)
   const finished = study.status === 'in_process' || study.status === 'paid'
@@ -55,10 +58,10 @@ export default function DiaryOverview() {
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         <div className="flex flex-col gap-3 rounded-lg bg-bg-1 bg-yellow-fade p-4">
-          <p className="text-body-medium text-brand-primary">{completedDays.length}/{totalDays} days completed</p>
+          <p className="text-body-medium text-brand-primary">{completedDays.length}/{totalDays} {w.units} completed</p>
           <ProgressBar value={completedDays.length} max={totalDays} memory={`diary-${study.id}`} />
           <p className="text-text-regular text-text-subtitle">
-            At least {minDays} days needs to be filled out of {totalDays} to complete this study and get reward.
+            At least {minDays} {w.units} needs to be filled out of {totalDays} to complete this study and get reward.
           </p>
         </div>
 
@@ -73,9 +76,9 @@ export default function DiaryOverview() {
                 <button
                   type="button"
                   aria-disabled={!done && !isNext}
-                  onClick={() => (done ? toast(`Day ${day} is already submitted`)
+                  onClick={() => (done ? toast(`${w.Unit} ${day} is already submitted`)
                     : isNext ? navigate(`/studies/${id}/diary/${day}`)
-                      : toast(finished ? 'This diary is complete' : `Day ${day} unlocks after day ${next}`))}
+                      : toast(finished ? 'This diary is complete' : `${w.Unit} ${day} unlocks after ${w.unit} ${next}`))}
                   className={cn(
                     'flex h-btn w-full items-center gap-3 rounded-md px-4 text-left text-body-regular',
                     done ? 'bg-bg-1 text-text-title' : isNext ? 'border-1 border-yellow-700 bg-yellow-1000/40 text-brand-primary' : 'bg-bg-1 text-text-disabled',
@@ -84,7 +87,7 @@ export default function DiaryOverview() {
                   <span className={cn('flex h-6 w-6 items-center justify-center rounded-full border-1', done ? 'border-brand-secondary bg-brand-secondary text-bg-0' : 'border-current')}>
                     {done ? <Check className="h-4 w-4" /> : <span className="text-label">{day}</span>}
                   </span>
-                  Day {day} of {totalDays}
+                  {w.Unit} {day} of {totalDays}
                   <span className="ml-auto text-text-regular">{done ? 'Completed' : isNext ? 'Up next' : 'Locked'}</span>
                   {isNext && <ChevronRight className="h-5 w-5" />}
                 </button>
@@ -99,14 +102,14 @@ export default function DiaryOverview() {
           <Button fullWidth variant="secondary" onClick={() => navigate(`/studies/${id}`)}>View Study</Button>
         ) : next ? (
           <Button fullWidth onClick={() => navigate(`/studies/${id}/diary/${next}`)} rightIcon={<ChevronRight className="h-5 w-5" />}>
-            {resumeLabel(completedDays, totalDays)}
+            {resumeLabel(completedDays, totalDays, w)}
           </Button>
         ) : null}
         {!finished && canFinish && (
           <Button fullWidth variant={next ? 'secondary' : 'primary'} onClick={finish}>Complete Study</Button>
         )}
         {!finished && !canFinish && !next && (
-          <Button fullWidth disabled onBlocked={() => toast(`Fill at least ${minDays} days to complete this study`)}>Complete Study</Button>
+          <Button fullWidth disabled onBlocked={() => toast(`Fill at least ${minDays} ${w.units} to complete this study`)}>Complete Study</Button>
         )}
       </CtaBar>
     </div>

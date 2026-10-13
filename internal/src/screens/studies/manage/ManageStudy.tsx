@@ -4,7 +4,7 @@ import AppShell from '../../../app/AppShell'
 import PanelTabs from '../../../components/app/PanelTabs'
 import { platform } from '@shared/store'
 import { useManagedStudy } from '../../../mock/manage'
-import { TEAM } from '../../../platform'
+import { TEAM, say } from '../../../platform'
 import { CongratsBanner, PausedBanner } from './Banners'
 import CompletedStudy from './CompletedStudy'
 import ManageTab from './ManageTab'
@@ -69,7 +69,8 @@ export default function ManageStudy() {
       crumbs={[{ label: 'Studies', to: '/studies' }, { label: 'Ongoing', to: '/studies?tab=ongoing' }, { label: study.title }]}>
       {congrats && <CongratsBanner />}
       {paused && <PausedBanner onResume={() => platform().moveStudy(study.id, 'recruiting', TEAM)} onComplete={() => { platform().moveStudy(study.id, 'completed', TEAM); setParams({}, { replace: true }) }} />}
-      <StudyHeader study={study} onPause={() => setPausing(true)} />
+      <StudyHeader study={study} onPause={() => setPausing(true)}
+        onComplete={() => { if (say(platform().moveStudy(study.id, 'completed', TEAM))) setParams({}, { replace: true }) }} />
       <section className="flex-1 overflow-hidden rounded-lg border-1 border-stroke-1">
         <PanelTabs tabs={TABS} value={tab} onChange={(k) => go({ tab: k as Tab })} />
         <div role="tabpanel" className="p-4">

@@ -1,5 +1,5 @@
 import { ageFrom, tierOf } from './derive'
-import { priceStudy } from './platform'
+import { diaryWords, priceStudy } from './platform'
 import { buildScreener, buildTasks } from './questions'
 import type { AuthoredKind } from './questions'
 import type { Location, Person, PlatformState, PreScreenQuestion, Question, RepeatRule, Session, Study, StudySetup, StudyType, Tier } from './types'
@@ -240,12 +240,15 @@ const inRange = (age: number, range: string) => {
 
 /**
  * How many people on the platform fit the audience as entered: verified,
- * active, and matching every criterion the pool records. Work functions and
- * skills are not on a person's profile, so they cannot narrow the count.
+ * active, and matching every criterion the audience sets, work functions and
+ * skills included.
  */
 export function audiencePeople(state: PlatformState, f: StudyForm, now: Date = new Date()): Person[] {
   const roles = list(f.roles).map((r) => r.toLowerCase())
   const industries = list(f.industries).map((r) => r.toLowerCase())
+  const functions = list(f.functions).map((r) => r.toLowerCase())
+  const skills = list(f.skills).map((r) => r.toLowerCase())
+  const has = (mine: string[], wanted: string[]) => wanted.some((w) => mine.some((m) => m.toLowerCase().includes(w) || w.includes(m.toLowerCase())))
   const codes = f.countries.map((c) => COUNTRY_CODE[c] ?? c)
   const edu = EDUCATION_WORDS.find((w) => f.education.toLowerCase().includes(w))
   const tiers = TIERS_AT[f.tiers]
@@ -257,6 +260,8 @@ export function audiencePeople(state: PlatformState, f: StudyForm, now: Date = n
     if (f.ageRanges.length) { const age = ageFrom(p.profile.dob, now); if (age === undefined || !f.ageRanges.some((r) => inRange(age, r))) return false }
     if (roles.length && !roles.some((r) => p.profile.occupation.toLowerCase().includes(r))) return false
     if (industries.length && !industries.some((r) => p.profile.industry.toLowerCase().includes(r))) return false
+    if (functions.length && !has(p.profile.workFunctions ?? [], functions)) return false
+    if (skills.length && !has(p.profile.skills ?? [], skills)) return false
     if (tiers && !tiers.includes(tierOf(state, p.id, now))) return false
     return true
   })
@@ -497,7 +502,7 @@ export function formFromStudy(s: Study): StudyForm {
     condition: s.repeatRule === 'exclude' ? 'never' : s.repeatRule === 'prefer_fresh' ? 'fresh' : 'na',
     questions: pre.length + full.length ? [...pre, ...full] : f.questions,
     incentive: s.rates.incentivePer || f.incentive, autoPay: s.autoPay ?? f.autoPay, tasks, tasksSubmitted: tasks.length > 0,
-    studyDuration: s.diary ? `${s.diary.totalDays} days` : f.studyDuration, minimumRequired: s.diary ? `${s.diary.minDays} days` : f.minimumRequired,
+    studyDuration: s.diary ? `${s.diary.totalDays} ${diaryWords(s.diary.unit).units}` : f.studyDuration, minimumRequired: s.diary ? `${s.diary.minDays} ${diaryWords(s.diary.unit).units}` : f.minimumRequired,
     durationUnit: s.diary?.unit ?? f.durationUnit, frequency: s.diary?.frequency ?? f.frequency,
     addresses: (s.locations ?? []).map((l) => ({ id: l.id, title: l.label, detail: l.address })),
     seats: s.sessions?.[0] ? `${s.sessions[0].seats} seats` : f.seats,

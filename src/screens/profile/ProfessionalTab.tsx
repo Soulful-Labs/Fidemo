@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Input from '../../components/ui/Input'
 import { useStore } from '../../mock/store'
 import { EDUCATION_LEVELS, EXPERIENCE, INDUSTRIES, TOPICS } from '../onboarding/options'
+import { SKILLS, WORK_FUNCTIONS } from '@shared/platform'
 import { MultiPickField, PickField, SectionHead } from './formBits'
 import { filled, requiredError } from './MyProfile'
 import type { Draft } from './MyProfile'
@@ -35,6 +36,11 @@ export default function ProfessionalTab({ draft, patch, touched = false }: { dra
           </div>
           <PickField label="Industry" value={draft.industry} placeholder="Industry name" options={INDUSTRIES} onChange={(industry) => patch({ industry })} title="Select Industry" searchable error={requiredError(draft, 'industry', touched)} />
           <PickField label="Education Level" value={draft.education} placeholder="Select education" options={EDUCATION_LEVELS} onChange={(education) => patch({ education })} title="Select Education Level" />
+          {/* What a study's audience can ask for beyond role and industry (shared/studyForm.ts). Not in the PRD's field list or in Figma; they are optional and do not count towards profile completion. */}
+          <MultiPickField label="Work Functions" values={draft.workFunctions ?? []} placeholder="Select what you do" options={WORK_FUNCTIONS} max={4}
+            onChange={(workFunctions) => patch({ workFunctions })} title="Select Work Functions" />
+          <MultiPickField label="Skills" values={draft.skills ?? []} placeholder="Select your skills" options={SKILLS} max={6}
+            onChange={(skills) => patch({ skills })} title="Select Skills" />
         </>
       )}
 

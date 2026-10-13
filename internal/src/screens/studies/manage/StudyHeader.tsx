@@ -13,8 +13,14 @@ const Stat = ({ label, value, rest }: { label: string; value: string; rest?: str
   </div>
 )
 
-/** The diary frame's menu also draws Edit. The team does not edit a client's study and a live study cannot be edited, so it is not offered. */
-const MENU = ['Copy Study Link', 'Pause Study', 'Stop-complete Study', 'Duplicate to Drafts']
+/**
+ * What the menu can actually do. The frames also draw Edit and Duplicate to
+ * Drafts: the team does not edit a client's study, and a draft is the client's
+ * own, which the console never lists, so neither is offered. Stop-complete
+ * Study is drawn on the diary menu only; it works the same for any running
+ * study, so it is on all of them.
+ */
+const MENU = ['Copy Study Link', 'Pause Study', 'Stop-complete Study']
 
 /**
  * The header of a managed study (1952:76685), 1162 x 214 on bgAlt-1: the
@@ -28,14 +34,15 @@ const MENU = ['Copy Study Link', 'Pause Study', 'Stop-complete Study', 'Duplicat
  * copy (1961:182276) also shows Stop-complete Study and Edit, which the other
  * five switch off.
  */
-export default function StudyHeader({ study, onPause }: { study: ManagedStudy; onPause: () => void }) {
+export default function StudyHeader({ study, onPause, onComplete }: { study: ManagedStudy; onPause: () => void; onComplete: () => void }) {
   const [menu, setMenu] = useState(false)
   const copy = () => { void navigator.clipboard?.writeText(study.figures.shareLink) }
-  const items = study.fullMenu ? MENU : MENU.filter((m) => m !== 'Stop-complete Study')
+  const items = MENU
   const pick = (item: string) => {
     setMenu(false)
     if (item === 'Copy Study Link') copy()
     if (item === 'Pause Study') onPause()
+    if (item === 'Stop-complete Study') onComplete()
   }
   return (
     <header className="flex gap-6 rounded-lg bg-bgAlt-1 p-4">
@@ -50,7 +57,7 @@ export default function StudyHeader({ study, onPause }: { study: ManagedStudy; o
             {menu && (
               <ul role="menu" className="absolute right-0 top-[46px] z-30 w-[220px] rounded-lg bg-bg-0 p-2 shadow-[0_4px_16px_rgba(32,30,25,0.12)]">
                 {items.map((item) => (
-                  <li key={item} role="none" className={item === 'Duplicate to Drafts' ? 'border-t-1 border-stroke-1' : undefined}>
+                  <li key={item} role="none" className={item === 'Stop-complete Study' ? 'border-t-1 border-stroke-1' : undefined}>
                     <button role="menuitem" type="button" onClick={() => pick(item)}
                       className="flex h-[38px] w-full items-center rounded-sm px-3 text-body-regular text-text-title hover:bg-bg-1">{item}</button>
                   </li>

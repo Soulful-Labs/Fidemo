@@ -1,3 +1,4 @@
+import { diaryWords } from '@shared/platform'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import EmptyState from '../../../components/app/EmptyState'
@@ -29,6 +30,7 @@ export default function DiaryDay() {
   }
 
   const { totalDays, completedDays } = study.diary
+  const w = diaryWords(study.diary.unit)
   const questions = study.tasks ?? []
   const key = `${study.id}:day${day}`
   const current = answers[key] ?? {}
@@ -39,7 +41,7 @@ export default function DiaryDay() {
     setSaving(true)
     setTimeout(() => {
       completeDiaryDay(study.id, day)
-      toast(`Day ${day} submitted`)
+      toast(`${w.Unit} ${day} submitted`)
       navigate(overview, { replace: true })
     }, TIMINGS.fakeServer)
   }
@@ -64,7 +66,7 @@ export default function DiaryDay() {
       </header>
 
       <div className="flex flex-1 flex-col gap-6 px-4 pb-6 pt-4">
-        <p className="rounded-full bg-bg-2 py-2 text-center text-text-medium uppercase text-text-title">Day {day} of {totalDays}</p>
+        <p className="rounded-full bg-bg-2 py-2 text-center text-text-medium uppercase text-text-title">{w.Unit} {day} of {totalDays}</p>
 
         {questions.map((question, i) => (
           <section key={question.id} className="flex flex-col gap-3">
@@ -83,7 +85,7 @@ export default function DiaryDay() {
 
       <CtaBar>
         <Button fullWidth loading={saving} disabled={!complete} onClick={submit}
-          onBlocked={() => toast('Answer every question to submit today')}>
+          onBlocked={() => toast(`Answer every question to submit this ${w.unit}`)}>
           Submit Progress
         </Button>
       </CtaBar>
@@ -91,7 +93,7 @@ export default function DiaryDay() {
       <Modal open={info} onClose={() => setInfo(false)} title="Diary Study" showClose={false}
         footer={<Button fullWidth onClick={() => setInfo(false)}>Got It!</Button>}>
         <p className="text-text-regular text-text-subtitle">
-          Fill in one entry each day. At least {study.diary.minDays} days needs to be filled out of {totalDays} to
+          Fill in one entry {w.every}. At least {study.diary.minDays} {w.units} needs to be filled out of {totalDays} to
           complete this study and get reward. Your answers save as you type.
         </p>
       </Modal>

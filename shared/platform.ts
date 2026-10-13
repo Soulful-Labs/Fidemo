@@ -77,6 +77,20 @@ export function quoteStudy(type: StudyType, required: number, incentivePer: numb
   return { participants, rates, incentives, recruitment, moderation, platformFee: rates.platformFee, total, deposit, later: total - deposit }
 }
 
+/** What a profile can say about someone's work. A study's audience names these in its own words; a match is the same words, ignoring case. */
+export const WORK_FUNCTIONS = ['Consultation', 'Patient Care', 'Research', 'Engineering', 'Product', 'Design', 'Marketing', 'Sales', 'Operations', 'Finance', 'Teaching', 'Management']
+export const SKILLS = ['Diagnosis', 'Triage', 'Clinical Research', 'Programming', 'Data Analysis', 'Writing', 'Public Speaking', 'Budgeting', 'Forecasting', 'Project Management', 'Coaching', 'Negotiation']
+
+/**
+ * A diary's entries are counted in the unit the client chose: an entry is an
+ * hour, a day or a week. Every screen that names an entry reads the words
+ * from here, so "Day 2 of 5" becomes "Week 2 of 5" when the unit is a week.
+ */
+export function diaryWords(unit?: string): { Unit: string; unit: string; units: string; UNIT: string; every: string } {
+  const u = unit === 'Hour' || unit === 'Week' ? unit : 'Day'
+  return { Unit: u, unit: u.toLowerCase(), units: `${u.toLowerCase()}s`, UNIT: u.toUpperCase(), every: u === 'Day' ? 'each day' : `each ${u.toLowerCase()}` }
+}
+
 /** The flat withdrawal fee on its own, as the respondent screens print it. */
 export const WITHDRAWAL_FEE = FEES.WITHDRAWAL
 

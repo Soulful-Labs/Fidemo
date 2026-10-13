@@ -1,3 +1,4 @@
+import { diaryWords } from '@shared/platform'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Timeline from '../../../components/app/Timeline'
@@ -105,7 +106,7 @@ export default function StudyDetail() {
           <StateBanner content={diaryBanner}>
             {study.diary && study.status === 'invited_to_complete' && (
               <Button variant="tertiary" fullWidth rightIcon={<ChevronRight className="h-5 w-5" />} onClick={() => navigate(`/studies/${study.id}/diary`)}>
-                {resumeLabel(study.diary.completedDays, study.diary.totalDays)}
+                {resumeLabel(study.diary.completedDays, study.diary.totalDays, diaryWords(study.diary.unit))}
               </Button>
             )}
           </StateBanner>

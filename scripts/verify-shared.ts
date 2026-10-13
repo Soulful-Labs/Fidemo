@@ -11,7 +11,7 @@ import {
   billing, consoleDashboard, counts, financeTotals, personFigures, pointsRows, recruit, refundsPending, respondentStudies, trustInputs,
 } from '../shared/derive'
 import { respondentStatus, participationOf } from '../shared/lifecycle'
-import { FEES, TIMINGS, depositFor, quoteStudy } from '../shared/platform'
+import { FEES, TIMINGS, depositFor, diaryWords, quoteStudy } from '../shared/platform'
 import { POINTS, REDEEM, TIERS, TRUST, starsForRating, starsFromDimensions, trustScore } from '../shared/rules'
 import { DEMO_CLIENT_ID, DEMO_PERSON_ID, MASTER_ADMIN_ID, buildSeed } from '../shared/seed'
 import { buildScreener, screenerOutline, taskResults } from '../shared/questions'
@@ -314,6 +314,23 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   p.moveStudy(id3, 'recruiting', team); p.startApplication(id3, DEMO_PERSON_ID); p.submitScreener(id3, DEMO_PERSON_ID, { q2: ['A watch'], q3: '2' }); p.decide(id3, DEMO_PERSON_ID, 'qualified', team)
   p.complete(id3, DEMO_PERSON_ID, me, { t1: 'Nothing much.' }); clock += TIMINGS.completionToPaid + 100; p.tick()
   check('AutoPay on: they are paid without anyone approving', Boolean(participationOf(st().studies.find((x) => x.id === id3)!, DEMO_PERSON_ID)!.paidAt))
+}
+
+// ------------------------------------------------ the last loose ends
+{
+  p.reset(); clock = now.getTime()
+  const people = st().people
+  check('pictures: every seeded person has one, drawn and not a photograph', people.every((x) => x.photo?.startsWith('data:image/svg+xml,')) && new Set(people.map((x) => x.photo)).size > people.length / 2, `${people.filter((x) => x.photo).length} of ${people.length}`)
+  check('profiles: every seeded person has work functions and skills', people.every((x) => x.profile.workFunctions.length > 0 && x.profile.skills.length > 0))
+  const wide = formOf({ countries: [], gender: 'All Genders', education: '', ageRanges: [] })
+  const all = audiencePeople(st(), wide, now).length
+  const byFunction = audiencePeople(st(), { ...wide, functions: 'Engineering' }, now)
+  const bySkill = audiencePeople(st(), { ...wide, skills: 'triage, coaching' }, now)
+  check('audience: a work function narrows it to people who do that', byFunction.length > 0 && byFunction.length < all && byFunction.every((x) => x.profile.workFunctions.includes('Engineering')), `${all} -> ${byFunction.length}`)
+  check('audience: skills narrow it to people with any of them, ignoring case', bySkill.length > 0 && bySkill.length < all && bySkill.every((x) => x.profile.skills.some((k) => k === 'Triage' || k === 'Coaching')), `${all} -> ${bySkill.length}`)
+  check('audience: a function nobody has matches nobody', audiencePeople(st(), { ...wide, functions: 'Beekeeping' }, now).length === 0)
+  const weekly = buildStudy(formOf({ title: 't', type: 'diary', durationUnit: 'Week', frequency: 'Weekly', studyDuration: '5 weeks', minimumRequired: '4 weeks', tasks: asForm([{ kind: 'Multi-line input', text: 'What changed this week?' }]), tasksSubmitted: true }), now)
+  check('diary: entries are counted in the unit chosen', weekly.ok && weekly.study.diary?.unit === 'Week' && weekly.study.diary.totalDays === 5 && weekly.study.diary.minDays === 4 && diaryWords(weekly.study.diary.unit).Unit === 'Week' && diaryWords(weekly.study.diary.unit).units === 'weeks' && diaryWords(undefined).Unit === 'Day')
 }
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nall checks passed')

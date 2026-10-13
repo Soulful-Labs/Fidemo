@@ -13,10 +13,13 @@ export interface Respondent {
   score: number
   tier: Tier
   professionVerified?: boolean
+  /** Their picture, where the platform holds one. */
+  photo?: string
 }
 
-/** Initials avatar, as drawn on every respondent card and row. */
-export function Avatar({ name, size = 40 }: { name: string; size?: number }) {
+/** A person's picture, or their initial when the platform holds none. */
+export function Avatar({ name, size = 40, photo }: { name: string; size?: number; photo?: string }) {
+  if (photo) return <img src={photo} alt="" style={{ width: size, height: size }} className="shrink-0 rounded-full object-cover" />
   return (
     <span style={{ width: size, height: size }}
       className="flex shrink-0 items-center justify-center rounded-full bg-bg-2 text-text-medium text-text-subtitle">
@@ -56,7 +59,7 @@ export default function RespondentCard({
   return (
     <article className={cn('flex flex-col gap-3 rounded-lg bg-bg-1 px-3 pb-3 pt-[14px]', className)}>
       <div className="flex items-center gap-2">
-        <Avatar name={respondent.name} />
+        <Avatar name={respondent.name} photo={respondent.photo} />
         <div className="flex min-w-0 flex-col">
           {/* When `actions` replaces the View Profile button, as the Pool does,
               the name is the way into the profile. Same text, same box. */}

@@ -466,7 +466,7 @@ export interface RespondentStudy {
   preScreener: PreScreenQuestion[]
   screener: Question[]
   tasks?: Question[]
-  diary?: { totalDays: number; minDays: number; completedDays: number[] }
+  diary?: { totalDays: number; minDays: number; completedDays: number[]; unit?: string; frequency?: string }
   booking?: Booking
   pinConfirmed?: boolean
   timeline: { label: string; at: string }[]
@@ -739,6 +739,7 @@ export interface PoolPerson {
   id: string; name: string; role: string; score: number; tier: Tier
   domain: string; gender: string; location: string; language: string; lastActiveWeeks: number
   professionVerified: boolean; experienceYears: number
+  photo?: string
 }
 
 export function poolPerson(state: PlatformState, p: Person, now: Date = new Date()): PoolPerson {
@@ -748,6 +749,7 @@ export function poolPerson(state: PlatformState, p: Person, now: Date = new Date
     gender: p.profile.gender, location: p.location, language: p.profile.languages[0] ?? 'English',
     lastActiveWeeks: Math.max(0, Math.round((now.getTime() - new Date(p.lastActiveAt).getTime()) / (7 * DAY))),
     professionVerified: p.profession.state === 'verified', experienceYears: Number.parseInt(p.profile.experience, 10) || 0,
+    photo: p.photo,
   }
 }
 

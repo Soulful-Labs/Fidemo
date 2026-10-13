@@ -177,7 +177,7 @@ export interface Study {
   screener: Question[]
   /** Survey and diary questions. */
   tasks?: Question[]
-  /** `unit` and `frequency` are kept as the client chose them; entries are counted in days. */
+  /** `totalDays` and `minDays` count entries. `unit` is what one entry covers (Hour, Day or Week; a day when unset) and `frequency` how often one is asked for. */
   diary?: { totalDays: number; minDays: number; unit?: string; frequency?: string }
   /** Group studies: the sessions people book a seat in. */
   sessions?: Session[]
@@ -232,6 +232,9 @@ export interface ProfileDetails {
   industry: string
   education: string
   topics: string[]
+  /** What they do in their work and what they are good at. A study's audience can ask for either (shared/studyForm.ts). */
+  workFunctions: string[]
+  skills: string[]
   dob: string
   idType: string
   introVideo?: string

@@ -103,9 +103,9 @@ export default function RecruitedTab() {
                       rightIcon={<ChevronRight className="h-4 w-4" />}>View Participants</Button>
                     <span className="flex -space-x-1.5">
                       {g.people.slice(0, 6).map((r) => (
-                        <span key={r.id} className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-bgAlt-2 ring-1 ring-bg-1 text-label text-text-subtitle">
-                          {r.name.charAt(0)}
-                        </span>
+                        r.photo
+                          ? <img key={r.id} src={r.photo} alt="" className="h-[22px] w-[22px] rounded-full object-cover ring-1 ring-bg-1" />
+                          : <span key={r.id} className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-bgAlt-2 ring-1 ring-bg-1 text-label text-text-subtitle">{r.name.charAt(0)}</span>
                       ))}
                     </span>
                   </div>
