@@ -370,6 +370,8 @@ nudge so a demo can show the whole loop. Use a short fake delay and a toast:
 Put these timings in one place, `src/mock/store.tsx`, so they can be changed or
 removed later.
 
+**Storage:** every touch of `localStorage` must be inside a try/catch, including `typeof localStorage`, because Safari with cookies blocked throws on all of them; an unguarded one in `shared/store.ts` left all three apps blank in Safari.
+
 ### Scheduling flow
 | Control | Does |
 |---|---|

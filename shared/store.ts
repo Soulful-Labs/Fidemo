@@ -48,7 +48,14 @@ function tidyAnswers(study: Study, answers: Answers): Answers {
 }
 
 export function createPlatform(options: Options = {}) {
-  const storage = options.storage === undefined ? (typeof localStorage === 'undefined' ? null : localStorage) : options.storage
+  /**
+   * Safari with "Block All Cookies" throws on any touch of localStorage, typeof
+   * included, and that throw would leave every app blank. Blocked means none:
+   * the demo then runs in memory, as it does in tests.
+   */
+  const storage = options.storage === undefined
+    ? (() => { try { return typeof localStorage === 'undefined' ? null : localStorage } catch { return null } })()
+    : options.storage
   const clock = options.now ?? (() => new Date())
   const iso = () => clock().toISOString()
   const listeners = new Set<Listener>()
