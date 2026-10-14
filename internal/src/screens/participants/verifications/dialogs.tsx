@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { RESTRICTION_DAYS } from '@shared/platform'
 import Button from '../../../components/ui/Button'
 import { PasswordInput, TextArea } from '../../../components/ui/Input'
 import { Modal, SuccessModal } from '../../../components/ui/Overlay'
@@ -27,15 +28,40 @@ const COPY: Record<Decision, { formTitle?: string; note?: string; label: string;
  * - the two rejections: one centred dialog carrying the statement and
  *   "Yes, Reject", then the outcome.
  */
-export default function DecisionFlow({ kind, step, onStep, onDone, onDecide, name }: {
+/**
+ * The Restrict copy is drawn for the first offence only. Policy section 9's
+ * ladder runs 15, 15 and 30 days, and the fourth offence deactivates, so the
+ * words follow how many restrictions the account already has.
+ */
+function restrictCopy(prior: number): Partial<(typeof COPY)[Decision]> {
+  const n = prior + 1
+  const nth = ['1st', '2nd', '3rd'][prior]
+  if (n > RESTRICTION_DAYS.length) return {
+    note: `This is Maya’s fourth offence, so this will deactivate Maya’s account instead of restricting it. Maya is told the reason and can appeal.`,
+    go: 'Deactivate', ask: 'Deactivate Maya’s Account?', askBody: 'This is the fourth offence: the account will be deactivated, not restricted.',
+    done: 'Maya’s account has been deactivated.', doneBody: 'Maya has been sent the reason and can appeal the decision.',
+  }
+  const days = RESTRICTION_DAYS[prior]
+  return {
+    note: `This will make Maya’s account restricted to participate, withdraw earnings & rewards, for ${days} days as for the ${nth} time.`,
+    askBody: `This will mark restrict the Maya’s account as for ${nth} time.`,
+    doneBody: `Maya’s account has been restricted to participate, withdraw earnings & rewards, for ${days} days as for the ${nth} time.`,
+  }
+}
+
+export default function DecisionFlow({ kind, step, onStep, onDone, onDecide, name, prior = 0 }: {
   kind: Decision; step: Step; onStep: (s: Step) => void; onDone: () => void
   /** Records the decision on the shared platform with its statement; a refusal is shown and the flow stays on its form. */
   onDecide?: (statement: string) => { ok: boolean; why?: string }
   /** First name of the person decided on; the frames' own copy names Samuel or Maya. */
   name?: string
+  /** Restrictions the account already has (restrict only): sets the days, or the deactivation. */
+  prior?: number
 }) {
+  // Read once, when the flow opens: deciding adds a restriction, and the outcome must describe this one.
+  const [offences] = useState(prior)
   const named = (v: unknown) => (typeof v === 'string' && name ? v.replace(/Samuel|Maya/g, name) : v)
-  const c = Object.fromEntries(Object.entries(COPY[kind]).map(([k, v]) => [k, named(v)])) as (typeof COPY)[Decision]
+  const c = Object.fromEntries(Object.entries({ ...COPY[kind], ...(kind === 'restrict' ? restrictCopy(offences) : {}) }).map(([k, v]) => [k, named(v)])) as (typeof COPY)[Decision]
   const [text, setText] = useState('')
   const [why, setWhy] = useState('')
   const decide = () => {

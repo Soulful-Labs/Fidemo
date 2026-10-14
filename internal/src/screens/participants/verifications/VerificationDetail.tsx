@@ -218,7 +218,7 @@ export default function VerificationDetail() {
         </div>
       )}
 
-      {flow && <DecisionFlow kind={flow.kind} name={who.first} step={flow.step} onStep={(s) => setFlow(s ? { ...flow, step: s } : null)}
+      {flow && <DecisionFlow kind={flow.kind} name={who.first} prior={c.restrictions ?? 0} step={flow.step} onStep={(s) => setFlow(s ? { ...flow, step: s } : null)}
         onDecide={(statement) => decide(flow.kind, statement)} onDone={() => setFlow(null)} />}
       <AccountFlow kind="deactivate" name={who.first} step={deact} onStep={setDeact} onReason={(reason) => platform().decideReport(id, 'deactivated', reason, TEAM)} onDone={() => setDeact(null)} />
     </AppShell>

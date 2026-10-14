@@ -23,7 +23,8 @@ export default function Referrals() {
   const REFERRAL_LINK = referralLink(user.name, user.email)
   const joined = referrals.length
   const completed = referrals.filter((r) => r.status === 'completed').length
-  const earned = money(pointsToUsd(completed * POINTS.REFERRAL))
+  // Paid when the friend joins (policy section 3), so every referral on the list has earned its points.
+  const earned = money(pointsToUsd(joined * POINTS.REFERRAL))
 
   const copy = async () => {
     try { await navigator.clipboard.writeText(REFERRAL_LINK) } catch { /* clipboard unavailable outside a secure context */ }

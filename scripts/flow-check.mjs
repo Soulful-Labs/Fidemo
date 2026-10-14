@@ -259,10 +259,10 @@ await C.click('Publish Study', 900)
 const sameStudy = await C.ev(`(() => { const all = __st().studies.filter((x) => x.title === ${JSON.stringify(SURVEY.title)}); return { n: all.length, id: all[0] && all[0].id, description: all[0] && all[0].description, state: all[0] && all[0].state, payments: all[0] && all[0].payments.length } })()`)
 if (sameStudy.n !== 1 || sameStudy.id !== SURVEY.id || sameStudy.description !== revised || sameStudy.state !== 'in_review' || sameStudy.payments !== 1) g4.push('editing did not save over the same study: ' + JSON.stringify(sameStudy))
 
-// The diary, straight through.
+// The diary, straight through. A 3-day diary's minimum is 3 by itself: four fifths, rounded up (policy section 5).
 await about(DIARY)
 await C.click('Continue'); await C.ev(FORMS)
-await C.ev(`(async () => { await __choose(__btn('Every 2 days'), 'Every 3 days'); await __choose(__btn('5 days'), '3 days'); await __choose(__btn('4 days'), '2 days'); return true })()`); await sleep(150)
+await C.ev(`(async () => { await __choose(__btn('Every 2 days'), 'Every 3 days'); await __choose(__btn('5 days'), '3 days'); return true })()`); await sleep(150)
 await C.click('Create Survey Questionnaire', 500)
 await C.ev(`(() => { __ph('Enter question text...', 'What did you eat today?', 0); __ph('Enter question text...', 'How did you feel afterwards?', 1); return true })()`); await sleep(200)
 await C.click('Submit Diary Form', 500)
@@ -366,21 +366,25 @@ const g2 = []
 const ENTRY = (d, n) => `Day ${d} answer ${n} ${tag}`
 try {
   await recruit(DIARY)
-  for (const d of [1, 2]) {
+  const fill = async (d) => {
     await R.go(`/studies/${DIARY.id}/diary/${d}`); await sleep(500)
     await R.ev(`(() => { [...document.querySelectorAll('main textarea, main input')].filter(__vis).forEach((el, n) => __type(el, ${JSON.stringify(`Day ${d} answer `)} + (n + 1) + ${JSON.stringify(' ' + tag)})); return true })()`); await sleep(250)
     await R.click('Submit Progress', 1500)
   }
+  await fill(1); await fill(2)
+  // A 3-day diary needs all 3 (four fifths, rounded up): with two, Complete Study is not open.
+  await R.go(`/studies/${DIARY.id}/diary`); await sleep(400)
+  if (await R.ev(`(() => { const b = [...document.querySelectorAll('button')].filter(__vis).find((x) => x.textContent.trim().startsWith('Complete Study')); return Boolean(b) && !b.disabled && b.getAttribute('aria-disabled') !== 'true' })()`)) g2.push('respondent: Complete Study is open with 2 of 3 days')
+  await fill(3)
   await R.go(`/studies/${DIARY.id}/diary`); await sleep(400)
   await R.click('Complete Study', 1500)
-  const want = ['DAY 1', 'DAY 2', 'What did you eat today?', 'How did you feel afterwards?', ENTRY(1, 1), ENTRY(1, 2), ENTRY(2, 1), ENTRY(2, 2)]
+  const want = ['DAY 1', 'DAY 2', 'DAY 3', 'What did you eat today?', 'How did you feel afterwards?', ENTRY(1, 1), ENTRY(1, 2), ENTRY(2, 1), ENTRY(2, 2), ENTRY(3, 1), ENTRY(3, 2)]
   await C.go(`/client/studies/${DIARY.id}/respondent/jonathan/result`); await sleep(600)
   g2.push(...(await lacks(C, want)).map((x) => 'client: ' + x))
-  if ((await C.has('DAY 3'))) g2.push('client: shows a day that was not filled in')
   await I.go(`/internal/studies/${DIARY.id}/respondents/jonathan?tab=result`); await sleep(600)
   g2.push(...(await lacks(I, want)).map((x) => 'console: ' + x))
 } catch (e) { g2.push(String(e.message)) }
-say(2, 'The same for a diary study', g2, 'two days filled in, two answers each')
+say(2, 'The same for a diary study', g2, 'Complete Study stays shut at 2 of 3 days; all three filled in, two answers each, read back by the client and the console')
 
 console.log(`\n${results.filter(Boolean).length} of ${results.length} yes`)
 if (errors.length) console.log('\npage errors:\n  ' + [...new Set(errors)].join('\n  '))

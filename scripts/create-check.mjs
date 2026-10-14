@@ -191,11 +191,12 @@ const STUDIES = [
   },
   {
     key: 'diary', card: 'Diary Study', duration: 15, participants: '9', incentive: 75, screener: THREE, opener: 'Create Survey Questionnaire', submit: 'Submit Diary Form',
-    before: `await __choose(__btn('Every 2 days'), 'Every 3 days'); await __choose(__btn('5 days'), '7 days'); await __choose(__btn('4 days'), '5 days');`,
+    before: `await __choose(__btn('Every 2 days'), 'Every 3 days'); await __choose(__btn('5 days'), '7 days');`,
+    // Policy section 5, four fifths of the entries: a 7-day diary's minimum moves to 6 by itself and nothing lower is offered.
     setup: `__ph('Enter question text...', 'What did you eat today?', 0); __ph('Enter question text...', 'How did you feel afterwards?', 1);`,
     typeLabel: 'Diary Study', summary: '2 questions, 7 days logs',
-    client: ['Every 3 days', '7 days', '5 days', 'Day', 'What did you eat today?', 'How did you feel afterwards?'],
-    console: ['What did you eat today?', 'How did you feel afterwards?', '7 days', '5 days', 'Every 3 days'],
+    client: ['Every 3 days', '7 days', '6 days', 'Day', 'What did you eat today?', 'How did you feel afterwards?'],
+    console: ['What did you eat today?', 'How did you feel afterwards?', '7 days', '6 days', 'Every 3 days'],
     tasks: ['What did you eat today?', 'How did you feel afterwards?'], diaryDays: 7,
   },
 ].map((s) => ({ ...s, title: `CC ${s.key} ${tag}`, description: `Created by the create check to follow a ${s.key} study through all three apps.`, end: after(30) }))
