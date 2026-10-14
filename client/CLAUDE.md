@@ -734,10 +734,12 @@ about appearance, Figma wins. **Flag every such case in the turn report and in
 The two that shape everything else: the workflow opens with "THIS IS A MANAGED
 PLATFORM. EVERY STUDY IS RUN BY THE FOCUS INSITE TEAM, AND THERE IS NO
 SELF-SERVE OPTION IN THIS BUILD", while Figma draws a self-serve Create Study
-flow ending in Publish Study; and the policy's sign-off says client ratings are
-"the three states already in the workflow: poor, good or excellent", while
-Figma draws five stars on three dimensions and the policy's own Trust Score
-table is denominated in five stars.
+flow ending in Publish Study; and client ratings. The earlier policy said
+client ratings were three states, poor, good or excellent, while Figma draws
+five stars on three dimensions. The 13 October 2026 policy (section 6)
+withdrew the three-state wording: a client rates Expertise, Reliability and
+Communication at five stars each, plus an optional written review, which is
+what Figma draws and what the build does.
 
 ---
 
@@ -1126,7 +1128,9 @@ forked.
 **Rate (1627:98286) asks for three things and no arithmetic.** Expertise,
 Reliability and Communication at five stars each, plus an optional written
 review, then Submit / Cancel. The frame shows no weighting, no resulting score
-and nothing about the Trust Score, so the panel records stars and stops there.
+and nothing about the Trust Score. The build records the three scores and the
+comment; the Trust Score takes their rounded mean as the study's star rating
+(`starsFromDimensions`), as policy section 6 and the console both do.
 
 **Three frames of one screen disagree.** The left card is 824px wide on
 1627:97305 and 836px on 1627:97609 and 1627:97901, which moves the gutter to
@@ -1422,11 +1426,21 @@ covers: a registry check that resolves an EIN to this company; a domain
 ownership proof tied to the work email's domain; a billing record the
 certificate can assert against; and a signed data handling agreement on file —
 plus an issuer, a validity period and a way for a third party to verify the
-ID. **The signed Trust and Rewards policy covers respondents only**, so none of
-these four claims has a policy behind it today. **And the Cert. ID on this
-screen is the same string the respondent panels use for Ferry L.**
-(HL-R-9F2A-3K7P), so as drawn a client and a respondent share one certificate
-number.
+ID. **And the Cert. ID on this screen is the same string the respondent
+panels use for Ferry L.** (HL-R-9F2A-3K7P), so as drawn a client and a
+respondent share one certificate number.
+
+**As built (14 Oct 2026), per policy section 7.** The business certificate is
+its own object with its own ID, `FI-C-XXXX-XXXX`, issued once when the business
+check passes and stored on the client (`certificateId`, from
+`freshCertificateId` in `shared/derive.ts`). It claims only what the platform
+verifies: "Business registration verified", and "Billing on file" when a card
+is saved. The domain-ownership and data-handling lines and the drawn ID are
+gone. Before the check passes the tab says "Not issued yet". The study
+verification certificate on Results claims the identity check only; no
+duplicate check exists, so none is claimed. Still hard-coded in code: the
+Pool's profile panel (`screens/pool/PoolPanels.tsx`) prints the drawn
+"Cert. ID: HL-R-9F2A-3K7P".
 
 **Which alert appears when.** Change Password → **Password has been updated!**
 Deactivate Account → the password form, and then one of two outcomes:
@@ -1472,14 +1486,19 @@ against their own counts, of the dashboard tiles against everything, and of
 the Payments table against its own total. All four are now counted.
 
 **Where the four sources collide, `docs/Stage-Two-Conflicts.md` is the
-record.** The biggest one: the signed policy closes client ratings at three
-states, poor / good / excellent, and Figma draws three dimensions of five
-stars. The policy outranks Figma on ratings, so the panel records three
-states. That is the only signed-off control in the build that was replaced
-rather than kept.
+record.** Client ratings were the biggest one, and are now settled: the 13
+October 2026 policy (section 6) says three dimensions at five stars each,
+Expertise, Reliability and Communication, plus an optional written review,
+which is what Figma draws. The Rate panel records exactly that
+(`rate(studyId, personId, dims, comment)` in `platform.tsx`), and the Trust
+Score reads the rounded mean of the three (`starsFromDimensions`,
+`shared/rules.ts`), the same as the console's Rate panel. The three-state
+control that once replaced it is gone.
 
 ### Dev
-`/kitchen-sink` renders every repeating component on one page.
+`/kitchen-sink` renders every repeating component on one page. It exists in
+`npm run dev` only: a production build leaves the route out
+(`import.meta.env.DEV` in `routes.ts`), so the shared site cannot reach it.
 
 ---
 
@@ -1556,3 +1575,29 @@ The dashboard shows less at once: Ongoing Studies is a two-up carousel of every
 ongoing study (160ms slide, ease-out, no overshoot), Needs Your Attention shows
 three rows with "View all" opening a panel of the rest, Upcoming Sessions shows
 two. `scripts/media-check.mjs` (repo root) checks all of this in three tabs.
+
+## Clean-up, 14 Oct 2026
+
+What changed in the client app to follow the 13 October 2026 policy:
+
+- **Rating** is three dimensions at five stars each, plus an optional written
+  review (policy section 6). See "Stage two" above.
+- **Cancelling a session.** On Recruited, a one-to-one study's booked row
+  carries a Cancel link; it opens Cancel Session? (`CancelSessionModal`,
+  `StudyMenus.tsx`; not drawn). A client's cancellation costs the participant
+  nothing, even inside 24 hours, and they are told (policy section 5,
+  `cancelSessionFor` in `shared/store.ts`). A group session's seats have no
+  client Cancel; the console has Cancel Session on its session page.
+- **Diary minimum.** Minimum Required offers only what the policy allows for
+  the chosen duration: at least four fifths of the entries, rounded up, up to
+  all of them (`diaryMinimumFor`, `shared/platform.ts`). Changing the duration
+  moves a minimum that is now out of range to the least allowed.
+- **Roles and Skills add-ons are charged.** `quoteStudy` takes the study's
+  targeting: +$25 a completed participant for Roles, +$20 for Skills (policy
+  section 8). Costing Summary, Payment and the stored study all read it.
+- **The business certificate** is issued, stored and claims only what is
+  verified. See "Account, and what the certificate claims" above.
+- `/kitchen-sink` is in `npm run dev` only.
+
+`node --experimental-websocket scripts/cleanup-check.mjs` (repo root) checks
+the policy changes across the three apps in a browser.

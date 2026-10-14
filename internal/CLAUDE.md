@@ -169,7 +169,8 @@ reads as a fixed sidebar drawn once; build it fixed to the viewport, not stretch
 
 ## Primitives (turn 1), measured
 
-All in `src/components/ui`, shown in every state on `/kitchen-sink`. Reuse them;
+All in `src/components/ui`, shown in every state on `/kitchen-sink` (in `npm run
+dev` only; a production build leaves the route out). Reuse them;
 do not draw a second version of any of these.
 
 | Primitive | Measured |
@@ -569,7 +570,9 @@ the reward incentive. This cannot be undone." Group video draws no way back.
 **Policy.** No Trust Score figure, deduction or points penalty appears on any of these
 frames or dialogs: the no-show dialogs speak only of payment. Nothing here to compare
 with the policy's No show -4 / Late cancellation -2; if a no-show is to cost score,
-no design says so at the point it is marked. There is no cancel-session control at all.
+no design says so at the point it is marked. No cancel-session control is drawn. The
+build adds one: Cancel Session on the session page (`CancelSessionDialog`), free to the
+participant, who is told (policy section 5).
 
 **Slips kept as drawn.** The rate panels are titled "for GLP-1 Care Plans, Oncologist
 View" and "for E-commerce User Behavior Study"; the survey's finished bar says "The
@@ -862,6 +865,16 @@ liveness detail, no control. The respondent app captures none (legal review open
 "Cert. ID: HL-R-9F2A-3K7P" is already in the header of people still unverified, and
 Maya carries Samuel's id. No decision dialog mentions the Trust Score.
 
+**As built (14 Oct 2026), per policy sections 7 and 9.** The participant profile
+header reads the person's stored `certificateId` (`FI-XXXX-XXXX`), issued once when
+identity verification completes and never changed, and "Not yet verified" before that.
+The verification detail header still prints the drawn "Cert. ID: HL-R-9F2A-3K7P"
+(`VerificationDetail.tsx`). The Restrict dialog states the step the person is on
+(`restrictCopy`, `verifications/dialogs.tsx`), counted when the dialog opens: 15 days
+for the first and second offence, 30 for the third, and for the fourth it becomes
+Deactivate, with the reason sent and an appeal open. A restriction ends on its own date
+and the participant is told.
+
 **Samuel Lee's score, frame by frame:** 50 Silver on `2035:109172` (identity,
 Flagged), `2036:139490` (marked verified), `2036:139831` (rejected), `2036:140390` and
 `2036:140464` (profession verified / rejected); **95 Platinum on `2035:110335`**
@@ -1126,7 +1139,9 @@ Nothing is cut off by its frame.
 ## Pricing & Rewards (turn 15)
 
 Rule 9 does not apply here: the signed policy outranks Figma on scores, tiers, points
-and the certificate. Built exactly as drawn; every disagreement is listed, none fixed.
+and the certificate. Built to the frames' layout, with the policy's values and
+`shared/platform.ts`'s fees (`src/mock/pricing.ts`); the frames' own figures are listed
+below.
 
 Section `2051:177074`: 9 frames (8 visible) and one loose menu. Fees `2051:176489`,
 Gamification `2058:194308`; Edit Clients Fees `2056:192920`, Edit Participants Fees
@@ -1161,10 +1176,10 @@ study, Roles, Skills).
 | Points, study completion | 50 | 25 | `2058:194308`, `2058:197423` |
 | No show | -4 view, **-2 edit** | -4 | edit `2058:196166` disagrees |
 | Cancelled session | **-4 view**, -2 edit | -2 | view `2058:194308` disagrees |
-| "Points have no expiry and can be redeemed anytime." | stated | not stated; redemption needs 1,000 points | `2058:197423` |
+| "Points have no expiry and can be redeemed anytime." | stated | points do not expire (section 4); redemption needs 1,000 points | `2058:197423` |
 | Points, study completion: "Per study, upto 10 per year" | a yearly cap on points | no cap on points (the cap is on Trust Score) | `2058:194308`, `2058:197423` |
-| Certificate | no setting at all | "Unlocks at 40" | all |
-| Withdrawal fee | $1.99 | not in the policy (respondent app: $2) | `2051:176489`, `2058:193936` |
+| Certificate | no setting at all | none: "Unlocks at 40" withdrawn (section 7) | agrees |
+| Withdrawal fee | $1.99 | $2 flat (section 4) | `2051:176489`, `2058:193936` |
 | Study completion, trust | "+10" | +1 a study, up to 10 a year | agrees as a cap; reads as per study |
 Agree: Onboarding 50, ratings +4 / +3 / +1 / -2 / -3 and +40 max, Late show up -2,
 Fraud -20, tiers 50 / 70 / 90, Referral 200, Being referred 100, Full profile 50,
@@ -1192,10 +1207,14 @@ else says Reward Points. "One-rime". "Being Referred: Refer someone who joins" a
 "Referral: When someone refers users to join" have their notes swapped. The published
 dialog says "Clients Fees" whatever was saved. "The updated pricing are".
 
-Built choices: Save opens that one dialog on all five screens, then returns to the
-tab; Create and the add-on edit / delete buttons change nothing but the form's own
-open state; the parameter dropdown adds a chip. Inputs are editable but nothing is
-stored: the overview always shows the drawn values.
+Built choices: **nothing on these screens saves, and the screen says so.** Each edit
+screen opens with a note that its values come from the signed policy and the platform's
+pricing rules and cannot be changed from the console in this build. Save Changes opens
+"Changes not saved" ("Nothing was saved. ... A change needs the policy updated and a
+new release of the platform.", Keep Editing / Back to Pricing & Rewards), not the drawn
+"Clients Fees are updated!". Create and the add-on edit / delete buttons change nothing
+but the form's own open state; the parameter dropdown adds a chip. The overview always
+shows the policy's values.
 
 No primitive changed. Everything signed off re-swept: unchanged.
 
@@ -1272,7 +1291,7 @@ without Edit Profile, so a sub-admin cannot change their own name, email or pict
 **Who may edit Pricing and Rewards.** Only the "Pricing & Rewards" module toggle. No
 approval, second person or master-admin-only rule is drawn; a sub-admin with that
 toggle can change every fee, tier, score and points value, and (turn 15) nothing
-records that they did.
+records that they did. In this build no one can: the edit screens save nothing.
 
 **Access control.** None drawn beyond the toggles and a password: no two-factor, no
 session list or limit, no sign-in history, no IP rule, no password expiry, no lockout,
@@ -1422,23 +1441,22 @@ kept on purpose, and each needs a yes from the business before it is real.
 
 | Rule | Where | What it does | Why it was read this way |
 |---|---|---|---|
-| Restriction ladder: 15 days, then 15, then 30, then deactivation | `shared/platform.ts` RESTRICTION_DAYS | Each upheld report restricts the account for longer; the fourth deactivates | The Restrict dialog says "for 15 days as for the 1st time" and `2036:145744` stacks 15, 15, 30 then "Deactivated the account." No document sets the ladder |
 | "No code, no payment" | `shared/store.ts` complete; console Mark Completed (`internal/src/mock/attendance.ts`) | Mark Completed is refused, with that reason, when the participant never entered their session code. The team supplies the client's half from the PIN on the session page | The attendance design is two steps ("Verified with PIN by ... (participant)", then "Marked as completed by client") and the PIN is drawn on the session page. Accepted 12 Oct 2026 as the right reading; no document says it |
 
-### The two rating paths are not equivalent
+The restriction ladder (15 days, then 15, then 30, then deactivation;
+`RESTRICTION_DAYS` in `shared/platform.ts`) was on this list until the 13 October
+2026 policy wrote it down (section 9).
 
-Both store stars, and the policy's table (5 +4, 4 +3, 3 +1, 2 -2, 1 -3) scores them.
+### The two rating paths are the same
 
-- **Client app:** a three-state control (excellent, good, poor), mapped by
-  `starsForRating` in `shared/rules.ts` to 5, 4 and 2. 3 and 1 star are unreachable.
-- **Console:** the Rate panel draws three five-star scores (expertise,
-  reliability, communication). `starsFromDimensions` stores their rounded
-  average, so every value from 1 to 5 is reachable.
-
-So the same participant can earn a +1 or a -3 from the team but never from a
-client. Accepted 12 Oct 2026; whether that is intended is a question for Jim,
-not something to fix in code. A participation can be rated once; a second
-rating is refused.
+Policy section 6: a participant is rated on three dimensions at five stars each,
+Expertise, Reliability and Communication, plus an optional written review. The client
+app's Rate panel and the console's both record that, and `starsFromDimensions`
+(`shared/rules.ts`) stores the rounded mean as the study's stars, which the policy's
+table (5 +4, 4 +3, 3 +1, 2 -2, 1 -3) scores. Every value from 1 to 5 is reachable
+from either app. The old three-state control (excellent, good, poor) is gone;
+`starsForRating` remains only for seeded ratings. A participation can be rated once;
+a second rating is refused.
 
 ---
 
@@ -1605,13 +1623,15 @@ the policy's values and the conflict is reported, never decided silently.
 | Cancelled session | -4 on Gamification, -2 on Edit | **-2** |
 | No show | -4 on Gamification, -2 on Edit | **-4** |
 | Study completion points | **50** ("Per study, upto 10 per year") | **25** |
-| "Points have no expiry and can be redeemed anytime." | drawn | not in the policy |
+| "Points have no expiry and can be redeemed anytime." | drawn | points do not expire (section 4); redemption needs 1,000 points |
 | Study completion trust | "+10" (Earned For) | +1 a study, up to 10 a year, so +10 is the yearly cap |
 | Onboarding +50, ratings +40 max, 5/4/3/2/1 stars +4/+3/+1/-2/-3, Late show up -2, Fraud -20, tiers 50/70/90, 100 points = $1, minimum 1,000, referral 200, being referred 100, full profile 50, streak 50 | match | match |
 
-Fees the policy does not cover: Withdrawal **$1.99** (the respondent app charges
-$2 flat), Platform fee $100, Moderation fee $10, Recruitment fee $25 base with
-add-ons.
+Fees: the policy (sections 4 and 8) sets Withdrawal **$2** flat against Figma's
+**$1.99**, and agrees with the rest: Platform fee $100, Moderation fee $10,
+Recruitment fee $25 base, +$25 for Video Call, In-Person or Diary study types or Roles
+targeting, +$20 for Skills targeting. All are charged; the console shows the policy's
+figures.
 
 ---
 
