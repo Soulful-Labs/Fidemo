@@ -9,10 +9,11 @@
  * reads and writes the same platform: a change made in one app is picked up
  * by the others through the storage event, without a reload.
  */
-import { applyRepeatRule, billing, diaryReady, hasTakenPartWith, sessionNotStarted, openAvailability, personById, personFigures, profileCompletion, restrictionCount } from './derive'
+import { applyRepeatRule, barredFrom, billing, diaryReady, freshCertificateId, hasTakenPartWith, sessionNotStarted, openAvailability, personById, personFigures, profileCompletion, referralCode } from './derive'
 import { canEditStudy, canMoveParticipation, canMoveStudy, isLive, participationOf } from './lifecycle'
-import { DECISION_UNDO_MS, DEMO_SESSION_CODE, RESTRICTION_DAYS, TIMINGS, canReschedule, canWithdraw, depositFor, isSessionType, priceStudy, withdrawalExpectedBy } from './platform'
-import { canRedeem, starsForRating, starsFromDimensions } from './rules'
+import { DECISION_UNDO_MS, DEMO_SESSION_CODE, RESTRICTION_DAYS, TIMINGS, canCancel, canReschedule, canWithdraw, depositFor, isSessionType, priceStudy, targets, withdrawalExpectedBy } from './platform'
+import { POINTS, canRedeem, starsForRating, starsFromDimensions } from './rules'
+import { monthDayYear } from './format'
 import { sessionStartOf as sessionStart } from './derive'
 import { EMPTY_PROFILE } from './seed/people'
 import { MAX_RUN_DAYS, buildStudy, fitsStudy, studyTypeOf, summarise } from './studyForm'
@@ -109,6 +110,65 @@ export function createPlatform(options: Options = {}) {
     return study && p ? { study, p } : null
   }
   const stamp = (p: Participation, label: string) => { p.events.push({ label, at: iso() }) }
+
+  /**
+   * Policy section 9: a restricted participant cannot take part in studies,
+   * withdraw or redeem until the end date; a deactivated one cannot at all.
+   * The reason says which, why and until when.
+   */
+  const barred = (person: Person): string | null => {
+    const b = barredFrom(person, clock())
+    if (!b) return null
+    if (b.kind === 'deactivated') return `This account is deactivated (${b.category}). You can appeal from the app.`
+    return `Your account is restricted until ${monthDayYear(b.until)} (${b.category}). Until then you cannot take part in studies, withdraw or redeem.`
+  }
+
+  /**
+   * One restriction, wherever it comes from (a report or the team), so every
+   * one counts toward the ladder: 15, 15 and 30 days, and the fourth offence
+   * is a deactivation. The participant is told the category and the end date.
+   */
+  const restrict = (s: PlatformState, person: Person, category: string, reason: string, actor: Actor): 'restricted' | 'deactivated' => {
+    const by = actor.kind === 'team' ? actor.id : ''
+    const count = person.restrictions?.length ?? 0
+    if (count >= RESTRICTION_DAYS.length) {
+      deactivate(s, person, category, `Fourth offence. ${reason}`, actor)
+      return 'deactivated'
+    }
+    const until = new Date(clock().getTime() + RESTRICTION_DAYS[count]! * 86_400_000).toISOString()
+    person.restrictions = [...(person.restrictions ?? []), { at: iso(), until, category, reason, by }]
+    person.status = 'restricted'
+    person.statusNote = { reason, at: iso(), by, until, category }
+    notify(s, person.id, {
+      kind: 'profile', title: 'Your account is restricted',
+      body: `Restricted until ${monthDayYear(until)} for ${category}: ${/[.!?]$/.test(reason) ? reason : `${reason}.`} Until then you cannot take part in studies, withdraw or redeem.`, to: '/profile',
+    })
+    return 'restricted'
+  }
+
+  /** A deactivation: the participant is sent the written reason and can appeal (policy section 9). */
+  const deactivate = (s: PlatformState, person: Person, category: string, reason: string, actor: Actor) => {
+    person.status = 'deactivated'
+    person.statusNote = { reason, at: iso(), by: actor.kind === 'team' ? actor.id : '', category }
+    notify(s, person.id, { kind: 'profile', title: 'Your account has been deactivated', body: `${category}: ${/[.!?]$/.test(reason) ? reason : `${reason}.`} You can appeal this decision from the app.`, to: '/' })
+  }
+
+  /**
+   * Policy section 5: a session cancelled by the client or the team costs the
+   * participant nothing, and they are told. They go back to being invited to
+   * schedule, so they can book again if the study still runs.
+   */
+  const cancelFor = (s: PlatformState, study: Study, p: Participation, by: 'client' | 'team', reason: string) => {
+    const when = p.booking ? `${monthDayYear(p.booking.date)} at ${p.booking.slot}` : 'booked'
+    p.state = 'qualified'; p.booking = undefined; p.code = undefined
+    stamp(p, by === 'client' ? 'Session cancelled by the client' : 'Session cancelled by the team')
+    const open = isLive(study.state)
+    notify(s, p.personId, {
+      kind: 'session', title: by === 'client' ? 'Study cancelled by client' : 'Your session was cancelled',
+      body: `Your ${when} session for ${study.title} was cancelled by ${by === 'client' ? 'the client' : 'the Focus Insite team'}${reason ? ` (${reason})` : ''}. This costs you nothing.${open ? ' You can book another time.' : ''}`,
+      ...(open ? { actionLabel: 'Schedule Now', to: `/studies/${study.id}/schedule` } : { to: `/studies/${study.id}` }),
+    })
+  }
   const nameOf = (s: PlatformState, personId: string) => personById(s, personId)?.name ?? 'the participant'
   const clientOf = (s: PlatformState, study: Study) => s.clients.find((c) => c.id === study.clientId)
 
@@ -154,8 +214,15 @@ export function createPlatform(options: Options = {}) {
      * TIMINGS). Any open tab may call it; a step runs once.
      */
     tick: () => {
-      if (!state.pending.some((x) => x.dueAt <= clock().getTime())) return
+      const now = clock().getTime()
+      const ended = (p: Person) => p.status === 'restricted' && Boolean(p.statusNote?.until) && new Date(p.statusNote!.until!).getTime() <= now
+      if (!state.pending.some((x) => x.dueAt <= now) && !state.people.some(ended)) return
       move((s) => {
+        // Policy section 9: a restriction ends on its date, and the participant is told.
+        for (const person of s.people.filter(ended)) {
+          person.status = 'active'; person.statusNote = undefined
+          notify(s, person.id, { kind: 'profile', title: 'Your restriction has ended', body: 'You can take part in studies, withdraw and redeem again.', to: '/dashboard' })
+        }
         const due = s.pending.filter((x) => x.dueAt <= clock().getTime())
         s.pending = s.pending.filter((x) => x.dueAt > clock().getTime())
         for (const item of due) {
@@ -228,7 +295,7 @@ export function createPlatform(options: Options = {}) {
       const required = /^\d+$/.test(kept.participants.trim()) ? Number(kept.participants) : 0
       const fields = {
         title: kept.title.trim() || 'Untitled study', description: kept.description, type, durationMins: Number(kept.duration) || 0, required,
-        industry: kept.industries, targetProfession: kept.roles, rates: priceStudy(type, kept.incentive), autoPay: kept.autoPay, form: kept,
+        industry: kept.industries, targetProfession: kept.roles, rates: priceStudy(type, kept.incentive, { roles: targets(kept.roles), skills: targets(kept.skills) }), autoPay: kept.autoPay, form: kept,
         ...(kept.image ? { image: kept.image } : {}),
       }
       if (draft) { Object.assign(draft, fields); return yes({ id: draft.id }) }
@@ -274,7 +341,11 @@ export function createPlatform(options: Options = {}) {
         }
       }
       if (to === 'paused') { study.pausedReason = reason; log(s, actor, `Paused ${study.title}`, 'Studies / Manage / Pause') }
-      if (to === 'completed') { study.completedAt = iso(); log(s, actor, `Marked ${study.title} as completed`, 'Studies / Manage / Complete') }
+      if (to === 'completed') {
+        study.completedAt = iso(); log(s, actor, `Marked ${study.title} as completed`, 'Studies / Manage / Complete')
+        // Sessions still booked are cancelled by whoever closed the study: free for the participant, who is told.
+        for (const p of study.participations.filter((x) => x.state === 'scheduled' && sessionNotStarted(x.booking, clock()))) cancelFor(s, study, p, actor.kind === 'team' ? 'team' : 'client', 'the study has closed')
+      }
       study.state = to
       return yes()
     }),
@@ -349,7 +420,7 @@ export function createPlatform(options: Options = {}) {
       const person = personById(s, personId)
       if (!study || !person) return no('No such study')
       if (!isLive(study.state)) return no('This study is not open for applications')
-      if (person.status !== 'active') return no('This account cannot apply at the moment')
+      const bar = barred(person); if (bar) return no(bar)
       if (!person.onboarded || person.identity.state !== 'verified') return no('Finish verification to apply')
       if (study.premium && person.profession.state !== 'verified') return no('Premium studies need a verified professional credential')
       let p = participationOf(study, personId)
@@ -375,6 +446,7 @@ export function createPlatform(options: Options = {}) {
     submitScreener: (studyId: string, personId: string, answers?: Answers) => move((s) => {
       const hit = find(s, studyId, personId)
       if (!hit) return no('No application to submit')
+      const bar = barred(personById(s, personId)!); if (bar) return no(bar)
       const moved = shift(hit.p, 'applied')
       if (!moved.ok) return moved
       if (answers) hit.p.answers = tidyAnswers(hit.study, answers)
@@ -436,6 +508,7 @@ export function createPlatform(options: Options = {}) {
       const hit = find(s, studyId, personId)
       if (!hit) return no('Not on this study')
       const { study, p } = hit
+      const bar = barred(personById(s, personId)!); if (bar) return no(bar)
       if (!isSessionType(study.type)) return no('This study has no session to book')
       const again = p.state === 'scheduled'
       let count = p.booking?.rescheduleCount ?? 0
@@ -456,14 +529,30 @@ export function createPlatform(options: Options = {}) {
       return yes()
     }),
 
-    /** Policy: a cancelled session costs 2 Trust Score. The slot is released and the person may apply again. */
+    /**
+     * Policy section 5: a participant may cancel more than 24 hours before the
+     * session, at -2 Trust Score. Inside 24 hours they cannot; not attending
+     * is then a no-show at -4. The slot is released and the person may apply again.
+     */
     cancelSession: (studyId: string, personId: string) => move((s) => {
       const hit = find(s, studyId, personId)
       if (!hit) return no('Not on this study')
       if (hit.p.state !== 'scheduled') return no('There is no booked session to cancel')
+      if (hit.p.booking) { const ok = canCancel(sessionStart(hit.p.booking).toISOString(), clock()); if (!ok.ok) return no(ok.reason ?? 'This session can no longer be cancelled') }
       hit.p.state = 'withdrawn'; hit.p.booking = undefined; hit.p.code = undefined
       stamp(hit.p, 'Cancelled')
       personById(s, personId)?.trustEvents.push({ kind: 'cancelled_session', detail: hit.study.title, studyId, at: iso() })
+      return yes()
+    }),
+
+    /** Policy section 5: the client or the team cancels a booked session. It costs the participant nothing, and they are told. */
+    cancelSessionFor: (studyId: string, personId: string, actor: Actor, reason = '') => move((s) => {
+      const hit = find(s, studyId, personId)
+      if (!hit) return no('Not on this study')
+      if (hit.p.state !== 'scheduled') return no('There is no booked session to cancel')
+      if (actor.kind !== 'client' && actor.kind !== 'team') return no('Only the client or the team can cancel a session for a participant')
+      cancelFor(s, hit.study, hit.p, actor.kind, reason.trim())
+      log(s, actor, `Cancelled ${nameOf(s, personId)}'s session on ${hit.study.title}`, 'Studies / Sessions / Cancel')
       return yes()
     }),
 
@@ -471,6 +560,7 @@ export function createPlatform(options: Options = {}) {
     confirmPin: (studyId: string, personId: string, code: string) => move((s) => {
       const hit = find(s, studyId, personId)
       if (!hit || hit.p.state !== 'scheduled' || !hit.p.code) return no('There is no booked session for this code')
+      { const bar = barred(personById(s, personId)!); if (bar) return no(bar) }
       if (hit.p.code.value !== code) return no('Incorrect PIN, check with your interviewer')
       hit.p.code.byParticipant = true
       stamp(hit.p, 'Session code confirmed')
@@ -497,6 +587,7 @@ export function createPlatform(options: Options = {}) {
       const hit = find(s, studyId, personId)
       if (!hit) return no('Not on this study')
       const { study, p } = hit
+      if (actor.kind === 'participant') { const bar = barred(personById(s, personId)!); if (bar) return no(bar) }
       const session = isSessionType(study.type)
       if (session && p.state !== 'scheduled' && p.state !== 'no_show') return no('A session has to be booked before it can be completed')
       if (session && actor.kind === 'participant' && !p.code?.byParticipant) return no('Enter the session code first')
@@ -559,6 +650,7 @@ export function createPlatform(options: Options = {}) {
     completeDiaryDay: (studyId: string, personId: string, day: number, answers?: Answers) => move((s) => {
       const hit = find(s, studyId, personId)
       if (!hit || !hit.study.diary) return no('This is not a diary study')
+      { const bar = barred(personById(s, personId)!); if (bar) return no(bar) }
       if (day < 1 || day > hit.study.diary.totalDays) return no('No such diary day')
       hit.p.diaryDays = [...new Set([...(hit.p.diaryDays ?? []), day])].sort((a, b) => a - b)
       if (answers) hit.p.diaryAnswers = { ...hit.p.diaryAnswers, [String(day)]: tidyAnswers(hit.study, answers) }
@@ -635,6 +727,12 @@ export function createPlatform(options: Options = {}) {
           actionLabel: 'Complete Profile', to: '/onboarding/about',
         }],
       })
+      // Policy section 3: the referrer earns their 200 points when the person they referred joins.
+      const referrer = sourceCode ? s.people.find((x) => x.id !== id && referralCode(x.name, x.email).toLowerCase() === sourceCode.toLowerCase()) : undefined
+      if (referrer) {
+        referrer.referrals.unshift({ id: uid('rf'), name: clean.split('@')[0]!, email: clean, status: 'joined', at: iso() })
+        notify(s, referrer.id, { kind: 'referral', title: 'Your friend just signed up!', body: `${clean} joined with your link. You earned ${POINTS.REFERRAL} reward points.`, to: '/profile/referrals' })
+      }
       return yes({ id })
     }),
 
@@ -649,6 +747,8 @@ export function createPlatform(options: Options = {}) {
       if (profile?.address) person.location = profile.address
       /** The automatic ID check passes in the demo (workflow 15). A credential added to the profile is taken as checked against the register (workflow 17). */
       if (identityVerified && person.identity.state === 'not_started') person.identity = { state: 'verified' }
+      // Policy section 7: the certificate is issued when identity verification completes, its ID generated once and kept.
+      if (person.identity.state === 'verified') person.certificateId ??= freshCertificateId(s, 'participant')
       if (licenseVerified && person.profession.state === 'not_started') person.profession = { state: 'verified' }
       if (!person.fullProfileAt && profileCompletion(person) >= 100) person.fullProfileAt = iso()
       person.lastActiveAt = iso()
@@ -724,7 +824,7 @@ export function createPlatform(options: Options = {}) {
     requestPayout: (personId: string, amount: number, destination: string) => move<{ id: string }>((s) => {
       const person = personById(s, personId)
       if (!person) return no('No such account')
-      if (person.status !== 'active') return no('Withdrawals are paused on this account')
+      const bar = barred(person); if (bar) return no(bar)
       const f = personFigures(s, personId, clock())
       if (f.taxFormRequired) return no('A tax form is needed before you can withdraw')
       const ok = canWithdraw(amount, f.walletBalance)
@@ -738,6 +838,7 @@ export function createPlatform(options: Options = {}) {
     redeem: (personId: string, points: number) => move((s) => {
       const person = personById(s, personId)
       if (!person) return no('No such account')
+      const bar = barred(person); if (bar) return no(bar)
       const ok = canRedeem(points, personFigures(s, personId, clock()).points)
       if (!ok.ok) return no(ok.reason ?? 'Those points cannot be redeemed')
       person.redemptions.unshift({ id: uid('rd'), at: iso(), points, reference: `#${Math.floor(100000000 + Math.random() * 899999999)}` })
@@ -766,14 +867,28 @@ export function createPlatform(options: Options = {}) {
       if (!person) return no('No such account')
       if (person.status === status) return no(`This account is already ${status}`)
       if (!reason.trim()) return no('A reason is required')
-      const days = RESTRICTION_DAYS[Math.min(restrictionCount(s, personId), RESTRICTION_DAYS.length - 1)]!
-      person.status = status
-      person.statusNote = status === 'active' ? undefined : {
-        reason: reason.trim(), at: iso(), by: actor.kind === 'team' ? actor.id : '',
-        until: status === 'restricted' ? new Date(clock().getTime() + days * 86_400_000).toISOString() : undefined,
-      }
-      log(s, actor, `${status === 'active' ? 'Reactivated' : status === 'restricted' ? 'Restricted' : 'Deactivated'} the account of ${person.name}`, `Participants / Profile / ${status === 'active' ? 'Reactivate' : status === 'restricted' ? 'Restrict' : 'Deactivate'}`)
+      const result = status === 'restricted' ? restrict(s, person, 'Team decision', reason.trim(), actor)
+        : status === 'deactivated' ? (deactivate(s, person, 'Team decision', reason.trim(), actor), 'deactivated' as const)
+        : (person.status = 'active', person.statusNote = undefined, 'active' as const)
+      if (result === 'active') notify(s, person.id, { kind: 'profile', title: 'Your account is active again', body: 'You can take part in studies, withdraw and redeem again.', to: '/dashboard' })
+      log(s, actor, `${result === 'active' ? 'Reactivated' : result === 'restricted' ? 'Restricted' : 'Deactivated'} the account of ${person.name}`, `Participants / Profile / ${status === 'active' ? 'Reactivate' : status === 'restricted' ? 'Restrict' : 'Deactivate'}`)
       return yes()
+    }),
+
+    /** Policy section 9: a deactivated participant can appeal. The appeal reaches the team as a support ticket. */
+    appealDeactivation: (personId: string, text: string) => move<{ id: string }>((s) => {
+      const person = personById(s, personId)
+      if (!person) return no('No such account')
+      if (person.status !== 'deactivated') return no('This account is not deactivated')
+      if (!text.trim()) return no('Say why the decision should be reviewed')
+      const ticketId = `FI-S${Math.floor(100000 + Math.random() * 899999)}`
+      const at = iso()
+      s.tickets.unshift({
+        id: ticketId, owner: { kind: 'participant', id: personId }, subject: 'Appeal against account deactivation',
+        message: text.trim(), topic: 'general', status: 'open', createdAt: at, lastActivityAt: at,
+        messages: [{ id: uid('tm'), from: 'user', text: `Deactivation reason given: ${person.statusNote?.reason ?? 'none'}\n\nAppeal: ${text.trim()}`, at }],
+      } as PlatformState['tickets'][number])
+      return yes({ id: ticketId })
     }),
 
     /** Workflow 3, 17: a person settles a check the automatic one could not. */
@@ -784,7 +899,7 @@ export function createPlatform(options: Options = {}) {
       if (check.state !== 'flagged') return no('This check is not waiting for a decision')
       if (!statement.trim()) return no('A statement is required')
       person[kind] = { ...check, state: verdict, note: statement.trim(), decidedAt: iso(), decidedBy: actor.kind === 'team' ? actor.id : undefined }
-      if (kind === 'identity' && verdict === 'verified') person.onboarded = true
+      if (kind === 'identity' && verdict === 'verified') { person.onboarded = true; person.certificateId ??= freshCertificateId(s, 'participant') }
       log(s, actor, `${verdict === 'verified' ? 'Verified' : 'Rejected'} ${kind} ${verdict === 'verified' ? 'of' : 'verification of'} ${person.name}`, `Participants / Verifications / ${verdict === 'verified' ? 'Verify' : 'Reject'}`)
       return yes()
     }),
@@ -801,11 +916,11 @@ export function createPlatform(options: Options = {}) {
       if (!statement.trim()) return no('A statement is required')
       const person = personById(s, report.personId)
       if (!person) return no('No such account')
-      const days = RESTRICTION_DAYS[Math.min(restrictionCount(s, person.id), RESTRICTION_DAYS.length - 1)]!
-      report.outcome = outcome; report.note = statement.trim(); report.decidedAt = iso(); report.decidedBy = actor.kind === 'team' ? actor.id : undefined
+      report.note = statement.trim(); report.decidedAt = iso(); report.decidedBy = actor.kind === 'team' ? actor.id : undefined
+      // A restriction that is the fourth offence is a deactivation; the report records what actually happened.
+      report.outcome = outcome === 'restricted' ? restrict(s, person, report.reason, statement.trim(), actor) : outcome
+      if (outcome === 'deactivated') deactivate(s, person, report.reason, statement.trim(), actor)
       if (outcome !== 'rejected') {
-        person.status = outcome === 'restricted' ? 'restricted' : 'deactivated'
-        person.statusNote = { reason: statement.trim(), at: iso(), by: actor.kind === 'team' ? actor.id : '', until: outcome === 'restricted' ? new Date(clock().getTime() + days * 86_400_000).toISOString() : undefined }
         if (report.reason === 'AI/Bot Activity') person.trustEvents.push({ kind: 'fraud', detail: `Upheld report: ${report.detail}`, studyId: report.studyId, at: iso() })
       }
       log(s, actor, `${outcome === 'rejected' ? 'Rejected a report on' : outcome === 'restricted' ? 'Restricted the account of' : 'Deactivated the account of'} ${person.name}`, `Participants / Reported / ${outcome === 'rejected' ? 'Reject' : outcome === 'restricted' ? 'Restrict' : 'Deactivate'}`)
@@ -853,6 +968,7 @@ export function createPlatform(options: Options = {}) {
       if (client.business.state !== 'flagged') return no('This check is not waiting for a decision')
       if (!statement.trim()) return no('A statement is required')
       client.business = { ...client.business, state: verdict, note: statement.trim(), decidedAt: iso(), decidedBy: actor.kind === 'team' ? actor.id : undefined }
+      if (verdict === 'verified') client.certificateId ??= freshCertificateId(s, 'business')
       if (verdict === 'rejected') { client.status = 'deactivated'; client.statusNote = { reason: 'Could not verify the business, hence deactivated.', at: iso(), by: actor.kind === 'team' ? actor.id : '' } }
       log(s, actor, `${verdict === 'verified' ? 'Verified business of' : 'Rejected business verification of'} ${client.company}`, `Clients / Verifications / ${verdict === 'verified' ? 'Verify' : 'Reject'}`)
       return yes()

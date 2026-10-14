@@ -15,7 +15,7 @@ import { ReferIcon } from './profileIcons'
  * PRD 9, Figma 1114:96038, string for string: the Earned stat is drawn in
  * dollars (the points earned at the redemption rate) and the rows show the
  * full address as drawn. One scheme only: 200 points when the referred
- * person completes their first study.
+ * person joins (policy section 3).
  */
 export default function Referrals() {
   const { back } = useAppNav()
@@ -56,8 +56,8 @@ export default function Referrals() {
         <section className="flex flex-col gap-1 rounded-lg bg-bg-1 p-4">
           <p className="text-body-medium text-text-subtitle">Refer Respondent</p>
           <p className="text-text-regular text-text-body">
-            Earn <span className="text-text-title">{POINTS.REFERRAL} reward points</span> for referring a new user when they{' '}
-            <span className="text-text-title">completes their 1st study.</span>
+            Earn <span className="text-text-title">{POINTS.REFERRAL} reward points</span> for every friend who{' '}
+            <span className="text-text-title">joins with your link.</span>
           </p>
         </section>
 
@@ -72,7 +72,7 @@ export default function Referrals() {
 
         <h2 className="text-body-medium text-text-title">{joined} Referrals</h2>
         {referrals.length === 0 ? (
-          <EmptyState title="0 referrals yet" body="Invite friends and earn points when they complete their first study." actionLabel="Copy Link" onAction={copy} />
+          <EmptyState title="0 referrals yet" body="Invite friends and earn points when they join with your link." actionLabel="Copy Link" onAction={copy} />
         ) : (
           <ul data-stagger className="flex flex-col gap-4">
             {referrals.map((r) => (

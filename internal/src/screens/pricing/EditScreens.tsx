@@ -4,7 +4,7 @@ import Pill from '../../components/app/Pill'
 import Button, { IconButton } from '../../components/ui/Button'
 import { Chip } from '../../components/ui/controls'
 import { Select } from '../../components/ui/Input'
-import { SuccessModal } from '../../components/ui/Overlay'
+import { Modal } from '../../components/ui/Overlay'
 import { DEDUCTED_EDIT, EARNED, EARNED_STARS, PARAMETERS, POINTS, POINT_NOTES, TIERS_EDIT, TRUST_NOTES, FEE, DEDUCTED_VIEW } from '../../mock/pricing'
 import { Edit, EditShell, Notes, Pencil } from './parts'
 
@@ -38,8 +38,11 @@ const SCREENS = {
  * The five edit screens (`/pricing/:what`): Edit Clients Fees 2056:192920,
  * Edit Participants Fees 2058:193936, Edit Tiers 2058:195439, Edit Trust Score
  * 2058:196166, Edit Reward Points 2058:197423. Every field is a free input
- * with no limit drawn. Save Changes opens the one confirmation drawn,
- * "Clients Fees are updated!" (2058:193905), on all five.
+ * with no limit drawn. The drawn confirmation, "Clients Fees are updated!"
+ * (2058:193905), claimed a save that never happened. These values come from
+ * the signed Trust and Rewards policy and the platform's own rules
+ * (shared/platform.ts), so this build cannot change them from here: the
+ * screen says so up front, and Save Changes says so again and stores nothing.
  */
 export default function EditPricing() {
   const { what = 'client-fees' } = useParams()
@@ -51,6 +54,7 @@ export default function EditPricing() {
   const [chips, setChips] = useState(['Study Type: Survey', 'Skills', 'Roles'])
   return (
     <EditShell {...s} onSave={() => setSaved(true)}>
+      <p role="note" className="mb-3 rounded-md border-1 border-stroke-input bg-bg-1 px-4 py-3 text-text-regular text-text-title">These values are set by the signed Trust and Rewards policy and the platform's pricing rules. They cannot be changed from the console in this build, so nothing on this screen is saved.</p>
       {key === 'client-fees' && (
         <>
           <div className="grid grid-cols-2 gap-3"><Edit label="Platform Fees" value={FEE.platform} note="One-time per study" /><Edit label="Moderation Fees" value={FEE.moderation} note="One-time per completed participant" /></div>
@@ -93,8 +97,10 @@ export default function EditPricing() {
           <Notes items={TRUST_NOTES} />
         </div>
       )}
-      <SuccessModal open={saved} onClose={() => { setSaved(false); navigate(s.back) }} onAction={() => { setSaved(false); navigate(s.back) }} action="Done"
-        title="Clients Fees are updated!" body="The updated pricing are published live and will be applied to new studies." />
+      <Modal open={saved} onClose={() => setSaved(false)} layout="titled" title="Changes not saved"
+        footer={<><Button variant="tertiary" onClick={() => setSaved(false)}>Keep Editing</Button><Button onClick={() => { setSaved(false); navigate(s.back) }}>Back to Pricing &amp; Rewards</Button></>}>
+        <p className="text-text-regular leading-5 text-text-title">Nothing was saved. These values come from the signed Trust and Rewards policy and the platform's pricing rules, and this build cannot change them from the console. A change needs the policy updated and a new release of the platform.</p>
+      </Modal>
     </EditShell>
   )
 }

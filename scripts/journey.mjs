@@ -280,7 +280,8 @@ await step(12, 'The client rates them; the rating feeds the Trust Score everywhe
   const t0 = (await user()).trust
   await C.go(`/client/studies/${studyId}/results`)
   await C.click('Rate', 700)
-  await C.click('Excellent', 300)
+  // Three dimensions, each on five stars (policy section 6).
+  await C.ev(`['Expertise', 'Reliability', 'Communication'].every((d) => { const b = document.querySelector('[aria-label="' + d + ' 5 stars"]'); b?.click(); return Boolean(b) })`); await sleep(300)
   const submit = await C.ev(`['Submit', 'Done', 'Save'].find((t) => __q(t)) || ''`)
   await C.click(submit, 900)
   const p = await part()

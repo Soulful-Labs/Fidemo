@@ -42,8 +42,8 @@ export default function Screener() {
   const submit = () => {
     setSubmitting(true)
     setTimeout(() => {
-      submitScreener(study.id)
-      navigate(`/studies/${study.id}/applied`, { replace: true })
+      if (submitScreener(study.id)) navigate(`/studies/${study.id}/applied`, { replace: true })
+      else setSubmitting(false)
     }, TIMINGS.fakeServer)
   }
 

@@ -3,7 +3,7 @@ import { withdrawalExpectedBy } from '@shared/platform'
 import { sharedVideo } from '@shared/derive'
 import { useMemo } from 'react'
 import {
-  ageFrom, certificateId, hasCertificate, payoutRows, personById, personFigures, pointsRows, profileCompletion, redeemRows, respondentStudies, walletRows,
+  ageFrom, hasCertificate, payoutRows, personById, personFigures, pointsRows, profileCompletion, redeemRows, respondentStudies, walletRows,
 } from '@shared/derive'
 import type { RespondentStudy } from '@shared/derive'
 import { clockTime, dayMonthYear, money, monthDayYear, monthDayYearTime } from '@shared/format'
@@ -50,7 +50,7 @@ export function useProfile(personId?: string) {
     const HISTORY = studies.filter((s) => HISTORY_LABEL[s.status]).map((s) => line(s, HISTORY_LABEL[s.status]))
     const saved = (rows: StudyLine[]) => rows.filter((r) => p.savedStudyIds.includes(r.id))
 
-    const cert = hasCertificate(p) ? `Cert. ID: ${certificateId(p.email)}` : 'Not yet verified'
+    const cert = hasCertificate(p) ? `Cert. ID: ${p.certificateId}` : 'Not yet verified'
     const PERSON = {
       id: p.id, name: p.name, role: p.profile.occupation, place: p.location, cert, photo: photoFor(p), video: sharedVideo(p),
       completion: `${profileCompletion(p)}% profile completed`, score: String(f.trustScore), tier: tierName(state, p.id),

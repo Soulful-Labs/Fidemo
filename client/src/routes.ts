@@ -124,7 +124,8 @@ const routes: ScreenRoute[] = [
   // ----- Account (1663:104599) -----
 
   // ----- Dev -----
-  { path: '/kitchen-sink', label: 'Kitchen Sink', element: guard(createElement(KitchenSink)) },
+  // Development pages: in `npm run dev` only. A production build leaves them out, so the shared site cannot reach them.
+  ...(import.meta.env.DEV ? [{ path: '/kitchen-sink', label: 'Kitchen Sink', element: guard(createElement(KitchenSink)) }] : []),
 
   page('*', 'Not Found', '', 'Dev'),
 ]

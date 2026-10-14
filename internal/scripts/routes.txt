@@ -2,7 +2,6 @@ signin
 reset-password
 check-email
 set-password
-kitchen-sink
 dashboard
 studies
 studies/review/st-goal

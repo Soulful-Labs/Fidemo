@@ -4,6 +4,7 @@ import type { RouteObject } from 'react-router-dom'
 import { Navigate } from 'react-router-dom'
 import NotFound from './screens/NotFound'
 import RootRedirect from './app/RootRedirect'
+import { RestrictedGate } from './app/AccountStatus'
 import KitchenSink from './screens/kitchen-sink/KitchenSink'
 import MotionLab from './screens/motion/MotionLab'
 import SignUp from './screens/auth/SignUp'
@@ -76,6 +77,13 @@ const built = (path: string, label: string, Component: ComponentType): ScreenRou
   element: createElement(Component),
 })
 
+/** A screen a restricted participant may not use (policy section 9): the gate says why, and until when. */
+const gated = (path: string, label: string, Component: ComponentType, back: string): ScreenRoute => ({
+  path,
+  label,
+  element: createElement(RestrictedGate, { title: label.split(',')[0]!, back }, createElement(Component)),
+})
+
 const redirect = (path: string, to: string, replace = true): ScreenRoute => ({
   path,
   label: `Redirect → ${to}`,
@@ -109,22 +117,22 @@ export const routes: ScreenRoute[] = [
   redirect('/studies/mine', '/studies/mine/invites'),
   built('/studies/mine/:tab', 'My Studies', MyStudies),
   built('/studies/:id', 'Study Detail', StudyDetail),
-  built('/studies/:id/screener', 'Screener questions', Screener),
+  gated('/studies/:id/screener', 'Screener questions', Screener, '/studies/:id'),
   built('/studies/:id/applied', 'Applied successfully', AppliedSuccess),
   // One component carries the pick step and the agreement / review / done
   // steps, so the selection survives moving between them.
-  built('/studies/:id/schedule/:step?', 'Schedule: pick, agreement, review, done', ScheduleFlow),
-  built('/studies/:id/reschedule/:step?', 'Reschedule', ScheduleFlow),
-  built('/studies/:id/pin/:step?', 'Enter attendance PIN, PIN confirmed', PinEntry),
-  built('/studies/:id/survey/:step?', 'Survey questions, Completed successfully', Survey),
+  gated('/studies/:id/schedule/:step?', 'Schedule: pick, agreement, review, done', ScheduleFlow, '/studies/:id'),
+  gated('/studies/:id/reschedule/:step?', 'Reschedule', ScheduleFlow, '/studies/:id'),
+  gated('/studies/:id/pin/:step?', 'Enter attendance PIN, PIN confirmed', PinEntry, '/studies/:id'),
+  gated('/studies/:id/survey/:step?', 'Survey questions, Completed successfully', Survey, '/studies/:id'),
   built('/studies/:id/diary', 'Diary overview', DiaryOverview),
-  built('/studies/:id/diary/:day', 'One diary day', DiaryDay),
+  gated('/studies/:id/diary/:day', 'One diary day', DiaryDay, '/studies/:id/diary'),
   built('/studies/:id/rate', 'Rate the client', RateClient),
   built('/clients/:clientId/ratings', 'Client Ratings', ClientRatings),
 
   // ----- Wallet tab -----
   built('/wallet', 'Wallet', Wallet),
-  built('/wallet/withdraw/:step?', 'Withdraw, Select payout method, Withdrawal request sent', Withdraw),
+  gated('/wallet/withdraw/:step?', 'Withdraw, Select payout method, Withdrawal request sent', Withdraw, '/wallet'),
   built('/wallet/earnings', 'Earning History', EarningHistory),
   built('/wallet/earnings/:txId', 'Transaction Details', TransactionDetails),
   built('/wallet/payouts', 'Payout and Payout History', Payouts),
@@ -132,7 +140,7 @@ export const routes: ScreenRoute[] = [
   built('/wallet/payout-methods', 'Manage Payout Methods', PayoutMethods),
   built('/wallet/payout-methods/add', 'Add Bank Account', AddBankAccount),
   built('/points', 'Reward Points', RewardPoints),
-  built('/points/redeem/:step?', 'Redeem, Confirm Redeem, Redeemed successfully', Redeem),
+  gated('/points/redeem/:step?', 'Redeem, Confirm Redeem, Redeemed successfully', Redeem, '/points'),
   built('/points/how-it-works', 'How reward points work', HowPointsWork),
 
   // ----- Profile tab -----
@@ -155,8 +163,11 @@ export const routes: ScreenRoute[] = [
   built('/support/contact', 'Contact us', ContactUs),
 
   // ----- Dev -----
-  { path: '/kitchen-sink', label: 'Kitchen Sink', element: createElement(KitchenSink) },
-  { path: '/motion', label: 'Motion, every animation on demand', element: createElement(MotionLab) },
+  // Development pages: in `npm run dev` only. A production build leaves them out, so the shared site cannot reach them.
+  ...(import.meta.env.DEV ? [
+    { path: '/kitchen-sink', label: 'Kitchen Sink', element: createElement(KitchenSink) },
+    { path: '/motion', label: 'Motion, every animation on demand', element: createElement(MotionLab) },
+  ] : []),
 
   // ----- Fallback -----
   built('*', 'Not Found', NotFound),

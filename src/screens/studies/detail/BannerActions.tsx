@@ -1,5 +1,6 @@
 import Button from '../../../components/ui/Button'
-import { canReschedule } from '@shared/platform'
+import { canCancel, canReschedule } from '@shared/platform'
+import { sessionStartOf } from '@shared/derive'
 import type { Study } from '../../../mock/types'
 import { WarningIcon } from './bannerIcons'
 
@@ -35,6 +36,10 @@ export default function BannerActions({
     const reschedule = study.booking
       ? canReschedule(study.booking.rescheduleCount, study.booking.date)
       : { ok: false, reason: 'This study has no session booked' }
+    // Policy section 5: no cancelling inside 24 hours; not attending then is a no-show at -4.
+    const cancel = study.booking
+      ? canCancel(sessionStartOf(study.booking).toISOString())
+      : { ok: false, reason: 'This study has no session booked' }
     return (
       <>
         <div className="flex gap-3">
@@ -46,7 +51,8 @@ export default function BannerActions({
           >
             Reschedule
           </Button>
-          <Button variant="tertiary" className="flex-1" onClick={onCancel}>Cancel</Button>
+          <Button variant="tertiary" className="flex-1" disabled={!cancel.ok} onClick={onCancel}
+            onBlocked={() => onBlockedReschedule(cancel.reason ?? 'Cannot cancel')}>Cancel</Button>
         </div>
       </>
     )

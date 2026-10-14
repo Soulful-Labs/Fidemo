@@ -20,19 +20,22 @@ export const PROFILE_FIELDS = {
   },
 }
 
-/** Certificate (1663:104813). Every string on the screen. */
+/**
+ * Certificate (1663:104813). The business certificate is its own object with
+ * its own ID, FI-C-XXXX-XXXX, issued when the business check passes and kept
+ * on the client's record (shared/derive.ts freshCertificateId). Policy
+ * section 7: it claims only what the platform verifies, business registration
+ * and billing. The frame's domain-ownership and data-handling lines, and its
+ * fixed ID, are gone.
+ */
 export const CERTIFICATE = {
   banner: 'You are a verified business!',
   title: 'Human Layer Buyer Certificate',
   idLabel: 'Cert. ID:',
-  id: 'HL-R-9F2A-3K7P',
   verifiedLabel: 'Verified',
-  verified: [
-    'EIN Business verified',
-    'Domain ownership confirmed',
-    'Verified billing on file',
-    'Data handling agreement',
-  ],
+  registration: 'Business registration verified',
+  billing: 'Billing on file',
+  notIssued: 'Your business certificate is issued when your business verification passes.',
 }
 
 /** Settings (1663:104876). "Sudy" is the frame's own spelling. */

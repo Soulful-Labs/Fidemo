@@ -83,6 +83,7 @@ const userOf = (person: Person, figures: ReturnType<typeof personFigures>): User
   name: person.name, email: person.email, phone: person.phone, profile: person.profile, onboarded: person.onboarded,
   taxFormDone: person.taxFormDone, sourceCode: person.sourceCode, joinedAt: person.joinedAt, consent: person.consent, emailPrefs: person.emailPrefs,
   photo: person.photo, photoConsent: Boolean(person.photoConsent), video: person.video, videoConsent: Boolean(person.videoConsent),
+  status: person.status, statusNote: person.statusNote, certificateId: person.identity.state === 'verified' ? person.certificateId : undefined,
   verified: { govId: person.identity.state === 'verified', livePhoto: person.livePhoto, license: person.profession.state === 'verified' },
   ...figures,
 })
@@ -241,6 +242,8 @@ export function useStoreValue() {
     setPicture: (dataUrl: string | null) => run(p.setPicture(me, dataUrl)),
     setVideo: (video: User['video'] | null) => run(p.setVideo(me, video)),
     setMediaConsent: (what: 'photo' | 'video', on: boolean) => run(p.setMediaConsent(me, what, on)),
+    /** Policy section 9: a deactivated participant appeals; it reaches the team as a support ticket. */
+    appealDeactivation: (text: string) => { const r = p.appealDeactivation(me, text); if (!r.ok) { toast(r.why); return undefined } return r.id },
     setEmailPref: (key: keyof User['emailPrefs'], value: boolean) => run(p.setEmailPref(me, key, value)),
     markAllRead: () => run(p.markNotificationsRead(me)),
     markRead: (id: string) => run(p.markNotificationsRead(me, id)),
@@ -265,7 +268,7 @@ export function useStoreValue() {
     rejectInvitation: (id: string) => run(p.withdraw(id, me)),
     scheduleStudy: (id: string, booking: NonNullable<Study['booking']>) => run(p.schedule(id, me, booking)),
     /** Policy: a cancelled session is -2 Trust Score. */
-    cancelStudy: (id: string) => { if (run(p.cancelSession(id, me))) toast('Study cancelled, 2 Trust Score deducted') },
+    cancelStudy: (id: string) => { const ok = run(p.cancelSession(id, me)); if (ok) toast('Study cancelled, 2 Trust Score deducted'); return ok },
     /** Workflow 42, the participant's half: the code shown at the end of the session. */
     confirmPin: (id: string, code?: string) => run(p.confirmPin(id, me, code ?? world.studies.find((s) => s.id === id)?.participations.find((x) => x.personId === me)?.code?.value ?? '')),
     /** Completed now; the payout follows once the client approves it (workflow 46, shared/platform.ts TIMINGS). */

@@ -90,6 +90,24 @@ export function PauseStudyModal({ open, onClose, onConfirm }: { open: boolean; o
   )
 }
 
+/**
+ * Cancel Session? Not drawn in the exports. Policy section 5: a session the
+ * client cancels costs the participant nothing, and they are told. They can
+ * book again while the study runs.
+ */
+export function CancelSessionModal({ open, onClose, onConfirm, name }: { open: boolean; onClose: () => void; onConfirm: () => void; name: string }) {
+  return (
+    <Modal open={open} onClose={onClose} title="Cancel Session?"
+      body={`${name}'s session will be cancelled and the time released. This costs ${name} nothing, and they are told straight away. They can book another time while the study runs.`}
+      footer={
+        <>
+          <Button variant="tertiary" className="flex-1" onClick={onClose}>No, Keep It</Button>
+          <Button className="flex-1" onClick={onConfirm}>Yes, Cancel Session</Button>
+        </>
+      } />
+  )
+}
+
 /** Delete Study? (1726:77088). */
 export function DeleteStudyModal({ open, onClose, onConfirm, name }: { open: boolean; onClose: () => void; onConfirm: () => void; name: string }) {
   return (

@@ -4,17 +4,11 @@ import type { User } from '../mock/types'
 export type Tier = User['tier']
 
 /**
- * The "Benefits" lines as drawn (1433:50005, 1433:49079). The two drawn fee
- * lines ("25% / 50% less fees on withdrawals") are left out: the policy owns
- * fees and the wallet charges a flat $2. Flagged in the turn report.
+ * The tier screen promises nothing the policy does not grant (decision D):
+ * the drawn "Benefits" lines (high-paying studies, priority support, higher
+ * chances to qualify, more visibility, more invitations, fee discounts) are
+ * gone. A tier is what the Trust Score has reached, and that is all it says.
  */
-export const BENEFITS: Record<Tier, string[]> = {
-  // Silver is where everyone starts, so Figma never drew its screen; the line is Silver's from How Tiers Works.
-  silver: ["You're rising on your way up!"],
-  gold: ['Get more visibility to researcher clients', 'Receive more invitations to apply'],
-  platinum: ['Get access to high-paying studies', 'Fast and priority help support access', 'Higher chances to qualify studies'],
-}
-
 export const ACCENT: Record<Tier, string> = { gold: 'text-tier-gold', platinum: 'text-tier-platinum', silver: 'text-tier-silver' }
 export const GLOW: Record<Tier, string> = { gold: 'bg-gold-glow', platinum: 'bg-platinum-glow', silver: 'bg-silver-glow' }
 

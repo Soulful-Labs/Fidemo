@@ -4,10 +4,8 @@ import { useAppNav } from '../../app/useAppNav'
 import ScoreDial from '../../components/app/ScoreDial'
 import TierChip from '../../components/app/TierChip'
 import TopBar from '../../components/ui/TopBar'
-import { certificateId } from '@shared/derive'
 import { tierFor } from '@shared/rules'
 import { useStore } from '../../mock/store'
-import { PerformanceRatings } from '../trust/TrustScoreDetails'
 import { VerifiedIcon } from './profileIcons'
 
 /**
@@ -18,14 +16,19 @@ import { VerifiedIcon } from './profileIcons'
  * are replaced by a seal, the FI- id and "Trust Score". "Live Photo
  * Verified" only shows once a selfie has actually passed (hard rule 9).
  */
-export const shownCertId = certificateId
+/**
+ * Issued only once identity verification completes, with the ID generated
+ * then and kept (shared/derive.ts freshCertificateId); never recomputed from
+ * the email. It shows the identity and profession checks and the Trust Score,
+ * and nothing else (decision C: no Performance Ratings, no NPI claim).
+ */
 
 export default function Certificate() {
   const navigate = useNavigate()
   const { back } = useAppNav()
   const { user, toast } = useStore()
-  const certId = shownCertId(user.email)
-  const certLink = `https://humanlayer.app/certificate/${certId}`
+  const certId = user.certificateId
+  const certLink = `https://humanlayer.app/certificate/${certId ?? ''}`
   const tier = tierFor(user.trustScore)
 
   const share = async () => {
@@ -37,8 +40,22 @@ export default function Certificate() {
     { label: 'Government ID Verified', ok: user.verified.govId },
     { label: 'Live Photo Verified', ok: user.verified.livePhoto },
     { label: 'Professional License/Certificate Verified', ok: user.verified.license },
-    { label: 'NPI cross checked', ok: user.verified.license && user.profile.industry === 'Healthcare' },
   ].filter((c) => c.ok)
+
+  // Policy section 7: no certificate before identity verification completes.
+  if (!certId) {
+    return (
+      <div className="flex min-h-full flex-col">
+        <TopBar title="Human Certificate" onBack={back} />
+        <div className="flex flex-1 flex-col items-center gap-3 px-6 pt-16 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-bg-2 text-text-body" aria-hidden="true"><VerifiedIcon className="h-7 w-7" /></span>
+          <h1 className="text-title-s text-text-title">Not issued yet</h1>
+          <p className="text-text-regular text-text-body">Your Human Certificate is issued when your identity verification completes. It will appear here with its own ID.</p>
+          <button type="button" onClick={() => navigate('/onboarding/identity')} className="text-text-medium text-brand-primary">Verify your identity</button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-full flex-col">
@@ -67,9 +84,6 @@ export default function Certificate() {
             <ScoreDial score={user.trustScore} size="sm" memory="trust-certificate" />
             <TierChip tier={tier} onClick={() => navigate('/trust-score/tiers')} />
           </div>
-
-          <p className="text-body-medium text-text-title">Performance Ratings</p>
-          <PerformanceRatings alt={false} />
 
           <p className="text-body-medium text-text-title">Verified</p>
           <ul className="flex flex-col gap-2">

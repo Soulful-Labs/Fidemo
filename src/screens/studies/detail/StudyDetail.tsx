@@ -163,7 +163,7 @@ export default function StudyDetail() {
       <CancelStudyModal
         open={cancel}
         onClose={() => setCancel(false)}
-        onConfirm={() => { cancelStudy(study.id); setCancel(false); navigate('/studies') }}
+        onConfirm={() => { const ok = cancelStudy(study.id); setCancel(false); if (ok) navigate('/studies') }}
       />
     </div>
   )

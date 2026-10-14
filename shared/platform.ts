@@ -26,7 +26,7 @@ export const FEES = {
   /** Added per completed participant for these study types. */
   RECRUITMENT_TYPE_ADDON: 25,
   ADDON_TYPES: ['video_call', 'group_video_call', 'in_person', 'in_person_group', 'diary'] as StudyType[],
-  /** Drawn on Pricing & Rewards; roles and skills are not modelled on a study, so never charged. */
+  /** Policy section 8: +$20 per completed participant when the audience targets skills. */
   RECRUITMENT_SKILLS_ADDON: 20,
   /** Workflow 10: twenty per cent of the confirmed price, taken as the setup fee. */
   SETUP_SHARE: 0.2,
@@ -38,10 +38,22 @@ export const FEES = {
   WITHDRAWAL: 2,
 } as const
 
-/** Prices a study from the fee schedule and the incentive the client chose. */
-export const priceStudy = (type: StudyType, incentivePer: number): StudyRates => ({
+/** Which of the audience's targeting the recruitment add-ons charge for: any roles, any skills. */
+export interface Targeting { roles?: boolean; skills?: boolean }
+/** True when a comma-separated audience field names at least one thing. */
+export const targets = (field?: string): boolean => (field ?? '').split(',').some((x) => x.trim() !== '')
+
+/**
+ * Prices a study from the fee schedule and the incentive the client chose
+ * (policy section 8). Recruitment is $25 per completed participant; +$25 for a
+ * Video Call, In-Person or Diary study, or for Roles targeting (one add-on,
+ * whichever applies); +$20 for Skills targeting.
+ */
+export const priceStudy = (type: StudyType, incentivePer: number, targeting: Targeting = {}): StudyRates => ({
   platformFee: FEES.PLATFORM,
-  recruitingPer: FEES.RECRUITMENT_BASE + (FEES.ADDON_TYPES.includes(type) ? FEES.RECRUITMENT_TYPE_ADDON : 0),
+  recruitingPer: FEES.RECRUITMENT_BASE
+    + (FEES.ADDON_TYPES.includes(type) || targeting.roles ? FEES.RECRUITMENT_TYPE_ADDON : 0)
+    + (targeting.skills ? FEES.RECRUITMENT_SKILLS_ADDON : 0),
   incentivePer,
   moderationPer: FEES.MODERATION,
 })
@@ -68,8 +80,8 @@ export interface Quote {
   /** Billed as participants complete: everything that is not the deposit. */
   later: number
 }
-export function quoteStudy(type: StudyType, required: number, incentivePer: number): Quote {
-  const rates = priceStudy(type, Math.max(0, incentivePer || 0))
+export function quoteStudy(type: StudyType, required: number, incentivePer: number, targeting: Targeting = {}): Quote {
+  const rates = priceStudy(type, Math.max(0, incentivePer || 0), targeting)
   const participants = Math.max(0, required || 0)
   const incentives = rates.incentivePer * participants, recruitment = rates.recruitingPer * participants, moderation = rates.moderationPer * participants
   const total = rates.platformFee + incentives + recruitment + moderation
@@ -117,6 +129,26 @@ export function canReschedule(rescheduleCount: number, sessionAt: string, now: D
   if (hours < RESCHEDULE.MIN_HOURS_BEFORE) return { ok: false, reason: 'Sessions can only be rescheduled more than 24 hours before' }
   return { ok: true }
 }
+
+/**
+ * Policy section 5: a participant may cancel a booked session more than 24
+ * hours before it, at -2 Trust Score. Inside 24 hours they cannot; not
+ * attending is then a no-show at -4.
+ */
+export const CANCEL_MIN_HOURS_BEFORE = 24
+export function canCancel(sessionAt: string, now: Date = new Date()): { ok: boolean; reason?: string } {
+  const hours = (new Date(sessionAt).getTime() - now.getTime()) / 3_600_000
+  if (hours < CANCEL_MIN_HOURS_BEFORE) return { ok: false, reason: 'Sessions can only be cancelled more than 24 hours before. If you cannot attend now, it counts as a no-show (-4 Trust Score).' }
+  return { ok: true }
+}
+
+/**
+ * Policy section 5, "Diary completion: at least 4 of 5 days". A diary of any
+ * length keeps that share: the minimum is at least four fifths of its
+ * entries, rounded up (4 of 5, 6 of 7, 12 of 14).
+ */
+export const DIARY_MIN_SHARE = 4 / 5
+export const diaryMinimumFor = (total: number): number => Math.ceil(total * DIARY_MIN_SHARE - 1e-9)
 
 /** At least 4 of 5 days must be filled to qualify for the reward. */
 export const DIARY = { TOTAL_DAYS: 5, MIN_DAYS: 4 } as const

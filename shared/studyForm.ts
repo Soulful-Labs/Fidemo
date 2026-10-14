@@ -1,5 +1,5 @@
 import { ageFrom, tierOf } from './derive'
-import { diaryWords, priceStudy } from './platform'
+import { diaryMinimumFor, diaryWords, priceStudy, targets } from './platform'
 import { buildScreener, buildTasks } from './questions'
 import type { AuthoredKind } from './questions'
 import type { Location, Person, PlatformState, PreScreenQuestion, Question, RepeatRule, Session, Study, StudySetup, StudyType, Tier } from './types'
@@ -379,7 +379,7 @@ export function buildStudy(f: StudyForm, now: Date = new Date()): { ok: true; st
   if (!Number.isFinite(f.incentive) || f.incentive <= 0) return no('Set the incentive amount on the Study step')
   const study: BuiltStudy = {
     title: f.title.trim(), description: f.description.trim(), image: f.image || undefined, type, industry: list(f.industries).join(', '), durationMins,
-    endsAt: endsAt.toISOString(), required, repeatRule: CONDITION[f.condition].rule, rates: priceStudy(type, f.incentive),
+    endsAt: endsAt.toISOString(), required, repeatRule: CONDITION[f.condition].rule, rates: priceStudy(type, f.incentive, { roles: targets(f.roles), skills: targets(f.skills) }),
     targetProfession: list(f.roles).join(', '), preScreener: screener.preScreener, screener: screener.screener, autoPay: f.autoPay,
   }
 
@@ -394,6 +394,8 @@ export function buildStudy(f: StudyForm, now: Date = new Date()): { ok: true; st
       const totalDays = firstNumber(f.studyDuration), minDays = firstNumber(f.minimumRequired)
       if (!(totalDays > 0) || !(minDays > 0)) return no('Set the diary study duration and the minimum required')
       if (minDays > totalDays) return no(`The minimum required (${f.minimumRequired}) is more than the study duration (${f.studyDuration})`)
+      // Policy section 5: at least 4 of every 5 entries (diaryMinimumFor).
+      if (minDays < diaryMinimumFor(totalDays)) return no(`The policy needs at least 4 of every 5 entries: for ${totalDays}, at least ${diaryMinimumFor(totalDays)} must be filled`)
       study.diary = { totalDays, minDays, unit: f.durationUnit, frequency: f.frequency }
     }
     return { ok: true, study, preScreener: screener.preScreener, screener: screener.screener }

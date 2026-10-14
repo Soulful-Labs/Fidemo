@@ -199,7 +199,8 @@ export function pointsRows(state: PlatformState, personId: string): PointsRow[] 
     ...(person.pictureAddedAt ? [{ id: 'pt-picture', kind: 'bonus' as const, label: 'Bonus', detail: 'Profile picture added', at: person.pictureAddedAt, amount: POINTS.PROFILE_PICTURE }] : []),
     ...(person.videoAddedAt ? [{ id: 'pt-video', kind: 'bonus' as const, label: 'Bonus', detail: 'Intro video added', at: person.videoAddedAt, amount: POINTS.INTRO_VIDEO }] : []),
     ...entries.filter((e) => isPaid(e.p)).map((e) => ({ id: `pt-${e.study.id}`, kind: 'study' as const, label: 'Study', detail: e.study.title, at: e.p.paidAt!, amount: POINTS.STUDY_COMPLETION })),
-    ...person.referrals.filter((r) => r.status === 'completed').map((r) => ({ id: `pt-${r.id}`, kind: 'referral' as const, label: 'Referral', detail: r.name, at: r.at, amount: POINTS.REFERRAL })),
+    // Policy section 3: "someone you referred joins". Paid on joining, whether or not they have completed a study yet.
+    ...person.referrals.map((r) => ({ id: `pt-${r.id}`, kind: 'referral' as const, label: 'Referral', detail: r.name, at: r.at, amount: POINTS.REFERRAL })),
     ...streakMonths(entries).map((s) => ({ id: `pt-streak-${s.month}`, kind: 'streak' as const, label: 'Streak', detail: s.month, at: s.at, amount: POINTS.STREAK })),
   ]
   return rows.sort((a, b) => b.at.localeCompare(a.at))
@@ -233,7 +234,10 @@ export function ageFrom(dob: string, now: Date = new Date()): number | undefined
   return age
 }
 
-/** A short stable code from the account, used by the certificate id and the referral link. */
+/** A person's referral code, as their link carries it: first name and a short code from the account. */
+export const referralCode = (name: string, email: string): string => `${(name.split(' ')[0] || 'friend').toUpperCase()}${accountCode(email, 3)}`
+
+/** A short stable code from the account, used by the referral link and the study certificate. */
 export function accountCode(email: string, length = 4): string {
   let h = hash(email.toLowerCase())
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -242,11 +246,41 @@ export function accountCode(email: string, length = 4): string {
   return out
 }
 
-/** Policy section 2: FI-XXXX-XXXX, a hash of the account, never the name or email itself. */
-export const certificateId = (email: string): string => `${CERTIFICATE.ID_PREFIX}-${accountCode(email, 4)}-${accountCode(email + '#', 4)}`
+/**
+ * Policy section 7: one certificate per participant, "with a unique ID
+ * generated once and never reused". The ID is drawn at random until it is one
+ * nobody holds, participant or client, then stored on the record; it is never
+ * recomputed, so a changed email cannot change it. `draw` is Math.random
+ * except in the seed, which passes its own so the demo is the same each time.
+ * Participants get FI-XXXX-XXXX, a client's business certificate FI-C-XXXX-XXXX.
+ */
+export function freshCertificateId(state: Pick<PlatformState, 'people' | 'clients'>, kind: 'participant' | 'business', draw: () => number = Math.random): string {
+  const taken = new Set([...state.people.map((p) => p.certificateId), ...state.clients.map((c) => c.certificateId)].filter(Boolean))
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  const prefix = kind === 'business' ? `${CERTIFICATE.ID_PREFIX}-C` : CERTIFICATE.ID_PREFIX
+  for (;;) {
+    let code = ''
+    for (let i = 0; i < 8; i++) code += alphabet[Math.floor(draw() * alphabet.length) % alphabet.length]
+    const id = `${prefix}-${code.slice(0, 4)}-${code.slice(4)}`
+    if (!taken.has(id)) return id
+  }
+}
 
-/** "Issued automatically the moment the ID and selfie pass." The selfie is not captured (legal review), so the ID passing issues it. */
-export const hasCertificate = (person: Person): boolean => person.identity.state === 'verified'
+/** Issued when identity verification completes, never before (policy section 7): verified, and an ID on record. */
+export const hasCertificate = (person: Person): boolean => person.identity.state === 'verified' && Boolean(person.certificateId)
+
+/**
+ * Whether a participant may take part right now (policy section 9). A
+ * restriction holds until its end date and lifts on it, even before the
+ * store's tick has written that down; a deactivation holds until reversed.
+ */
+export function barredFrom(person: Pick<Person, 'status' | 'statusNote'>, now: Date = new Date()): { kind: 'restricted'; until: string; category: string; reason: string } | { kind: 'deactivated'; reason: string; category: string } | null {
+  if (person.status === 'deactivated') return { kind: 'deactivated', reason: person.statusNote?.reason ?? '', category: person.statusNote?.category ?? 'Team decision' }
+  if (person.status !== 'restricted') return null
+  const until = person.statusNote?.until
+  if (until && new Date(until).getTime() <= now.getTime()) return null
+  return { kind: 'restricted', until: until ?? '', category: person.statusNote?.category ?? 'Team decision', reason: person.statusNote?.reason ?? '' }
+}
 
 /** "Valid twelve months and renews on its own": from the latest anniversary of joining to twelve months later. */
 export function certificateValidity(joinedAt: string, now: Date = new Date()): { from: Date; to: Date } {
@@ -343,7 +377,7 @@ export function profileCard(state: PlatformState, personId: string, now: Date = 
   return {
     id: p.id, name: shortName(p.name), role: p.profile.occupation, location: p.location,
     experienceYears: Number.parseInt(p.profile.experience, 10) || 0,
-    certificateId: hasCertificate(p) ? certificateId(p.email) : undefined,
+    certificateId: hasCertificate(p) ? p.certificateId : undefined,
     score: f.trustScore, tier: f.tier, ratings: f.ratings,
     about: { occupation: p.profile.occupation, industry: p.profile.industry, education: p.profile.education, gender: p.profile.gender, age: ageFrom(p.profile.dob, now), interests: p.profile.topics.join(', ') },
     verified: [
@@ -614,11 +648,14 @@ export const recruit = (state: PlatformState, study: Study, personId: string): R
 /**
  * The study verification certificate on Results: how many of the people who
  * completed passed the identity check, and when the study's record was sealed.
+ * Its own prefix, FI-S, so it is never mistaken for the client's business
+ * certificate (FI-C) or a participant's (FI). It claims identity checks only:
+ * no duplicate check exists, so none is claimed.
  */
 export function studyCertificate(state: PlatformState, study: Study, now: Date = new Date()) {
   const done = study.participations.filter((p) => p.state === 'completed')
   const verified = done.filter((p) => personById(state, p.personId)?.identity.state === 'verified').length
-  const id = `${CERTIFICATE.ID_PREFIX}-C-${accountCode(study.id, 4)}-${accountCode(study.id + '#', 4)}`
+  const id = `${CERTIFICATE.ID_PREFIX}-S-${accountCode(study.id, 4)}-${accountCode(study.id + '#', 4)}`
   return { verified, total: done.length, id, issuedAt: study.completedAt ?? now.toISOString() }
 }
 
@@ -874,9 +911,9 @@ export const reportsDecided = (state: PlatformState): Report[] => state.reports.
 export const businessPending = (state: PlatformState): Client[] => state.clients.filter((c) => c.business.state === 'flagged')
 export const businessDecided = (state: PlatformState): Client[] => state.clients.filter((c) => c.business.decidedAt)
 
-/** How many times an account has been restricted, which sets how long the next restriction runs. */
+/** How many times an account has been restricted, however it was done: the ladder's position (policy section 9). */
 export const restrictionCount = (state: PlatformState, personId: string): number =>
-  state.reports.filter((r) => r.personId === personId && r.outcome === 'restricted').length
+  personById(state, personId)?.restrictions?.length ?? 0
 
 // -- support
 

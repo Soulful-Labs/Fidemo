@@ -8,7 +8,7 @@
  * is refused with a reason.
  */
 import {
-  billing, consoleDashboard, counts, financeTotals, personFigures, pointsRows, poolPerson, recruit, refundsPending, respondentStudies, sharedPhoto, sharedVideo, trustInputs,
+  billing, consoleDashboard, hasCertificate, referralCode, counts, financeTotals, personFigures, pointsRows, poolPerson, recruit, refundsPending, respondentStudies, sharedPhoto, sharedVideo, trustInputs,
 } from '../shared/derive'
 import { respondentStatus, participationOf } from '../shared/lifecycle'
 import { FEES, TIMINGS, depositFor, diaryWords, quoteStudy } from '../shared/platform'
@@ -18,7 +18,7 @@ import { buildScreener, screenerOutline, taskResults } from '../shared/questions
 import type { AuthoredQuestion } from '../shared/questions'
 import { audiencePeople, blankForm, blankQuestion, buildStudy, estimateAudience, formFromStudy, formId, studyDetails, summarise } from '../shared/studyForm'
 import type { FormQuestion, StudyForm } from '../shared/studyForm'
-import { createPlatform } from '../shared/store'
+import { createPlatform, sessionStart } from '../shared/store'
 import type { Actor } from '../shared/store'
 
 let failed = 0
@@ -140,8 +140,9 @@ const made = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Journey study', type
   const group = buildStudy(inPerson, now)
   check('create: a group study has the client\'s own sessions, seats and address', group.ok && group.study.type === 'in_person_group' && group.study.sessions?.length === 1 && group.study.sessions[0]!.seats === 6 && group.study.sessions[0]!.slot === '10:00 AM' && group.study.locations?.[0]?.address === '12 Main St, Austin, Texas, 73301' && group.study.sessions[0]!.locationId === 'a1')
   check('create: a session in the past, or an in-person study with no address, is refused', !buildStudy({ ...inPerson, sessions: [{ id: 's1', date: '2020-01-01', time: '10:00 AM' }] }, now).ok && !buildStudy({ ...inPerson, addresses: [] }, now).ok)
-  const diary = buildStudy(formOf({ title: 't', type: 'diary', studyDuration: '7 days', minimumRequired: '5 days', frequency: 'Every day', durationUnit: 'Day', tasks: asForm([{ kind: 'Multi-line input', text: 'What happened today?' }]), tasksSubmitted: true }), now)
-  check('create: diary settings are the study\'s, as chosen', diary.ok && diary.study.diary?.totalDays === 7 && diary.study.diary.minDays === 5 && diary.study.diary.frequency === 'Every day' && diary.study.tasks?.[0]?.prompt === 'What happened today?')
+  const diary = buildStudy(formOf({ title: 't', type: 'diary', studyDuration: '7 days', minimumRequired: '6 days', frequency: 'Every day', durationUnit: 'Day', tasks: asForm([{ kind: 'Multi-line input', text: 'What happened today?' }]), tasksSubmitted: true }), now)
+  check('create: diary settings are the study\'s, as chosen', diary.ok && diary.study.diary?.totalDays === 7 && diary.study.diary.minDays === 6 && diary.study.diary.frequency === 'Every day' && diary.study.tasks?.[0]?.prompt === 'What happened today?')
+  check('create: a diary minimum under four fifths of its entries is refused (policy 5: at least 4 of 5)', !buildStudy(formOf({ title: 't', type: 'diary', studyDuration: '7 days', minimumRequired: '5 days', tasks: asForm([{ kind: 'Multi-line input', text: 'x' }]), tasksSubmitted: true }), now).ok && !buildStudy(formOf({ title: 't', type: 'diary', studyDuration: '5 days', minimumRequired: '3 days', tasks: asForm([{ kind: 'Multi-line input', text: 'x' }]), tasksSubmitted: true }), now).ok && buildStudy(formOf({ title: 't', type: 'diary', studyDuration: '5 days', minimumRequired: '4 days', tasks: asForm([{ kind: 'Multi-line input', text: 'x' }]), tasksSubmitted: true }), now).ok)
   check('create: a survey with no form, or a diary asking for more days than it runs, is refused', !buildStudy(formOf({ title: 't', type: 'survey' }), now).ok && !buildStudy(formOf({ title: 't', type: 'diary', studyDuration: '3 days', minimumRequired: '5 days', tasks: asForm([{ kind: 'Multi-line input', text: 'x' }]), tasksSubmitted: true }), now).ok)
   const aud = formOf({ title: 't', countries: ['United States of America'], gender: 'Female', education: '', ageRanges: [], roles: 'Oncologist, Nurse', industries: 'Healthcare', condition: 'never', tiers: 'Gold and above' })
   const sum = summarise(st(), aud, now)
@@ -255,7 +256,7 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   const read = taskResults(st().studies.find((x) => x.id === survey)!, mine(survey))
   check('answers: they read back in order, each with its question', read.survey.map((a) => `${a.prompt}=${a.text}`).join(' | ') === 'How often?=Weekly | How many?=3 | Why?=Because it is quick.', read.survey.map((a) => `${a.prompt}=${a.text}`).join(' | '))
 
-  const diary = open(formOf({ type: 'diary', title: 'Answers diary', studyDuration: '3 days', minimumRequired: '2 days', tasksSubmitted: true, tasks: asForm([{ kind: 'Multi-line input', text: 'What happened today?' }]) }))
+  const diary = open(formOf({ type: 'diary', title: 'Answers diary', studyDuration: '3 days', minimumRequired: '3 days', tasksSubmitted: true, tasks: asForm([{ kind: 'Multi-line input', text: 'What happened today?' }]) }))
   check('answers: each diary day keeps its own answers', p.completeDiaryDay(diary, DEMO_PERSON_ID, 1, { t1: 'Day one entry' }).ok && p.completeDiaryDay(diary, DEMO_PERSON_ID, 2, { t1: 'Day two entry' }).ok
     && taskResults(st().studies.find((x) => x.id === diary)!, mine(diary)).days.map((d) => `${d.day}:${d.answers[0]!.text}`).join(' | ') === '1:Day one entry | 2:Day two entry')
   check('answers: the seed\'s finished surveys and diaries carry answers too', st().studies.filter((x) => x.tasks?.length && (x.type === 'survey' || x.type === 'diary')).every((x) => x.participations.filter((q) => q.state === 'completed').every((q) => (x.type === 'survey' ? q.taskAnswers : q.diaryAnswers) !== undefined)))
@@ -356,6 +357,71 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   check('points: removing the picture and the video does not take the points back', pts() === p2 && !me().photo && !me().video && !me().videoConsent)
   p.setPicture(DEMO_PERSON_ID, pic); p.setVideo(DEMO_PERSON_ID, vid)
   check('points: adding them again does not pay twice, and consent stays off', pts() === p2 && !me().photoConsent && !me().videoConsent)
+}
+
+// ------------------------------------------------ the clean-up brief: cancelling, restrictions, certificates, referral, add-ons
+{
+  p.reset(); clock = now.getTime()
+  const meP = () => st().people.find((x) => x.id === DEMO_PERSON_ID)!
+  const booked = st().studies.find((x) => participationOf(x, DEMO_PERSON_ID)?.state === 'scheduled')!
+  const start = sessionStart(participationOf(booked, DEMO_PERSON_ID)!.booking!).getTime()
+  const stateOf = () => participationOf(st().studies.find((x) => x.id === booked.id)!, DEMO_PERSON_ID)?.state
+  clock = start - 2 * 3_600_000
+  const inside = p.cancelSession(booked.id, DEMO_PERSON_ID)
+  check('cancel: a participant cannot cancel inside 24 hours, and is told a no-show costs 4', !inside.ok && /24 hours/.test(inside.why ?? '') && /-4/.test(inside.why ?? '') && stateOf() === 'scheduled')
+  clock = start - 48 * 3_600_000
+  const early = fig().trustScore
+  check('cancel: more than 24 hours before, they can, at -2', p.cancelSession(booked.id, DEMO_PERSON_ID).ok && fig().trustScore === early - 2)
+  p.reset(); clock = start + 2 * 3_600_000
+  const beforeNoShow = fig().trustScore
+  check('cancel: not attending is a no-show at -4', p.markNoShow(booked.id, DEMO_PERSON_ID, client).ok && fig().trustScore === beforeNoShow - 4, `${beforeNoShow} -> ${fig().trustScore}`)
+  p.reset(); clock = start - 2 * 3_600_000
+  const beforeClient = fig().trustScore
+  const events = meP().trustEvents.length
+  check('cancel: the client cancels for free, even inside 24 hours, and the participant is told', p.cancelSessionFor(booked.id, DEMO_PERSON_ID, client, 'Interviewer unwell').ok && fig().trustScore === beforeClient && meP().trustEvents.length === events && meP().notifications[0]?.title === 'Study cancelled by client' && stateOf() !== 'scheduled')
+  p.reset(); clock = start - 2 * 3_600_000
+  check('cancel: the team cancels for free as well', p.cancelSessionFor(booked.id, DEMO_PERSON_ID, team, '').ok && fig().trustScore === beforeClient && meP().trustEvents.length === events)
+  check('cancel: a participant cannot use the client route', !p.cancelSessionFor(booked.id, DEMO_PERSON_ID, { kind: 'participant', id: DEMO_PERSON_ID }, '').ok)
+
+  p.reset(); clock = now.getTime()
+  const open = st().studies.find((x) => status(x.id) === 'available')!
+  const days = (iso?: string) => Math.round((new Date(iso ?? 0).getTime() - clock) / 86_400_000)
+  const ladder: string[] = []
+  for (let i = 0; i < 3; i++) {
+    check(`restrict: offence ${i + 1} restricts for ${[15, 15, 30][i]} days`, p.setPersonStatus(DEMO_PERSON_ID, 'restricted', `Offence ${i + 1}`, team).ok && meP().status === 'restricted' && days(meP().statusNote?.until) === [15, 15, 30][i])
+    ladder.push(`${days(meP().statusNote?.until)}d`)
+    if (i === 0) {
+      const n = meP().notifications[0]
+      check('restrict: they are told the category and the end date', /Team decision/.test(`${n?.title} ${n?.body}`) && /until/i.test(`${n?.title} ${n?.body}`), `${n?.title} / ${n?.body}`)
+      check('restrict: they cannot apply, redeem or withdraw', !p.startApplication(open.id, DEMO_PERSON_ID).ok && !p.redeem(DEMO_PERSON_ID, 1000).ok && !p.requestPayout(DEMO_PERSON_ID, 20, 'bank').ok)
+    }
+    clock = new Date(meP().statusNote!.until!).getTime() + 1000
+    p.tick()
+    if (i === 0) check('restrict: it ends on its date, and they are told', meP().status === 'active' && meP().notifications[0]?.title === 'Your restriction has ended' && p.startApplication(open.id, DEMO_PERSON_ID).ok)
+  }
+  check('restrict: the fourth offence deactivates', p.setPersonStatus(DEMO_PERSON_ID, 'restricted', 'Offence 4', team).ok && meP().status === 'deactivated' && (meP().restrictions?.length ?? 0) === 3, ladder.join(', '))
+  const appeal = p.appealDeactivation(DEMO_PERSON_ID, 'Please look again.')
+  check('restrict: a deactivated participant can appeal, as a ticket', appeal.ok && st().tickets.some((t) => t.id === (appeal as { id: string }).id && t.owner.id === DEMO_PERSON_ID))
+
+  p.reset(); clock = now.getTime()
+  const certId = meP().certificateId
+  p.updatePerson(DEMO_PERSON_ID, { email: 'jonathan.new@example.com' })
+  check('certificate: the ID is stored, and changing the email does not change it', Boolean(certId) && /^FI-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(certId!) && meP().certificateId === certId, certId)
+  const fresh = p.signUpPerson('nobody.yet@example.com')
+  const newbie = st().people.find((x) => x.id === (fresh as { id: string }).id)!
+  check('certificate: an unverified participant has none', !newbie.certificateId && !hasCertificate(newbie))
+  const allIds = [...st().people.map((x) => x.certificateId), ...st().clients.map((x) => x.certificateId)].filter(Boolean)
+  check('certificate: no two accounts share an ID; businesses are FI-C', new Set(allIds).size === allIds.length && st().clients.filter((c) => c.certificateId).every((c) => /^FI-C-/.test(c.certificateId!)))
+
+  p.reset(); clock = now.getTime()
+  const ptsBefore = fig().points
+  p.signUpPerson('a.friend@example.com', referralCode(meP().name, meP().email))
+  check('referral: the referrer earns 200 the moment the friend joins', fig().points === ptsBefore + POINTS.REFERRAL && meP().referrals[0]?.status === 'joined', `${ptsBefore} -> ${fig().points}`)
+
+  const per = (type: Parameters<typeof quoteStudy>[0], t: { roles?: boolean; skills?: boolean }) => quoteStudy(type, 10, 50, t).rates.recruitingPer
+  check('add-ons: roles targeting adds $25, skills $20, and one type-or-roles add-on at most', per('survey', {}) === 25 && per('survey', { roles: true }) === 50 && per('survey', { skills: true }) === 45 && per('survey', { roles: true, skills: true }) === 70 && per('video_call', { roles: true }) === 50 && per('video_call', { skills: true }) === 70, `${per('survey', {})} ${per('survey', { roles: true })} ${per('survey', { skills: true })} ${per('survey', { roles: true, skills: true })}`)
+  const roled = buildStudy(formOf({ title: 't', type: 'survey', ...SURVEY, roles: 'Nurse', skills: 'Python' }), now)
+  check('add-ons: a study built with roles and skills is priced with both', roled.ok && roled.study.rates?.recruitingPer === 70, JSON.stringify(roled.ok && roled.study.rates))
 }
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nall checks passed')

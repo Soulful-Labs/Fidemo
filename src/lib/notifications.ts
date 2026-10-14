@@ -1,3 +1,4 @@
+import { POINTS } from '@shared/rules'
 import { WAITS } from '@shared/platform'
 import { diaryWords } from '@shared/platform'
 import { dateTime } from './format'
@@ -154,7 +155,7 @@ export function buildNotifications(src: Sources): AppNotification[] {
 
   for (const r of src.referrals) {
     if (r.status === 'joined') add({ id: `nt-${r.id}`, kind: 'referral', title: 'Your friend just signed up!',
-      body: `${r.name.split(' ')[0]} ${r.name.split(' ')[1]?.charAt(0) ?? ''}. signed up using your referral link. You'll earn a bonus once they complete their first study!`, at: r.at, to: '/profile/referrals' })
+      body: `${r.name.split(' ')[0]} ${r.name.split(' ')[1]?.charAt(0) ?? ''}. signed up using your referral link. You earned ${POINTS.REFERRAL} reward points!`, at: r.at, to: '/profile/referrals' })
   }
 
   for (const t of src.tickets) {

@@ -11,7 +11,8 @@ import DownloadSessionsPanel from './DownloadSessionsPanel'
 import { ScoreCell, StatusPill, Th } from '../../components/client/RespondentTable'
 import { Calendar, ChevronRight, Clock, VideoIcon } from '../../components/ui/icons'
 import { useToast } from '../../components/ui/Toast'
-import { slotOf, usePlatform, useStudy } from '../../platform'
+import { slotOf, usePlatform, useStudies, useStudy } from '../../platform'
+import { CancelSessionModal } from './StudyMenus'
 import { pageLabels, paginate, recruits, sessionSeats } from '@shared/derive'
 import { slotDay } from '@shared/format'
 import { CLIENT_TAG } from '@shared/lifecycle'
@@ -33,6 +34,9 @@ export default function RecruitedTab() {
   const s = useStudy(id)
   const world = usePlatform()
   const [downloads, setDownloads] = useState(params.get('panel') === 'downloads')
+  /** The booked session the client is about to cancel. */
+  const [cancelling, setCancelling] = useState<{ id: string; name: string } | null>(null)
+  const { cancelSession } = useStudies()
   const session = s.type !== 'survey' && s.type !== 'diary'
   const group = s.type === 'group_video_call' || s.type === 'in_person_group'
   const [state, setState] = useState<'booked' | 'applications'>('booked')
@@ -138,6 +142,10 @@ export default function RecruitedTab() {
                             <span className="flex items-center justify-between gap-4">
                               <span className="flex items-center gap-2 text-text-regular text-text-title">
                                 {slotOf(r.participation)?.day} <span className="text-text-body">&bull;</span> {slotOf(r.participation)?.time}
+                                {r.participation.state === 'scheduled' && (
+                                  <button type="button" onClick={() => setCancelling({ id: r.id, name: r.name })}
+                                    className="ml-2 text-text-regular text-text-subtitle underline hover:text-state-danger">Cancel</button>
+                                )}
                               </span>
                               {i === 0 && (
                                 <Button size="none" className="h-[38px] px-4" leftIcon={<VideoIcon className="h-4 w-4" />}
@@ -175,6 +183,8 @@ export default function RecruitedTab() {
           )}
         </div>
       </StudyFrame>
+      <CancelSessionModal open={cancelling !== null} name={cancelling?.name.split(' ')[0] ?? ''} onClose={() => setCancelling(null)}
+        onConfirm={() => { if (!cancelling) return; const res = cancelSession(s.id, cancelling.id); setCancelling(null); toast(res.ok ? 'Session cancelled. They have been told, at no cost to them.' : res.why) }} />
       <DownloadSessionsPanel study={s} open={downloads} onClose={() => setDownloads(false)}
         artefact={s.type === 'group_video_call' ? 'Recordings + Transcript' : 'Notes'} />
     </AppShell>

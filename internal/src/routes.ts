@@ -52,7 +52,8 @@ const routes: RouteObject[] = [
   { path: '/reset-password', element: outside(ResetPassword) },
   { path: '/check-email', element: outside(CheckEmail) },
   { path: '/set-password', element: outside(SetNewPassword) },
-  { path: '/kitchen-sink', element: inside(KitchenSink) },
+  // Development pages: in `npm run dev` only. A production build leaves them out, so the shared site cannot reach them.
+  ...(import.meta.env.DEV ? [{ path: '/kitchen-sink', element: inside(KitchenSink) }] : []),
   { path: '/dashboard', element: inside(Dashboard) },
   { path: '/studies', element: inside(Studies) },
   { path: '/studies/review/:id', element: inside(ReviewStudy) },

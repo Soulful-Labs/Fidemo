@@ -6,7 +6,7 @@ import { clientById, daysRemaining, durationLabel, profileCard, shareLink, studi
 import { dayMonthYear, longDateTime, money, monthDay, slotDay } from '@shared/format'
 import { platform } from '@shared/store'
 import type { Actor } from '@shared/store'
-import type { Client, Participation, PlatformState, RatingState, RepeatRule, Result, Study, StudyState } from '@shared/types'
+import type { Client, Participation, PlatformState, RepeatRule, Result, Study, StudyState } from '@shared/types'
 import { useSession } from './mock/session'
 
 /**
@@ -164,8 +164,12 @@ export function useStudies() {
           case 'no_show': return p.markNoShow(studyId, personId, actor)
         }
       },
-      rate: (studyId: string, personId: string, rating: RatingState): Result => p.rateParticipant(studyId, personId, rating),
+      /** Policy section 6: three dimensions at five stars each, plus an optional written review. */
+      rate: (studyId: string, personId: string, dims: { expertise: number; reliability: number; communication: number }, comment?: string): Result =>
+        p.rateParticipant(studyId, personId, 'dimensions', { ...dims, ...(comment?.trim() ? { comment: comment.trim() } : {}) }, actor),
       enterCode: (studyId: string, personId: string, code: string): Result => p.enterClientCode(studyId, personId, code),
+      /** Policy section 5: the client cancels a booked session. It costs the participant nothing, and they are told. */
+      cancelSession: (studyId: string, personId: string, reason = ''): Result => p.cancelSessionFor(studyId, personId, actor, reason),
       approvePayouts: (studyId: string, personIds: string[]): Result => p.approvePayouts(studyId, personIds),
       setRepeatRule: (studyId: string, rule: RepeatRule): Result => p.setRepeatRule(studyId, rule),
       payBalance: (studyId: string): Result => p.payBalance(studyId),

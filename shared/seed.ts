@@ -10,6 +10,7 @@
  * stale: sessions are always a few days ahead and "paid last month" is
  * always last month.
  */
+import { freshCertificateId } from './derive'
 import { avatarFor } from './avatar'
 import { withdrawalExpectedBy } from './platform'
 import { DEMO_SESSION_CODE, isSessionType, priceStudy } from './platform'
@@ -25,7 +26,7 @@ import type {
   Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudySetup, StudyType, TeamMember, Ticket,
 } from './types'
 
-export const SEED_VERSION = 7
+export const SEED_VERSION = 8
 export const DEMO_PERSON_ID = 'jonathan'
 export const DEMO_PERSON_EMAIL = 'jonathan.reeve@example.com'
 export const DEMO_CLIENT_ID = 'cl-soulful'
@@ -242,7 +243,9 @@ export function buildSeed(now: Date = new Date()): PlatformState {
   deactivate('gen-21', 'Third upheld report: study answers were found AI-generated.', 6, 'tm-maya')
   byId.get('gen-21')!.trustEvents = [{ kind: 'fraud', detail: 'Upheld report: AI-generated answers', at: at(-6, 12, 0) }]
   byId.get('gen-22')!.status = 'restricted'
-  byId.get('gen-22')!.statusNote = { reason: 'Spam applications across unrelated studies.', at: at(-3, 16, 0), by: 'tm-james', until: at(12, 16, 0) }
+  byId.get('gen-22')!.statusNote = { reason: 'Spam applications across unrelated studies.', at: at(-3, 16, 0), by: 'tm-james', until: at(12, 16, 0), category: 'Spam Apply' }
+  // The ladder counts this one: it is the account's first restriction (policy section 9).
+  byId.get('gen-22')!.restrictions = [{ at: at(-3, 16, 0), until: at(12, 16, 0), category: 'Spam Apply', reason: 'Spam applications across unrelated studies.', by: 'tm-james' }]
 
   const people = [jonathan, ...pool]
   /** Everyone the generator may put on a study: verified, active, and not Jonathan (his part is written by hand). */
@@ -733,6 +736,15 @@ export function buildSeed(now: Date = new Date()): PlatformState {
   }
 
   const state: PlatformState = { version: SEED_VERSION, seededAt: now.toISOString(), people, clients, studies, reports, tickets, team, activity, pending: [] }
+  /**
+   * Certificates issued at verification (policy section 7), each ID generated
+   * once and never reused. A fixed sequence stands in for Math.random so the
+   * demo is the same every time it is reset.
+   */
+  let n = 0x9e3779b9
+  const draw = () => { n = (Math.imul(n ^ (n >>> 15), 0x2c1b3c6d) + 0x6d2b79f5) >>> 0; return n / 4_294_967_296 }
+  for (const person of people) if (person.identity.state === 'verified') person.certificateId = freshCertificateId(state, 'participant', draw)
+  for (const client of clients) if (client.business.state === 'verified') client.certificateId = freshCertificateId(state, 'business', draw)
 
   /**
    * Each person's record from before the seed (`prior`) was written to give

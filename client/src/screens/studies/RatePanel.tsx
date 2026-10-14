@@ -1,56 +1,42 @@
 import { useState } from 'react'
 import SidePanel from '../../components/ui/SidePanel'
 import Button from '../../components/ui/Button'
-import { CheckCircle } from '../../components/ui/icons'
+import { Star } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import type { RatingState } from '@shared/types'
-import { RATING_DELTA, starsForRating } from '@shared/rules'
+import { RATING_DELTA, starsFromDimensions } from '@shared/rules'
 import type { ClientStudy as Study } from '../../platform'
 import { useStudies } from '../../platform'
 import { useToast } from '../../components/ui/Toast'
 import { recruit } from '@shared/derive'
+import { monthDayYear } from '@shared/format'
 
 /**
- * Rate Ferry L. (1627:98286).
- *
- * **Rule 7 conflict, and the policy wins.** The frame draws three dimensions
- * — Expertise, Reliability, Communication — of five stars each. The signed
- * Trust and Rewards policy closes the question in its sign-off: "Client
- * ratings are confirmed as part of this build... They are the three states
- * already in the workflow: poor, good or excellent." Workflow step 52 says
- * the same. The policy outranks Figma on ratings, so this panel records one
- * rating in three states. The frame's card, heading, review box and footer
- * are unchanged. Flagged in docs/Stage-Two-Conflicts.md.
+ * Rate Ferry L. (1627:98286), as drawn and as the policy now says (section 6,
+ * 13 October 2026): three dimensions, Expertise, Reliability and
+ * Communication, at five stars each, plus an optional written review. The
+ * Trust Score reads their rounded mean (shared/rules.ts starsFromDimensions),
+ * exactly as the console's Rate panel does. The three-state control is gone.
  */
-const STATES: { key: RatingState; label: string; help: string }[] = [
-  { key: 'excellent', label: 'Excellent', help: 'Prepared, engaged and on time' },
-  { key: 'good', label: 'Good', help: 'Took part as asked' },
-  { key: 'poor', label: 'Poor', help: 'Late, disengaged or unprepared' },
-]
+const DIMENSIONS = [
+  { key: 'expertise', label: 'Expertise' },
+  { key: 'reliability', label: 'Reliability' },
+  { key: 'communication', label: 'Communication' },
+] as const
+type Dims = Record<(typeof DIMENSIONS)[number]['key'], number>
 
-function StatePicker({ value, onPick }: { value: RatingState | null; onPick: (r: RatingState) => void }) {
+function StarRow({ label, value, onPick, readOnly }: { label: string; value: number; onPick?: (n: number) => void; readOnly?: boolean }) {
   return (
-    <div className="flex flex-col gap-2 rounded-lg bg-bg-1 p-4">
-      <p className="text-body-medium text-text-title">Overall rating</p>
-      <div className="flex gap-2">
-        {STATES.map((st) => (
-          <button key={st.key} type="button" onClick={() => onPick(st.key)}
-            aria-pressed={value === st.key}
-            className={cn('flex flex-1 flex-col items-start gap-1 rounded-sm border-1 px-3 py-3 text-left transition-colors',
-              value === st.key
-                ? 'border-cta-primary bg-yellow-30 text-text-title'
-                : 'border-stroke-input bg-bg-0 text-text-subtitle hover:border-cta-tertiaryStroke')}>
-            <span className="flex w-full items-center justify-between text-body-medium text-text-title">
-              {st.label}
-              {value === st.key && <CheckCircle className="h-4 w-4 text-brand-primary" />}
-            </span>
-            <span className="text-text-regular text-text-subtitle">{st.help}</span>
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-body-regular text-text-title">{label}</span>
+      <span className="flex gap-1" role={readOnly ? undefined : 'radiogroup'} aria-label={label}>
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button key={n} type="button" disabled={readOnly} onClick={() => onPick?.(n)} role={readOnly ? undefined : 'radio'}
+            aria-checked={readOnly ? undefined : value === n} aria-label={`${label} ${n} star${n > 1 ? 's' : ''}`}
+            className={cn('p-0.5', readOnly ? 'cursor-default' : 'hover:scale-110')}>
+            <Star className={cn('h-6 w-6', n <= value ? 'fill-yellow-500 text-yellow-500' : 'text-text-body')} />
           </button>
         ))}
-      </div>
-      <p className="text-text-regular text-text-subtitle">
-        Ratings from the last 10 studies count towards a respondent&rsquo;s Trust Score.
-      </p>
+      </span>
     </div>
   )
 }
@@ -60,21 +46,22 @@ export default function RatePanel({
 }: { open: boolean; onClose: () => void; study: Study; personId?: string; rated?: boolean }) {
   const { rate, state: world } = useStudies()
   const toast = useToast()
-  const [value, setValue] = useState<RatingState | null>(null)
+  const [dims, setDims] = useState<Dims>({ expertise: 0, reliability: 0, communication: 0 })
+  const stars = starsFromDimensions(dims)
   const [review, setReview] = useState('')
 
   const r = personId ? recruit(world, study, personId) : undefined
   const name = r?.name ?? 'Ferry L.'
   const role = r?.role ?? 'Physiology Therapist, Orthopedic'
-  /** What the client pressed. Stars are stored (shared/rules.ts, starsForRating); the control has three states. */
-  const given = r?.participation.rating?.state
+  /** The rating already given, read back. Older ratings may carry only stars. */
+  const given = r?.participation.rating
 
   const submit = () => {
-    if (!value || !personId) return
-    const res = rate(study.id, personId, value)
+    if (!stars || !personId) return
+    const res = rate(study.id, personId, dims, review)
     if (!res.ok) { toast(res.why); return }
     /** The policy's own table, so the panel never invents a number. */
-    toast(`Rated ${STATES.find((s) => s.key === value)!.label}, ${RATING_DELTA[starsForRating(value)] > 0 ? '+' : ''}${RATING_DELTA[starsForRating(value)]} to their Trust Score`)
+    toast(`Rated ${stars} stars, ${RATING_DELTA[stars] > 0 ? '+' : ''}${RATING_DELTA[stars]} to their Trust Score`)
     onClose()
   }
 
@@ -88,7 +75,7 @@ export default function RatePanel({
       }
       footer={rated || given ? undefined : (
         <div className="flex gap-3 [&_button]:h-12 [&_button]:flex-1 [&_button]:text-body-medium">
-          <Button onClick={submit} disabled={!value}>Submit</Button>
+          <Button onClick={submit} disabled={!stars}>Submit</Button>
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
         </div>
       )}>
@@ -108,25 +95,23 @@ export default function RatePanel({
         /** RATED (1746:95917): the panel read back after submitting. */
         <div className="flex flex-col rounded-lg bg-bg-1 px-4">
           <p className="py-4 text-body-regular text-text-body">
-            You have rated on {r?.participation.completedAt ?? 'Aug 24, 20206'}
+            You rated on {monthDayYear(given.at)}
           </p>
-          <div className="flex flex-col gap-2 border-t-1 border-bgAlt-2 py-3">
-            <p className="text-body-medium text-text-title">Overall rating</p>
-            <span className="inline-flex h-7 w-fit items-center rounded-full bg-green-50 px-[14px] text-text-regular text-brand-secondary">
-              {STATES.find((s) => s.key === given)?.label}
-            </span>
+          <div className="flex flex-col gap-3 border-t-1 border-bgAlt-2 py-3">
+            {DIMENSIONS.map((d) => <StarRow key={d.key} label={d.label} value={given[d.key] ?? given.stars} readOnly />)}
           </div>
           <div className="flex flex-col gap-1 border-t-1 border-bgAlt-2 py-4">
             <p className="text-body-medium text-text-title">Review</p>
-            <p className="text-body-regular text-text-title">
-              Was an really insightful session with {name}! would highly recommend her.
-            </p>
+            <p className="text-body-regular text-text-title">{given.comment || 'No written review.'}</p>
           </div>
         </div>
       ) : (
         <>
           <p className="text-body-regular text-text-body">Rate {name.split(' ')[0]} for this study</p>
-          <StatePicker value={value} onPick={setValue} />
+          <div className="flex flex-col gap-3 rounded-lg bg-bg-1 p-4">
+            {DIMENSIONS.map((d) => <StarRow key={d.key} label={d.label} value={dims[d.key]} onPick={(n) => setDims((x) => ({ ...x, [d.key]: n }))} />)}
+            <p className="text-text-regular text-text-subtitle">Ratings from the last 10 studies count towards a respondent&rsquo;s Trust Score.</p>
+          </div>
           <div className="flex flex-col gap-3 rounded-lg bg-bg-1 p-4">
             <p className="text-body-medium text-text-title">
               Review <span className="text-text-regular text-text-subtitle">(optional)</span>

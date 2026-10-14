@@ -194,7 +194,13 @@ export default function Account() {
               </>
             )}
 
-            {tab === 'certificate' && (
+            {tab === 'certificate' && !(client?.business.state === 'verified' && client.certificateId) && (
+              <div className="flex flex-col gap-1 rounded-lg border-1 border-stroke-input px-4 py-4">
+                <span className="text-body-medium text-text-title">Not issued yet</span>
+                <span className="text-text-regular text-text-subtitle">{CERTIFICATE.notIssued}</span>
+              </div>
+            )}
+            {tab === 'certificate' && client?.business.state === 'verified' && client.certificateId && (
               <>
                 <div className="flex h-[86px] items-center gap-3 rounded-lg border-1 border-stroke-input px-4">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-green-50 text-brand-secondary">
@@ -209,11 +215,11 @@ export default function Account() {
                   <p className="text-title-s leading-[22px] text-text-title">{CERTIFICATE.title}</p>
                   <span className="flex flex-col gap-1">
                     <span className="text-text-regular text-text-subtitle">{CERTIFICATE.idLabel}</span>
-                    <span className="text-body-large text-text-title">{CERTIFICATE.id}</span>
+                    <span className="text-body-large text-text-title">{client.certificateId}</span>
                   </span>
                   <span className="flex flex-col gap-3">
                     <span className="text-text-regular text-text-subtitle">{CERTIFICATE.verifiedLabel}</span>
-                    {CERTIFICATE.verified.map((v) => (
+                    {[CERTIFICATE.registration, ...(client.cards.length > 0 ? [CERTIFICATE.billing] : [])].map((v) => (
                       <span key={v} className="inline-flex items-center gap-2 text-text-regular text-text-title">
                         <CheckCircle className="h-[18px] w-[18px] text-brand-secondary" />{v}
                       </span>

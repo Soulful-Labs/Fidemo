@@ -56,8 +56,8 @@ export default function Withdraw() {
     setSending(true)
     setSent(amount)
     setTimeout(() => {
-      withdraw(amount, last4(method.accountNumber))
-      navigate('/wallet/withdraw/done', { replace: true })
+      if (withdraw(amount, last4(method.accountNumber))) navigate('/wallet/withdraw/done', { replace: true })
+      else setSending(false)
     }, TIMINGS.fakeServer)
   }
 

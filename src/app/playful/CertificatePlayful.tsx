@@ -5,7 +5,7 @@ import Tilt from '../../components/motion/Tilt'
 import Button from '../../components/ui/Button'
 import { ShieldCheck } from '../../components/ui/icons'
 import { feedback } from '../../lib/feedback'
-import { shownCertId } from '../../screens/profile/Certificate'
+import { useStore } from '../../mock/store'
 import { VerifiedIcon } from '../../screens/profile/profileIcons'
 import { Written } from '../CertificateUnlock'
 import { useStampPlayful } from './useStampPlayful'
@@ -15,7 +15,9 @@ import { useStampPlayful } from './useStampPlayful'
  * the seal is a hammer and the card is a collectible. See useStampPlayful for
  * the beats. Tap anywhere to skip.
  */
-export default function CertificatePlayful({ email, onClose }: { email: string; onClose: () => void }) {
+export default function CertificatePlayful({ onClose }: { email: string; onClose: () => void }) {
+  /** The ID issued at verification, kept on the record (policy section 7). */
+  const certificateId = useStore().user.certificateId ?? ''
   const { scope, playing, skip } = useStampPlayful({
     strike: () => {
       feedback('stamp')
@@ -51,7 +53,7 @@ export default function CertificatePlayful({ email, onClose }: { email: string; 
             </div>
 
             <span className="text-text-regular text-text-body">
-              <Written>Cert. ID: <span className="text-text-title">{shownCertId(email)}</span></Written>
+              <Written>Cert. ID: <span className="text-text-title">{certificateId}</span></Written>
             </span>
             <span className="flex items-center gap-2 text-text-regular text-text-title">
               <span data-s="tick" style={{ opacity: 0 }}><VerifiedIcon className="text-brand-secondary" /></span>

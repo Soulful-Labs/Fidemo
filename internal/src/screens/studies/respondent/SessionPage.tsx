@@ -14,6 +14,7 @@ import RespondentProfile from '../manage/RespondentProfile'
 import { GroupCompletionBar } from './bars'
 import { ActivityList, JoinNow, Notes, PinCard, SessionCard, VideoResult } from './content'
 import DetailShell, { DETAIL_TABS } from './DetailShell'
+import CancelSessionDialog from './CancelSessionDialog'
 import { MarkBackDialog, NoShowDialog, RatePanel } from './dialogs'
 
 const Tag = ({ good, children }: { good: boolean; children: string }) => (
@@ -49,6 +50,7 @@ export default function SessionPage() {
   const [openRow, setOpenRow] = useState(0)
   const [rating, setRating] = useState<Person | null>(null)
   const [profile, setProfile] = useState<string | undefined>()
+  const [cancelling, setCancelling] = useState<Person | null>(null)
   if (!x) return <DetailShell study={study} tabs={[DETAIL_TABS.result]} tab="result" onTab={() => undefined}><p className="text-text-regular text-text-subtitle">This study has no sessions yet.</p></DetailShell>
 
   const people = x.people
@@ -79,6 +81,7 @@ export default function SessionPage() {
             <span>{p.name}</span><span>{p.role}</span>
             <span className="flex items-center gap-2">{p.score}<TierTag tier={p.tier} /></span>
             {done && <span className="flex items-center gap-3">{actions(p)}</span>}
+            {!done && p.state === 'scheduled' && <Button variant="tertiary" size="md" className="px-3" onClick={() => setCancelling(p)}>Cancel Session</Button>}
           </div>
         ))}
         {people.length === 0 && <p className="border-t-1 border-stroke-1 p-4 text-text-subtitle">No one has booked a seat in this session yet.</p>}
@@ -132,6 +135,7 @@ export default function SessionPage() {
       <NoShowDialog open={noShow !== null} group name={noShow?.name ?? ''} onClose={() => setNoShow(null)} onConfirm={() => { if (noShow) markNoShow(study.id, noShow.id); setNoShow(null) }} />
       <MarkBackDialog open={back !== null} name={back?.name ?? ''} onClose={() => setBack(null)} onConfirm={() => { if (back) markCompleted(study.id, back.id); setBack(null) }} />
       <RatePanel study={study} person={rating && { ...rating, first: rating.name.split(' ')[0] ?? rating.name }} onClose={() => setRating(null)} />
+      <CancelSessionDialog studyId={study.id} person={cancelling} onClose={() => setCancelling(null)} />
       <RespondentProfile personId={profile} invited={false} onClose={() => setProfile(undefined)} onInvite={() => setProfile(undefined)} />
     </DetailShell>
   )

@@ -22,8 +22,8 @@ function Dollar() {
 
 /**
  * PRD 8.2 Earn Reward Points, Figma 1114:96262, at the policy's values
- * (section 4). The drawn "Points have no expiry" line is not in the policy
- * and is not shown; the Good to know lines are the policy's own.
+ * (section 4). "Points have no expiry" is the policy's own (section 4, 13
+ * October 2026), so it is back among the Good to know lines.
  */
 const WAYS = [
   { title: 'Being Referred', sub: 'When someone refers you to join, once', value: POINTS.BEING_REFERRED },
@@ -82,6 +82,7 @@ export default function HowPointsWork() {
           {[
             'Points are a separate reward balance and never affect Trust Score.',
             'Points are not deducted for missed, late or cancelled sessions.',
+            'Points have no expiry and can be redeemed anytime.',
             `Points can be redeemed to the wallet at ${REDEEM.PER_USD} points = $1 USD, with a minimum of ${REDEEM.MINIMUM.toLocaleString('en-US')} points.`,
           ].map((line) => (
             <p key={line} className="flex items-start gap-2 text-text-regular text-text-subtitle">

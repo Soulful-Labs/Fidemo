@@ -72,7 +72,7 @@ export default function ReferEarnCard({ subtitle }: { subtitle?: string }) {
           {subtitle ?? (
             <>
               Earn <span className="text-body-large text-brand-primary">{POINTS.REFERRAL} points</span> when you
-              refer a someone who completes their first study.
+              refer someone who joins.
             </>
           )}
         </p>

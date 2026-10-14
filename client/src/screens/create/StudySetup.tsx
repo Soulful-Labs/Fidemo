@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import { ChevronRight, Edit } from '../../components/ui/icons'
 import { studySummary } from '@shared/studyForm'
-import { diaryWords } from '@shared/platform'
+import { diaryMinimumFor, diaryWords } from '@shared/platform'
 import { setupDone, useDraft } from '../../mock/createStore'
 import CreateShell, { SaveDraftButton } from './CreateShell'
 import { Section } from './CreateBits'
@@ -58,14 +58,20 @@ const DIARY_FIELDS: { key: 'durationUnit' | 'frequency' | 'studyDuration' | 'min
   { key: 'minimumRequired', label: 'Minimum Required', note: 'To qualify for reward' },
 ]
 
-/** What each diary field offers. The two counts are counts of entries, so they are written in the unit an entry is (shared/platform.ts diaryWords). */
-const diaryOptions = (unit: string): Record<string, string[]> => {
+/**
+ * What each diary field offers. The two counts are counts of entries, so they
+ * are written in the unit an entry is (shared/platform.ts diaryWords). The
+ * minimum offers only what the policy allows for the chosen duration: at
+ * least 4 of every 5 entries, up to all of them (diaryMinimumFor).
+ */
+const diaryOptions = (unit: string, total: number): Record<string, string[]> => {
   const u = diaryWords(unit).units
+  const least = diaryMinimumFor(total)
   return {
     durationUnit: ['Hour', 'Day', 'Week'],
     frequency: ['Every day', 'Every 2 days', 'Every 3 days', 'Weekly'],
     studyDuration: [3, 5, 7, 14].map((n) => `${n} ${u}`),
-    minimumRequired: [2, 3, 4, 5].map((n) => `${n} ${u}`),
+    minimumRequired: Array.from({ length: total - least + 1 }, (_, i) => `${least + i} ${u}`),
   }
 }
 
@@ -74,10 +80,15 @@ function DiarySettings() {
   const { draft, set } = useDraft()
   const [params] = useSearchParams()
   const made = params.get('state') === 'created' || draft.tasksSubmitted
-  const DIARY_OPTIONS = diaryOptions(draft.durationUnit)
+  const DIARY_OPTIONS = diaryOptions(draft.durationUnit, Number.parseInt(draft.studyDuration, 10) || 5)
   /** Changing the unit rewrites the two counts in it: "5 days" becomes "5 weeks", the number kept. */
   const pick = (key: (typeof DIARY_FIELDS)[number]['key'], v: string) => {
     set(key, v)
+    // A shorter or longer diary moves the minimum to the policy's least for it, if it is now below that.
+    if (key === 'studyDuration') {
+      const total = Number.parseInt(v, 10) || 5, least = diaryMinimumFor(total), now = Number.parseInt(draft.minimumRequired, 10) || 0
+      if (now < least || now > total) set('minimumRequired', `${least} ${diaryWords(draft.durationUnit).units}`)
+    }
     if (key !== 'durationUnit') return
     const u = diaryWords(v).units
     set('studyDuration', `${Number.parseInt(draft.studyDuration, 10) || 5} ${u}`)

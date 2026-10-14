@@ -13,6 +13,7 @@ import { useElastic, useLongPressSwell } from './playful/touch'
 import { recordNavigation } from './history'
 import { isAltPalette, showsNav } from './navigation'
 import { TIER, around } from '../lib/motion'
+import { DeactivatedScreen, RestrictionBanner, useDeactivated } from './AccountStatus'
 
 /**
  * Global interaction rule 8: scroll resets on a new navigation and is restored
@@ -101,13 +102,15 @@ export default function AppShell({ children }: { children: ReactNode }) {
   useLongPressSwell()
   usePressHaptics()
 
-  const navVisible = showsNav(pathname)
+  const deactivated = useDeactivated()
+  const navVisible = showsNav(pathname) && !deactivated
   const alt = isAltPalette(pathname)
 
   return (
     <PhoneFrame alt={alt}>
+      <RestrictionBanner />
       <main ref={main} className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-        {children}
+        {deactivated ? <DeactivatedScreen /> : children}
       </main>
 
       <PullIndicator {...elastic} />

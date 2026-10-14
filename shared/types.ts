@@ -303,8 +303,16 @@ export interface Person {
   joinedAt: string
   lastActiveAt: string
   status: 'active' | 'restricted' | 'deactivated'
-  /** Why the account is restricted or deactivated, and who did it. */
-  statusNote?: { reason: string; at: string; by: string; until?: string }
+  /** Why the account is restricted or deactivated, who did it, the category (a report's reason, or "Team decision") and, for a restriction, when it ends. */
+  statusNote?: { reason: string; at: string; by: string; until?: string; category?: string }
+  /**
+   * Every restriction ever applied, however it was applied (policy section 9).
+   * The ladder reads its length: 15, 15 and 30 days, and the fourth offence
+   * is a deactivation.
+   */
+  restrictions?: Restriction[]
+  /** Policy section 7: issued when identity verification completes, generated once and never reused. Absent until then. */
+  certificateId?: string
   profile: ProfileDetails
   /** Location as the pool and the console list it: "New York, US". */
   location: string
@@ -335,6 +343,8 @@ export interface Person {
   savedStudyIds: string[]
   notifications: AppNotification[]
 }
+
+export interface Restriction { at: string; until: string; category: string; reason: string; by: string }
 
 /** A report raised against a participant (console, Verifications > Reported). */
 export interface Report {
@@ -384,6 +394,8 @@ export interface Client {
   statusNote?: { reason: string; at: string; by: string }
   /** Workflow 3: the business check on the VAT number and website. */
   business: Check
+  /** The business certificate's ID, FI-C-XXXX-XXXX, issued when the business check passes. Absent until then. */
+  certificateId?: string
   /**
    * Reviews written before the seed's window, kept as records. Reviews since
    * are read off the participations of the client's studies; the rating and

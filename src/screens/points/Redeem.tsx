@@ -48,8 +48,8 @@ export default function Redeem() {
     setSending(true)
     setDone(requested)
     setTimeout(() => {
-      redeemPoints(requested)
-      navigate('/points/redeem/done', { replace: true })
+      if (redeemPoints(requested)) navigate('/points/redeem/done', { replace: true })
+      else setSending(false)
     }, TIMINGS.fakeServer)
   }
 

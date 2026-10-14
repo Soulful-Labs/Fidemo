@@ -4,13 +4,13 @@ import { useDraft } from '../../mock/createStore'
 import { Section } from './CreateBits'
 import { useToast } from '../../components/ui/Toast'
 import { money } from '@shared/format'
-import { quoteStudy } from '@shared/platform'
+import { quoteStudy, targets } from '@shared/platform'
 import { studyTypeOf } from '@shared/studyForm'
 
 /** What the study being built will cost, from the fee table and what has been entered so far (shared/platform.ts). */
 export function useQuote() {
   const { draft } = useDraft()
-  return quoteStudy(studyTypeOf(draft), /^\d+$/.test(draft.participants.trim()) ? Number(draft.participants) : 0, draft.incentive)
+  return quoteStudy(studyTypeOf(draft), /^\d+$/.test(draft.participants.trim()) ? Number(draft.participants) : 0, draft.incentive, { roles: targets(draft.roles), skills: targets(draft.skills) })
 }
 
 /** The costs that are not the deposit, in the sentence both payment cards end with. */

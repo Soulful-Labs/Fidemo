@@ -7,7 +7,8 @@ import Button from '../../components/ui/Button'
 import { cn } from '../../lib/cn'
 import { feedback } from '../../lib/feedback'
 import { CONFETTI, cannons, fire, glitter } from '../../components/motion/Confetti'
-import { ACCENT, BENEFITS, FlipCoin, GLOW, Rays, TierPill } from '../tierParts'
+import { ACCENT, FlipCoin, GLOW, Rays, TierPill } from '../tierParts'
+import { TIERS } from '@shared/rules'
 import type { Tier } from '../tierParts'
 import { useTierPlayful } from './useTierPlayful'
 
@@ -77,13 +78,9 @@ export default function TierPlayful({ tier, old, score, fromScore, onClose }: Ti
         <div className="relative mt-8 w-full [perspective:800px]">
           <TierPill tier={tier} label={TIER_LABEL[tier]} />
           <div data-t="card" style={{ opacity: 0 }} className="flex flex-col items-center gap-3 rounded-lg bg-bgAlt-2/70 bg-green-fade px-4 pb-5 pt-10 [transform-origin:top]">
-            <p className="text-title-s text-text-title">Benefits</p>
-            {BENEFITS[tier].map((benefit, i) => (
-              <p key={benefit} data-t="benefit" style={{ opacity: 0 }} className="flex flex-col items-center gap-3 text-text-regular text-brand-secondary">
-                {i > 0 && <span className="h-1 w-1 rounded-full bg-text-disabled" />}
-                {benefit}
-              </p>
-            ))}
+            <p data-t="benefit" style={{ opacity: 0 }} className="text-center text-text-regular text-text-subtitle">
+              Your tier follows your Trust Score: {TIER_LABEL[tier].name} from {TIERS[tier]}.
+            </p>
           </div>
         </div>
 
