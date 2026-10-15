@@ -13,7 +13,7 @@
 import { freshCertificateId } from './derive'
 import { avatarFor } from './avatar'
 import { withdrawalExpectedBy } from './platform'
-import { DEMO_SESSION_CODE, isSessionType, priceStudy } from './platform'
+import { DEMO_SESSION_CODE, depositFor, isSessionType, priceStudy } from './platform'
 import { SCREENERS, TASKS } from './seed/screeners'
 import { catalogue } from './seed/catalogue'
 import type { CatalogueEntry } from './seed/catalogue'
@@ -390,7 +390,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
       participations: [], payments: [], revisions: [],
       ...s,
     }
-    if (study.state !== 'draft' && study.submittedAt) study.payments.push(payment(study, 'deposit', incentive * study.required, study.submittedAt))
+    if (study.state !== 'draft' && study.submittedAt) study.payments.push(payment(study, 'deposit', depositFor(study.rates, study.required), study.submittedAt))
     return study
   }
 

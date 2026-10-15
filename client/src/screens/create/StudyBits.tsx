@@ -3,7 +3,7 @@ import { useDraft } from '../../mock/createStore'
 import { Section } from './CreateBits'
 import { useToast } from '../../components/ui/Toast'
 import { money } from '@shared/format'
-import { quoteStudy, targets } from '@shared/platform'
+import { DEPOSIT_SHARE, quoteStudy, targets } from '@shared/platform'
 import { studyTypeOf } from '@shared/studyForm'
 
 /** What the study being built will cost, from the fee table and what has been entered so far (shared/platform.ts). */
@@ -14,7 +14,7 @@ export function useQuote() {
 
 /** The costs that are not the deposit, in the sentence both payment cards end with. */
 export const laterLine = (q: ReturnType<typeof quoteStudy>) =>
-  `The remaining project costs (${money(q.recruitment)} for recruitment, ${money(q.moderation)} for moderation and the ${money(q.platformFee)} platform fee) will be billed as participants complete their sessions.`
+  `The remaining project costs (${money(q.incentives - q.depositIncentive)} for incentives, ${money(q.recruitment - q.depositRecruitment)} for recruitment, ${money(q.moderation)} for moderation and the ${money(q.platformFee)} platform fee) will be billed as participants complete their sessions.`
 
 const DOLLAR = (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
@@ -119,8 +119,11 @@ export function Payment({ className }: { className?: string } = {}) {
             className="text-text-title underline">See how costs are calculated.</button>
         </p>
         <div className="flex flex-col rounded-md bg-bg-1 px-3 py-3">
-          {/* One deposit rule (shared/platform.ts depositFor): the incentives for the full sample, and nothing else, up front. */}
-          <Row label="Incentive deposit" note={`${q.participants} x ${money(q.rates.incentivePer)}`} value={money(q.deposit)} />
+          {/* One deposit rule (shared/platform.ts depositParts): 25% of the incentive cost and 25% of the recruitment cost,
+              both for the full sample. The 15 Oct 2026 frame draws the two labels the wrong way round ("Recruitment deposit
+              $350" where 25% of $500 recruitment is $125); the labels here follow the maths. */}
+          <Row label="Incentive deposit" note={`${DEPOSIT_SHARE * 100}% of cost`} value={money(q.depositIncentive)} />
+          <Row label="Recruitment deposit" note={`${DEPOSIT_SHARE * 100}% of cost`} value={money(q.depositRecruitment)} />
           <Row label="To pay upfront" value={money(q.deposit)} strong />
         </div>
         <ul className="flex list-disc flex-col gap-1 pl-4 text-text-regular text-text-subtitle marker:text-text-body">

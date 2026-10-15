@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo } from 'react'
 import { billing, clientById, durationLabel, paymentStats, sessionSeats, studiesOf, studyById, teamById } from '@shared/derive'
 import { monthDayYear, monthDayYearTime, money } from '@shared/format'
 import { WEEKDAYS as FORM_DAYS, dayOf } from '@shared/studyForm'
-import { diaryWords } from '@shared/platform'
+import { DEPOSIT_RULE, diaryWords } from '@shared/platform'
 import type { PlatformState, PreScreenQuestion, Question as SharedQuestion, Study } from '@shared/types'
 import { consoleType, studyPictures, usePlatform } from '../platform'
 import { clientPhoto } from './clients'
@@ -119,10 +119,10 @@ export function review(state: PlatformState, s: Study) {
       ],
       totals: [
         { label: 'Total cost', amount: money(bill.totalCost) },
-        { label: 'Less: Incentive Deposit', detail: `${money(s.rates.incentivePer)} x ${s.required} participants`, amount: `-${money(depositPaid)}`, info: true },
+        { label: 'Less: Deposit', detail: DEPOSIT_RULE, amount: `-${money(depositPaid)}`, info: true },
       ],
       net: { label: 'Net payable cost', amount: money(Math.max(0, bill.totalCost - depositPaid)) },
-      transactions: deposit.map((p) => ({ title: 'Incentive Deposit Paid', amount: money(p.amount), when: monthDayYearTime(p.at), detail: `${money(s.rates.incentivePer)} x ${s.required} participants` })),
+      transactions: deposit.map((p) => ({ title: 'Deposit Paid', amount: money(p.amount), when: monthDayYearTime(p.at), detail: DEPOSIT_RULE })),
     },
     REVISIONS: {
       requested: [...s.revisions].reverse().map((r) => ({ title: 'Requested changes.', by: teamById(state, r.by)?.name, greeting: `Hey ${client?.name.split(' ')[0] ?? ''},`, text: r.text, when: monthDayYearTime(r.at) })),

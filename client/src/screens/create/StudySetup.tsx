@@ -7,7 +7,7 @@ import { diaryMinimumFor, diaryWords } from '@shared/platform'
 import { setupDone, useDraft } from '../../mock/createStore'
 import CreateShell, { SaveDraftButton } from './CreateShell'
 import { Section } from './CreateBits'
-import { CostingSummary, IncentivePayments, Payment, SettingsCard } from './StudyBits'
+import { SettingsCard } from './StudyBits'
 import SurveyComposer from './SurveyComposer'
 import AvailabilityComposer from './AvailabilityComposer'
 import OverridePanel from './OverridePanel'
@@ -223,9 +223,10 @@ function TypeSettings({ type, group, open }: { type: string; group: boolean; ope
 }
 
 /**
- * 2.1.3 Study setup, the one step where the four types differ. Survey
- * (1518:91922 / 91779 / 92064) is three states of this screen: the
- * questionnaire still to make, made, and the composer open beside it.
+ * 2.1.3 Study setup, the one step where the four types differ. Since 15 Oct
+ * 2026 it holds only the type's own settings, for every type; pricing is the
+ * next step (Pricing.tsx). The survey and diary composers open as the whole
+ * page, with Save & Continue in the top bar (Create Survey_Study, 15 Oct 2026).
  */
 export default function StudySetup() {
   const nav = useNavigate()
@@ -236,13 +237,17 @@ export default function StudySetup() {
   const type = params.get('type') ?? draft.type
   const group = params.get('group') === '1' || (type === 'video_call' ? draft.groupVideo : draft.groupInPerson)
   const open = draft.surveyOpen || params.get('state') === 'building'
+  const formOpen = open && (type === 'survey' || type === 'diary')
+  /** Save & Continue on an open survey or diary form submits it, as the form's own Submit did. */
+  const saveForm = () => document.querySelector<HTMLButtonElement>('[data-submit-form]')?.click()
 
   return (
     <CreateShell step="study" action={
       <>
         <SaveDraftButton />
-        <Button size="row" disabled={!setupDone(draft)}
-          onClick={() => nav('/studies/create/publish')}>Proceed to Publish</Button>
+        {formOpen
+          ? <Button size="row" onClick={saveForm}>Save &amp; Continue</Button>
+          : <Button size="row" disabled={!setupDone(draft)} onClick={() => nav('/studies/create/pricing')}>Continue</Button>}
       </>
     }>
       <div className={`rounded-lg bg-bg-0 px-6 pt-[9px] ${type === 'diary' ? 'min-h-[1707px]' : type === 'video_call' ? (open ? 'min-h-[1408px]' : 'min-h-[1374px]') : type === 'in_person' ? (open ? (group ? 'min-h-[1408px]' : 'min-h-[1579px]') : 'min-h-[1374px]') : 'min-h-[1302px]'}`}>
@@ -264,19 +269,15 @@ export default function StudySetup() {
                 onSubmit={() => { set('tasksSubmitted', true); set('surveyOpen', false) }}
                 onBack={() => set('surveyOpen', false)} />
             )}
-            <div className="flex w-[488px] shrink-0 flex-col">
-              <TypeSettings type={type} group={group} open={open} />
-              <IncentivePayments />
-              <CostingSummary />
-              <Payment />
-            </div>
+            {!formOpen && (
+              <div className="flex w-[488px] shrink-0 flex-col">
+                <TypeSettings type={type} group={group} open={open} />
+              </div>
+            )}
           </div>
         ) : (
           <div className="mx-auto flex w-[600px] flex-col">
             <TypeSettings type={type} group={group} open={open} />
-            <IncentivePayments />
-            <CostingSummary />
-            <Payment />
           </div>
         )}
       </div>

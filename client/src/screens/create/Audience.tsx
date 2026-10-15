@@ -6,14 +6,16 @@ import CreateShell from './CreateShell'
 import { Chip, Field, Section, TextBox, TierBar } from './CreateBits'
 import { useToast } from '../../components/ui/Toast'
 import Picker from '../../components/ui/Picker'
-import Checkbox from '../../components/ui/Checkbox'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PromptDialog from './PromptDialog'
 import { audienceFromPrompt } from '../../lib/fromPrompt'
 import { AUDIENCE_OPTIONS } from './CreateBits'
 import { cohort, poolPerson } from '@shared/derive'
-import { audienceFault, audiencePeople, educationOf } from '@shared/studyForm'
+import { audienceFault, audiencePeople, educationOf, gendersOf } from '@shared/studyForm'
+import { TIERS } from '@shared/rules'
+import CheckPicker from '../../components/ui/CheckPicker'
+import { GoldMark, PlatinumMark, SilverMark } from '../../components/ui/icons'
 import type { StudyForm } from '@shared/studyForm'
 import { usePlatform } from '../../platform'
 
@@ -117,6 +119,8 @@ export default function Audience() {
   const fit = cohort(audiencePeople(state, form()).map((p) => poolPerson(state, p)))
   const tier = (t: string) => fit.tiers.find((x) => x.tier === t)?.pct ?? 0
   const education = educationOf(draft)
+  const genders = gendersOf(draft)
+  const industries = draft.industries.split(',').map((x) => x.trim()).filter(Boolean)
   const noFunction = tried && !draft.functions.trim()
   const noIndustry = tried && !draft.industries.trim()
   const check = () => { setTried(true); return audienceFault(draft) }
@@ -168,25 +172,22 @@ export default function Audience() {
                   </div>
                 </div>
 
+                {/* Genders (15 Oct 2026): several can be ticked; "All Genders" clears the rest. */}
                 <Field label="Gender">
-                  <Picker value={draft.gender} options={AUDIENCE_OPTIONS.gender} onPick={(v) => set('gender', v)} />
+                  <CheckPicker label="Gender" all="All Genders" value={genders.length ? genders.map((g) => (g === 'Other' ? 'Others' : g)).join(', ') : 'All Genders'}
+                    options={AUDIENCE_OPTIONS.gender.map((g) => ({ value: g, label: g === 'Other' ? 'Others' : g }))}
+                    picked={genders} onChange={(next) => set('gender', next.length ? next : ['All Genders'])} />
                 </Field>
-                <div className="flex flex-col gap-0.5" role="group" aria-label="Level of Education">
-                  <span className="text-text-regular text-text-subtitle">Level of Education <span className="text-text-body">(tick every level that qualifies; none ticked means any)</span></span>
-                  <div className="grid grid-cols-2 overflow-hidden rounded-sm border-1 border-stroke-input bg-bg">
-                    {AUDIENCE_OPTIONS.education.map((e) => (
-                      <Checkbox key={e} label={e} checked={education.includes(e)}
-                        onChange={() => set('education', education.includes(e) ? education.filter((x) => x !== e) : [...education, e])} />
-                    ))}
-                  </div>
-                </div>
+                {/* Education (15 Oct 2026): a dropdown of checkboxes; several levels can be ticked, "All" means any. */}
+                <Field label="Level of Education">
+                  <CheckPicker label="Level of Education" all="All" value={education.length ? education.join(', ') : 'All'}
+                    options={AUDIENCE_OPTIONS.education.map((e) => ({ value: e }))} picked={education} onChange={(next) => set('education', next)} />
+                </Field>
 
                 <div className="flex flex-col gap-2">
                   <Field label="Age Range">
-                    <Picker multiple picked={draft.ageRanges} options={AUDIENCE_OPTIONS.ageRanges}
-                      value={`${draft.ageRanges.length} range selected  •  Select age range...`}
-                      onPick={(v) => set('ageRanges', draft.ageRanges.includes(v)
-                        ? draft.ageRanges.filter((x) => x !== v) : [...draft.ageRanges, v])} />
+                    <CheckPicker label="Age Range" all="All" picked={draft.ageRanges} options={AUDIENCE_OPTIONS.ageRanges.map((a) => ({ value: a }))}
+                      value={`${draft.ageRanges.length} range selected  •  Select age range...`} onChange={(next) => set('ageRanges', next)} />
                   </Field>
                   <div className="flex flex-wrap items-center gap-2">
                     {draft.ageRanges.map((a) => (
@@ -205,12 +206,20 @@ export default function Audience() {
                     className={noFunction ? 'border-state-danger' : undefined} />
                   <Help text="The area of work, not the job title. A product manager's work function is Product." error={noFunction ? 'Enter a work function, for example Product' : undefined} />
                 </label>
-                <label className="flex flex-col gap-0.5">
+                {/* Industries (15 Oct 2026): the drawn list, with its search, opens under the field. Typing still works. */}
+                <div className="flex flex-col gap-0.5">
                   <span className="text-text-regular text-text-subtitle">{need('Industry', true)}</span>
-                  <TextBox value={draft.industries} placeholder="e.g. Healthcare, Finance" onChange={(v) => set('industries', v)}
-                    className={noIndustry ? 'border-state-danger' : undefined} />
+                  <CheckPicker label="Industries" search="Search your industry..." value={draft.industries}
+                    options={AUDIENCE_OPTIONS.industries.map((i) => ({ value: i }))} picked={industries}
+                    onChange={(next) => set('industries', next.join(', '))}
+                    field={(open) => (
+                      <span onFocus={open} onClick={open}>
+                        <TextBox value={draft.industries} placeholder="e.g. Healthcare, Finance" onChange={(v) => set('industries', v)}
+                          className={noIndustry ? 'border-state-danger' : undefined} />
+                      </span>
+                    )} />
                   {noIndustry && <Help text="" error="Enter an industry, for example Healthcare" />}
-                </label>
+                </div>
                 <label className="flex flex-col gap-0.5">
                   <span className="text-text-regular text-text-subtitle">{need('Role', false)}</span>
                   <TextBox value={draft.roles} placeholder="e.g. Product Manager" onChange={(v) => set('roles', v)} />
@@ -239,8 +248,17 @@ export default function Audience() {
                     label="Has never participated in any study with Soulful Labs (You) before"
                     sub="Turn this on to exclude people who have previously participated in your studies" />
                 </div>
+                {/* Profile Tiers (15 Oct 2026): one choice, each with its icon and the Trust Score it means.
+                    The drawn "top 10% / top 25% of participants" is left out: nothing measures it. */}
                 <Field label="Profile Tiers">
-                  <Picker value={draft.tiers || 'Select tiers...'} options={AUDIENCE_OPTIONS.tiers} onPick={(v) => set('tiers', v === 'Any tier' ? '' : v)} />
+                  <CheckPicker single label="Profile Tiers" value={draft.tiers || 'Select tiers...'} picked={[draft.tiers || 'Any tier']}
+                    onChange={([v]) => set('tiers', !v || v === 'Any tier' ? '' : v)}
+                    options={[
+                      { value: 'Any tier', label: 'Any', sub: 'For all tiers' },
+                      { value: 'Platinum only', label: 'Platinum Tier', sub: `${TIERS.platinum}+ Trust score`, icon: <PlatinumMark className="h-6 w-6 text-tier-platinum" /> },
+                      { value: 'Gold and above', label: 'Gold Tier and above', sub: `${TIERS.gold}+ Trust score`, icon: <GoldMark className="h-6 w-6 text-tier-gold" /> },
+                      { value: 'Silver and above', label: 'Silver Tier and above', sub: `${TIERS.silver}+ Trust score`, icon: <SilverMark className="h-6 w-6 text-tier-silver" /> },
+                    ]} />
                 </Field>
               </div>
             </Section>

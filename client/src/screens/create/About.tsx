@@ -6,6 +6,8 @@ import { useDraft } from '../../mock/createStore'
 import { useToast } from '../../components/ui/Toast'
 import type { CreateType } from '../../mock/createStore'
 import CreateShell from './CreateShell'
+import { useState } from 'react'
+import { AboutPreview, PreviewButton, PreviewPanel } from './ScreenerPreview'
 import { Field, Section, TextBox } from './CreateBits'
 
 /** The four study types the step offers, with the frame's own wording. */
@@ -70,6 +72,8 @@ async function readPicture(file: File): Promise<string> {
 export default function About() {
   const { draft, set } = useDraft()
   const toast = useToast()
+  /** The participant preview (15 Oct 2026): closed until the client opens it. */
+  const [preview, setPreview] = useState(false)
   const choose = async (file: File | undefined) => {
     if (!file) return
     if (!/^image\/(jpeg|png)$/.test(file.type)) { toast('The thumbnail has to be a .jpeg or .png file'); return }
@@ -79,8 +83,9 @@ export default function About() {
 
   return (
     <CreateShell step="about">
-      <div className="min-h-[1242px] rounded-lg bg-bg-0 px-6 pt-[9px]">
-        <div className="mx-auto flex w-[600px] flex-col">
+      <div className={cn('relative min-h-[1242px] rounded-lg bg-bg-0 px-6 pt-[9px]', preview && 'flex items-start gap-12 py-6')}>
+        {!preview && <span className="absolute right-6 top-6"><PreviewButton onClick={() => setPreview(true)} /></span>}
+        <div className={cn('flex w-[600px] flex-col', !preview && 'mx-auto')}>
           <Section icon={<TaskIcon className="h-5 w-5" />} title="Select Study Type" sub="Choose the study type suitable to your research needs">
             <div className="flex flex-col gap-2">
               {TYPES.map((t) => <TypeCard key={t.key} t={t} />)}
@@ -150,6 +155,11 @@ export default function About() {
             </div>
           </Section>
         </div>
+        {preview && (
+          <PreviewPanel onClose={() => setPreview(false)} onRefresh={() => { setPreview(false); requestAnimationFrame(() => setPreview(true)) }}>
+            <AboutPreview />
+          </PreviewPanel>
+        )}
       </div>
     </CreateShell>
   )

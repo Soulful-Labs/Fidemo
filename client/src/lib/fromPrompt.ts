@@ -75,7 +75,7 @@ const COUNTRIES: [string, RegExp][] = [
   ['India', /\bindian?s?\b/i], ['Japan', /\bjapan(?:ese)?\b/i],
 ]
 
-const AGE_OPTIONS: [string, number, number][] = [['18–20', 18, 20], ['21–29', 21, 29], ['30–39', 30, 39], ['40–49', 40, 49], ['50–59', 50, 59], ['60+', 60, 200]]
+const AGE_OPTIONS: [string, number, number][] = [['18–20', 18, 20], ['21–29', 21, 29], ['30–39', 30, 39], ['40–54', 40, 54], ['50–59', 50, 59], ['60+', 60, 200]]
 const agesBetween = (lo: number, hi: number) => AGE_OPTIONS.filter(([, a, b]) => a <= hi && b >= lo).map(([k]) => k)
 
 const unique = <T,>(xs: T[]) => [...new Set(xs)]
@@ -123,11 +123,11 @@ export function readPrompt(text: string): PromptReading {
   for (const m of t.matchAll(/\b(?:over|above|older than)\s+(\d{2})\b|\b(\d{2})\+/gi)) ages.push(...agesBetween(Number(m[1] ?? m[2]), 200))
   for (const m of t.matchAll(/\b(?:under|below|younger than)\s+(\d{2})\b/gi)) ages.push(...agesBetween(18, Number(m[1]) - 1))
   if (/\b(?:gen ?z|young adults?|college students?|university students?|undergrad(?:uate)?s?)\b/i.test(t)) ages.push('18–20', '21–29')
-  if (/\bmillennials?\b/i.test(t)) ages.push('30–39', '40–49')
+  if (/\bmillennials?\b/i.test(t)) ages.push('30–39', '40–54')
   if (/\b(?:seniors?|retirees?|retired|older adults?|elderly)\b/i.test(t)) ages.push('60+')
 
   const education = [
-    ...(/\bhigh school\b/i.test(t) ? ['High school graduate'] : []),
+    ...(/\bhigh school\b/i.test(t) ? ['High School Graduate'] : []),
     ...(/\b(?:bachelor'?s|college graduates?|graduates|undergraduate degree|degree holders?)\b/i.test(t) ? ["Graduate or Bachelor's"] : []),
     ...(/\b(?:master'?s|mba|postgraduate)\b/i.test(t) ? ["Master's degree"] : []),
     ...(/\b(?:phd|ph\.d|doctorate|doctoral)\b/i.test(t) ? ['Doctorate'] : []),
@@ -174,7 +174,7 @@ export function audienceFromPrompt(text: string, current: Pick<StudyForm, 'descr
   take('Role', r.roles.length > 0, () => { patch.roles = r.roles.join(', ') }, r.roles.join(', '))
   take('Skills', r.skills.length > 0, () => { patch.skills = r.skills.join(', ') }, r.skills.join(', '))
   take('Country', r.countries.length > 0, () => { patch.countries = r.countries }, r.countries.join(', '))
-  take('Gender', Boolean(r.gender), () => { patch.gender = r.gender! }, r.gender ?? '')
+  take('Gender', Boolean(r.gender), () => { patch.gender = [r.gender!] }, r.gender ?? '')
   take('Age Range', r.ageRanges.length > 0, () => { patch.ageRanges = r.ageRanges }, r.ageRanges.join(', '))
   take('Level of Education', r.education.length > 0, () => { patch.education = r.education }, r.education.join(', '))
   take('Number of participants', Boolean(r.participants), () => { patch.participants = r.participants! }, r.participants ?? '')

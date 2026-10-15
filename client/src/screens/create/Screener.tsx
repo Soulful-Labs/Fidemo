@@ -6,7 +6,7 @@ import Modal from '../../components/ui/Modal'
 import { blankQuestion, MARKS_FOR, useDraft } from '../../mock/createStore'
 import type { Question, QuestionKind } from '../../mock/createStore'
 import CreateShell from './CreateShell'
-import ScreenerPreview from './ScreenerPreview'
+import ScreenerPreview, { PreviewButton, PreviewPanel } from './ScreenerPreview'
 import { useToast } from '../../components/ui/Toast'
 import { useState } from 'react'
 import { buildScreener } from '@shared/questions'
@@ -318,6 +318,8 @@ export default function Screener() {
   }
   const toast = useToast()
   const { draft, set } = useDraft()
+  const [preview, setPreview] = useState(false)
+  const [at, setAt] = useState(0)
   /** Which button opened the description box. */
   const [asking, setAsking] = useState<null | 'add' | 'all'>(null)
 
@@ -334,16 +336,8 @@ export default function Screener() {
                   Use these questions to filter participants and identify who qualifies for this study. Click Preview to see how it will appear to participants.
                 </p>
               </div>
-              <Button variant="tertiary" size="row" leftIcon={
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
-                  <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="m10 8.5 6 3.5-6 3.5v-7Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                </svg>} onClick={() => {
-                  /* The preview is always beside the questions on this step,
-                     so Preview brings it into view rather than opening it. */
-                  document.getElementById('screener-preview')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                  toast('Preview is beside your questions')
-                }}>Preview</Button>
+              {/* The preview (15 Oct 2026) is collapsible and closed until opened here. */}
+              {!preview && <PreviewButton onClick={() => setPreview(true)} />}
             </div>
           </div>
 
@@ -391,7 +385,11 @@ export default function Screener() {
           </div>
         </div>
 
-        <ScreenerPreview />
+        {preview && (
+          <PreviewPanel onClose={() => setPreview(false)} onRefresh={() => setAt(0)}>
+            <ScreenerPreview at={at} setAt={setAt} />
+          </PreviewPanel>
+        )}
       </div>
     </CreateShell>
   )

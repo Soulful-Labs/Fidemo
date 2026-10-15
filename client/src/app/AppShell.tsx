@@ -39,6 +39,37 @@ export function SideNav() {
       <ul className="flex flex-1 flex-col gap-1.5 pl-4 pr-[18px] pt-5">
         {NAV.map(({ to, label, Icon }) => {
           const on = pathname === to || pathname.startsWith(`${to}/`)
+          /**
+           * Studies carries two sub-items (client designs, 15 Oct 2026): My
+           * Studies (the Ongoing, Drafts and Completed list, every study page
+           * and the Create flow) and Sessions. The parent is a heading, not a
+           * selected row; the selected sub-item has the pill and the dot.
+           */
+          if (to === '/studies') {
+            const sessions = pathname.startsWith('/studies/sessions')
+            const sub = [{ to: '/studies', label: 'My Studies', on: on && !sessions }, { to: '/studies/sessions', label: 'Sessions', on: sessions }]
+            return (
+              <li key={to}>
+                <NavLink to={to} className="flex h-[46px] items-center gap-2 rounded-md px-4 text-body-regular text-text-title transition-colors hover:bg-bg-0/60">
+                  <Icon className="h-5 w-5" />
+                  {label}
+                </NavLink>
+                <ul className="relative ml-[28px] flex flex-col gap-1 pt-0.5">
+                  <span aria-hidden="true" className="absolute bottom-[18px] left-0 top-0 w-px bg-stroke-warm" />
+                  {sub.map((x) => (
+                    <li key={x.to} className="relative flex items-center">
+                      <span aria-hidden="true" className={cn('absolute -left-[2.5px] h-[6px] w-[6px] rounded-full', x.on ? 'bg-brand-primary' : 'bg-stroke-warm')} />
+                      <NavLink to={x.to} end={x.to === '/studies' ? false : undefined} aria-current={x.on ? 'page' : undefined}
+                        className={cn('ml-2 flex h-[46px] flex-1 items-center rounded-md px-3 text-body-regular transition-colors',
+                          x.on ? 'bg-bg-0 text-brand-primary shadow-[0_1px_2px_rgba(32,30,25,0.08)]' : 'text-text-subtitle hover:bg-bg-0/60 hover:text-text-title')}>
+                        {x.label}
+                      </NavLink>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            )
+          }
           return (
             <li key={to}>
               <NavLink to={to}

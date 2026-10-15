@@ -25,6 +25,7 @@ import Audience from './screens/create/Audience'
 import Screener from './screens/create/Screener'
 import StudySetup from './screens/create/StudySetup'
 import Publish from './screens/create/Publish'
+import Pricing from './screens/create/Pricing'
 import Published from './screens/create/Published'
 import Dashboard from './screens/dashboard/Dashboard'
 import { RequireAccount, RequireNoAccount, Root } from './app/Guards'
@@ -83,6 +84,7 @@ const routes: ScreenRoute[] = [
   { path: '/studies/create/audience/no-match', label: 'Create, no matching audience', node: '1518:91273', section: 'Create', kind: 'page', element: guard(createElement(Audience)) }, // the same step: it shows the no-match prompt when nothing fits
   { path: '/studies/create/screener', label: 'Create, Screener', node: '1622:81771', section: 'Create', kind: 'page', element: guard(createElement(Screener)) },
   { path: '/studies/create/study', label: 'Create, Study setup', node: '1518:91922 (survey), 1518:92729 (video), 1518:93678 (in-person), 1518:94580 (diary)', section: 'Create', kind: 'page', element: guard(createElement(StudySetup)) },
+  { path: '/studies/create/pricing', label: 'Create, Pricing', node: 'Survey_Study Setup - New Study (15 Oct 2026), lower half', section: 'Create', kind: 'page', element: guard(createElement(Pricing)) },
   { path: '/studies/create/publish', label: 'Create, Payment & Publish', node: '1518:92247 / 1622:84446 / 86775 / 87629 (one screen)', section: 'Create', kind: 'page', element: guard(createElement(Publish)) },
   { path: '/studies/create/published', label: 'Create, Published', node: '1518:92376', section: 'Create', kind: 'page', element: guard(createElement(Published)) },
 

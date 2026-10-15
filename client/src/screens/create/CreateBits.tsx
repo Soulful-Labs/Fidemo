@@ -70,11 +70,18 @@ export function TierBar({ label, value, colour }: { label: string; value: number
   )
 }
 
-/** What each picker in this step offers. */
+/**
+ * What each picker in this step offers. The 15 Oct 2026 popovers draw their
+ * first four rows; those come first, in the drawn words, and our existing
+ * options follow below them (nothing beyond the drawn rows is invented).
+ */
 export const AUDIENCE_OPTIONS = {
   countries: ['United States of America', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'India', 'Japan'],
-  gender: ['All Genders', 'Male', 'Female', 'Other'],
-  education: ['High school graduate', "Graduate or Bachelor's", "Master's degree", 'Doctorate'],
-  ageRanges: ['18–20', '21–29', '30–39', '40–49', '50–59', '60+'],
+  /** Stored as the profile's own word ("Other"); the popover writes "Others". */
+  gender: ['Male', 'Female', 'Other'],
+  education: ['Some High School', 'High School Graduate', 'Some College, no degree', 'Associate Degree', "Graduate or Bachelor's", "Master's degree", 'Doctorate'],
+  ageRanges: ['18–20', '21–29', '30–39', '40–54', '50–59', '60+'],
+  /** Industries (popover drawn with search): its four rows, then the industries the platform's profiles and onboarding already use. */
+  industries: ['Lifestyle', 'Business', 'Healthcare', 'Finance', 'Pharma', 'IT', 'Fitness & Nutrition', 'Consultancy', 'Marketing', 'Media', 'Retail', 'Education', 'Travel', 'Consumer', 'Technology'],
   tiers: ['Any tier', 'Silver and above', 'Gold and above', 'Platinum only'],
 }

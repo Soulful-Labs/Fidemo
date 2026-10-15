@@ -94,21 +94,23 @@ export default function SurveyComposer({
         <span className="text-title-s text-text-title">{title}</span>
         <span className="flex-1" />
         <span className="text-text-regular text-text-subtitle">Auto-saved</span>
-        <Button size="row" onClick={send}>{submit}</Button>
+        {/* The form is submitted from the top bar's Save & Continue (15 Oct 2026); this is what that button presses. */}
+        <button type="button" data-submit-form aria-label={submit} hidden onClick={send} />
       </div>
 
       <div className="flex flex-col gap-4 p-4">
         <p className="text-text-regular text-text-title">{lead}</p>
 
-        <div className="flex flex-col gap-3 rounded-md bg-bg-1 p-3">
-          <p className="text-text-regular text-text-body">
-            Enter survey context/questions or upload file to let our AI-assitant generate questions
-          </p>
+        {/* The context box (15 Oct 2026): what is typed here is the description Generate writes from. Empty, Generate asks for one. */}
+        <div className="flex flex-col gap-3 rounded-md border-1 border-stroke-2 bg-bgAlt-1 p-3">
+          <textarea value={draft.aiPrompt ?? ''} onChange={(e) => set('aiPrompt', e.target.value)} rows={2} aria-label="Survey context"
+            placeholder="Enter survey context/questions or upload file to let our AI-assitant generate questions"
+            className="w-full resize-none bg-transparent text-text-regular text-text-title outline-none placeholder:text-text-body" />
           <div className="flex items-center justify-between gap-3">
             <input id="questions-file" type="file" accept=".txt,.csv,text/plain,text/csv" className="sr-only"
               onChange={(e) => { void upload(e.target.files?.[0]); e.target.value = '' }} />
             <Button variant="tertiary" size="row" leftIcon={<Upload className="h-4 w-4" />} onClick={() => document.getElementById('questions-file')?.click()}>{file ?? 'Upload File'}</Button>
-            <Button size="row" leftIcon={SPARKLE} onClick={() => setAsking(true)}>Generate</Button>
+            <Button variant="secondary" size="row" leftIcon={SPARKLE} onClick={() => (draft.aiPrompt?.trim() ? generate(draft.aiPrompt.trim()) : setAsking(true))}>Generate</Button>
           </div>
         </div>
         <PromptDialog open={asking} onClose={() => setAsking(false)} onGenerate={generate} action="Write Questions"

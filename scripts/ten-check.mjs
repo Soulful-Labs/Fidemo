@@ -403,7 +403,7 @@ const respAfter = flat(await R.ev(`(() => { const lab = [...document.querySelect
   if (!/Describe your study/.test(ai1.box?.lead ?? '')) g.push('no line telling them what to describe')
   const want1 = { functions: 'Patient Care', industries: 'Healthcare', roles: 'Nurse', participants: '12' }
   for (const [k, v] of Object.entries(want1)) if (ai1.d[k] !== v) g.push(`1st ${k}: ${ai1.d[k]}`)
-  if (ai1.d.countries.join() !== 'United States of America' || ai1.d.ageRanges.join() !== '21–29,30–39,40–49') g.push(`1st country/age: ${ai1.d.countries} / ${ai1.d.ageRanges}`)
+  if (ai1.d.countries.join() !== 'United States of America' || ai1.d.ageRanges.join() !== '21–29,30–39,40–54') g.push(`1st country/age: ${ai1.d.countries} / ${ai1.d.ageRanges}`)
   if (ai1.d.description !== AI_1) g.push('description not filled from the text')
   const want2 = { functions: 'Product', industries: 'Finance', roles: 'Product Manager', participants: '8' }
   for (const [k, v] of Object.entries(want2)) if (ai2.d[k] !== v) g.push(`2nd ${k}: ${ai2.d[k]}`)

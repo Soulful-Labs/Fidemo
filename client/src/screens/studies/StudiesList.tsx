@@ -16,6 +16,7 @@ import type { ClientStudy as Study } from '../../platform'
 import { useStudies } from '../../platform'
 import { counts, progressPct } from '@shared/derive'
 import SessionsTab from './SessionsTab'
+import { upcomingSessions } from '../../lib/insight'
 import { Calendar, Search } from '../../components/ui/icons'
 import { studyTab } from '@shared/lifecycle'
 import { CompletedMenu, DeleteStudyModal, DraftMenu, OngoingMenu, PauseStudyModal, StudyTypeMenu } from './StudyMenus'
@@ -24,12 +25,15 @@ import { copyText } from '../../lib/copy'
 
 export type StudiesTab = 'ongoing' | 'drafts' | 'completed' | 'sessions'
 
-/** Drafts first, then Ongoing, Completed, Sessions. `/studies` itself is still Ongoing. */
+/**
+ * My Studies reads Ongoing, Drafts, Completed (client designs, 15 Oct 2026).
+ * Sessions is no longer a tab: it is its own item under Studies in the
+ * sidebar, at /studies/sessions, with its own header.
+ */
 const TABS = [
-  { key: 'drafts', label: 'Drafts', to: '/studies/drafts' },
   { key: 'ongoing', label: 'Ongoing', to: '/studies' },
+  { key: 'drafts', label: 'Drafts', to: '/studies/drafts' },
   { key: 'completed', label: 'Completed', to: '/studies/completed' },
-  { key: 'sessions', label: 'Sessions', to: '/studies/sessions' },
 ]
 
 /** Which columns each tab draws, and in which order. */
@@ -82,6 +86,10 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
   const [deleting, setDeleting] = useState<Study | null>(null)
   const [search, setSearch] = useState('')
   const { studies, moveStudy } = useStudies()
+  /** "4 upcoming video and in-person sessions": the sessions still to come across live studies. */
+  const { state: world } = useStudies()
+  const upcoming = upcomingSessions(world, studies).length
+  const upcomingLine = `${upcoming} upcoming video and in-person session${upcoming === 1 ? '' : 's'}`
   const toast = useToast()
 
   /** Which tab a study is under is its state's business, never a separate list. */
@@ -123,19 +131,24 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
   }
 
   return (
-    <AppShell crumbs={[{ label: 'Studies' }]}>
+    <AppShell crumbs={[{ label: tab === 'sessions' ? 'Sessions' : 'My Studies' }]}>
       <div className="min-h-[881px] rounded-lg bg-bg-0 p-4">
         {tab === 'completed' && <h1 className="pb-2 text-title-s text-text-title">My Studies</h1>}
 
         <div className="flex items-center justify-between gap-4 pb-6">
-          <Tabs variant="segmented" className="w-[435px]" value={tab} items={TABS} />
+          {tab === 'sessions' ? (
+            <div className="flex flex-col gap-1">
+              <h1 className="text-title-s leading-[25px] text-text-title">Scheduled Sessions</h1>
+              <p className="text-body-regular text-text-body">{upcomingLine}</p>
+            </div>
+          ) : <Tabs variant="segmented" className="w-[343px]" value={tab} items={TABS} />}
           <div className="flex items-center gap-3">
             {/* The export labels this search "Study Type", the same as the filter beside it. Built as drawn and flagged. */}
             {tab === 'sessions' && (
               <label className="relative flex">
                 <Search className="pointer-events-none absolute left-3 top-3 h-6 w-6 text-text-title" />
-                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Study Type" aria-label="Search sessions"
-                  className="h-input w-[200px] rounded-lg border-1 border-stroke-input bg-bg-0 pl-[43px] pr-3 text-body-regular text-text-title placeholder:text-text-title" />
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search session or study" aria-label="Search sessions"
+                  className="h-input w-[319px] rounded-lg border-1 border-stroke-input bg-bg-0 pl-[43px] pr-3 text-body-regular text-text-title placeholder:text-text-body" />
               </label>
             )}
             <div className="relative">

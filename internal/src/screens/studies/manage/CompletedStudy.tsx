@@ -10,7 +10,11 @@ import type { ManagedStudy } from '../../../mock/manage'
 import { BillLine } from '../review/PaymentRevisions'
 import { AudiencePills, Block, EstimatedAudience } from './ManageTab'
 import { ClientCard } from './OverviewTab'
-import { Billing, Money, Transaction } from './PayTab'
+import { Billing, Money, Transaction, feeLines } from './PayTab'
+import { billing } from '@shared/derive'
+import { money, monthDayYearTime } from '@shared/format'
+import { DEPOSIT_RULE } from '@shared/platform'
+import { usePlatform } from '../../../platform'
 import ResultsTab from './ResultsTab'
 
 type Tab = 'overview' | 'results' | 'payments'
@@ -98,29 +102,40 @@ export default function CompletedStudy({ study, tab, onTab }: { study: ManagedSt
         </div>
       )}
       {tab === 'results' && <div className="pt-4"><ResultsTab study={study} completed /></div>}
-      {tab === 'payments' && (
-        <div className="pt-4">
-          <h2 className="text-title-s leading-[25px] text-text-title">Payment Overview</h2>
-          <div className="flex pt-2"><Money short label="Total Paid" value="$3,350" /></div>
-          <div className="grid grid-cols-2 items-start gap-6 pt-5">
-            <div>
-              <h2 className="pb-2 text-title-s leading-[25px] text-text-title">Billing</h2>
-              <Billing>
-                <BillLine bold line={{ label: 'Total cost paid', amount: '$3,350' }} />
-                <BillLine line={{ label: 'Paid: Incentive Deposit', detail: '$100 x 30 participants', amount: '-$3000' }} />
-                <BillLine line={{ label: 'Paid: Due Payment', amount: '-$350' }} />
-              </Billing>
-            </div>
-            <div>
-              <h2 className="pb-3 text-title-s leading-[25px] text-text-title">Transactions</h2>
-              <div className="flex flex-col gap-2">
-                <Transaction title="Incentive Deposit - Paid" amount="$3,000" detail="$20 x 30 participants" />
-                <Transaction title="Billed Invoice - Paid" amount="$350" detail="$350" />
-              </div>
-            </div>
+      {tab === 'payments' && <CompletedPayments studyId={study.id} />}
+    </AppShell>
+  )
+}
+
+/** The completed study's payments: what was paid, from the study's own records (shared/derive.ts billing). */
+function CompletedPayments({ studyId }: { studyId: string }) {
+  const real = usePlatform().studies.find((x) => x.id === studyId)
+  if (!real) return null
+  const b = billing(real)
+  const deposit = real.payments.filter((x) => x.kind === 'deposit').reduce((n, x) => n + x.amount, 0)
+  const balance = real.payments.filter((x) => x.kind === 'balance').reduce((n, x) => n + x.amount, 0)
+  return (
+    <div className="pt-4">
+      <h2 className="text-title-s leading-[25px] text-text-title">Payment Overview</h2>
+      <div className="flex pt-2"><Money short label="Total Paid" value={money(deposit + balance)} /></div>
+      <div className="grid grid-cols-2 items-start gap-6 pt-5">
+        <div>
+          <h2 className="pb-2 text-title-s leading-[25px] text-text-title">Billing</h2>
+          <Billing lines={feeLines(real)}>
+            <BillLine bold line={{ label: 'Total cost', amount: money(b.total) }} />
+            <BillLine line={{ label: 'Paid: Deposit', detail: DEPOSIT_RULE, amount: `-${money(deposit)}` }} />
+            <BillLine line={{ label: 'Paid: Due Payment', amount: `-${money(balance)}` }} />
+          </Billing>
+        </div>
+        <div>
+          <h2 className="pb-3 text-title-s leading-[25px] text-text-title">Transactions</h2>
+          <div className="flex flex-col gap-2">
+            {real.payments.filter((x) => x.kind !== 'refund').map((x) => (
+              <Transaction key={x.id} title={x.kind === 'deposit' ? 'Deposit - Paid' : 'Billed Invoice - Paid'} amount={money(x.amount)} at={monthDayYearTime(x.at)} detail={x.kind === 'deposit' ? DEPOSIT_RULE : money(x.amount)} />
+            ))}
           </div>
         </div>
-      )}
-    </AppShell>
+      </div>
+    </div>
   )
 }

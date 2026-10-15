@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { billing, counts, invoiceNumber, progressPct } from '@shared/derive'
 import { clockTime, dayLongMonthYear, dayMonthYear, money, monthDayYear, monthDayYearTime } from '@shared/format'
 import { useClient, useStudies } from '../platform'
+import { DEPOSIT_RULE } from '@shared/platform'
 
 /** A line of the billing card (1627:96779). `sub` is the working under it. */
 export interface BillingRow {
@@ -35,7 +36,7 @@ export function useBill(studyId?: string) {
       BILLING,
       BILLING_TOTAL: {
         total: { label: 'Total cost', amount: money(b?.total ?? 0) },
-        less: { label: 'Less: Incentive Deposit', amount: `-${money(b?.deposit ?? 0)}`, sub: study ? `$${study.rates.incentivePer} x ${study.required} participants` : '', info: true },
+        less: { label: 'Less: Deposit', amount: `-${money(b?.deposit ?? 0)}`, sub: DEPOSIT_RULE, info: true },
         net: { label: 'Net payable cost', amount: money(b?.net ?? 0) },
       },
       INVOICE: {
@@ -63,9 +64,9 @@ export function useBill(studyId?: string) {
       },
       /** The deposit and the balance as the Transactions list writes them. */
       transactions: (study?.payments ?? []).map((x) => ({
-        label: x.kind === 'deposit' ? 'Incentive Deposit Paid' : x.kind === 'balance' ? 'Balance Paid' : 'Refund Received',
+        label: x.kind === 'deposit' ? 'Deposit Paid' : x.kind === 'balance' ? 'Balance Paid' : 'Refund Received',
         amount: money(x.amount), at: monthDayYearTime(x.at),
-        sub: x.kind === 'deposit' && study ? `$${study.rates.incentivePer} x ${study.required} participants` : `Invoice ${number}`,
+        sub: x.kind === 'deposit' && study ? DEPOSIT_RULE : `Invoice ${number}`,
       })),
     }
   }, [studies, studyId, client])

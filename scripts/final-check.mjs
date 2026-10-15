@@ -132,14 +132,14 @@ const fillAudience = (participants) => `(async () => {
   __type(__all('main input')[0], ${JSON.stringify(participants)})
   await __choose(__btn('2 countries selected'), 'United Kingdom', 'Canada')
   await __choose(__btn('All Genders'), 'Female')
-  await __choose(__btn('2 range selected'), '18–20', '21–29', '30–39', '40–49')
+  await __choose(__btn('2 range selected'), '18–20', '21–29', '30–39', '40–54')
   __ph('e.g. Product Manager', ${JSON.stringify(AUDIENCE.roles)}); __ph('e.g. Product, Engineering, Marketing', ${JSON.stringify(AUDIENCE.functions)})
   __ph('e.g. SQL, Figma', ${JSON.stringify(AUDIENCE.skills)}); __ph('e.g. Healthcare, Finance', ${JSON.stringify(AUDIENCE.industries)})
   __all('[role=radio]')[1].click(); await __wait()
   await __choose(__btn('Select tiers...'), 'Silver and above')
   return true })()`
 /** Education is left as the step opens with it; the pool holds one level of education, so any other would estimate an audience of none. */
-const AUDIENCE_SHOWN = ['United States of America, Canada', 'Female', "Graduate or Bachelor's", '30–39, 40–49', 'Oncologist, Nurse', 'Consultation', 'Triage', 'Healthcare', 'Prefer fresh people', 'Silver and above']
+const AUDIENCE_SHOWN = ['United States of America, Canada', 'Female', "Graduate or Bachelor's", '30–39, 40–54', 'Oncologist, Nurse', 'Consultation', 'Triage', 'Healthcare', 'Prefer fresh people', 'Silver and above']
 
 const hours = (from, to) => `await __time('Monday from', ${JSON.stringify(from)}); await __time('Monday to', ${JSON.stringify(to)}); __al('Copy Monday').click(); await __wait(); __al('Saturday').click(); await __wait(); __al('Sunday').click(); await __wait();`
 const address = (street, city, zip) => `__ph('Office number, Building/Street name, Area', ${JSON.stringify(street)}); __ph('City, State', ${JSON.stringify(city)}); __ph('Zip Code', ${JSON.stringify(zip)}); await __wait(); __all('button').filter((b) => b.textContent.trim() === 'Add Address').pop().click(); await __wait();`

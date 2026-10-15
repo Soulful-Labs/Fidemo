@@ -59,7 +59,8 @@ export interface StudyForm {
   // 2. Audience
   participants: string
   countries: string[]
-  gender: string
+  /** Every gender the study accepts. "All Genders", or nothing, means any. */
+  gender: string[]
   /** Every level of education the study accepts. Empty means any level. */
   education: string[]
   ageRanges: string[]
@@ -133,7 +134,7 @@ export function blankForm(): StudyForm {
     duration: 40, endDate: '', title: '', description: '', thumbnail: '', image: '',
     participants: '10',
     countries: ['United States of America', 'United Kingdom'],
-    gender: 'All Genders', education: ["Graduate or Bachelor's"],
+    gender: ['All Genders'], education: ["Graduate or Bachelor's"],
     ageRanges: ['18–20', '21–29'],
     roles: '', functions: '', skills: '', industries: '',
     condition: 'na', tiers: '',
@@ -240,6 +241,9 @@ const EDUCATION_WORDS = ['high school', 'bachelor', 'master', 'doctor']
 /** The levels a form accepts. A form saved before education took several levels holds one string. */
 export const educationOf = (f: Pick<StudyForm, 'education'>): string[] =>
   Array.isArray(f.education) ? f.education : typeof f.education === 'string' && f.education ? [f.education] : []
+/** The genders a form accepts, without "All Genders". Empty means any. A form saved before gender took several holds one string. */
+export const gendersOf = (f: Pick<StudyForm, 'gender'>): string[] =>
+  (Array.isArray(f.gender) ? f.gender : typeof f.gender === 'string' && f.gender ? [f.gender] : []).filter((g) => g !== 'All Genders')
 
 /**
  * What the Audience step still needs, or nothing. Work Function and Industry
@@ -272,7 +276,7 @@ export function audiencePeople(state: PlatformState, f: StudyForm, now: Date = n
   return state.people.filter((p) => {
     if (p.status !== 'active' || p.identity.state !== 'verified') return false
     if (codes.length && !codes.some((c) => p.location.endsWith(`, ${c}`) || p.location.includes(c))) return false
-    if (f.gender && f.gender !== 'All Genders' && p.profile.gender !== f.gender) return false
+    { const wanted = gendersOf(f); if (wanted.length && !wanted.includes(p.profile.gender)) return false }
     if (edu.length && !edu.some((w) => p.profile.education.toLowerCase().includes(w))) return false
     if (f.ageRanges.length) { const age = ageFrom(p.profile.dob, now); if (age === undefined || !f.ageRanges.some((r) => inRange(age, r))) return false }
     if (roles.length && !roles.some((r) => p.profile.occupation.toLowerCase().includes(r))) return false
@@ -299,7 +303,7 @@ export function audiencePills(f: StudyForm): StudySetup['audience'] {
   return [
     { value: f.participants.trim() || '0', icon: 'people' },
     ...(f.countries.length ? [{ value: f.countries.join(', '), icon: 'pin' }] : []),
-    ...pill('Gender', f.gender), ...pill('Education', educationOf(f).join(', ')), ...pill('Age', f.ageRanges.join(', ')),
+    ...pill('Gender', gendersOf(f).join(', ') || 'All Genders'), ...pill('Education', educationOf(f).join(', ')), ...pill('Age', f.ageRanges.join(', ')),
     ...pill('Work Functions', list(f.functions).join(', ')), ...pill('Roles', list(f.roles).join(', ')),
     ...pill('Industry', list(f.industries).join(', ')), ...pill('Skills', list(f.skills).join(', ')),
     ...pill('Condition', CONDITION[f.condition].label ?? ''), ...pill('Profile Tiers', f.tiers),
@@ -505,7 +509,7 @@ function questionOf(q: Question, label: string, marks: string[]): FormQuestion {
  * Weekly hours cannot be read back from dated slots, so they open unset.
  */
 export function formFromStudy(s: Study): StudyForm {
-  if (s.form) { const kept = structuredClone(s.form); return { ...kept, education: educationOf(kept) } }
+  if (s.form) { const kept = structuredClone(s.form); return { ...kept, education: educationOf(kept), gender: gendersOf(kept).length ? gendersOf(kept) : ['All Genders'] } }
   const f = blankForm()
   const type: FormType = s.type === 'group_video_call' ? 'video_call' : s.type === 'in_person_group' ? 'in_person' : s.type
   const pre = s.preScreener.map((q, i): FormQuestion => ({

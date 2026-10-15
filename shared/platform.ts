@@ -58,13 +58,25 @@ export const priceStudy = (type: StudyType, incentivePer: number, targeting: Tar
   moderationPer: FEES.MODERATION,
 })
 
+/** The share of each cost taken up front: 25% (client designs, Survey_Study Setup, 15 Oct 2026). */
+export const DEPOSIT_SHARE = 0.25
+const cents = (n: number) => Math.round(n * 100) / 100
+
 /**
- * The one deposit rule (workflow 33): the incentives for the full sample are
- * taken when the study is submitted. Recruitment, moderation and the platform
- * fee are billed on the people actually delivered (workflow 54). Every screen
- * that states a deposit, and the store that takes it, reads this.
+ * The one deposit rule, decided 15 Oct 2026: 25% of the recruitment cost and
+ * 25% of the incentive cost for the full sample, taken when the study is
+ * submitted. Everything else is billed on the people actually delivered
+ * (workflow 54). Every screen that states a deposit, and the store that takes
+ * it, reads this. It replaces "the full sample's incentives at submission".
  */
-export const depositFor = (rates: Pick<StudyRates, 'incentivePer'>, required: number): number => rates.incentivePer * Math.max(0, required)
+export const depositParts = (rates: Pick<StudyRates, 'incentivePer' | 'recruitingPer'>, required: number): { recruitment: number; incentive: number; total: number } => {
+  const n = Math.max(0, required)
+  const recruitment = cents(DEPOSIT_SHARE * rates.recruitingPer * n), incentive = cents(DEPOSIT_SHARE * rates.incentivePer * n)
+  return { recruitment, incentive, total: cents(recruitment + incentive) }
+}
+export const depositFor = (rates: Pick<StudyRates, 'incentivePer' | 'recruitingPer'>, required: number): number => depositParts(rates, required).total
+/** How a deposit is written wherever one is listed: "25% of recruitment + 25% of incentives". */
+export const DEPOSIT_RULE = `${DEPOSIT_SHARE * 100}% of recruitment + ${DEPOSIT_SHARE * 100}% of incentives`
 
 /** What a study will cost at its full sample, line by line, from the fee table above. */
 export interface Quote {
@@ -75,8 +87,10 @@ export interface Quote {
   moderation: number
   platformFee: number
   total: number
-  /** Taken at submission (depositFor). */
+  /** Taken at submission (depositFor): its two parts and the total. */
   deposit: number
+  depositRecruitment: number
+  depositIncentive: number
   /** Billed as participants complete: everything that is not the deposit. */
   later: number
 }
@@ -85,8 +99,8 @@ export function quoteStudy(type: StudyType, required: number, incentivePer: numb
   const participants = Math.max(0, required || 0)
   const incentives = rates.incentivePer * participants, recruitment = rates.recruitingPer * participants, moderation = rates.moderationPer * participants
   const total = rates.platformFee + incentives + recruitment + moderation
-  const deposit = depositFor(rates, participants)
-  return { participants, rates, incentives, recruitment, moderation, platformFee: rates.platformFee, total, deposit, later: total - deposit }
+  const parts = depositParts(rates, participants)
+  return { participants, rates, incentives, recruitment, moderation, platformFee: rates.platformFee, total, deposit: parts.total, depositRecruitment: parts.recruitment, depositIncentive: parts.incentive, later: total - parts.total }
 }
 
 /** What a profile can say about someone's work. A study's audience names these in its own words; a match is the same words, ignoring case. */

@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { MARKS, blankForm, blankQuestion, educationOf, formFromStudy } from '@shared/studyForm'
+import { MARKS, blankForm, blankQuestion, educationOf, formFromStudy, gendersOf } from '@shared/studyForm'
 import type { FormOption, FormQuestion, FormType, StudyForm } from '@shared/studyForm'
 import type { AuthoredKind } from '@shared/questions'
 import type { Study } from '@shared/types'
@@ -53,7 +53,7 @@ function kept(owner: string): Kept | undefined {
   try {
     const k = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Kept | null
     // A draft kept before education took several levels holds one string; it is read as a list.
-    return k && k.owner === owner && k.draft && Array.isArray(k.draft.questions) ? { ...k, draft: { ...k.draft, education: educationOf(k.draft) } } : undefined
+    return k && k.owner === owner && k.draft && Array.isArray(k.draft.questions) ? { ...k, draft: { ...k.draft, education: educationOf(k.draft), gender: gendersOf(k.draft).length ? gendersOf(k.draft) : ['All Genders'] } } : undefined
   } catch { return undefined }
 }
 
@@ -79,7 +79,7 @@ export function CreateProvider({ children }: { children: ReactNode }) {
     inProgress: () => Boolean(draftId) || Boolean(draft.title.trim() || draft.description.trim() || draft.thumbnail || draft.tasks.length || draft.addresses.length || draft.sessions.length
       || draft.availabilitySet || draft.questions.some((q) => q.text.trim())),
     set: (k, v) => setDraft((d) => ({ ...d, [k]: v })),
-    form: () => { const { surveyOpen: _open, aiPrompt: _prompt, ...form } = draft; return { ...form, education: educationOf(form) } },
+    form: () => { const { surveyOpen: _open, aiPrompt: _prompt, ...form } = draft; return { ...form, education: educationOf(form), gender: gendersOf(form).length ? gendersOf(form) : ['All Genders'] } },
   }), [draft, draftId, open, reset])
   return <CreateCtx.Provider value={value}>{children}</CreateCtx.Provider>
 }
