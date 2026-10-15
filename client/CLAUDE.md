@@ -1640,7 +1640,33 @@ the policy changes across the three apps in a browser.
   team processes payouts by hand in the console. The Pay tab's payout list is
   read-only.
 - **Studies tabs** read Drafts, Ongoing, Completed, Sessions. `/studies` is
-  still Ongoing.
+  still Ongoing. (Superseded the same day; see "Client designs, 15 Oct 2026".)
 
 `node --experimental-websocket scripts/ten-check.mjs` (repo root) checks all
 thirteen in a browser.
+
+## Client designs, 15 Oct 2026
+
+The designer's 28 JPGs loose in `client/figma-export/` win over anything above
+about how those screens look, except where a decision of 15 Oct kept an
+earlier one (duration copy, required/optional labels, one-click delete, card
+preselected at Publish, no AutoPay, no 3% fee line, "Prefer fresh people").
+
+- **Sidebar:** Studies has two sub-items, My Studies and Sessions. My Studies
+  has three tabs: Ongoing, Drafts, Completed.
+- **Pricing is a fifth Create step** (`/studies/create/pricing`, every type):
+  Incentive Payments, Costing Summary and Payment. Study setup holds only the
+  type's own settings. The survey and diary composer is a full page ending in
+  "Save & Continue".
+- **Deposit:** 25% of recruitment plus 25% of incentives, taken at submission
+  (`depositParts`, `DEPOSIT_RULE` in `shared/platform.ts`). The drawn card
+  swaps the two labels; the build has them the right way round.
+- **Audience popovers** are `CheckPicker`. Option lists keep ours below the
+  rows drawn. Gender is a list (`gendersOf`).
+- **In review:** a submitted study opens `SubmittedStudy` (About, Audience,
+  Screener, Study, Payment, Revisions History). **Invite From Pool** sits in
+  the Matched tab of every type.
+- **Left out on purpose:** No-match's Organization size, Trust Score and
+  "not in the last 6 months"; Publish's Organization Size chip; the preview's
+  match score; Profile Tiers' "top 10%/25%".
+
