@@ -372,7 +372,8 @@ export function buildSeed(now: Date = new Date()): PlatformState {
   const settle = (study: Study, paidDaysAfter: number | null) => {
     const delivered = study.participations.filter((p) => p.state === 'completed').length
     const { platformFee, recruitingPer, incentivePer, moderationPer } = study.rates
-    const net = platformFee + (recruitingPer + incentivePer + moderationPer) * delivered - incentivePer * study.required
+    // Less the deposit taken at submission, by the one rule (shared/platform.ts depositFor).
+    const net = platformFee + (recruitingPer + incentivePer + moderationPer) * delivered - depositFor(study.rates, study.required)
     if (net > 0 && paidDaysAfter != null && study.completedAt) study.payments.push(payment(study, 'balance', net, plus(study.completedAt, paidDaysAfter)))
     return net
   }

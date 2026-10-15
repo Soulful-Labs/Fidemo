@@ -150,8 +150,9 @@ const id = await C.ev(`(__st().studies.find((s) => s.title === ${JSON.stringify(
 console.log('submitted:', id, 'landed on', await C.path())
 
 // 2. reload, open the study, read its screener back
-await C.open(`/client/studies/${id}/manage`)
-const inClient = await C.ev(READ)
+// A study in review reads back on its own screen (15 Oct 2026); the questions are on its Screener tab, each type above its question.
+await C.open(`/client/studies/${id}/manage?tab=screener`)
+const inClient = await C.ev(read(true))
 say(2, 'Submit it, reload the page, open the study: all 3 are there, right types, right order', judge(inClient), `${await C.path()} after a full reload: ${show(inClient)}`)
 
 // 3. the console, signed in as Peter, reviewing that study

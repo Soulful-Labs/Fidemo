@@ -13,8 +13,11 @@ export function useQuote() {
 }
 
 /** The costs that are not the deposit, in the sentence both payment cards end with. */
+/** A sum of money with its cents written out ("$157.50", not "$157.5"): a 25% deposit can come to half a dollar. */
+export const cash = (n: number): string => { const t = money(n); return /\.\d$/.test(t) ? `${t}0` : t }
+
 export const laterLine = (q: ReturnType<typeof quoteStudy>) =>
-  `The remaining project costs (${money(q.incentives - q.depositIncentive)} for incentives, ${money(q.recruitment - q.depositRecruitment)} for recruitment, ${money(q.moderation)} for moderation and the ${money(q.platformFee)} platform fee) will be billed as participants complete their sessions.`
+  `The remaining project costs (${cash(q.incentives - q.depositIncentive)} for incentives, ${cash(q.recruitment - q.depositRecruitment)} for recruitment, ${money(q.moderation)} for moderation and the ${money(q.platformFee)} platform fee) will be billed as participants complete their sessions.`
 
 const DOLLAR = (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
@@ -122,9 +125,9 @@ export function Payment({ className }: { className?: string } = {}) {
           {/* One deposit rule (shared/platform.ts depositParts): 25% of the incentive cost and 25% of the recruitment cost,
               both for the full sample. The 15 Oct 2026 frame draws the two labels the wrong way round ("Recruitment deposit
               $350" where 25% of $500 recruitment is $125); the labels here follow the maths. */}
-          <Row label="Incentive deposit" note={`${DEPOSIT_SHARE * 100}% of cost`} value={money(q.depositIncentive)} />
-          <Row label="Recruitment deposit" note={`${DEPOSIT_SHARE * 100}% of cost`} value={money(q.depositRecruitment)} />
-          <Row label="To pay upfront" value={money(q.deposit)} strong />
+          <Row label="Incentive deposit" note={`${DEPOSIT_SHARE * 100}% of cost`} value={cash(q.depositIncentive)} />
+          <Row label="Recruitment deposit" note={`${DEPOSIT_SHARE * 100}% of cost`} value={cash(q.depositRecruitment)} />
+          <Row label="To pay upfront" value={cash(q.deposit)} strong />
         </div>
         <ul className="flex list-disc flex-col gap-1 pl-4 text-text-regular text-text-subtitle marker:text-text-body">
           <li>{laterLine(q)}</li>

@@ -223,7 +223,7 @@ await C.click('Proceed to Publish', 600)
 // ---- 2. the fee shown on Publish is the fee taken
 const g2 = []
 const publishText = await C.ev('document.body.innerText')
-const upfront = (/To pay upfront\s*\$([\d,]+)/.exec(publishText) || [])[1]
+const upfront = (/To pay upfront\s*\$([\d,]+(?:\.\d+)?)/.exec(publishText) || [])[1]
 const total = (/Total Study Cost\s*\$([\d,]+)/.exec(publishText) || [])[1]
 if (/3%|processing fee/i.test(publishText)) g2.push('Publish still mentions a processing fee')
 const audienceChip = (/Estimated Audience:\s*([\d,]+)/.exec(publishText) || [])[1]

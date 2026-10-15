@@ -249,10 +249,12 @@ if (taken1 !== `deposit ${m1.c.deposit}`) g3.push(`the store took "${taken1}", t
 // ---- 4. editing: a submitted study from Manage Study, then a draft from Drafts
 const g4 = []
 await C.go(`/client/studies/${SURVEY.id}/manage`); await sleep(400)
-const editButtons = await C.ev(`__all('button').filter((b) => b.textContent.trim() === 'Edit').length`)
-if (editButtons !== 4) g4.push(`a study in review shows ${editButtons} Edit buttons, not 4`)
-await C.ev(`__all('button').filter((b) => b.textContent.trim() === 'Edit')[2].click()`); await sleep(500)
-if (!(await C.path()).endsWith('/create/screener')) g4.push('the Screener Edit opened ' + await C.path())
+// A study in review has one edit pencil on its own screen (Manage Study, 15 Oct 2026); it opens the Create flow with everything in it.
+const pencil = await C.ev(`Boolean(document.querySelector('[aria-label="Edit study"]'))`)
+if (!pencil) g4.push('a study in review has no edit pencil')
+await C.ev(`document.querySelector('[aria-label="Edit study"]').click()`); await sleep(500)
+if (!(await C.path()).endsWith('/create/about')) g4.push('the edit pencil opened ' + await C.path())
+await C.go('/client/studies/create/screener'); await sleep(400)
 const reopened = await C.ev(`__all('input').filter((e) => e.placeholder === 'Enter question text...').map((e) => e.value).filter(Boolean)`)
 if (JSON.stringify(reopened) !== JSON.stringify(THREE.map((q) => q.text))) g4.push('the screener that opened is not this study\'s: ' + JSON.stringify(reopened))
 await C.go('/client/studies/create/about'); await C.ev(FORMS); await sleep(300)

@@ -7,7 +7,7 @@ import { summarise } from '@shared/studyForm'
 import { useDraft } from '../../mock/createStore'
 import CreateShell, { SaveDraftButton } from './CreateShell'
 import BreakdownPanel from './BreakdownPanel'
-import { laterLine, useQuote } from './StudyBits'
+import { cash, laterLine, useQuote } from './StudyBits'
 import { money } from '@shared/format'
 import { useStudies } from '../../platform'
 import { AddCardPanel, CardMark } from '../payments/PaymentPanels'
@@ -181,7 +181,7 @@ export default function Publish() {
           </div>
 
           <div className="flex flex-col rounded-md bg-bg-0 px-3 py-1">
-            {[['Total Study Cost', money(quote.total)], ['To pay upfront', money(quote.deposit)]].map(([k, v]) => (
+            {[['Total Study Cost', money(quote.total)], ['To pay upfront', cash(quote.deposit)]].map(([k, v]) => (
               <div key={k} className="flex items-center justify-between gap-4 border-b-1 border-stroke-input py-2 last:border-b-0">
                 <span className="text-text-regular text-text-title">{k}</span>
                 <span className="text-text-regular text-text-title">{v}</span>
