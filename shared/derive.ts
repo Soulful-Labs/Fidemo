@@ -17,7 +17,7 @@ import { CERTIFICATE, POINTS, TRUST, pointsToUsd, tierFor, trustForStars, trustS
 import type { TrustInputs } from './rules'
 import type {
   AppNotification, Booking, Client, Participation, ParticipationState, Person, PlatformState, PreScreenQuestion,
-  Question, RatingState, RepeatRule, Report, Study, StudyPayment, StudyType, TeamMember, Ticket, Tier,
+  Question, RatingState, RepeatRule, Report, Study, StudyPayment, StudyType, TeamMember, TeamNotice, Ticket, Tier,
 } from './types'
 
 // ------------------------------------------------------------------ helpers
@@ -987,6 +987,33 @@ export function refundCases(state: PlatformState): RefundCase[] {
 
 export const refundsPending = (state: PlatformState): RefundCase[] => refundCases(state).filter((r) => !r.confirmed)
 
+/**
+ * A finished study whose participants are still to be paid. Nothing is paid
+ * automatically: the team processes these by hand in the console (Finance,
+ * Payouts). `ready` can be paid now; the rest are sessions without a code
+ * confirmed on both sides ("no code, no payment").
+ */
+export interface PayoutCase {
+  study: Study
+  client?: Client
+  owed: Participation[]
+  ready: Participation[]
+  amount: number
+  /** The team notification raised when the study finished, when there is one. */
+  notice?: TeamNotice
+}
+export function payoutsToProcess(state: PlatformState): PayoutCase[] {
+  return state.studies.filter((s) => s.state === 'completed').map((study) => {
+    const owed = study.participations.filter((p) => p.state === 'completed' && !p.paidAt)
+    const ready = owed.filter((p) => !isSessionType(study.type) || Boolean(p.code?.byClient && p.code?.byParticipant))
+    return {
+      study, client: state.clients.find((c) => c.id === study.clientId), owed, ready, amount: ready.length * study.rates.incentivePer,
+      notice: (state.teamNotices ?? []).find((n) => n.kind === 'payouts' && n.studyId === study.id),
+    }
+  }).filter((c) => c.owed.length > 0)
+    .sort((a, b) => (b.notice?.at ?? b.study.completedAt ?? '').localeCompare(a.notice?.at ?? a.study.completedAt ?? ''))
+}
+
 /** The console's Finance tiles. */
 export function financeTotals(state: PlatformState) {
   const rows = ledger(state)
@@ -1014,9 +1041,10 @@ export function consoleDashboard(state: PlatformState) {
   const fresh = ticketsIn(state, 'new')
   const refunds = refundsPending(state)
   const noShows = noShowsToVerify(state)
+  const payouts = payoutsToProcess(state)
   return {
     screeners, checks, identity: checks.filter((c) => c.kind === 'identity'), profession: checks.filter((c) => c.kind === 'profession'),
-    business, reports, tickets: fresh, refunds, noShows,
+    business, reports, tickets: fresh, refunds, noShows, payouts,
     tiles: {
       screenersToReview: screeners.length,
       onboardingToVerify: checks.length + business.length,
@@ -1025,10 +1053,10 @@ export function consoleDashboard(state: PlatformState) {
     },
     tabs: {
       onboarding: checks.length + business.length,
-      studies: screeners.length + refunds.length,
+      studies: screeners.length + refunds.length + payouts.length,
       support: fresh.length,
       manage: noShows.length + reports.length,
-      all: checks.length + business.length + screeners.length + refunds.length + fresh.length + noShows.length + reports.length,
+      all: checks.length + business.length + screeners.length + refunds.length + payouts.length + fresh.length + noShows.length + reports.length,
     },
   }
 }

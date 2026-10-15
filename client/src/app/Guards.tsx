@@ -33,9 +33,10 @@ export function RequireNoAccount({ children }: { children: ReactNode }) {
 }
 
 /** The steps, in the order the frames put them. */
-export function nextOnboardingStep(account: { company?: string; cardLast4?: string }) {
+export function nextOnboardingStep(account: { company?: string; cardLast4?: string; cardSkipped?: boolean }) {
   if (!account.company) return '/organization'
-  if (!account.cardLast4) return '/payment-method'
+  // The card is optional at onboarding: Skip for now moves on, and Publish asks for one later.
+  if (!account.cardLast4 && !account.cardSkipped) return '/payment-method'
   return '/in-review'
 }
 

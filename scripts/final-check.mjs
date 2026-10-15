@@ -2,7 +2,7 @@
 // the one origin: no Edit on a live study, the fee on Publish is the fee
 // taken, Create Study starts blank, pre-screener answers are kept and shown,
 // Matched is the audience that was set, an uploaded thumbnail is the study's
-// picture, and AutoPay decides whether a payout waits for approval.
+// picture, and nothing is paid until the team processes the payout by hand.
 //
 //   npm run build:all && node scripts/serve-all.mjs
 //   node --experimental-websocket scripts/final-check.mjs
@@ -133,8 +133,8 @@ const fillAudience = (participants) => `(async () => {
   await __choose(__btn('2 countries selected'), 'United Kingdom', 'Canada')
   await __choose(__btn('All Genders'), 'Female')
   await __choose(__btn('2 range selected'), '18–20', '21–29', '30–39', '40–49')
-  __ph('Choose job roles...', ${JSON.stringify(AUDIENCE.roles)}); __ph('Select job functions...', ${JSON.stringify(AUDIENCE.functions)})
-  __ph('Choose skills...', ${JSON.stringify(AUDIENCE.skills)}); __ph('Choose industry domains...', ${JSON.stringify(AUDIENCE.industries)})
+  __ph('e.g. Product Manager', ${JSON.stringify(AUDIENCE.roles)}); __ph('e.g. Product, Engineering, Marketing', ${JSON.stringify(AUDIENCE.functions)})
+  __ph('e.g. SQL, Figma', ${JSON.stringify(AUDIENCE.skills)}); __ph('e.g. Healthcare, Finance', ${JSON.stringify(AUDIENCE.industries)})
   __all('[role=radio]')[1].click(); await __wait()
   await __choose(__btn('Select tiers...'), 'Silver and above')
   return true })()`
@@ -190,8 +190,8 @@ if (await aboutTitle() !== '') g3.push('with a draft open for editing it opened 
 if ((await titles()).filter((t) => t.startsWith(LEFT)).length !== 1) g3.push('editing then Create Study left ' + (await titles()).filter((t) => t.startsWith(LEFT)).length + ' copies of the draft')
 say(3, 'Create Study opens blank even with a draft in progress', g3, `the unfinished study went to Drafts once, as "${LEFT}", and reopened from there`)
 
-// ---- build the study the other checks follow: a survey, a narrow audience, a real picture, AutoPay off
-const S = { title: `Final ${tag}`, description: 'A survey with a narrow audience, its own picture and AutoPay off.', participants: '6', incentive: 80 }
+// ---- build the study the other checks follow: a survey, a narrow audience, a real picture
+const S = { title: `Final ${tag}`, description: 'A survey with a narrow audience and its own picture.', participants: '6', incentive: 80 }
 const picture = resolve('client/public/img/landing/create.png')
 await C.click('Survey')
 const { root } = await send('DOM.getDocument', {}, C.sid)
@@ -206,7 +206,7 @@ await C.ev(`(async () => {
   await __choose(__btn('2 countries selected'), 'United States of America', 'United Kingdom')
   await __choose(__btn('All Genders'), 'Female')
   await __choose(__btn('2 range selected'), '18–20', '21–29')
-  __ph('Choose industry domains...', 'Healthcare')
+  __ph('e.g. Healthcare, Finance', 'Healthcare'); __ph('e.g. Product, Engineering, Marketing', 'Consultation, Patient Care, Research')
   return true })()`); await sleep(300)
 const forecast = await C.ev(`(/~([\\d,]+)\\s*eligible members/.exec(document.body.innerText) || [])[1]`)
 await C.click('Continue')
@@ -216,8 +216,6 @@ await C.click('Create Survey Questionnaire', 500)
 await C.ev(`(async () => { __ph('Enter question text...', 'How often do you shop online?'); __ph('Enter option', 'Weekly', 0); __ph('Enter option', 'Monthly', 1); return true })()`); await sleep(200)
 await C.click('Submit Survey', 500)
 await C.ev(`(() => { __type(__al('Incentive Amount'), '$${S.incentive}'); return true })()`); await sleep(150)
-const autoPayWas = await C.ev(`__al('AutoPay').getAttribute('aria-checked')`)
-await C.ev(`__al('AutoPay').click()`); await sleep(150)
 await C.click('Proceed to Publish', 600)
 
 // ---- 2. the fee shown on Publish is the fee taken
@@ -227,10 +225,10 @@ const upfront = (/To pay upfront\s*\$([\d,]+)/.exec(publishText) || [])[1]
 const total = (/Total Study Cost\s*\$([\d,]+)/.exec(publishText) || [])[1]
 if (/3%|processing fee/i.test(publishText)) g2.push('Publish still mentions a processing fee')
 const audienceChip = (/Estimated Audience:\s*([\d,]+)/.exec(publishText) || [])[1]
-await C.ev(FORMS); await C.ev(`(() => { __ph('0000 0000 0000 0000', '4242 4242 4242 4242'); __ph('MM / YYYY', '12 / 2028'); __ph('000', '123'); __ph('Enter name', 'Jennifer Lee'); return true })()`)
+await C.ev(FORMS) // the demo client's saved card is already selected
 await C.click('Publish Study', 900)
 S.id = await C.ev(`(__st().studies.find((x) => x.title === ${JSON.stringify(S.title)}) || {}).id`)
-const stored = await C.ev(`(() => { const s = __st().studies.find((x) => x.id === ${JSON.stringify(S.id)}); return { payments: s.payments.map((p) => p.kind + ' ' + p.amount), image: (s.image || '').slice(0, 30), bytes: (s.image || '').length, autoPay: s.autoPay, rates: s.rates, required: s.required } })()`)
+const stored = await C.ev(`(() => { const s = __st().studies.find((x) => x.id === ${JSON.stringify(S.id)}); return { payments: s.payments.map((p) => p.kind + ' ' + p.amount), image: (s.image || '').slice(0, 30), bytes: (s.image || '').length, rates: s.rates, required: s.required } })()`)
 if (stored.payments.join() !== `deposit ${Number((upfront || '').replace(/,/g, ''))}`) g2.push(`Publish said $${upfront} upfront; the store took ${stored.payments.join() || 'nothing'}`)
 const fromRates = stored.rates.platformFee + (stored.rates.recruitingPer + stored.rates.incentivePer + stored.rates.moderationPer) * stored.required
 if (fromRates !== Number((total || '').replace(/,/g, ''))) g2.push(`Publish said a total of $${total}; the study's rates come to $${fromRates}`)
@@ -333,9 +331,8 @@ const consoleAnswers = flat(await I.ev('document.body.innerText'))
 if (!consoleAnswers.includes(flat(pre[0].prompt)) || !consoleAnswers.includes(flat(answer))) g4.push(`console: "${answer}" is not shown for "${pre[0].prompt}"`)
 say(4, 'A respondent\'s pre-screener answers are visible to the client and the console', g4, `"${pre[0].prompt}" answered "${answer}", shown above the rest of the screener answers in both`)
 
-// ---- 7. AutoPay
+// ---- 7. Payouts: never automatic; the team processes them once the study finishes
 const g7 = []
-if (autoPayWas !== 'true' || stored.autoPay !== false) g7.push(`the toggle read ${autoPayWas} before it was switched off; the study holds autoPay ${stored.autoPay}`)
 await I.click('Qualify', 800)
 await R.go(`/studies/${S.id}/survey`); await sleep(500)
 await R.ev(`[...document.querySelectorAll('[role=radio]')].find((o) => o.innerText.trim() === 'Weekly').click()`); await sleep(250)
@@ -346,14 +343,21 @@ const before = await wallet()
 await sleep(8000)
 const waited = await mine()
 if (waited.state !== 'completed') g7.push('the survey was not completed: ' + waited.state)
-if (waited.paidAt || await wallet() !== before) g7.push('with AutoPay off they were paid anyway, 8 seconds after completing')
+if (waited.paidAt || await wallet() !== before) g7.push('they were paid automatically, 8 seconds after completing')
 await C.go(`/client/studies/${S.id}/pay`); await sleep(600)
-await C.click('Approve 1', 900)
+if (await C.has('Approve ')) g7.push('the client can still approve payouts on the Pay tab')
+await C.go('/client/studies'); await sleep(400)
+await C.ev(`(() => { const row = [...document.querySelectorAll('tr')].find((r) => r.innerText.includes(${JSON.stringify(S.title)})); row.querySelector('[aria-label="Study options"]').click(); return true })()`); await sleep(300)
+await C.click('Stop-complete Study', 900)
+if ((await mine()).paidAt) g7.push('finishing the study paid them without the team')
+await I.go('/internal/finance/payouts'); await sleep(500)
+await I.ev(`(() => { const row = [...document.querySelectorAll('div')].filter((r) => r.innerText?.includes(${JSON.stringify(S.title)}) && [...r.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Process Payouts')).sort((a, b) => a.innerText.length - b.innerText.length)[0]; [...row.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Process Payouts').click(); return true })()`); await sleep(400)
+await I.ev(`(() => { [...document.querySelectorAll('[role=dialog] button')].find((x) => /^Process [0-9]/.test(x.textContent.trim())).click(); return true })()`); await sleep(900)
 const paidNow = await mine()
-if (!paidNow.paidAt) g7.push('approving the payout on the Pay tab did not pay them: ' + await C.ev(`document.querySelector('[role=status], [role=alert]')?.innerText ?? ''`))
+if (!paidNow.paidAt) g7.push('processing the payout in the console did not pay them')
 await sleep(600)
 if (await wallet() !== before + S.incentive) g7.push(`the wallet went from ${before} to ${await wallet()}, not up by ${S.incentive}`)
-say(7, 'AutoPay does what it says', g7, `switched off for this study: 8 seconds after completing, not paid (the automatic payout takes 5); paid $${S.incentive} the moment the client approved it on the Pay tab. Switched on is the journey's step 10, where the wallet rises with nobody approving`)
+say(7, 'Payouts are processed by the team, never automatically', g7, `8 seconds after completing, not paid; the Pay tab has no approve; the client finished the study, still not paid; paid $${S.incentive} the moment the team processed it in Finance > Payouts`)
 
 console.log(`\n${[1, 2, 3, 4, 5, 6, 7].filter((n) => results[n]).length} of 7 yes`)
 if (errors.length) console.log('\npage errors:\n  ' + [...new Set(errors)].join('\n  '))

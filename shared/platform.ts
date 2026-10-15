@@ -184,13 +184,12 @@ export const isSessionType = (t: StudyType): boolean => SESSION_TYPES.includes(t
  *
  * A client marked `simulated` has nobody driving it, so the store plays its
  * part: it qualifies an applicant after `screenerToInvite` and rates them
- * "excellent" when the payout is approved. A payout is approved
- * `completionToPaid` after completion for every client, which stands in for
- * workflow 46 (the client approving the payout list).
+ * "excellent" when their payout is processed. No payout is ever made on a
+ * timer: the team processes them by hand in the console once a study has
+ * finished.
  */
 export const TIMINGS = {
   screenerToInvite: 3000,
-  completionToPaid: 5000,
   fakeServer: 600,
   signUpCelebration: 5000,
   autoReply: 2500,

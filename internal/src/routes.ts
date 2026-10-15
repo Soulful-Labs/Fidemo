@@ -72,6 +72,7 @@ const routes: RouteObject[] = [
   { path: '/support/:id', element: inside(TicketPage) },
   { path: '/finance', element: inside(Finance) },
   { path: '/finance/refunds', element: inside(Finance, { refunds: true }) },
+  { path: '/finance/payouts', element: inside(Finance, { payouts: true }) },
   { path: '/finance/refunds/:id', element: inside(RefundDetail) },
   { path: '/pricing', element: inside(Pricing) },
   { path: '/pricing/:what', element: inside(EditPricing) },

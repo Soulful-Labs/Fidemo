@@ -212,6 +212,69 @@ export function AddCardPanel({ open, onClose }: { open: boolean; onClose: () => 
   )
 }
 
+/**
+ * Edit Card. Not drawn in the exports. The client changes a saved card's
+ * expiry and name, or replaces it with a new card number. The card keeps its
+ * place and whether it is the default; Publish then charges the new details.
+ */
+export function EditCardPanel({ open, onClose, last4 }: { open: boolean; onClose: () => void; last4?: string }) {
+  const { cards, updateCard } = useWorkspace()
+  const toast = useToast()
+  const card = cards.find((c) => c.last4 === last4)
+  const [values, setValues] = useState<Record<string, string>>({})
+  const set = (k: string, v: string) => setValues((cur) => ({ ...cur, [k]: v }))
+  const close = () => { setValues({}); onClose() }
+
+  const save = () => {
+    if (!card) { close(); return }
+    const typed = (values['New Card Number'] ?? '').replace(/\D/g, '')
+    if (typed && typed.length < 12) { toast('Please enter a full card number, or leave it blank to keep this card'); return }
+    const expiry = values['Expiry Date'] ?? ''
+    if (!/^\d{2}\s*\/\s*\d{2,4}$/.test(expiry)) { toast('Expiry should be MM / YYYY'); return }
+    const [mm, yy] = expiry.replace(/\s/g, '').split('/')
+    const res = updateCard(card.last4, {
+      brand: typed ? (typed.startsWith('4') ? 'VISA' : 'Mastercard') : card.brand,
+      last4: typed ? typed.slice(-4) : card.last4,
+      expires: `Expires ${mm}/${(yy ?? '').slice(-2)}`,
+    })
+    if (!res.ok) { toast(res.why ?? 'That card could not be saved'); return }
+    toast(typed ? `Card replaced. ${card.isDefault ? 'It is your default card.' : ''}`.trim() : 'Card updated')
+    close()
+  }
+
+  return (
+    <SidePanel open={open} onClose={close} title="Edit Card" headerClassName="h-14"
+      className="h-fit" bodyClassName="grid grid-cols-2 gap-x-4 gap-y-3 px-4 pb-4 pt-4"
+      footer={
+        <div className="flex gap-3 [&_button]:h-12 [&_button]:flex-1 [&_button]:text-body-medium">
+          <Button variant="tertiary" onClick={close}>Cancel</Button>
+          <Button onClick={save}>Save</Button>
+        </div>
+      }>
+      {card && (
+        <p className="col-span-2 flex items-center gap-2 text-body-regular text-text-title">
+          <CardMark brand={card.brand} />{card.brand} <span className="text-text-body">&bull;</span> **** {card.last4}
+          <span className="text-text-regular text-text-subtitle">{card.expires}</span>
+        </p>
+      )}
+      {[
+        { label: 'New Card Number', placeholder: 'Leave blank to keep this card', wide: true },
+        { label: 'Expiry Date', placeholder: 'MM / YYYY' },
+        { label: 'CVV', placeholder: '000' },
+        { label: 'Name on Card', placeholder: 'Enter name', wide: true },
+      ].map((f) => (
+        <label key={f.label} className={cn('flex flex-col gap-2', f.wide && 'col-span-2')}>
+          <span className="text-text-regular text-text-subtitle">{f.label}</span>
+          <input value={values[f.label] ?? ''} onChange={(e) => set(f.label, e.target.value)}
+            placeholder={f.placeholder} aria-label={f.label}
+            className="flex h-12 items-center rounded-sm border-1 border-stroke-input px-4 text-body-regular text-text-title outline-none placeholder:text-text-body" />
+        </label>
+      ))}
+      <p className="col-span-2 pt-1 text-text-regular text-text-subtitle">To replace this card, type the new card number. To keep it, leave the number blank and update the expiry.</p>
+    </SidePanel>
+  )
+}
+
 /** $350 paid successfully! (1779:104245). */
 export function PaidModal({ open, onClose, studyId }: { open: boolean; onClose: () => void; studyId?: string }) {
   const { PAID_MODAL } = useBill(studyId)

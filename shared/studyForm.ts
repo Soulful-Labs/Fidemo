@@ -60,11 +60,16 @@ export interface StudyForm {
   participants: string
   countries: string[]
   gender: string
-  education: string
+  /** Every level of education the study accepts. Empty means any level. */
+  education: string[]
   ageRanges: string[]
+  /** Optional. */
   roles: string
+  /** Required: the area of work, e.g. "Product" for a product manager. */
   functions: string
+  /** Optional. */
   skills: string
+  /** Required. */
   industries: string
   condition: 'na' | 'fresh' | 'never'
   tiers: string
@@ -72,7 +77,6 @@ export interface StudyForm {
   questions: FormQuestion[]
   // 4. Study
   incentive: number
-  autoPay: boolean
   /** A survey's questions, or the questions a diary asks on each entry. */
   tasks: FormQuestion[]
   /** The form builder has been submitted. */
@@ -129,7 +133,7 @@ export function blankForm(): StudyForm {
     duration: 40, endDate: '', title: '', description: '', thumbnail: '', image: '',
     participants: '10',
     countries: ['United States of America', 'United Kingdom'],
-    gender: 'All Genders', education: "Graduate or Bachelor's",
+    gender: 'All Genders', education: ["Graduate or Bachelor's"],
     ageRanges: ['18–20', '21–29'],
     roles: '', functions: '', skills: '', industries: '',
     condition: 'na', tiers: '',
@@ -139,7 +143,7 @@ export function blankForm(): StudyForm {
       blankQuestion('Q5', 'Multi-line input'), blankQuestion('Q6', 'Slider'), blankQuestion('Q7', 'Ranking'),
       blankQuestion('Q8', 'File Upload'), blankQuestion('Q9', 'Mattrix'),
     ],
-    incentive: 700, autoPay: true, tasks: [], tasksSubmitted: false,
+    incentive: 700, tasks: [], tasksSubmitted: false,
     durationUnit: 'Day', frequency: 'Every 2 days', studyDuration: '5 days', minimumRequired: '4 days',
     buffer: '15 minutes', notice: '10                    Minutes', seats: '10 seats',
     hours: Object.fromEntries(WEEKDAYS.slice(0, 5).map((d) => [d, [{ ...BLANK_WINDOW }]])),
@@ -233,6 +237,19 @@ const TIERS_AT: Record<string, Tier[]> = {
   'Silver and above': ['silver', 'gold', 'platinum'], 'Gold and above': ['gold', 'platinum'], 'Platinum only': ['platinum'],
 }
 const EDUCATION_WORDS = ['high school', 'bachelor', 'master', 'doctor']
+/** The levels a form accepts. A form saved before education took several levels holds one string. */
+export const educationOf = (f: Pick<StudyForm, 'education'>): string[] =>
+  Array.isArray(f.education) ? f.education : typeof f.education === 'string' && f.education ? [f.education] : []
+
+/**
+ * What the Audience step still needs, or nothing. Work Function and Industry
+ * are required; Role and Skills are optional. Continue and Publish both ask.
+ */
+export function audienceFault(f: Pick<StudyForm, 'functions' | 'industries'>): string | undefined {
+  if (list(f.functions).length === 0) return 'Enter the work function on the Audience step, for example Product'
+  if (list(f.industries).length === 0) return 'Enter the industry on the Audience step, for example Healthcare'
+  return undefined
+}
 const inRange = (age: number, range: string) => {
   const [lo, hi] = range.replace('+', '–200').split(/[–-]/).map(Number)
   return age >= lo! && age <= (hi ?? lo!)
@@ -250,13 +267,13 @@ export function audiencePeople(state: PlatformState, f: StudyForm, now: Date = n
   const skills = list(f.skills).map((r) => r.toLowerCase())
   const has = (mine: string[], wanted: string[]) => wanted.some((w) => mine.some((m) => m.toLowerCase().includes(w) || w.includes(m.toLowerCase())))
   const codes = f.countries.map((c) => COUNTRY_CODE[c] ?? c)
-  const edu = EDUCATION_WORDS.find((w) => f.education.toLowerCase().includes(w))
+  const edu = educationOf(f).map((e) => EDUCATION_WORDS.find((w) => e.toLowerCase().includes(w))).filter((w): w is string => Boolean(w))
   const tiers = TIERS_AT[f.tiers]
   return state.people.filter((p) => {
     if (p.status !== 'active' || p.identity.state !== 'verified') return false
     if (codes.length && !codes.some((c) => p.location.endsWith(`, ${c}`) || p.location.includes(c))) return false
     if (f.gender && f.gender !== 'All Genders' && p.profile.gender !== f.gender) return false
-    if (edu && !p.profile.education.toLowerCase().includes(edu)) return false
+    if (edu.length && !edu.some((w) => p.profile.education.toLowerCase().includes(w))) return false
     if (f.ageRanges.length) { const age = ageFrom(p.profile.dob, now); if (age === undefined || !f.ageRanges.some((r) => inRange(age, r))) return false }
     if (roles.length && !roles.some((r) => p.profile.occupation.toLowerCase().includes(r))) return false
     if (industries.length && !industries.some((r) => p.profile.industry.toLowerCase().includes(r))) return false
@@ -282,7 +299,7 @@ export function audiencePills(f: StudyForm): StudySetup['audience'] {
   return [
     { value: f.participants.trim() || '0', icon: 'people' },
     ...(f.countries.length ? [{ value: f.countries.join(', '), icon: 'pin' }] : []),
-    ...pill('Gender', f.gender), ...pill('Education', f.education), ...pill('Age', f.ageRanges.join(', ')),
+    ...pill('Gender', f.gender), ...pill('Education', educationOf(f).join(', ')), ...pill('Age', f.ageRanges.join(', ')),
     ...pill('Work Functions', list(f.functions).join(', ')), ...pill('Roles', list(f.roles).join(', ')),
     ...pill('Industry', list(f.industries).join(', ')), ...pill('Skills', list(f.skills).join(', ')),
     ...pill('Condition', CONDITION[f.condition].label ?? ''), ...pill('Profile Tiers', f.tiers),
@@ -340,7 +357,6 @@ export function studyDetails(f: StudyForm): { label: string; value: string }[] {
     for (const d of WEEKDAYS) rows.push({ label: d, value: hours(f.hours[d] ?? []) })
     f.overrides.forEach((o) => { const a = dayOf(o.from), b = dayOf(o.to); rows.push({ label: `Override ${a ? dayLabel(a) : o.from}${o.to !== o.from && b ? ` - ${dayLabel(b)}` : ''}`, value: hours(o.windows) }) })
   }
-  rows.push({ label: 'AutoPay', value: f.autoPay ? 'On' : 'Off' })
   return rows
 }
 
@@ -349,7 +365,7 @@ export function studyDetails(f: StudyForm): { label: string; value: string }[] {
 /** The fields of a study that come from the form. The store adds the id, the client, the dates it stamps and the people. */
 export type BuiltStudy = Pick<Study,
   'title' | 'description' | 'image' | 'type' | 'industry' | 'durationMins' | 'endsAt' | 'required' | 'repeatRule' | 'rates' | 'targetProfession'
-  | 'city' | 'locations' | 'availability' | 'schedule' | 'preScreener' | 'screener' | 'tasks' | 'diary' | 'sessions' | 'autoPay'>
+  | 'city' | 'locations' | 'availability' | 'schedule' | 'preScreener' | 'screener' | 'tasks' | 'diary' | 'sessions'>
 
 /**
  * The study a form describes, or the first thing that stops it being one,
@@ -372,6 +388,7 @@ export function buildStudy(f: StudyForm, now: Date = new Date()): { ok: true; st
   // 2. Audience
   const required = /^\d+$/.test(f.participants.trim()) ? Number(f.participants) : 0
   if (required <= 0) return no('Enter the number of target participants on the Audience step')
+  { const fault = audienceFault(f); if (fault) return no(fault) }
   // 3. Screener
   const screener = buildScreener(f.questions)
   if (!screener.ok) return screener
@@ -380,7 +397,7 @@ export function buildStudy(f: StudyForm, now: Date = new Date()): { ok: true; st
   const study: BuiltStudy = {
     title: f.title.trim(), description: f.description.trim(), image: f.image || undefined, type, industry: list(f.industries).join(', '), durationMins,
     endsAt: endsAt.toISOString(), required, repeatRule: CONDITION[f.condition].rule, rates: priceStudy(type, f.incentive, { roles: targets(f.roles), skills: targets(f.skills) }),
-    targetProfession: list(f.roles).join(', '), preScreener: screener.preScreener, screener: screener.screener, autoPay: f.autoPay,
+    targetProfession: list(f.roles).join(', '), preScreener: screener.preScreener, screener: screener.screener,
   }
 
   if (type === 'survey' || type === 'diary') {
@@ -488,7 +505,7 @@ function questionOf(q: Question, label: string, marks: string[]): FormQuestion {
  * Weekly hours cannot be read back from dated slots, so they open unset.
  */
 export function formFromStudy(s: Study): StudyForm {
-  if (s.form) return structuredClone(s.form)
+  if (s.form) { const kept = structuredClone(s.form); return { ...kept, education: educationOf(kept) } }
   const f = blankForm()
   const type: FormType = s.type === 'group_video_call' ? 'video_call' : s.type === 'in_person_group' ? 'in_person' : s.type
   const pre = s.preScreener.map((q, i): FormQuestion => ({
@@ -503,7 +520,7 @@ export function formFromStudy(s: Study): StudyForm {
     participants: s.required > 0 ? String(s.required) : f.participants, roles: s.targetProfession, industries: s.industry,
     condition: s.repeatRule === 'exclude' ? 'never' : s.repeatRule === 'prefer_fresh' ? 'fresh' : 'na',
     questions: pre.length + full.length ? [...pre, ...full] : f.questions,
-    incentive: s.rates.incentivePer || f.incentive, autoPay: s.autoPay ?? f.autoPay, tasks, tasksSubmitted: tasks.length > 0,
+    incentive: s.rates.incentivePer || f.incentive, tasks, tasksSubmitted: tasks.length > 0,
     studyDuration: s.diary ? `${s.diary.totalDays} ${diaryWords(s.diary.unit).units}` : f.studyDuration, minimumRequired: s.diary ? `${s.diary.minDays} ${diaryWords(s.diary.unit).units}` : f.minimumRequired,
     durationUnit: s.diary?.unit ?? f.durationUnit, frequency: s.diary?.frequency ?? f.frequency,
     addresses: (s.locations ?? []).map((l) => ({ id: l.id, title: l.label, detail: l.address })),

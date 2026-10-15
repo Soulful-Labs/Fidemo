@@ -8,7 +8,7 @@
  * is refused with a reason.
  */
 import {
-  billing, consoleDashboard, hasCertificate, referralCode, counts, financeTotals, personFigures, pointsRows, poolPerson, recruit, refundsPending, respondentStudies, sharedPhoto, sharedVideo, trustInputs,
+  billing, consoleDashboard, hasCertificate, payoutsToProcess, referralCode, counts, financeTotals, personFigures, pointsRows, poolPerson, recruit, refundsPending, respondentStudies, sharedPhoto, sharedVideo, trustInputs,
 } from '../shared/derive'
 import { respondentStatus, participationOf } from '../shared/lifecycle'
 import { FEES, TIMINGS, depositFor, diaryWords, quoteStudy } from '../shared/platform'
@@ -100,7 +100,7 @@ const asForm = (qs: AuthoredQuestion[], marks: string[] = []): FormQuestion[] =>
   min: q.min, max: q.max, gap: q.gap, rows: q.rows, columns: q.columns,
 }))
 const NINE_TO_FIVE = Object.fromEntries(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map((d) => [d, [{ from: '09:00 AM', to: '05:00 PM' }]]))
-const formOf = (over: Partial<StudyForm>): StudyForm => ({ ...blankForm(), type: 'video_call', description: 'Created by the verify script.', questions: asForm(BUILT), hours: NINE_TO_FIVE, availabilitySet: true, ...over })
+const formOf = (over: Partial<StudyForm>): StudyForm => ({ ...blankForm(), type: 'video_call', description: 'Created by the verify script.', functions: 'Engineering', industries: 'IT', questions: asForm(BUILT), hours: NINE_TO_FIVE, availabilitySet: true, ...over })
 const SURVEY: Partial<StudyForm> = { type: 'survey', tasks: asForm([{ kind: 'Multi-line input', text: 'What would you change first?' }]), tasksSubmitted: true }
 const made = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Journey study', type: 'video_call', participants: '5', incentive: 120, duration: 45 }))
 {
@@ -144,10 +144,10 @@ const made = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Journey study', type
   check('create: diary settings are the study\'s, as chosen', diary.ok && diary.study.diary?.totalDays === 7 && diary.study.diary.minDays === 6 && diary.study.diary.frequency === 'Every day' && diary.study.tasks?.[0]?.prompt === 'What happened today?')
   check('create: a diary minimum under four fifths of its entries is refused (policy 5: at least 4 of 5)', !buildStudy(formOf({ title: 't', type: 'diary', studyDuration: '7 days', minimumRequired: '5 days', tasks: asForm([{ kind: 'Multi-line input', text: 'x' }]), tasksSubmitted: true }), now).ok && !buildStudy(formOf({ title: 't', type: 'diary', studyDuration: '5 days', minimumRequired: '3 days', tasks: asForm([{ kind: 'Multi-line input', text: 'x' }]), tasksSubmitted: true }), now).ok && buildStudy(formOf({ title: 't', type: 'diary', studyDuration: '5 days', minimumRequired: '4 days', tasks: asForm([{ kind: 'Multi-line input', text: 'x' }]), tasksSubmitted: true }), now).ok)
   check('create: a survey with no form, or a diary asking for more days than it runs, is refused', !buildStudy(formOf({ title: 't', type: 'survey' }), now).ok && !buildStudy(formOf({ title: 't', type: 'diary', studyDuration: '3 days', minimumRequired: '5 days', tasks: asForm([{ kind: 'Multi-line input', text: 'x' }]), tasksSubmitted: true }), now).ok)
-  const aud = formOf({ title: 't', countries: ['United States of America'], gender: 'Female', education: '', ageRanges: [], roles: 'Oncologist, Nurse', industries: 'Healthcare', condition: 'never', tiers: 'Gold and above' })
+  const aud = formOf({ title: 't', countries: ['United States of America'], gender: 'Female', education: [], ageRanges: [], roles: 'Oncologist, Nurse', functions: 'Consultation', industries: 'Healthcare', condition: 'never', tiers: 'Gold and above' })
   const sum = summarise(st(), aud, now)
   check('create: the audience is written as entered, and sets the repeat rule', sum.audience.some((a) => a.label === 'Roles' && a.value === 'Oncologist, Nurse') && sum.audience.some((a) => a.label === 'Gender' && a.value === 'Female') && sum.audience.some((a) => a.label === 'Profile Tiers') && (() => { const b = buildStudy(aud, now); return b.ok && b.study.repeatRule === 'exclude' && b.study.targetProfession === 'Oncologist, Nurse' })())
-  const everyone = estimateAudience(st(), formOf({ countries: [], gender: 'All Genders', education: '', ageRanges: [] }), now)
+  const everyone = estimateAudience(st(), formOf({ countries: [], gender: 'All Genders', education: [], ageRanges: [], functions: '', industries: '' }), now)
   check('create: the estimated audience is counted from the pool and narrows with the audience', everyone > 0 && estimateAudience(st(), aud, now) < everyone && sum.estimatedAudience === String(estimateAudience(st(), aud, now)), `${everyone} -> ${sum.estimatedAudience}`)
   check('create: the summary names the type and the setup that was built', sum.typeLabel === 'Video Call' && sum.studySummary.value === 'available 5 days/week, custom timings' && sum.screenerSummary === '3 inputs', `${sum.typeLabel} / ${sum.studySummary.value} / ${sum.screenerSummary}`)
 
@@ -185,8 +185,14 @@ check('   the client cannot mark completed without both codes', !p.complete(id, 
 check('   and enters the PIN', p.confirmPin(id, DEMO_PERSON_ID, '407060').ok && status(id) === 'pin_confirmed')
 const before = fig()
 check('9. the client enters the code and marks them completed', p.enterClientCode(id, DEMO_PERSON_ID, '407060').ok && p.complete(id, DEMO_PERSON_ID, client).ok && status(id) === 'in_process')
-clock += TIMINGS.completionToPaid + 100
+clock += 60 * 60_000
 p.tick()
+check('9a. nothing is paid automatically: an hour on, they are still waiting', status(id) === 'in_process' && !participationOf(st().studies.find((s) => s.id === id)!, DEMO_PERSON_ID)!.paidAt)
+check('9b. the client cannot pay them, and the team cannot before the study finishes', !p.processPayouts(id, client).ok && !p.processPayouts(id, team).ok)
+const clientNote = () => st().clients.find((c) => c.id === DEMO_CLIENT_ID)!.notifications?.[0]
+check('9c. the study finishes: the client is told the participants will now be paid', p.moveStudy(id, 'completed', team).ok && clientNote()?.title === 'Your study has finished' && /will now be paid/.test(clientNote()?.body ?? '') && clientNote()?.studyId === id, clientNote()?.body)
+check('9d. and the team is told the payouts are ready to process; nothing is paid yet', st().teamNotices[0]?.studyId === id && st().teamNotices[0]?.title === 'Payouts ready to process' && status(id) === 'in_process' && payoutsToProcess(st()).some((c) => c.study.id === id && c.ready.length === 1), st().teamNotices[0]?.body)
+check('9e. the team processes them by hand, and it is logged', p.processPayouts(id, team).ok && st().activity[0]!.what.startsWith('Processed 1 payout') && !payoutsToProcess(st()).some((c) => c.study.id === id))
 const after = fig()
 check('10. wallet, points and Trust Score rise', status(id) === 'paid' && after.walletBalance === before.walletBalance + 120 && after.points === before.points + POINTS.STUDY_COMPLETION && after.trustScore === before.trustScore + TRUST.STUDY_COMPLETION, `wallet ${before.walletBalance}->${after.walletBalance} points ${before.points}->${after.points} trust ${before.trustScore}->${after.trustScore}`)
 check('11. the same score is what the console profile derives', personFigures(p.getState(), DEMO_PERSON_ID, new Date(clock)).trustScore === after.trustScore)
@@ -197,7 +203,9 @@ check('redeem below the minimum is refused', !p.redeem(DEMO_PERSON_ID, 500).ok)
 check('redeem 1,000 points moves $10', p.redeem(DEMO_PERSON_ID, 1000).ok && fig().points === pts - 1000 && fig().walletBalance === after.walletBalance + 10)
 check('points history lists every award', pointsRows(st(), DEMO_PERSON_ID).some((r) => r.detail === 'Journey study'))
 check('withdrawing more than the balance is refused', !p.requestPayout(DEMO_PERSON_ID, 1e6, '****7790').ok)
-check('refund: confirmed once, refused twice', p.confirmRefund('st-uf-1', team).ok && !p.confirmRefund('st-uf-1', team).ok && refundsPending(st()).length === 1)
+// The journey study finished underfilled above, so it has a refund of its own: the count drops by the one confirmed.
+const refundsBefore = refundsPending(st()).length
+check('refund: confirmed once, refused twice', p.confirmRefund('st-uf-1', team).ok && !p.confirmRefund('st-uf-1', team).ok && refundsPending(st()).length === refundsBefore - 1)
 check('a completed study cannot be paused', !p.moveStudy('st-sleep', 'paused', client).ok)
 check('paying a balance clears the Billing pill', billing(st().studies.find((s) => s.id === 'st-sleep')!).outstanding > 0 && p.payBalance('st-sleep').ok && billing(st().studies.find((s) => s.id === 'st-sleep')!).outstanding === 0)
 p.reset()
@@ -219,9 +227,10 @@ p.reset()
   check('console undo refused after the hour', !p.decide('st-social', 'ferry-l', 'applied', team).ok)
   const yara = () => st().studies.find((s) => s.id === 'st-28')!.participations.find((x) => x.personId === 'yara-m')!
   check('console no-show: logged, nothing queued to pay', p.markNoShow('st-28', 'yara-m', team).ok && lastBy() === MASTER_ADMIN_ID && !st().pending.some((x) => x.personId === 'yara-m'))
-  clock += TIMINGS.completionToPaid + 100; p.tick()
+  clock += 60 * 60_000; p.tick()
   check('console no-show: never paid, the respondent app shows No Show', !yara().paidAt && respondentStudies(st(), 'yara-m').find((r) => r.id === 'st-28')?.status === 'no_show')
-  check('console undo no-show, then complete with the code: paid after the delay', p.undoNoShow('st-28', 'yara-m', team).ok && p.enterClientCode('st-28', 'yara-m', yara().code!.value).ok && p.complete('st-28', 'yara-m', team).ok && (clock += TIMINGS.completionToPaid + 100, p.tick(), Boolean(yara().paidAt)))
+  check('console undo no-show, then complete with the code: not paid on a timer', p.undoNoShow('st-28', 'yara-m', team).ok && p.enterClientCode('st-28', 'yara-m', yara().code!.value).ok && p.complete('st-28', 'yara-m', team).ok && (clock += 60 * 60_000, p.tick(), !yara().paidAt))
+  check('console: once the study finishes, the team processes the payout', p.moveStudy('st-28', 'completed', team).ok && p.processPayouts('st-28', team).ok && Boolean(yara().paidAt))
   check('console rating: refused twice (a simulated client rated at payout)', !p.rateParticipant('st-28', 'yara-m', 'dimensions', { expertise: 4, reliability: 4, communication: 3 }, team).ok)
   const unrated = st().studies.find((s) => s.id === 'st-social')!.participations.find((x) => x.state === 'completed' && !x.rating)!
   check('console rating: stored as the mean of the dimensions and logged', p.rateParticipant('st-social', unrated.personId, 'dimensions', { expertise: 4, reliability: 4, communication: 3 }, team).ok && unrated.personId !== undefined
@@ -283,11 +292,11 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   })())
 }
 
-// ------------------------------------------------ matching, eligibility answers, AutoPay, the picture
+// ------------------------------------------------ matching, eligibility answers, payouts by hand, the picture
 {
   p.reset(); clock = now.getTime()
   const me: Actor = { kind: 'participant', id: DEMO_PERSON_ID }
-  const narrow = formOf({ type: 'survey', title: 'Narrow audience', ...SURVEY, countries: [], gender: 'Female', education: '', ageRanges: [], roles: '', industries: 'Healthcare', tiers: '', image: 'data:image/jpeg;base64,AAAA', thumbnail: 'cover.jpg', autoPay: false })
+  const narrow = formOf({ type: 'survey', title: 'Narrow audience', ...SURVEY, countries: [], gender: 'Female', education: [], ageRanges: [], roles: '', functions: 'Consultation, Patient Care, Research', industries: 'Healthcare', tiers: '', image: 'data:image/jpeg;base64,AAAA', thumbnail: 'cover.jpg' })
   const made2 = p.submitStudy(DEMO_CLIENT_ID, narrow)
   const id2 = (made2 as { id: string }).id
   const study2 = () => st().studies.find((x) => x.id === id2)!
@@ -307,14 +316,14 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   check('eligibility: they survive the rest of the screener being submitted', participationOf(study2(), DEMO_PERSON_ID)!.preAnswers?.[pre.id] === pre.passing[0])
 
   p.complete(id2, DEMO_PERSON_ID, me, { t1: 'Nothing much.' })
-  clock += TIMINGS.completionToPaid * 3; p.tick()
-  check('AutoPay off: a completed participant is not paid by the timer', participationOf(study2(), DEMO_PERSON_ID)!.state === 'completed' && !participationOf(study2(), DEMO_PERSON_ID)!.paidAt && st().pending.every((x) => !(x.kind === 'pay' && x.studyId === id2)))
-  check('AutoPay off: they are paid when the client approves the payout', p.approvePayouts(id2, [DEMO_PERSON_ID]).ok && Boolean(participationOf(study2(), DEMO_PERSON_ID)!.paidAt))
-  const auto = p.submitStudy(DEMO_CLIENT_ID, formOf({ type: 'survey', title: 'AutoPay on', ...SURVEY, autoPay: true }))
-  const id3 = (auto as { id: string }).id
-  p.moveStudy(id3, 'recruiting', team); p.startApplication(id3, DEMO_PERSON_ID); p.submitScreener(id3, DEMO_PERSON_ID, { q2: ['A watch'], q3: '2' }); p.decide(id3, DEMO_PERSON_ID, 'qualified', team)
-  p.complete(id3, DEMO_PERSON_ID, me, { t1: 'Nothing much.' }); clock += TIMINGS.completionToPaid + 100; p.tick()
-  check('AutoPay on: they are paid without anyone approving', Boolean(participationOf(st().studies.find((x) => x.id === id3)!, DEMO_PERSON_ID)!.paidAt))
+  clock += 6 * 60 * 60_000; p.tick()
+  const mine2 = () => participationOf(study2(), DEMO_PERSON_ID)!
+  check('no AutoPay: a completed participant is never paid on a timer', mine2().state === 'completed' && !mine2().paidAt && st().pending.length === 0)
+  check('no AutoPay: the client cannot release it, nor the team before the study finishes', !p.processPayouts(id2, client).ok && !p.processPayouts(id2, team).ok && !mine2().paidAt)
+  const notes = st().teamNotices.length
+  check('study finishes: the client and the team are each notified once, and nothing is paid', p.moveStudy(id2, 'completed', team).ok && st().teamNotices.length === notes + 1 && st().clients.find((c) => c.id === DEMO_CLIENT_ID)!.notifications?.[0]?.studyId === id2 && !mine2().paidAt)
+  check('the team processes the payout by hand', p.processPayouts(id2, team).ok && Boolean(mine2().paidAt) && !p.processPayouts(id2, team).ok)
+  check('the client reads the notification', p.markClientNoticesRead(DEMO_CLIENT_ID).ok && st().clients.find((c) => c.id === DEMO_CLIENT_ID)!.notifications!.every((n) => n.read))
 }
 
 // ------------------------------------------------ the last loose ends
@@ -324,7 +333,7 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   const pool = people.filter((x) => x.id !== DEMO_PERSON_ID)
   check('pictures: every seeded pool person has one, drawn and not a photograph; the demo participant starts with none', pool.every((x) => x.photo?.startsWith('data:image/svg+xml,')) && new Set(pool.map((x) => x.photo)).size > pool.length / 2 && !people.find((x) => x.id === DEMO_PERSON_ID)?.photo, `${pool.filter((x) => x.photo).length} of ${pool.length}`)
   check('profiles: every seeded person has work functions and skills', people.every((x) => x.profile.workFunctions.length > 0 && x.profile.skills.length > 0))
-  const wide = formOf({ countries: [], gender: 'All Genders', education: '', ageRanges: [] })
+  const wide = formOf({ countries: [], gender: 'All Genders', education: [], ageRanges: [], functions: '', industries: '' })
   const all = audiencePeople(st(), wide, now).length
   const byFunction = audiencePeople(st(), { ...wide, functions: 'Engineering' }, now)
   const bySkill = audiencePeople(st(), { ...wide, skills: 'triage, coaching' }, now)
@@ -422,6 +431,32 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   check('add-ons: roles targeting adds $25, skills $20, and one type-or-roles add-on at most', per('survey', {}) === 25 && per('survey', { roles: true }) === 50 && per('survey', { skills: true }) === 45 && per('survey', { roles: true, skills: true }) === 70 && per('video_call', { roles: true }) === 50 && per('video_call', { skills: true }) === 70, `${per('survey', {})} ${per('survey', { roles: true })} ${per('survey', { skills: true })} ${per('survey', { roles: true, skills: true })}`)
   const roled = buildStudy(formOf({ title: 't', type: 'survey', ...SURVEY, roles: 'Nurse', skills: 'Python' }), now)
   check('add-ons: a study built with roles and skills is priced with both', roled.ok && roled.study.rates?.recruitingPer === 70, JSON.stringify(roled.ok && roled.study.rates))
+}
+
+// ------------------------------------------------ tax ID, cards, required audience fields, several education levels
+{
+  p.reset(); clock = now.getTime()
+  const newcomer = p.signUpClient({ name: 'Ada Stone', email: 'ada@stonelabs.com' })
+  const cid = (newcomer as { id: string }).id
+  const them = () => st().clients.find((c) => c.id === cid)!
+  check('tax ID: optional; a business with a website and no tax ID passes the check', newcomer.ok && p.updateClient(cid, { company: 'Stone Labs', website: 'https://stonelabs.com', role: 'Founder' }).ok && them().taxId === '' && them().business.state === 'verified')
+  check('tax ID: kept when given', p.updateClient(cid, { taxId: '12-3456789' }).ok && them().taxId === '12-3456789')
+  const theirs = formOf({ ...SURVEY, title: 'Card check' })
+  const blocked = p.submitStudy(cid, theirs)
+  check('card: a client with no card cannot publish, and nothing is created', !blocked.ok && /Add a card/.test(blocked.why) && !st().studies.some((x) => x.title === 'Card check'), blocked.ok ? '' : blocked.why)
+  check('card: with a card added they can', p.addCard(cid, { brand: 'VISA', last4: '1111', expires: 'Expires 09/29' }).ok && p.submitStudy(cid, theirs).ok)
+  check('card: it can be edited, then replaced, and stays the default', p.updateCard(cid, '1111', { brand: 'VISA', last4: '1111', expires: 'Expires 10/30' }).ok && them().cards[0]!.expires === 'Expires 10/30'
+    && p.updateCard(cid, '1111', { brand: 'Mastercard', last4: '2222', expires: 'Expires 01/31' }).ok && them().cards.length === 1 && them().cards[0]!.last4 === '2222' && them().cards[0]!.isDefault === true)
+  const why = (f: Partial<StudyForm>) => { const r = buildStudy(formOf({ title: 't', ...f }), now); return r.ok ? 'ok' : r.why }
+  check('audience: work function and industry are required', /work function/.test(why({ functions: ' ' })) && /industry/.test(why({ industries: '' })), `${why({ functions: ' ' })} / ${why({ industries: '' })}`)
+  check('audience: role and skills are optional', why({ roles: '', skills: '' }) === 'ok')
+  const base = formOf({ countries: [], gender: 'All Genders', ageRanges: [], functions: '', industries: '' })
+  const bachelors = audiencePeople(st(), { ...base, education: ["Graduate or Bachelor's"] }, now).length
+  const both = audiencePeople(st(), { ...base, education: ["Graduate or Bachelor's", "Master's degree"] }, now).length
+  const masters = audiencePeople(st(), { ...base, education: ["Master's degree"] }, now).length
+  check('education: several levels are accepted together', both === bachelors + masters && bachelors > 0, `${bachelors} + ${masters} = ${both}`)
+  check('education: shown as every level ticked', summarise(st(), { ...base, education: ["Graduate or Bachelor's", 'Doctorate'] }, now).audience.some((a) => a.label === 'Education' && a.value === "Graduate or Bachelor's, Doctorate"))
+  check('education: a form saved with one level reopens as a list', formFromStudy({ ...st().studies[0]!, form: { ...base, education: 'Doctorate' as unknown as string[] } }).education.join() === 'Doctorate')
 }
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nall checks passed')

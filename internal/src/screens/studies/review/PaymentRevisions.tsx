@@ -26,7 +26,7 @@ export const Mastercard = () => (
 
 /**
  * Payment (1984:120589): two 372 columns 24 apart. "Payment Overview": Total
- * Cost (ringed) and Deposit Paid (bg-1) beside the incentive, AutoPay and card
+ * Cost (ringed) and Deposit Paid (bg-1) beside the incentive, how payouts are made and the card
  * on file. Then Billing, a bg-1 list of fees down to "Net payable cost", and
  * Transactions with a Receipt button. Every figure is read only.
  */
@@ -53,7 +53,7 @@ export function PaymentTab({ onReceipt }: { onReceipt: () => void }) {
           <span className="self-start text-state-success">{P.incentive}</span>
         </div>
         <Rule className="mt-2" />
-        <div className="flex justify-between pt-2 text-text-subtitle"><span>AutoPay</span><span className="text-text-title">On</span></div>
+        <div className="flex justify-between pt-2 text-text-subtitle"><span>Payouts</span><span className="text-text-title">By the team, when the study finishes</span></div>
         <Rule className="mt-2" />
         <div className="flex justify-between pt-2 text-text-subtitle"><span>Card on File</span>
           <span className="flex items-center gap-2 text-text-title"><Mastercard /><span>•••• {P.card}</span></span>

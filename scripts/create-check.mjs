@@ -131,8 +131,8 @@ const fillAudience = (participants) => `(async () => {
   await __choose(__btn('2 countries selected'), 'United Kingdom', 'Canada')
   await __choose(__btn('All Genders'), 'Female')
   await __choose(__btn('2 range selected'), '18–20', '21–29', '30–39', '40–49')
-  __ph('Choose job roles...', ${JSON.stringify(AUDIENCE.roles)}); __ph('Select job functions...', ${JSON.stringify(AUDIENCE.functions)})
-  __ph('Choose skills...', ${JSON.stringify(AUDIENCE.skills)}); __ph('Choose industry domains...', ${JSON.stringify(AUDIENCE.industries)})
+  __ph('e.g. Product Manager', ${JSON.stringify(AUDIENCE.roles)}); __ph('e.g. Product, Engineering, Marketing', ${JSON.stringify(AUDIENCE.functions)})
+  __ph('e.g. SQL, Figma', ${JSON.stringify(AUDIENCE.skills)}); __ph('e.g. Healthcare, Finance', ${JSON.stringify(AUDIENCE.industries)})
   __all('[role=radio]')[1].click(); await __wait()
   await __choose(__btn('Select tiers...'), 'Silver and above')
   return true })()`
@@ -147,11 +147,11 @@ const off = after(9)
 /** Six studies, one of each type, each with its own step 4. `setup` runs with the composer open; `expect` is what the study must then show. */
 const STUDIES = [
   {
-    key: 'survey', card: 'Survey', duration: 20, participants: '12', incentive: 60, autoPayOff: true, screener: EIGHT, opener: 'Create Survey Questionnaire', submit: 'Submit Survey',
+    key: 'survey', card: 'Survey', duration: 20, participants: '12', incentive: 60, screener: EIGHT, opener: 'Create Survey Questionnaire', submit: 'Submit Survey',
     setup: `__ph('Enter question text...', 'How often do you shop online?'); __ph('Enter option', 'Weekly', 0); __ph('Enter option', 'Monthly', 1);
       __btn('Add Question').click(); await __wait(); await __choose(__all('button').filter((b) => b.textContent.trim() === 'Single-select').pop(), 'Multi-line input'); __ph('Enter question text...', 'What stops you buying?', 1);`,
     typeLabel: 'Survey', summary: '2 inputs',
-    client: ['How often do you shop online?', 'Weekly · Monthly', 'What stops you buying?', 'AutoPay', 'Off'],
+    client: ['How often do you shop online?', 'Weekly · Monthly', 'What stops you buying?'],
     console: ['How often do you shop online?', 'Weekly', 'Monthly', 'What stops you buying?'],
     tasks: ['How often do you shop online?', 'What stops you buying?'],
   },
@@ -161,7 +161,7 @@ const STUDIES = [
       __al('Add hours to Tuesday').click(); await __wait(); await __time('Tuesday from', '06:00 PM', 1); await __time('Tuesday to', '08:00 PM', 1);
       __click('Add Override'); await __wait(300); __type(__al('Override from'), ${JSON.stringify(ymd(off))}); __type(__al('Override to'), ${JSON.stringify(ymd(off))}); __al('Mark Unavailable For Full Day').click(); await __wait(); __click('Save override'); await __wait(300);`,
     typeLabel: 'Video Call', summary: 'available 5 days/week, custom timings, 1 day overrides',
-    client: ['10 minutes', '1 Hour', '09:00 AM to 05:00 PM, 06:00 PM to 08:00 PM', 'Unavailable', `Override ${off.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`, 'AutoPay', 'On'],
+    client: ['10 minutes', '1 Hour', '09:00 AM to 05:00 PM, 06:00 PM to 08:00 PM', 'Unavailable', `Override ${off.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`],
     console: ['Monday', 'Tuesday', 'Friday', '09:00 AM', '05:00 PM', '06:00 PM', '08:00 PM', '10 minutes', '1 Hour'],
     slots: ['09:00 AM', '09:55 AM', '10:50 AM'], closed: off,
   },
@@ -242,7 +242,7 @@ async function studyStep(s) {
   await C.click(s.submit, 500)
   const stuck = await C.ev(`Boolean(__all('button').find((b) => b.textContent.trim() === ${JSON.stringify(s.submit)}))`)
   if (stuck) throw new Error(`${s.key}: the composer did not accept Submit: ` + await C.ev(`document.querySelector('[role=status], [role=alert]')?.innerText ?? '(no reason shown)'`))
-  await C.ev(`(() => { __type(__al('Incentive Amount'), '$${s.incentive}'); ${s.autoPayOff ? `__al('AutoPay').click();` : ''} return true })()`); await sleep(150)
+  await C.ev(`(() => { __type(__al('Incentive Amount'), '$${s.incentive}'); return true })()`); await sleep(150)
 }
 
 console.log('\n1. Create a study of each type, filling in every step')
@@ -253,7 +253,7 @@ for (const s of STUDIES) {
     await C.click('Proceed to Publish', 600)
     const summary = await C.ev(`document.querySelector('main').innerText`)
     s.publishShows = { type: summary.includes(s.typeLabel), audience: (/Estimated Audience:\s*([\d,]+|1K)/.exec(summary) || [])[1], summary: summary.includes(s.summary) }
-    await C.ev(`(() => { __ph('0000 0000 0000 0000', '4242 4242 4242 4242'); __ph('MM / YYYY', '12 / 2028'); __ph('000', '123'); __ph('Enter name', 'Jennifer Lee'); return true })()`)
+    // The demo client's saved card is already selected at Publish; nothing is typed again.
     await C.click('Publish Study', 900)
     s.id = await C.ev(`(__st().studies.find((x) => x.title === ${JSON.stringify(s.title)}) || {}).id`)
     const where = await C.path()

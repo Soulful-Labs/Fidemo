@@ -170,7 +170,6 @@ export function useStudies() {
       enterCode: (studyId: string, personId: string, code: string): Result => p.enterClientCode(studyId, personId, code),
       /** Policy section 5: the client cancels a booked session. It costs the participant nothing, and they are told. */
       cancelSession: (studyId: string, personId: string, reason = ''): Result => p.cancelSessionFor(studyId, personId, actor, reason),
-      approvePayouts: (studyId: string, personIds: string[]): Result => p.approvePayouts(studyId, personIds),
       setRepeatRule: (studyId: string, rule: RepeatRule): Result => p.setRepeatRule(studyId, rule),
       payBalance: (studyId: string): Result => p.payBalance(studyId),
       duplicateStudy: (studyId: string) => p.duplicateStudy(studyId),

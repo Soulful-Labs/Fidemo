@@ -55,7 +55,7 @@ const Tag = ({ good, children }: { good: boolean; children: string }) => (
 /**
  * A client's business verification (2051:145339 flagged, 2051:145410 Profile
  * Details, 2051:145795 verified, 2051:145873 rejected). What is checked is two
- * things the client typed: the VAT (Tax) number and the company website,
+ * things the client typed: the company website and, where given, the tax ID,
  * against records. No document is uploaded. Reject, Mark Verified and Chat;
  * the dialogs are the participant profession ones, reused word for word in
  * the frames ("Mark Profession Verified", "Samuel's profession credentials").
@@ -89,7 +89,7 @@ export function ClientVerificationDetail() {
         <div className="flex flex-col gap-3 pt-6">
           <h2 className="text-body-regular leading-[22px] text-text-subtitle">Profession Credential</h2>
           <section className={cn('flex items-center justify-between gap-4 rounded-lg px-4 py-3.5 text-text-regular leading-5', pending ? 'bg-yellow-40' : 'border-1 border-stroke-1 bg-bg-1')}>
-            <div><h3 className="text-body-medium leading-[22px] text-text-title">VAT (Tax) Number Registration, Website</h3><p className="pt-1.5 text-text-subtitle">{c.business.reason}</p><p className="pt-1.5 text-text-subtitle">{k.flaggedAt}</p></div>
+            <div><h3 className="text-body-medium leading-[22px] text-text-title">Tax ID Registration, Website</h3><p className="pt-1.5 text-text-subtitle">{c.business.reason}</p><p className="pt-1.5 text-text-subtitle">{k.flaggedAt}</p></div>
             {pending ? (
               <div className="flex shrink-0 gap-3">
                 <Button variant="tertiary" className="bg-yellow-40 px-5 text-state-danger!" leftIcon={<CloseIcon className="h-5 w-5" />} onClick={() => setFlow({ kind: 'reject-verification', step: 'form' })}>Reject</Button>
@@ -105,7 +105,8 @@ export function ClientVerificationDetail() {
             </div>
           )}
           <Field label="Company Name" value={c.company} />
-          <Field label="VAT (Tax) Number" value={c.vat || 'N/A'} /><Tag good={ok}>{ok ? 'Marked as Verified' : 'Company registration could not be verified with records!'}</Tag>
+          {/* The tax ID is optional (clients are US based; an EIN where they have one). Without one there is nothing to check against records. */}
+          <Field label="Tax ID (optional)" value={c.taxId || 'Not given'} />{c.taxId && <Tag good={ok}>{ok ? 'Marked as Verified' : 'Company registration could not be verified with records!'}</Tag>}
           <Field label="Company Website" value={c.website || 'N/A'} /><Tag good={ok}>{ok ? 'Marked as Verified' : 'Website not found!'}</Tag>
         </div>
       )}

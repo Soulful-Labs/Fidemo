@@ -88,6 +88,15 @@ export function useDashboard() {
         detail: [`Study completed underfilled by ${r.shortfall} participants`], when: ago(r.study.completedAt, now), to: `/finance/refunds/${r.study.id}`,
       })),
     }
+    // The team notification raised when a study finishes: its payouts are ready, and are processed by hand on Finance, Payouts.
+    const payouts: ActionGroup = {
+      key: 'payouts', title: 'Payouts ready to process', count: String(d.payouts.length), viewAll: '/finance/payouts',
+      rows: d.payouts.slice(0, FIRST).map((c) => ({
+        id: c.study.id, title: c.study.title, meta: c.client?.company,
+        detail: [c.notice?.body ?? `${c.owed.length} participant${c.owed.length === 1 ? '' : 's'} to be paid, ${money(c.owed.length * c.study.rates.incentivePer)} in all.`],
+        when: ago(c.notice?.at ?? c.study.completedAt, now), to: '/finance/payouts',
+      })),
+    }
     const flagged: ActionGroup = {
       key: 'flagged', title: 'Flagged/reported accounts', count: String(d.reports.length), viewAll: '/participants/verifications?tab=reported',
       rows: d.reports.slice(0, FIRST).map((r) => {
@@ -100,9 +109,9 @@ export function useDashboard() {
     const clientTickets = d.tickets.filter((t) => t.owner.kind === 'client')
 
     const GROUPS: Record<TabKey, ActionGroup[]> = {
-      all: [identity, business, screeners, tickets, noShows, refunds, flagged],
+      all: [payouts, identity, business, screeners, tickets, noShows, refunds, flagged],
       onboarding: [identity, business],
-      studies: [screeners, refunds],
+      studies: [payouts, screeners, refunds],
       support: [
         { key: 'tickets-participants', title: 'Participants', count: String(participantsTickets.length), viewAll: '/support', rows: participantsTickets.slice(0, FIRST).map(ticketRow) },
         { key: 'tickets-clients', title: 'Client', count: String(clientTickets.length), viewAll: '/support', rows: clientTickets.slice(0, FIRST).map(ticketRow) },

@@ -43,7 +43,7 @@ export default function DetailTiles({ study }: { study: Study }) {
       <Tile icon={<Banknote />} label="Reward">
         <span className="text-brand-secondary">{money(study.reward)}</span>
       </Tile>
-      <Tile icon={<Clock className="h-5 w-5" />} label="Duration">{duration(study.durationMins)}</Tile>
+      <Tile icon={<Clock className="h-5 w-5" />} label="Time to complete">{duration(study.durationMins)}</Tile>
       <Tile icon={<Star filled={false} className="h-5 w-5" />} label="Rating" to={`/clients/${study.client.id}/ratings`}>
         {study.client.rating}
         <span className="text-text-regular text-text-body">({study.client.reviewCount})</span>

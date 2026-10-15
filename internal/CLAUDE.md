@@ -2116,3 +2116,20 @@ Every section and frame on page `1794:64316`, from `get_metadata`, with sizes.
 | Change Password | `2065:206687` | 460x410 | modal |
 | Logout | `2065:206708` | 460x285 | modal |
 | Password has been updated! | `2065:206726` | 460x423 | modal |
+
+## Ten changes, 15 Oct 2026
+
+- **Tax ID, not VAT**, on the client record (`Tax ID`, "Not given (optional)"
+  when blank), Review's client card, and Client Verifications ("Tax ID
+  Registration, Website"; the tax ID field is optional and only tagged when
+  given).
+- **Payouts are processed by hand.** Nothing pays on a timer. When a study
+  finishes, the team gets a "Payouts ready to process" notification
+  (`teamNotices`), shown as a group on the Dashboard (All and Studies tabs,
+  counted in `consoleDashboard`). Finance > Payouts (`/finance/payouts`, not
+  drawn) lists finished studies with participants still to pay;
+  Process Payouts asks first, then pays everyone who completed except a
+  session without its code on both sides ("no code, no payment")
+  (`processPayouts`, team only, logged).
+- Review's Payment card reads "Payouts: By the team, when the study finishes"
+  where it said "AutoPay: On".

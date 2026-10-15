@@ -18,6 +18,8 @@ export interface NotificationRow {
   ago: string
   action?: string
   unread?: boolean
+  /** Where the row goes, when the platform raised it about a particular screen. */
+  to?: string
 }
 
 /** Every row of the Notifications panel (1518:71845), in the frame's order. */

@@ -4,7 +4,7 @@ import { useSearchParams, useLocation } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import Tabs from '../../components/ui/Tabs'
-import { AddCardPanel, CardMark, InvoiceDetailsPanel, MakePaymentPanel, PaidModal, RemoveCardModal } from './PaymentPanels'
+import { AddCardPanel, CardMark, EditCardPanel, InvoiceDetailsPanel, MakePaymentPanel, PaidModal, RemoveCardModal } from './PaymentPanels'
 import { DollarCircle, Download, Eye, InvoiceIcon, MoneyMark, Plus } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { invoices, paymentStats } from '@shared/derive'
@@ -21,7 +21,7 @@ import type { SavedCard } from '../../mock/workspace'
 const GLYPH = [InvoiceIcon, MoneyMark, DollarCircle]
 
 /** A saved card, with its default state and a remove link. */
-function CardTile({ c, onRemove, onDefault }: { c: SavedCard; onRemove: () => void; onDefault: () => void }) {
+function CardTile({ c, onRemove, onDefault, onEdit }: { c: SavedCard; onRemove: () => void; onDefault: () => void; onEdit: () => void }) {
   return (
     <div className="flex h-[132px] flex-col justify-between rounded-lg bg-bg-1 p-4">
       <span className="flex items-center gap-3">
@@ -37,6 +37,8 @@ function CardTile({ c, onRemove, onDefault }: { c: SavedCard; onRemove: () => vo
         {c.isDefault
           ? <span className="flex h-[38px] items-center rounded-md border-1 border-stroke-input px-3 text-text-regular text-text-disabled">Default</span>
           : <Button variant="tertiary" size="row" className="px-3" onClick={onDefault}>Set As Default</Button>}
+        <button type="button" onClick={onEdit}
+          className="px-2 text-text-regular text-text-title hover:text-brand-primary">Edit</button>
         <button type="button" onClick={onRemove}
           className="px-2 text-text-regular text-text-title hover:text-brand-primary">Remove</button>
       </span>
@@ -105,6 +107,7 @@ export default function Payments() {
   const done = params.get('tab') === 'completed' || pathname === '/payments/history'
   const [panel, setPanel] = useState(params.get('panel') ?? '')
   const [removing, setRemoving] = useState<string | null>(null)
+  const [editing, setEditing] = useState<string | null>(null)
   const [paying, setPaying] = useState<string | null>(null)
   const [paidAll, setPaidAll] = useState<Invoice[] | null>(null)
   /** `?panel=paidall` opens the success dialog over the pending invoices, so it can be compared with its export. */
@@ -244,7 +247,7 @@ export default function Payments() {
             <p className="col-span-2 py-6 text-text-regular text-text-subtitle">No card is on file yet.</p>
           )}
           {cards.map((c) => <CardTile key={c.last4} c={c} onDefault={() => setDefaultCard(c.last4)}
-            onRemove={() => setRemoving(c.last4)} />)}
+            onRemove={() => setRemoving(c.last4)} onEdit={() => setEditing(c.last4)} />)}
         </div>
         <Button variant="secondary" size="row" className="mt-3 px-3" leftIcon={<Plus className="h-5 w-5" />}
           onClick={() => setPanel('addcard')}>
@@ -259,6 +262,7 @@ export default function Payments() {
         onPaid={() => { if (paying) payInvoice(paying); setPanel('done') }}
         onInvoice={() => setPanel('topay')} />
       <AddCardPanel open={panel === 'addcard'} onClose={() => setPanel('')} />
+      <EditCardPanel open={editing !== null} last4={editing ?? undefined} onClose={() => setEditing(null)} />
       <PayAllPanel open={panel === 'payall'} invoices={pending} onClose={() => setPanel('')} onPaid={(paid) => { setPaidAll(paid); setPanel('') }} />
       <PaidAllModal open={paidAll !== null || (preview && panel === 'paidall')} paid={paidAll ?? pending} onClose={() => { setPaidAll(null); setPanel('') }} />
       <PaidModal open={panel === 'done'} studyId={open?.studyId} onClose={() => { setPanel(''); setPaying(null) }} />

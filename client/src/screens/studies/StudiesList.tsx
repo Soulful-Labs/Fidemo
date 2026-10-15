@@ -24,9 +24,10 @@ import { copyText } from '../../lib/copy'
 
 export type StudiesTab = 'ongoing' | 'drafts' | 'completed' | 'sessions'
 
+/** Drafts first, then Ongoing, Completed, Sessions. `/studies` itself is still Ongoing. */
 const TABS = [
-  { key: 'ongoing', label: 'Ongoing', to: '/studies' },
   { key: 'drafts', label: 'Drafts', to: '/studies/drafts' },
+  { key: 'ongoing', label: 'Ongoing', to: '/studies' },
   { key: 'completed', label: 'Completed', to: '/studies/completed' },
   { key: 'sessions', label: 'Sessions', to: '/studies/sessions' },
 ]

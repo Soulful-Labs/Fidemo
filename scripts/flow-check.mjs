@@ -132,8 +132,8 @@ const fillAudience = (participants) => `(async () => {
   await __choose(__btn('2 countries selected'), 'United Kingdom', 'Canada')
   await __choose(__btn('All Genders'), 'Female')
   await __choose(__btn('2 range selected'), '18–20', '21–29', '30–39', '40–49')
-  __ph('Choose job roles...', ${JSON.stringify(AUDIENCE.roles)}); __ph('Select job functions...', ${JSON.stringify(AUDIENCE.functions)})
-  __ph('Choose skills...', ${JSON.stringify(AUDIENCE.skills)}); __ph('Choose industry domains...', ${JSON.stringify(AUDIENCE.industries)})
+  __ph('e.g. Product Manager', ${JSON.stringify(AUDIENCE.roles)}); __ph('e.g. Product, Engineering, Marketing', ${JSON.stringify(AUDIENCE.functions)})
+  __ph('e.g. SQL, Figma', ${JSON.stringify(AUDIENCE.skills)}); __ph('e.g. Healthcare, Finance', ${JSON.stringify(AUDIENCE.industries)})
   __all('[role=radio]')[1].click(); await __wait()
   await __choose(__btn('Select tiers...'), 'Silver and above')
   return true })()`
@@ -178,14 +178,16 @@ const SURVEY = { card: 'Survey', title: `FC survey ${tag}`, description: 'A surv
 const DIARY = { card: 'Diary Study', title: `FC diary ${tag}`, description: 'A diary followed from each day back to the client and the team.', duration: 15, participants: '9', incentive: 75 }
 const PLACE = { card: 'In-Person', title: `FC in-person ${tag}`, description: 'An in-person study with every setting filled in.', duration: 45, participants: '8', incentive: 150 }
 const idOf = (s) => C.ev(`(__st().studies.find((x) => x.title === ${JSON.stringify(s.title)}) || {}).id`)
-const card = `(() => { __ph('0000 0000 0000 0000', '4242 4242 4242 4242'); __ph('MM / YYYY', '12 / 2028'); __ph('000', '123'); __ph('Enter name', 'Jennifer Lee'); return true })()`
+// The demo client's saved card is already selected at Publish; the form is only there when it is not.
+const card = `(() => { if (!__all('input').some((e) => e.placeholder === '0000 0000 0000 0000')) return true; __ph('0000 0000 0000 0000', '4242 4242 4242 4242'); __ph('MM / YYYY', '12 / 2028'); __ph('000', '123'); __ph('Enter name', 'Jennifer Lee'); return true })()`
 
 async function about(s) {
   await C.go('/client/studies/create/about'); await C.ev(FORMS)
   await C.click(s.card)
   await C.ev(`(() => { __type(__al('Duration'), '${s.duration}'); __ph('DD / MM / YYYY', ${JSON.stringify(dmy(end))}); __ph('Enter title of your study', ${JSON.stringify(s.title)}); __ph('Enter study description', ${JSON.stringify(s.description)}); return true })()`)
   await C.click('Continue')
-  await C.ev(`(() => { __type(__all('main input')[0], ${JSON.stringify(s.participants)}); return true })()`); await sleep(150)
+  // Work Function and Industry are required (Role and Skills are not, and add to the price).
+  await C.ev(`(() => { __type(__all('main input')[0], ${JSON.stringify(s.participants)}); __ph('e.g. Product, Engineering, Marketing', 'Engineering'); __ph('e.g. Healthcare, Finance', 'IT'); return true })()`); await sleep(150)
   await C.click('Continue')
   await C.ev(buildScreener(THREE)); await sleep(200)
 }

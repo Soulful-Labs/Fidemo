@@ -37,13 +37,15 @@ export interface Account {
   seeded: boolean
   /** False until the onboarding flow has been walked to the end. */
   onboarded: boolean
-  /** Organization Details, filled during onboarding. */
-  vat?: string
+  /** Organization Details, filled during onboarding. The tax ID is optional. */
+  taxId?: string
   website?: string
   industry?: string
   location?: string
   /** Payment Method, filled during onboarding. */
   cardLast4?: string
+  /** The client chose Skip for now on Payment Method: a card is then asked for when they publish. */
+  cardSkipped?: boolean
   /** The account's picture, where there is one. Only the demo account has one; anyone else shows their initials. */
   photo?: string
 }
@@ -63,7 +65,7 @@ export const DEMO_ACCOUNT: Account = {
 /** An account with the name, role and company the platform holds for it. */
 function withClient(a: Account): Account {
   const c = a.clientId ? clientById(platform().getState(), a.clientId) : undefined
-  return c ? { ...a, name: c.name, role: c.role, company: c.company, vat: c.vat, website: c.website, industry: c.industry, location: c.location, cardLast4: c.cards.find((x) => x.isDefault)?.last4 ?? a.cardLast4 } : a
+  return c ? { ...a, name: c.name, role: c.role, company: c.company, taxId: c.taxId, website: c.website, industry: c.industry, location: c.location, cardLast4: c.cards.find((x) => x.isDefault)?.last4 ?? a.cardLast4 } : a
 }
 
 const KEY = 'fi-client-session'
@@ -154,8 +156,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const update = useCallback<Ctx['update']>((patch) => {
     const mine = store.accounts.find((a) => a.email === store.current)?.clientId
-    const { name, role, company, vat, website, industry, location } = patch
-    if (mine) platform().updateClient(mine, Object.fromEntries(Object.entries({ name, role, company, vat, website, industry, location }).filter(([, v]) => v !== undefined)))
+    const { name, role, company, taxId, website, industry, location } = patch
+    if (mine) platform().updateClient(mine, Object.fromEntries(Object.entries({ name, role, company, taxId, website, industry, location }).filter(([, v]) => v !== undefined)))
     setStore((s) => ({
       ...s,
       accounts: s.accounts.map((a) => (a.email === s.current ? { ...a, ...patch } : a)),

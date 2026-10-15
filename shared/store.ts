@@ -179,15 +179,53 @@ export function createPlatform(options: Options = {}) {
     return yes()
   }
 
-  /** The payout is approved: the incentive is in the wallet from now. A simulated client also rates the participant. */
+  /**
+   * The team has processed the payout by hand in the console: the incentive
+   * is in the wallet from now. Nothing calls this on a timer; nothing is ever
+   * paid automatically. A simulated client also rates the participant.
+   */
   const pay = (s: PlatformState, study: Study, p: Participation) => {
     if (p.state !== 'completed' || p.paidAt) return
     p.paidAt = iso()
-    p.events.push({ label: 'Client approved payout', at: p.paidAt }, { label: 'Paid', at: p.paidAt })
+    p.events.push({ label: 'Payout processed by the team', at: p.paidAt }, { label: 'Paid', at: p.paidAt })
     if (clientOf(s, study)?.simulated && !p.rating) {
       p.rating = { stars: starsForRating('excellent'), state: 'excellent', comment: 'Thoughtful, well prepared and on time. Would happily include again.', expertise: 5, reliability: 5, communication: 4, at: p.paidAt }
     }
-    notify(s, p.personId, { kind: 'money', title: `You've received $${study.rates.incentivePer}!`, body: `The client approved the payout list. Your reward for ${study.title} is in your wallet.`, to: '/wallet' })
+    notify(s, p.personId, { kind: 'money', title: `You've received $${study.rates.incentivePer}!`, body: `Your reward for ${study.title} has been paid into your wallet.`, to: '/wallet' })
+  }
+
+  /** Completed and not yet paid: who a finished study still has to pay, and which of them can be paid now ("no code, no payment"). */
+  const owedOn = (study: Study) => {
+    const owed = study.participations.filter((p) => p.state === 'completed' && !p.paidAt)
+    const ready = owed.filter((p) => !isSessionType(study.type) || Boolean(p.code?.byClient && p.code?.byParticipant))
+    return { owed, ready }
+  }
+  const usd = (n: number) => `$${n.toLocaleString('en-US')}`
+  const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`
+
+  /**
+   * A study has finished. Nothing is paid here. The client is told their
+   * participants will now be paid, and the team is told the payouts are
+   * ready to process; the team pays them by hand in the console.
+   */
+  const announceFinish = (s: PlatformState, study: Study) => {
+    const { owed } = owedOn(study)
+    const client = clientOf(s, study)
+    const total = owed.length * study.rates.incentivePer
+    if (client) {
+      client.notifications = [{
+        id: uid('cn'), studyId: study.id, at: iso(), read: false, title: 'Your study has finished',
+        body: owed.length
+          ? `${study.title} has finished. Its ${plural(owed.length, 'participant')} who completed will now be paid (${usd(total)}). The Focus Insite team processes the payouts; nothing is paid automatically.`
+          : `${study.title} has finished. Nobody is waiting to be paid on it.`,
+      }, ...(client.notifications ?? [])]
+    }
+    if (owed.length) {
+      s.teamNotices = [{
+        id: uid('tn'), kind: 'payouts', studyId: study.id, at: iso(), title: 'Payouts ready to process',
+        body: `${study.title} (${client?.company ?? 'a client'}) has finished. ${plural(owed.length, 'participant')} to be paid, ${usd(total)} in all.`,
+      }, ...(s.teamNotices ?? [])]
+    }
   }
 
   const selected = (s: PlatformState, study: Study, p: Participation) => {
@@ -233,7 +271,6 @@ export function createPlatform(options: Options = {}) {
             stamp(hit.p, isSessionType(hit.study.type) ? 'Invited to schedule' : 'Invited to complete')
             selected(s, hit.study, hit.p)
           }
-          if (item.kind === 'pay') pay(s, hit.study, hit.p)
         }
         return yes()
       })
@@ -266,6 +303,8 @@ export function createPlatform(options: Options = {}) {
       if (draftId && !draft) return no('That study is gone')
       // A draft is submitted in place; a study still waiting on the team can be changed and sent again. A live one cannot.
       if (draft && !canEditStudy(draft.state)) return no('This study is live and can no longer be edited')
+      // The card is optional at onboarding and required here: the deposit is taken from it.
+      if (!s.clients.find((c) => c.id === clientId)!.cards.length) return no('Add a card to publish this study')
       const built = buildStudy(form, clock())
       if (!built.ok) return no(built.why)
       const id = draft?.id ?? uid('st')
@@ -295,7 +334,7 @@ export function createPlatform(options: Options = {}) {
       const required = /^\d+$/.test(kept.participants.trim()) ? Number(kept.participants) : 0
       const fields = {
         title: kept.title.trim() || 'Untitled study', description: kept.description, type, durationMins: Number(kept.duration) || 0, required,
-        industry: kept.industries, targetProfession: kept.roles, rates: priceStudy(type, kept.incentive, { roles: targets(kept.roles), skills: targets(kept.skills) }), autoPay: kept.autoPay, form: kept,
+        industry: kept.industries, targetProfession: kept.roles, rates: priceStudy(type, kept.incentive, { roles: targets(kept.roles), skills: targets(kept.skills) }), form: kept,
         ...(kept.image ? { image: kept.image } : {}),
       }
       if (draft) { Object.assign(draft, fields); return yes({ id: draft.id }) }
@@ -345,6 +384,7 @@ export function createPlatform(options: Options = {}) {
         study.completedAt = iso(); log(s, actor, `Marked ${study.title} as completed`, 'Studies / Manage / Complete')
         // Sessions still booked are cancelled by whoever closed the study: free for the participant, who is told.
         for (const p of study.participations.filter((x) => x.state === 'scheduled' && sessionNotStarted(x.booking, clock()))) cancelFor(s, study, p, actor.kind === 'team' ? 'team' : 'client', 'the study has closed')
+        announceFinish(s, study)
       }
       study.state = to
       return yes()
@@ -580,8 +620,9 @@ export function createPlatform(options: Options = {}) {
     /**
      * Workflow 42 to 45: the participation is completed. The participant
      * completes a survey or diary themselves, and a session once their code
-     * is in; the client or the team needs the code from both sides. The
-     * payout is approved `completionToPaid` later (workflow 46).
+     * is in; the client or the team needs the code from both sides. Nothing
+     * is paid here: once the study finishes, the team processes the payouts
+     * by hand in the console (processPayouts).
      */
     complete: (studyId: string, personId: string, actor: Actor, taskAnswers?: Answers) => move((s) => {
       const hit = find(s, studyId, personId)
@@ -603,8 +644,6 @@ export function createPlatform(options: Options = {}) {
       if (taskAnswers && study.type === 'survey') p.taskAnswers = tidyAnswers(study, taskAnswers)
       p.completedAt = iso()
       p.events.push({ label: actor.kind === 'participant' ? 'Completed' : 'Marked as completed', at: p.completedAt }, { label: 'Earnings credited', at: p.completedAt })
-      // AutoPay (the client's choice on the Study step): on, the payout follows by itself; off, it waits for the client to approve it on the Pay tab.
-      if (study.autoPay !== false) s.pending.push({ kind: 'pay', studyId, personId, dueAt: clock().getTime() + TIMINGS.completionToPaid })
       if (actor.kind !== 'participant') log(s, actor, `Marked ${nameOf(s, personId)} as completed on ${study.title}`, 'Studies / Sessions / Complete')
       return yes()
     }),
@@ -614,10 +653,9 @@ export function createPlatform(options: Options = {}) {
       const hit = find(s, studyId, personId)
       if (!hit) return no('Not on this study')
       if (hit.p.state !== 'completed') return no('They are not marked as completed')
-      if (hit.p.paidAt) return no('The payout has already been approved; this can no longer be undone')
+      if (hit.p.paidAt) return no('The payout has already been processed; this can no longer be undone')
       if (!isSessionType(hit.study.type)) return no('Only a session can be marked back')
       hit.p.state = 'scheduled'; hit.p.completedAt = undefined
-      s.pending = s.pending.filter((x) => !(x.kind === 'pay' && x.studyId === studyId && x.personId === personId))
       stamp(hit.p, 'Completion undone')
       log(s, actor, `Undid the completion of ${nameOf(s, personId)} on ${hit.study.title}`, 'Studies / Sessions / Undo')
       return yes()
@@ -629,8 +667,7 @@ export function createPlatform(options: Options = {}) {
       if (!hit) return no('Not on this study')
       const moved = shift(hit.p, 'no_show')
       if (!moved.ok) return moved
-      // Policy: a no-show is not paid. Nothing to pay is left waiting.
-      s.pending = s.pending.filter((x) => !(x.kind === 'pay' && x.studyId === studyId && x.personId === personId))
+      // Policy: a no-show is not paid; they are never on the payout list.
       stamp(hit.p, 'No Show')
       log(s, actor, `Marked ${nameOf(s, personId)} as no-show on ${hit.study.title}`, 'Studies / Sessions / No-show')
       return yes()
@@ -686,17 +723,23 @@ export function createPlatform(options: Options = {}) {
       return yes()
     }),
 
-    /** Workflow 46: the client confirms the payout list before anything leaves the account. */
-    approvePayouts: (studyId: string, personIds: string[]) => move((s) => {
+    /**
+     * The team processes a finished study's payouts by hand in the console.
+     * Everyone who completed is paid, except a session whose code was not
+     * entered on both sides ("no code, no payment"), who stays on the list.
+     * Only the team can do this, and only once the study has finished.
+     */
+    processPayouts: (studyId: string, actor: Actor) => move<{ paid: number; held: number }>((s) => {
       const study = s.studies.find((x) => x.id === studyId)
       if (!study) return no('No such study')
-      const rows = personIds.map((id) => participationOf(study, id))
-      const session = isSessionType(study.type)
-      const blocked = rows.filter((p) => !p || p.state !== 'completed' || (session && !(p.code?.byClient && p.code?.byParticipant)))
-      if (blocked.length > 0) return no(`${blocked.length} without a confirmed session code`)
-      rows.forEach((p) => pay(s, study, p!))
-      s.pending = s.pending.filter((x) => !(x.kind === 'pay' && x.studyId === studyId && personIds.includes(x.personId)))
-      return yes()
+      if (actor.kind !== 'team') return no('Payouts are processed by the Focus Insite team')
+      if (study.state !== 'completed') return no('Payouts are processed once the study has finished')
+      const { owed, ready } = owedOn(study)
+      if (owed.length === 0) return no('Nobody on this study is waiting to be paid')
+      if (ready.length === 0) return no(`${plural(owed.length, 'payout')} cannot be processed yet: no code, no payment`)
+      ready.forEach((p) => pay(s, study, p))
+      log(s, actor, `Processed ${plural(ready.length, 'payout')} (${usd(ready.length * study.rates.incentivePer)}) for ${study.title}`, 'Finance / Payouts / Process')
+      return yes({ paid: ready.length, held: owed.length - ready.length })
     }),
 
     toggleSaved: (personId: string, studyId: string) => move((s) => {
@@ -935,18 +978,18 @@ export function createPlatform(options: Options = {}) {
       if (existing) return yes({ id: existing.id })
       const id = uid('cl')
       s.clients.push({
-        role: '', company: '', industry: '', location: '', vat: '', website: '', joinedAt: iso(), lastActiveAt: iso(), status: 'active',
+        role: '', company: '', industry: '', location: '', taxId: '', website: '', joinedAt: iso(), lastActiveAt: iso(), status: 'active',
         business: { state: 'not_started' }, earlierReviews: [], cards: [], simulated: false, ...c, id, email: clean,
       })
       return yes({ id })
     }),
 
-    updateClient: (clientId: string, patch: Partial<Pick<Client, 'name' | 'role' | 'company' | 'industry' | 'location' | 'vat' | 'website'>>) => move((s) => {
+    updateClient: (clientId: string, patch: Partial<Pick<Client, 'name' | 'role' | 'company' | 'industry' | 'location' | 'taxId' | 'website'>>) => move((s) => {
       const client = s.clients.find((c) => c.id === clientId)
       if (!client) return no('No such client')
       Object.assign(client, Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined)))
-      /** Workflow 3: a new client's business details are checked; the automatic check passes in the demo. */
-      if (client.business.state === 'not_started' && client.vat && client.website) client.business = { state: 'verified' }
+      /** Workflow 3: a new client's business details are checked; the automatic check passes in the demo. The tax ID is optional, so the website is what it needs. */
+      if (client.business.state === 'not_started' && client.company && client.website) client.business = { state: 'verified' }
       return yes()
     }),
 
@@ -985,6 +1028,23 @@ export function createPlatform(options: Options = {}) {
       if (!client) return no('No such client')
       client.cards = client.cards.filter((c) => c.last4 !== last4)
       if (client.cards.length > 0 && !client.cards.some((c) => c.isDefault)) client.cards[0]!.isDefault = true
+      return yes()
+    }),
+    /** The client edits a saved card or replaces it with another. It keeps its place and whether it is the default. */
+    updateCard: (clientId: string, last4: string, card: Omit<SavedCard, 'isDefault'>) => move((s) => {
+      const client = s.clients.find((c) => c.id === clientId)
+      if (!client) return no('No such client')
+      const at = client.cards.findIndex((c) => c.last4 === last4)
+      if (at < 0) return no('That card is no longer on file')
+      if (card.last4 !== last4 && client.cards.some((c) => c.last4 === card.last4)) return no(`A card ending ${card.last4} is already on file`)
+      client.cards[at] = { ...card, isDefault: client.cards[at]!.isDefault }
+      return yes()
+    }),
+    /** The client has read their notifications: one, or all of them. */
+    markClientNoticesRead: (clientId: string, id?: string) => move((s) => {
+      const client = s.clients.find((c) => c.id === clientId)
+      if (!client) return no('No such client')
+      client.notifications = (client.notifications ?? []).map((n) => (!id || n.id === id ? { ...n, read: true } : n))
       return yes()
     }),
     setDefaultCard: (clientId: string, last4: string) => move((s) => {

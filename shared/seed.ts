@@ -26,7 +26,7 @@ import type {
   Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudySetup, StudyType, TeamMember, Ticket,
 } from './types'
 
-export const SEED_VERSION = 8
+export const SEED_VERSION = 9
 export const DEMO_PERSON_ID = 'jonathan'
 export const DEMO_PERSON_EMAIL = 'jonathan.reeve@example.com'
 export const DEMO_CLIENT_ID = 'cl-soulful'
@@ -258,13 +258,13 @@ export function buildSeed(now: Date = new Date()): PlatformState {
   ): Client => ({
     id, name, role, company, industry, location,
     email: `${name.toLowerCase().split(' ')[0]}@${company.toLowerCase().replace(/[^a-z]+/g, '').slice(0, 14)}.com`,
-    vat: `EAS${56893231400 + n * 7919}`, website: `https://www.${company.toLowerCase().replace(/[^a-z]+/g, '').slice(0, 14)}.com`,
+    taxId: `${String(12 + (n % 80)).padStart(2, '0')}-${String(3456789 + n * 7919).slice(-7)}`, website: `https://www.${company.toLowerCase().replace(/[^a-z]+/g, '').slice(0, 14)}.com`,
     joinedAt: at(-(500 - n * 31), 9, 0), lastActiveAt: at(-(n % 9), 10 + (n % 6), 15), status: 'active',
     business: { state: 'verified' }, earlierReviews: EARLIER[id] ?? [], cards: [], simulated: true, ...extra,
   })
   const clients: Client[] = [
     client(DEMO_CLIENT_ID, 'Jennifer Lee', 'Product Manager', 'Soulful Labs', 'IT & Consultation', 'New York, US', 0, {
-      email: DEMO_CLIENT_EMAIL, vat: 'EAS56893231459', website: 'https://www.soulfullabs.ai', simulated: false, lastActiveAt: at(0, 9, 10),
+      email: DEMO_CLIENT_EMAIL, taxId: '84-2931459', website: 'https://www.soulfullabs.ai', simulated: false, lastActiveAt: at(0, 9, 10),
       cards: [{ brand: 'Mastercard', last4: '4242', expires: 'Expires 08/28', isDefault: true }, { brand: 'VISA', last4: '6080', expires: 'Expires 08/28' }],
     }),
     client('cl-rjp', 'Helen Marlow', 'Research Director', 'RJP Pharma Ltd.', 'Pharma', 'Boston, US', 1),
@@ -279,14 +279,14 @@ export function buildSeed(now: Date = new Date()): PlatformState {
     client('cl-atlas', 'Greg Novak', 'Research Manager', 'Atlas Mobility', 'Automotive', 'Chicago, US', 10),
     // Business checks waiting on the team, and two already decided.
     client('cl-verda', 'Jennifer Winter', 'UX Researcher', 'Verda Clinics', 'Healthcare', 'San Francisco, US', 11, {
-      joinedAt: at(-2, 10, 0), business: { state: 'flagged', reason: 'VAT number for business registration could not be found', flaggedAt: at(-2, 10, 5) } }),
+      joinedAt: at(-2, 10, 0), business: { state: 'flagged', reason: 'Tax ID for business registration could not be found', flaggedAt: at(-2, 10, 5) } }),
     client('cl-pine', 'Owen Hart', 'Founder', 'Pinecrest Analytics', 'Consultancy', 'Denver, US', 12, {
-      joinedAt: at(-4, 15, 0), business: { state: 'flagged', reason: 'Website and VAT number for business registration could not be found', flaggedAt: at(-4, 15, 5) } }),
+      joinedAt: at(-4, 15, 0), business: { state: 'flagged', reason: 'Website and tax ID for business registration could not be found', flaggedAt: at(-4, 15, 5) } }),
     client('cl-quill', 'Tara Singh', 'Content Head', 'Quill Media', 'Media', 'Seattle, US', 13, {
-      joinedAt: at(-25, 9, 0), business: { state: 'verified', reason: 'VAT number for business registration could not be found', flaggedAt: at(-25, 9, 5), note: 'An OCR error, manually verified and matched with record.', decidedAt: at(-23, 11, 0), decidedBy: 'tm-robert' } }),
+      joinedAt: at(-25, 9, 0), business: { state: 'verified', reason: 'Tax ID for business registration could not be found', flaggedAt: at(-25, 9, 5), note: 'An OCR error, manually verified and matched with record.', decidedAt: at(-23, 11, 0), decidedBy: 'tm-robert' } }),
     client('cl-brix', 'Ivan Petrov', 'Director', 'Brix Labs', 'IT', 'Miami, US', 14, {
       joinedAt: at(-33, 9, 0), status: 'deactivated', statusNote: { reason: 'Could not verify the business, hence deactivated.', at: at(-30, 12, 0), by: 'tm-robert' },
-      business: { state: 'rejected', reason: 'Website and VAT number for business registration could not be found', flaggedAt: at(-33, 9, 5), note: 'Did not submit the VAT number document for verification as required.', decidedAt: at(-30, 12, 0), decidedBy: 'tm-robert' } }),
+      business: { state: 'rejected', reason: 'Website and tax ID for business registration could not be found', flaggedAt: at(-33, 9, 5), note: 'Did not submit the tax ID document for verification as required.', decidedAt: at(-30, 12, 0), decidedBy: 'tm-robert' } }),
   ]
 
   // ---------------------------------------------------------------- studies
@@ -735,7 +735,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
     })
   }
 
-  const state: PlatformState = { version: SEED_VERSION, seededAt: now.toISOString(), people, clients, studies, reports, tickets, team, activity, pending: [] }
+  const state: PlatformState = { version: SEED_VERSION, seededAt: now.toISOString(), people, clients, studies, reports, tickets, team, activity, pending: [], teamNotices: [] }
   /**
    * Certificates issued at verification (policy section 7), each ID generated
    * once and never reused. A fixed sequence stands in for Math.random so the
@@ -777,5 +777,5 @@ export function buildSeed(now: Date = new Date()): PlatformState {
  * new master admin signs up into (console sign-up).
  */
 export function buildEmpty(owner: TeamMember, now: Date = new Date()): PlatformState {
-  return { version: SEED_VERSION, seededAt: now.toISOString(), people: [], clients: [], studies: [], reports: [], tickets: [], team: [owner], activity: [], pending: [] }
+  return { version: SEED_VERSION, seededAt: now.toISOString(), people: [], clients: [], studies: [], reports: [], tickets: [], team: [owner], activity: [], pending: [], teamNotices: [] }
 }

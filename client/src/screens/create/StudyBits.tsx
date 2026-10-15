@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import Toggle from '../../components/ui/Toggle'
 import { useDraft } from '../../mock/createStore'
 import { Section } from './CreateBits'
 import { useToast } from '../../components/ui/Toast'
@@ -52,7 +51,9 @@ function Row({ label, note, value, strong }: { label: string; note?: string; val
 
 /**
  * Incentive Payments, the same on every study type (1518:91922 and the video,
- * in-person and diary setups): the amount, its slider and AutoPay.
+ * in-person and diary setups): the amount and its slider. Nothing is paid
+ * automatically. When the study finishes the client
+ * is told its participants will be paid, and the team processes the payouts.
  */
 export function IncentivePayments() {
   const { draft, set } = useDraft()
@@ -77,15 +78,6 @@ export function IncentivePayments() {
         <p className="text-text-regular text-text-subtitle">
           Participants see this amount before applying, and it strongly influences how quickly your project fills and how long they expect the study to take.
         </p>
-        <div className="flex items-start justify-between gap-4 rounded-md bg-bg-1 p-4">
-          <span className="flex flex-col gap-1">
-            <span className="text-body-medium text-text-title">AutoPay</span>
-            <span className="text-text-regular text-text-subtitle">
-              Once a participant has been marked as attended, the incentive will be paid out to them automatically.
-            </span>
-          </span>
-          <Toggle checked={draft.autoPay} onChange={(v) => set('autoPay', v)} label="AutoPay" />
-        </div>
       </div>
     </Section>
   )

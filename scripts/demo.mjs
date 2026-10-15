@@ -238,7 +238,36 @@ await step(6, 'Open it, enter session code 407060, see it confirmed', async () =
 
 const before = { wallet: await store('st.user.walletBalance'), points: await store('st.user.points'), trust: await store('st.user.trustScore') }
 
-await step(7, 'Complete it, watch it move to History and become Paid', async () => {
+/**
+ * Nothing is paid automatically: when a study finishes, the Focus Insite team
+ * processes the payouts by hand in the console. The team works in a console
+ * tab of its own (1440 wide), with a stored console session so nothing is
+ * reset: it finishes the study, supplies the client's half of the session
+ * code from the PIN where it is missing, and processes the payout.
+ */
+async function teamProcesses(studyId) {
+  const { targetId: tid } = await send('Target.createTarget', { url: 'about:blank' })
+  const { sessionId: sid } = await send('Target.attachToTarget', { targetId: tid, flatten: true })
+  const t = (m, p) => send(m, p, sid)
+  await t('Page.enable'); await t('Runtime.enable')
+  await t('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false })
+  const ev = async (e) => { const r = await t('Runtime.evaluate', { expression: e, awaitPromise: true, returnByValue: true }); if (r.exceptionDetails) throw new Error('[console] ' + (r.exceptionDetails.exception?.description ?? r.exceptionDetails.text).split('\n')[0]); return r.result.value }
+  const open = async (path) => { await t('Page.navigate', { url: base + path }); await sleep(2000) }
+  const button = (text, within = 'document') => `[...${within}.querySelectorAll('button')].find((b) => b.textContent.trim() === ${JSON.stringify(text)} && b.offsetParent !== null)`
+  await open('/internal/signin')
+  await ev(`localStorage.setItem('fi-internal-session', JSON.stringify({ current: 'peter@focusinsite.com' })); true`)
+  await open(`/internal/studies/${studyId}`)
+  await ev(`document.querySelector('[aria-label="Study options"]').click(); true`); await sleep(300)
+  await ev(`${button('Stop-complete Study')}.click(); true`); await sleep(900)
+  await open('/internal/finance/payouts')
+  const title = await store(`st.studies.find((x) => x.id === ${JSON.stringify(studyId)}).title`)
+  await ev(`(() => { const row = [...document.querySelectorAll('div')].filter((r) => r.innerText?.includes(${JSON.stringify(title)}) && [...r.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Process Payouts')).sort((a, b) => a.innerText.length - b.innerText.length)[0]; if (!row) throw new Error('the study is not on Finance > Payouts'); ${button('Process Payouts', 'row')}.click(); return true })()`); await sleep(400)
+  await ev(`(() => { for (const b of [...document.querySelectorAll('[role=dialog] button')].filter((x) => x.textContent.trim().startsWith('Confirm code'))) b.click(); return true })()`); await sleep(400)
+  await ev(`(() => { const b = [...document.querySelectorAll('[role=dialog] button')].find((x) => /^Process [0-9]/.test(x.textContent.trim())); if (!b || b.disabled) throw new Error('nothing to process'); b.click(); return true })()`); await sleep(900)
+  await send('Target.closeTarget', { targetId: tid })
+}
+
+await step(7, 'Complete it, watch it move to History and become Paid once the team processes the payout', async () => {
   // Complete Study waits for the session to have started, so the clock moves on: the
   // booking is set an hour into the past (the one place the script touches state directly).
   expect(await evaluate(`[...document.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Complete Study' && b.getAttribute('aria-disabled') === 'true')`), 'Complete Study should wait for the session')
@@ -248,9 +277,13 @@ await step(7, 'Complete it, watch it move to History and become Paid', async () 
   expect(await store(`st.studies.find((x) => x.id === 'st-01').status`) === 'in_process', 'should be in_process')
   await nav('/studies/mine/history')
   expect(await evaluate(`document.body.textContent.includes('GLP-1 Care Plans')`), 'not listed in History')
+  // Nothing is paid on a timer: still In Process after the old 5 second delay.
   await sleep(5200)
-  expect(await store(`st.studies.find((x) => x.id === 'st-01').status`) === 'paid', 'should be paid after the delay')
-  expect(await store(`st.studies.find((x) => x.id === 'st-01').timeline.some((t) => t.label === 'Client approved payout')`), 'client approval missing from the timeline')
+  expect(await store(`st.studies.find((x) => x.id === 'st-01').status`) === 'in_process', 'paid automatically, with nobody processing it')
+  await teamProcesses('st-01')
+  await sleep(1200)
+  expect(await store(`st.studies.find((x) => x.id === 'st-01').status`) === 'paid', 'should be paid once the team processes it')
+  expect(await store(`st.studies.find((x) => x.id === 'st-01').timeline.some((t) => t.label === 'Paid')`), 'Paid missing from the timeline')
   expect(await evaluate(`document.body.textContent.includes('Reward Points!')`), 'points earned modal did not open')
   await click('Done!')
 })

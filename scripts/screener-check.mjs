@@ -135,13 +135,16 @@ await C.open('/client/studies', `localStorage.setItem('fi-client-session', JSON.
 await C.go('/client/studies/create/about')
 await C.click('Video Call')
 await C.ev(`(() => { __type(document.querySelector('input[placeholder="Enter title of your study"]'), ${JSON.stringify(TITLE)}); __type(document.querySelector('textarea[placeholder="Enter study description"]'), 'How people use sleep trackers.'); return true })()`)
-await C.click('Continue'); await C.click('Continue')
+await C.click('Continue')
+// Work Function and Industry are required on the Audience step.
+await C.ev(`(() => { const f = (ph, v) => __type(document.querySelector('input[placeholder="' + ph + '"]'), v); f('e.g. Product, Engineering, Marketing', 'Consultation, Patient Care, Research'); f('e.g. Healthcare, Finance', 'Healthcare'); return true })()`); await sleep(150)
+await C.click('Continue')
 await C.ev(BUILD_SCREENER); await sleep(300)
 const built = await C.ev(`[...document.querySelectorAll('input[placeholder="Enter question text..."]')].map((i, n) => ({ n: n + 1, text: i.value, type: i.closest('.py-4').querySelectorAll('button')[0].innerText.trim() })).filter((q) => q.text)`)
 say(1, 'As a client, create a study and add 3 screener questions with different answer types', built.length === 3 && new Set(built.map((b) => b.type)).size === 3, built.map((b) => `block ${b.n}: "${b.text}" (${b.type})`).join(' | '))
 await C.click('Continue')
 await C.click('Set Timing Availability'); await C.ev(SET_HOURS); await C.click('Submit'); await C.click('Proceed to Publish')
-await C.ev(`(() => { const f = (ph, v) => __type(document.querySelector('input[placeholder="' + ph + '"]'), v); f('0000 0000 0000 0000', '4242 4242 4242 4242'); f('MM / YYYY', '12 / 2028'); f('000', '123'); f('Enter name', 'Jennifer Lee'); return true })()`)
+// The demo client's saved card is already selected at Publish.
 await C.click('Publish Study', 900)
 const id = await C.ev(`(__st().studies.find((s) => s.title === ${JSON.stringify(TITLE)}) || {}).id`)
 console.log('submitted:', id, 'landed on', await C.path())

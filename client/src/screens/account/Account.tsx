@@ -14,6 +14,8 @@ import { count } from '@shared/format'
 import { useClient, usePlatform } from '../../platform'
 import { useToast } from '../../components/ui/Toast'
 import { useSession } from '../../mock/session'
+import { useWorkspace } from '../../mock/workspace'
+import { AddCardPanel, CardMark, EditCardPanel } from '../payments/PaymentPanels'
 
 const NAV = [
   { key: 'profile', label: 'Profile' },
@@ -94,12 +96,16 @@ export default function Account() {
     email: account?.email ?? '',
     role: account?.role ?? '',
     company: account?.company ?? '',
-    vat: account?.vat ?? PROFILE_FIELDS.workspace.fields[1].value,
+    taxId: account?.taxId ?? '',
     website: account?.website || PROFILE_FIELDS.workspace.fields[2].value,
     industry: account?.industry ?? PROFILE_FIELDS.workspace.fields[3].value,
     location: account?.location ?? PROFILE_FIELDS.workspace.fields[4].value,
   })
   const [modal, setModal] = useState(params.get('modal') ?? '')
+  /** The card on file: edited or replaced from here at any time (Payments lists every card). */
+  const { cards } = useWorkspace()
+  const card = cards.find((c) => c.isDefault) ?? cards[0]
+  const [cardPanel, setCardPanel] = useState<'' | 'edit' | 'add'>('')
   const go = (k: string) => {
     if (k === 'logout') { setModal('logout'); return }
     const n = new URLSearchParams(params); n.set('tab', k); setParams(n)
@@ -142,16 +148,37 @@ export default function Account() {
                 <div className="flex flex-col gap-3 pt-8">
                   <p className="text-title-s leading-[22px] text-text-title">{PROFILE_FIELDS.workspace.label}</p>
                   <Field label="Company Name" value={form.company} onChange={(v) => setForm({ ...form, company: v })} />
-                  <Field label="VAT (Tax) Number" value={form.vat} onChange={(v) => setForm({ ...form, vat: v })} />
+                  <Field label="Tax ID (optional)" value={form.taxId} onChange={(v) => setForm({ ...form, taxId: v })} />
                   <Field label="Company Website" value={form.website} locked verified />
                   <Field label="Industry" value={form.industry} select onChange={(v) => setForm({ ...form, industry: v })} />
                   <Field label="Location" value={form.location} onChange={(v) => setForm({ ...form, location: v })} />
                 </div>
                 <Button fullWidth size="none" className="mt-6 h-12 text-body-medium" onClick={() => {
                   update({ name: form.name, role: form.role, company: form.company,
-                    vat: form.vat, industry: form.industry, location: form.location })
+                    taxId: form.taxId, industry: form.industry, location: form.location })
                   toast('Saved')
                 }}>Save Changes</Button>
+
+                <div className="flex flex-col gap-3 pt-8">
+                  <p className="text-title-s leading-[22px] text-text-title">Payment Method</p>
+                  {card ? (
+                    <div className="flex h-[72px] items-center justify-between gap-3 rounded-lg border-1 border-stroke-input px-4">
+                      <span className="flex items-center gap-3">
+                        <CardMark brand={card.brand} />
+                        <span className="flex flex-col">
+                          <span className="text-body-regular text-text-title">{card.brand} <span className="px-1">&bull;</span> **** {card.last4}</span>
+                          <span className="text-text-regular text-text-subtitle">{card.expires}{card.isDefault ? ' · Default, used when you publish' : ''}</span>
+                        </span>
+                      </span>
+                      <Button variant="tertiary" size="row" className="px-3" onClick={() => setCardPanel('edit')}>Edit or Replace</Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-3 rounded-lg border-1 border-stroke-input px-4 py-4">
+                      <span className="text-text-regular text-text-subtitle">No card on file. You will need one to publish a study.</span>
+                      <Button variant="tertiary" size="row" className="px-3" onClick={() => setCardPanel('add')}>Add Card</Button>
+                    </div>
+                  )}
+                </div>
               </>
             )}
 
@@ -263,6 +290,8 @@ export default function Account() {
       <OutcomeModal open={modal === 'deactivated'} onClose={() => setModal('')} kind="deactivated" />
       <OutcomeModal open={modal === 'active'} onClose={() => setModal('')} kind="activeStudies" />
       <LogoutModal open={modal === 'logout'} onClose={() => setModal('')} />
+      <EditCardPanel open={cardPanel === 'edit'} last4={card?.last4} onClose={() => setCardPanel('')} />
+      <AddCardPanel open={cardPanel === 'add'} onClose={() => setCardPanel('')} />
     </AppShell>
   )
 }

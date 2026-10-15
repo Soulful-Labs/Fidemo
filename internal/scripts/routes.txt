@@ -165,3 +165,4 @@ studies/st-35/sessions/s1
 studies/st-24/sessions/s1
 
 signup
+finance/payouts

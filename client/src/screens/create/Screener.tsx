@@ -1,9 +1,8 @@
 import Button from '../../components/ui/Button'
 import Toggle from '../../components/ui/Toggle'
-import { ChevronDown, MoreVertical, Plus, Trash } from '../../components/ui/icons'
+import { ChevronDown, Plus, Trash } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import Modal from '../../components/ui/Modal'
-import Popover, { PopoverItem } from '../../components/ui/Popover'
 import { blankQuestion, MARKS_FOR, useDraft } from '../../mock/createStore'
 import type { Question, QuestionKind } from '../../mock/createStore'
 import CreateShell from './CreateShell'
@@ -11,6 +10,8 @@ import ScreenerPreview from './ScreenerPreview'
 import { useToast } from '../../components/ui/Toast'
 import { useState } from 'react'
 import { buildScreener } from '@shared/questions'
+import PromptDialog from './PromptDialog'
+import { screenerFromPrompt } from '../../lib/fromPrompt'
 
 const SPARKLE = (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
@@ -159,22 +160,17 @@ function Matrix({ q, write }: { q: Question; write: (next: Question) => void }) 
 }
 
 /**
- * The menu behind a question's kebab. The designs draw a Question menu but its
- * rows could not be read this turn, so it holds the one thing the kebab used
- * to do with no warning, and asks first.
+ * Delete, on the question itself: one click on the bin, then a confirmation.
+ * It replaces the three-dot menu, whose only item was Delete Question.
  */
-function QuestionMenu({ label, onDelete }: { label: string; onDelete: () => void }) {
-  const [open, setOpen] = useState(false)
+function DeleteQuestion({ label, onDelete }: { label: string; onDelete: () => void }) {
   const [asking, setAsking] = useState(false)
   return (
     <span className="relative flex shrink-0">
-      <button type="button" aria-label="Question options" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}
-        className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-sm border-1 border-stroke-input bg-bg text-text-subtitle hover:text-text-title">
-        <MoreVertical className="h-5 w-5" />
+      <button type="button" aria-label={`Delete ${label}`} title="Delete question" onClick={() => setAsking(true)}
+        className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-sm border-1 border-stroke-input bg-bg text-text-subtitle hover:text-state-danger">
+        <Trash className="h-5 w-5" />
       </button>
-      <Popover open={open} onClose={() => setOpen(false)} width={165}>
-        <PopoverItem danger onClick={() => { setOpen(false); setAsking(true) }}>Delete Question</PopoverItem>
-      </Popover>
       <Modal open={asking} onClose={() => setAsking(false)} title="Delete Question?"
         body={<>{label} and everything typed into it will be removed. This cannot be undone.</>}
         footer={
@@ -229,7 +225,7 @@ export function QuestionBlock({ q, index, write, onDelete, marksFor = MARKS_FOR,
             options={['Single-select', 'Multi-select', 'Single-line input', 'Number input',
               'Multi-line input', 'Slider', 'Ranking', 'File Upload', 'Mattrix']}
             onPick={(v) => write({ ...q, kind: v as QuestionKind, options: optionsFor(q, v as QuestionKind, marksFor(v as QuestionKind)) })} />
-          <QuestionMenu label={q.label} onDelete={onDelete} />
+          <DeleteQuestion label={q.label} onDelete={onDelete} />
         </div>
 
         <Box value={q.text} placeholder="Enter question text..." onChange={(v) => write({ ...q, text: v })} />
@@ -303,36 +299,27 @@ export function QuestionBlock({ q, index, write, onDelete, marksFor = MARKS_FOR,
  */
 export default function Screener() {
   /**
-   * Generate adds screener questions, Regenerate All replaces the lot. No
-   * model here, so they come from a short bank rather than a toast.
-   */
-  const BANK: { kind: QuestionKind; text: string; options?: string[] }[] = [
-    { kind: 'Single-select', text: 'Which of these best describes your current role?', options: ['Individual contributor', 'Team lead or manager', 'Director or above', 'Owner or founder'] },
-    { kind: 'Number input', text: 'How many years have you worked in this field?' },
-    { kind: 'Single-select', text: 'How often do you use a product like this?', options: ['Every day', 'Every week', 'Every month', 'Rarely or never'] },
-    { kind: 'Multi-select', text: 'Which of these do you use for work?', options: ['A laptop or desktop', 'A phone', 'A tablet'] },
-    { kind: 'Single-select', text: 'What is the size of the team you work in?', options: ['Just me', '2 to 10', '11 to 50', 'More than 50'] },
-  ]
-  /**
-   * Every generated question is complete: it has its options, and none of
-   * them screens anyone out (each is Correct or May Select), because which
-   * answer disqualifies is the client's decision, not a bank's. The set is
+   * Generate adds screener questions written from the client's description of
+   * the study, Regenerate All replaces the lot. There is no model: the text is
+   * read for the roles, industry and subject it names, and any question the
+   * client wrote into it (lib/fromPrompt.ts). Every generated question is
+   * complete, and none screens anyone out (each is Correct or May Select),
+   * because which answer disqualifies is the client's decision. The set is
    * checked the way Publish checks it, and nothing is added if it would not pass.
    */
-  const generate = (all: boolean) => {
-    const start = all ? 0 : draft.questions.length
-    const made = BANK.slice(0, all ? BANK.length : 2).map((b, i) => {
-      const q = blankQuestion(`Q${start + i + 1}`, b.kind)
-      const mark = b.kind === 'Single-select' ? 'Correct' : 'May Select'
-      return { ...q, text: b.text, options: b.options ? b.options.map((text, n) => ({ id: `${q.id}g${n}`, text, mark })) : q.options }
-    })
+  const generate = (text: string, all: boolean) => {
+    const start = all ? 1 : draft.questions.length + 1
+    const made = screenerFromPrompt(text, start)
+    if (made.length === 0) { toast('Your description does not say what the study is about or who it is for, so nothing was generated'); return }
     const checked = buildScreener(made)
     if (!checked.ok) { toast(`Nothing was generated: ${checked.why}`); return }
     set('questions', all ? made : [...draft.questions, ...made])
-    toast(all ? 'All questions regenerated' : 'Questions generated')
+    toast(`${made.length} questions ${all ? 'written' : 'added'} from your description`)
   }
   const toast = useToast()
   const { draft, set } = useDraft()
+  /** Which button opened the description box. */
+  const [asking, setAsking] = useState<null | 'add' | 'all'>(null)
 
   return (
     <CreateShell step="screener">
@@ -363,19 +350,23 @@ export default function Screener() {
           <div className="ml-7 flex flex-col gap-3 rounded-lg border-1 border-stroke-2 bg-bgAlt-1 p-[14px]">
             <div className="flex flex-col gap-0.5">
               <p className="flex items-center gap-2 text-body-medium text-text-title">{SPARKLE}Generate with AI</p>
-              <p className="text-text-regular text-text-subtitle">Let our AI-assitant generate questions</p>
+              <p className="text-text-regular text-text-subtitle">Describe your study and our AI-assistant writes screener questions from it</p>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="secondary" size="row" leftIcon={SPARKLE} onClick={() => generate(false)}>Generate</Button>
-              <Button variant="tertiary" size="row" leftIcon={SPARKLE} onClick={() => generate(true)}>Regenerate All</Button>
+              <Button variant="secondary" size="row" leftIcon={SPARKLE} onClick={() => setAsking('add')}>Generate</Button>
+              <Button variant="tertiary" size="row" leftIcon={SPARKLE} onClick={() => setAsking('all')}>Regenerate All</Button>
               <span className="relative flex flex-1 items-center">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true" className="absolute left-4 text-text-body">
                   <path d="M4 20h4l10-10a2.8 2.8 0 0 0-4-4L4 16v4Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
                 </svg>
-                <Box placeholder="Write - Tell AI what to do" className="pl-10" />
+                {/* The description Generate works from: the same text the Audience step's Fill with AI took. */}
+                <Box value={draft.aiPrompt ?? ''} onChange={(v) => set('aiPrompt', v)} placeholder="Describe your study, then Generate" className="pl-10" />
               </span>
             </div>
           </div>
+          <PromptDialog open={asking !== null} onClose={() => setAsking(null)} onGenerate={(text) => generate(text, asking === 'all')}
+            action={asking === 'all' ? 'Replace All Questions' : 'Add Questions'}
+            lead="Describe your study: who it is for (their job and industry) and what it is about. Any question you write here, ending in a question mark, is added as it is." />
 
           <div className="flex flex-col pl-1 pt-[18px]">
             {draft.questions.map((q, i) => (

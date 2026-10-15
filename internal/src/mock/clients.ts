@@ -52,7 +52,7 @@ export function useClientView(id?: string) {
     return {
       client: c,
       header: { name: c.name, role: c.role, place: c.location, photo: clientPhoto(state, c.id), lastActive: `Last active on ${monthDayYear(c.lastActiveAt)}`, email: c.email },
-      ACCOUNT: [['Work Email', c.email], ['Role', c.role || 'N/A'], ['Company Name', c.company || 'N/A'], ['VAT (Tax) Number', c.vat || 'N/A'],
+      ACCOUNT: [['Work Email', c.email], ['Role', c.role || 'N/A'], ['Company Name', c.company || 'N/A'], ['Tax ID', c.taxId || 'Not given (optional)'],
         ['Company Website', c.website || 'N/A'], ['Industry', c.industry || 'N/A'], ['Location', c.location || 'N/A']],
       rating: { score: rating.rating.toFixed(1), of: `of ${count(rating.reviewCount)} reviews` },
       REVIEWS: clientReviews(state, c.id).map((r) => ({

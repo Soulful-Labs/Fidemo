@@ -43,10 +43,15 @@ export function SaveDraftButton() {
  * "Create Study / Study Name", the four step chips and the Save Draft & Exit
  * and Publish Study buttons instead of the bell and Create Study.
  */
-export default function CreateShell({ step, action, children }: { step: CreateStep; action?: ReactNode; children: ReactNode }) {
+export default function CreateShell({ step, action, children, check }: {
+  step: CreateStep; action?: ReactNode; children: ReactNode
+  /** Asked before Continue moves on: what still needs filling on this step, or nothing. */
+  check?: () => string | undefined
+}) {
   const index = STEPS.findIndex((s) => s.key === step)
   const next = STEPS[index + 1]
   const navigate = useNavigate()
+  const toast = useToast()
   const { draft } = useDraft()
 
   return (
@@ -79,7 +84,11 @@ export default function CreateShell({ step, action, children }: { step: CreateSt
             {action ?? (
               <>
                 <SaveDraftButton />
-                <Button size="row" onClick={() => next && navigate(next.to)}>Continue</Button>
+                <Button size="row" onClick={() => {
+                  const fault = check?.()
+                  if (fault) { toast(fault); return }
+                  if (next) navigate(next.to)
+                }}>Continue</Button>
               </>
             )}
           </div>

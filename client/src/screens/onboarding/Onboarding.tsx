@@ -7,6 +7,7 @@ import { cn } from '../../lib/cn'
 import { useToast } from '../../components/ui/Toast'
 import { DEMO_ACCOUNT, useSession } from '../../mock/session'
 import { nextOnboardingStep } from '../../app/Guards'
+import { platform } from '@shared/store'
 
 /**
  * The onboarding flow, and the only way into the app.
@@ -225,7 +226,7 @@ export function OrganizationDetails() {
   const { account, update } = useSession()
   const [role, setRole] = useState(account?.role ?? '')
   const [company, setCompany] = useState(account?.company ?? '')
-  const [vat, setVat] = useState(account?.vat ?? '')
+  const [taxId, setTaxId] = useState(account?.taxId ?? '')
   const [website, setWebsite] = useState(account?.website ?? '')
   const [industry, setIndustry] = useState(account?.industry ?? '')
   const [location, setLocation] = useState(account?.location ?? '')
@@ -234,7 +235,7 @@ export function OrganizationDetails() {
 
   const submit = () => {
     if (!role.trim() || !company.trim()) return setError('Your role and company name are both needed')
-    update({ role, company, vat, website, industry, location })
+    update({ role, company, taxId, website, industry, location })
     nav('/payment-method')
   }
 
@@ -244,7 +245,7 @@ export function OrganizationDetails() {
       <div className="flex flex-col gap-4 pt-[32px]">
         <Field label="Your Role" placeholder="Enter your role" value={role} onChange={(v) => { setRole(v); setError(null) }} />
         <Field label="Company Name" placeholder="Enter organization name" value={company} onChange={(v) => { setCompany(v); setError(null) }} />
-        <Field label="VAT (Tax) Number" placeholder="Enter registered TAX number" value={vat} onChange={setVat} />
+        <Field label="Tax ID (optional)" placeholder="E.g. 12-3456789 (EIN)" value={taxId} onChange={setTaxId} />
         <Field label="Company Website" placeholder="https://" check value={website} onChange={setWebsite} />
         <div className="relative">
           <Field label="Industry" placeholder="Select company industry" select value={industry} onSelect={() => setPicker((p) => !p)} />
@@ -269,10 +270,14 @@ export function OrganizationDetails() {
   )
 }
 
-/** Payment Method (1512:68177). */
+/**
+ * Payment Method (1512:68177). Optional: Skip for now reaches the app with no
+ * card, and Publish asks for one before the first study goes out. A card
+ * added here is saved to the account, so Publish already has it selected.
+ */
 export function PaymentMethod() {
   const nav = useNavigate()
-  const { update } = useSession()
+  const { account, update } = useSession()
   const [card, setCard] = useState('')
   const [expiry, setExpiry] = useState('')
   const [cvv, setCvv] = useState('')
@@ -287,8 +292,18 @@ export function PaymentMethod() {
     if (!/^\d{2}\s*\/\s*\d{2,4}$/.test(expiry)) return setError('Expiry should be MM / YYYY')
     if (!/^\d{3,4}$/.test(cvv)) return setError('CVV should be three or four digits')
     if (!name.trim()) return setError('Please enter the name on the card')
-    /** Step 1: a card is kept on file at sign-up. Nothing is charged yet. */
-    update({ cardLast4: digits.slice(-4) })
+    /** Step 1: the card is saved to the account. Nothing is charged yet. */
+    const brand = digits.startsWith('4') ? 'VISA' : 'Mastercard'
+    const mm = expiry.replace(/\s/g, '').split('/')
+    const expires = `Expires ${mm[0]}/${(mm[1] ?? '').slice(-2)}`
+    if (account?.clientId && !platform().getState().clients.find((c) => c.id === account.clientId)?.cards.some((c) => c.last4 === digits.slice(-4))) {
+      platform().addCard(account.clientId, { brand, last4: digits.slice(-4), expires })
+    }
+    update({ cardLast4: digits.slice(-4), cardSkipped: false })
+    nav('/in-review')
+  }
+  const skip = () => {
+    update({ cardSkipped: true })
     nav('/in-review')
   }
 
@@ -307,6 +322,11 @@ export function PaymentMethod() {
       </div>
       {error && <p className="pt-2 text-text-regular text-[#e33a38]">{error}</p>}
       <Button fullWidth size="none" className="mt-8 h-12 text-body-medium" onClick={submit}>Continue</Button>
+      <button type="button" onClick={skip}
+        className="mt-3 flex h-12 w-full items-center justify-center rounded-sm border-1 border-cta-tertiaryStroke text-body-medium text-text-title hover:bg-bg-1">
+        Skip for now
+      </button>
+      <p className="pt-2 text-center text-text-regular text-text-subtitle">You can add a card later. You will need one to publish a study.</p>
     </OnboardShell>
   )
 }

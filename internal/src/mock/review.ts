@@ -74,7 +74,7 @@ export function review(state: PlatformState, s: Study) {
     type: consoleType(s.type),
     CLIENT: {
       id: s.clientId, name: client?.name ?? '', role: client?.role ?? '', email: client?.email ?? '', avatar: clientPhoto(state, s.clientId),
-      workspace: [['Company Name', client?.company ?? ''], ['VAT No.', client?.vat ?? ''], ['Website', client?.website ?? ''], ['Industry', client?.industry ?? ''], ['Location', client?.location ?? '']],
+      workspace: [['Company Name', client?.company ?? ''], ['Tax ID', client?.taxId || 'Not given (optional)'], ['Website', client?.website ?? ''], ['Industry', client?.industry ?? ''], ['Location', client?.location ?? '']],
       metrics: [['Completed studies', String(stats.spentStudies)], ['Total spent', money(stats.spent)],
         ['Verification', client?.business.state === 'verified' ? 'Business Verified' : client?.business.state === 'flagged' ? 'Business check pending' : 'Not verified'],
         ['Member since', monthDayYear(client?.joinedAt)]],

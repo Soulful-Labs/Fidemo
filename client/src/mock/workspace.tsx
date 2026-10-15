@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { invoiceNumber, invoices, studiesOf, teamById, ticketsOf } from '@shared/derive'
-import { clockTime, dayOrToday, monthDayYear } from '@shared/format'
+import { ago, clockTime, dayOrToday, monthDayYear } from '@shared/format'
 import { TIMINGS } from '@shared/platform'
 import { platform } from '@shared/store'
 import type { PlatformState, SavedCard, Ticket as PlatformTicket } from '@shared/types'
@@ -49,6 +49,8 @@ interface Ctx extends Local {
   replyToTicket: (id: string, text: string, attachment?: string) => void
   solveTicket: (id: string) => void
   addCard: (card: Omit<SavedCard, 'isDefault'>) => void
+  /** Edits a saved card, or replaces it with another; the result says why when it cannot. */
+  updateCard: (last4: string, card: Omit<SavedCard, 'isDefault'>) => { ok: boolean; why?: string }
   removeCard: (last4: string) => void
   setDefaultCard: (last4: string) => void
   payInvoice: (number: string) => void
@@ -108,6 +110,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   const solveTicket = useCallback<Ctx['solveTicket']>((id) => { platform().resolveTicket(id) }, [])
   const addCard = useCallback<Ctx['addCard']>((card) => { platform().addCard(clientId, card) }, [clientId])
+  const updateCard = useCallback<Ctx['updateCard']>((last4, card) => platform().updateCard(clientId, last4, card), [clientId])
   const removeCard = useCallback<Ctx['removeCard']>((last4) => { platform().removeCard(clientId, last4) }, [clientId])
   const setDefaultCard = useCallback<Ctx['setDefaultCard']>((last4) => { platform().setDefaultCard(clientId, last4) }, [clientId])
 
@@ -117,21 +120,37 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     if (study) platform().payBalance(study.id)
   }, [mine])
 
+  /**
+   * What the platform has told this client (a study finishing, so far), newest
+   * first, above this app's own rows. These are stored on the platform, so
+   * they arrive in any tab and their read state is the platform's.
+   */
+  const platformRows = useMemo<NotificationRow[]>(() => (client?.notifications ?? []).map((n) => {
+    const study = n.studyId ? state.studies.find((s) => s.id === n.studyId) : undefined
+    return {
+      id: n.id, icon: 'completion', title: n.title, body: n.body, emphasis: study?.title, ago: ago(n.at),
+      unread: !n.read, action: study ? 'View Payouts' : undefined, to: study ? `/studies/${study.id}/pay` : undefined,
+    }
+  }), [client?.notifications, state.studies])
+  const notifications = useMemo(() => [...platformRows, ...w.notifications], [platformRows, w.notifications])
+
   const markNotificationsRead = useCallback(() => {
+    if (platformRows.some((n) => n.unread)) platform().markClientNoticesRead(clientId)
     patch((cur) => ({ ...cur, notifications: cur.notifications.map((n) => ({ ...n, unread: false })) }))
-  }, [patch])
+  }, [patch, platformRows, clientId])
 
   const markNotificationRead = useCallback<Ctx['markNotificationRead']>((id) => {
+    if (platformRows.some((n) => n.id === id)) { platform().markClientNoticesRead(clientId, id); return }
     patch((cur) => ({ ...cur, notifications: cur.notifications.map((n) => (n.id === id ? { ...n, unread: false } : n)) }))
-  }, [patch])
+  }, [patch, platformRows, clientId])
 
   const value = useMemo<Ctx>(() => ({
-    ...w, tickets, cards: client?.cards ?? [], paidInvoices,
+    ...w, notifications, tickets, cards: client?.cards ?? [], paidInvoices,
     raiseTicket, replyToTicket, solveTicket,
-    addCard, removeCard, setDefaultCard, payInvoice,
+    addCard, updateCard, removeCard, setDefaultCard, payInvoice,
     markNotificationsRead, markNotificationRead,
-  }), [w, tickets, client?.cards, paidInvoices, raiseTicket, replyToTicket,
-    solveTicket, addCard, removeCard, setDefaultCard, payInvoice, markNotificationsRead, markNotificationRead])
+  }), [w, notifications, tickets, client?.cards, paidInvoices, raiseTicket, replyToTicket,
+    solveTicket, addCard, updateCard, removeCard, setDefaultCard, payInvoice, markNotificationsRead, markNotificationRead])
 
   return <WorkspaceCtx.Provider value={value}>{children}</WorkspaceCtx.Provider>
 }

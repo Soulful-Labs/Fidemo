@@ -14,6 +14,7 @@ import type { NotificationRow } from '../mock/dashboard'
  * to mean: the one that notification would have been raised on.
  */
 export function notificationRoute(n: NotificationRow, studyIds: string[]): string {
+  if (n.to) return n.to
   const first = studyIds[0] ?? 'st-pay'
   const completed = studyIds[2] ?? first
   switch (n.icon) {

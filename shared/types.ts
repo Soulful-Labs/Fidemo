@@ -112,7 +112,7 @@ export interface Participation {
   rating?: ParticipantRating
   clientReview?: ClientReview
   completedAt?: string
-  /** Workflow 46: the client approved the payout; the incentive is in the wallet from this moment. */
+  /** The team processed the payout by hand in the console; the incentive is in the wallet from this moment. */
   paidAt?: string
   /** When a qualify or disqualify decision was taken, for the one hour undo. */
   decidedAt?: string
@@ -184,12 +184,6 @@ export interface Study {
   setup?: StudySetup
   /** One-to-one session studies: the gap between sessions and how far ahead a slot must be booked. */
   schedule?: { bufferMins: number; noticeMins: number }
-  /**
-   * The client's choice on the Study step. On, or not set: a completed
-   * participant is paid automatically. Off: nobody is paid until the client
-   * approves the payout on the Pay tab (workflow 46).
-   */
-  autoPay?: boolean
   /** Everything the client entered in the Create flow, kept whole (shared/studyForm.ts). */
   form?: StudyForm
   participations: Participation[]
@@ -386,13 +380,14 @@ export interface Client {
   photo?: string
   industry: string
   location: string
-  vat: string
+  /** The business's US tax ID (EIN). Optional: blank when the client did not give one. */
+  taxId: string
   website: string
   joinedAt: string
   lastActiveAt: string
   status: 'active' | 'deactivated'
   statusNote?: { reason: string; at: string; by: string }
-  /** Workflow 3: the business check on the VAT number and website. */
+  /** Workflow 3: the business check on the company website, and the tax ID where one was given. */
   business: Check
   /** The business certificate's ID, FI-C-XXXX-XXXX, issued when the business check passes. Absent until then. */
   certificateId?: string
@@ -403,6 +398,8 @@ export interface Client {
    */
   earlierReviews: EarlierReview[]
   cards: SavedCard[]
+  /** What the platform has told this client, newest first (a study finishing, so far). */
+  notifications?: ClientNotice[]
   /**
    * True when nobody is driving this client in the demo: the store then plays
    * its part (qualifies applicants, rates participants) on the timings in
@@ -410,6 +407,15 @@ export interface Client {
    */
   simulated: boolean
 }
+
+/** A notification for a client, raised by the platform. */
+export interface ClientNotice { id: string; title: string; body: string; studyId?: string; at: string; read: boolean }
+
+/**
+ * A notification for the internal team. `payouts`: a study has finished and
+ * its participants' payouts are ready for the team to process by hand.
+ */
+export interface TeamNotice { id: string; kind: 'payouts'; studyId: string; title: string; body: string; at: string }
 
 // ------------------------------------------------------------------ support
 
@@ -468,7 +474,7 @@ export interface Activity { id: string; what: string; path: string; at: string; 
 // -------------------------------------------------------------------- state
 
 /** A simulated server step waiting to fire, kept in the state so a reload or another tab still runs it. */
-export interface Pending { kind: 'qualify' | 'pay'; studyId: string; personId: string; dueAt: number }
+export interface Pending { kind: 'qualify'; studyId: string; personId: string; dueAt: number }
 
 export interface PlatformState {
   version: number
@@ -482,6 +488,8 @@ export interface PlatformState {
   team: TeamMember[]
   activity: Activity[]
   pending: Pending[]
+  /** What the platform has told the internal team, newest first. */
+  teamNotices: TeamNotice[]
 }
 
 export interface Refusal { ok: false; why: string }

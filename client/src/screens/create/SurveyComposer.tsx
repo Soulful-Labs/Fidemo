@@ -8,6 +8,8 @@ import { useToast } from '../../components/ui/Toast'
 import { blankQuestion, useDraft } from '../../mock/createStore'
 import type { Question, QuestionKind } from '../../mock/createStore'
 import { QuestionBlock } from './Screener'
+import PromptDialog from './PromptDialog'
+import { surveyFromPrompt } from '../../lib/fromPrompt'
 
 const SPARKLE = (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
@@ -60,15 +62,19 @@ export default function SurveyComposer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  /** Adds open questions rather than toasting; no model is wired here. */
-  const generate = () => {
-    const bank = [
-      'What did you set out to do when you opened the app?',
-      'Where did that take longer than you expected?',
-      'What would you change first?',
-    ]
-    write([...questions, ...bank.map((text, i) => ({ ...fresh(questions.length + i + 1, 'Multi-line input'), text }))])
-    toast('Questions generated')
+  /**
+   * Generate writes questions from the client's description of the study.
+   * There is no model: the text is read for its subject and for any question
+   * the client wrote into it (lib/fromPrompt.ts). Empty questions are
+   * replaced; anything already written is kept.
+   */
+  const [asking, setAsking] = useState(false)
+  const generate = (text: string) => {
+    const kept = questions.filter((q) => q.text.trim())
+    const made = surveyFromPrompt(text, label, kept.length + 1, marksFor)
+    if (made.length === 0) { toast('Your description does not say what the study is about, so nothing was written'); return }
+    write([...kept, ...made])
+    toast(`${made.length} questions written from your description`)
   }
 
   const send = () => {
@@ -102,9 +108,11 @@ export default function SurveyComposer({
             <input id="questions-file" type="file" accept=".txt,.csv,text/plain,text/csv" className="sr-only"
               onChange={(e) => { void upload(e.target.files?.[0]); e.target.value = '' }} />
             <Button variant="tertiary" size="row" leftIcon={<Upload className="h-4 w-4" />} onClick={() => document.getElementById('questions-file')?.click()}>{file ?? 'Upload File'}</Button>
-            <Button size="row" leftIcon={SPARKLE} onClick={generate}>Generate</Button>
+            <Button size="row" leftIcon={SPARKLE} onClick={() => setAsking(true)}>Generate</Button>
           </div>
         </div>
+        <PromptDialog open={asking} onClose={() => setAsking(false)} onGenerate={generate} action="Write Questions"
+          lead={`Describe your ${dayGroup ? 'diary study' : 'survey'}: what it is about and what you want to learn. Any question you write here, ending in a question mark, is added as it is.`} />
 
         <div className={cn('flex flex-col gap-4', dayGroup && 'rounded-md bg-bg-1 p-3')}>
           {dayGroup && (

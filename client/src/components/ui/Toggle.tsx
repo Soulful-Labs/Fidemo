@@ -1,6 +1,6 @@
 import { cn } from '../../lib/cn'
 
-/** The pill switch drawn on "Group session" and "AutoPay". */
+/** The pill switch drawn on "Group session". */
 export default function Toggle({
   checked, onChange, label,
 }: { checked: boolean; onChange?: (next: boolean) => void; label?: string }) {

@@ -6,9 +6,15 @@ import CreateShell from './CreateShell'
 import { Chip, Field, Section, TextBox, TierBar } from './CreateBits'
 import { useToast } from '../../components/ui/Toast'
 import Picker from '../../components/ui/Picker'
+import Checkbox from '../../components/ui/Checkbox'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import PromptDialog from './PromptDialog'
+import { audienceFromPrompt } from '../../lib/fromPrompt'
 import { AUDIENCE_OPTIONS } from './CreateBits'
 import { cohort, poolPerson } from '@shared/derive'
-import { audiencePeople } from '@shared/studyForm'
+import { audienceFault, audiencePeople, educationOf } from '@shared/studyForm'
+import type { StudyForm } from '@shared/studyForm'
 import { usePlatform } from '../../platform'
 
 const SPARKLE = (
@@ -68,47 +74,73 @@ function Radio({ on, onClick, label, sub }: { on: boolean; onClick: () => void; 
   )
 }
 
+/** One requirement label: the field name, then "required" or "optional" in the quieter colour. */
+const need = (name: string, required: boolean) => (
+  <>{name} <span className="text-text-body">({required ? 'required' : 'optional'})</span></>
+)
+
+/** A field's helper line, and under it its error once Continue has been pressed with it empty. */
+function Help({ text, error }: { text: string; error?: string }) {
+  return (
+    <>
+      {text && <span className="pt-1 text-text-regular text-text-subtitle">{text}</span>}
+      {error && <span className="pt-0.5 text-text-regular text-state-danger">{error}</span>}
+    </>
+  )
+}
+
 /**
  * 2.1.1 Audience, New Study (1622:81615): who qualifies, with the
- * Participation Forecast beside it. The no-match state of this same step is
- * drawn separately at 1518:91273 and disagrees on several fields; see
- * client/CLAUDE.md.
+ * Participation Forecast beside it. Level of Education takes several levels.
+ * Work Function and Industry are required; Role and Skills are optional.
+ * Generate with AI asks the client to describe the study and fills the step
+ * from what they typed (lib/fromPrompt.ts). The no-match state (1518:91273)
+ * is this same step when the forecast reaches zero.
  */
 export default function Audience() {
-  /**
-   * Fill with AI writes a plausible audience into the step rather than
-   * toasting. There is no model here, so it fills from the study's own type
-   * and the options the pickers offer.
-   */
-  const fillWithAi = () => {
-    set('countries', ['United States of America', 'United Kingdom'])
-    set('gender', 'All Genders')
-    set('education', "Graduate or Bachelor's")
-    set('ageRanges', ['21–29', '30–39'])
-    set('roles', 'Physician, General Doctor, Nutritionist')
-    set('functions', 'Consultation')
-    set('industries', 'Healthcare, Pharma')
-    toast('Audience filled in')
-  }
   const toast = useToast()
+  const navigate = useNavigate()
   const { draft, set, form } = useDraft()
+  const [asking, setAsking] = useState(false)
+  /** What the last Generate filled, and what the text did not mention, shown under the card. */
+  const [result, setResult] = useState<{ filled: string[]; missing: string[] } | null>(null)
+  /** Continue was pressed with a required field empty: the fields say which. */
+  const [tried, setTried] = useState(false)
+  const generate = (text: string) => {
+    const made = audienceFromPrompt(text, draft)
+    for (const [k, v] of Object.entries(made.patch)) set(k as keyof StudyForm, v as never)
+    setResult({ filled: made.filled, missing: made.missing })
+    toast(made.filled.length ? `Filled ${made.filled.length} field${made.filled.length === 1 ? '' : 's'} from your description` : 'Nothing in your description matched these fields')
+  }
   /** The people on the platform who fit what is entered on this step, so the forecast moves with it. */
   const state = usePlatform()
   const fit = cohort(audiencePeople(state, form()).map((p) => poolPerson(state, p)))
   const tier = (t: string) => fit.tiers.find((x) => x.tier === t)?.pct ?? 0
+  const education = educationOf(draft)
+  const noFunction = tried && !draft.functions.trim()
+  const noIndustry = tried && !draft.industries.trim()
+  const check = () => { setTried(true); return audienceFault(draft) }
 
   return (
-    <CreateShell step="audience">
+    <CreateShell step="audience" check={check}>
       <div className="flex items-start gap-12 rounded-lg bg-bg-0 p-6">
         <div className="flex w-[600px] shrink-0 flex-col">
-          <div className="flex items-center justify-between gap-4 rounded-lg border-1 border-stroke-2 bg-bgAlt-1 px-5 py-3.5">
-            <div className="flex flex-col gap-0.5">
-              <p className="flex items-center gap-2 text-body-medium text-text-title">
-                <span className="text-text-title">{SPARKLE}</span>Generate with AI
-              </p>
-              <p className="text-text-regular text-text-subtitle">Set target audience base with AI using study context</p>
+          <div className="flex flex-col gap-3 rounded-lg border-1 border-stroke-2 bg-bgAlt-1 px-5 py-3.5">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col gap-0.5">
+                <p className="flex items-center gap-2 text-body-medium text-text-title">
+                  <span className="text-text-title">{SPARKLE}</span>Generate with AI
+                </p>
+                <p className="text-text-regular text-text-subtitle">Describe your study and who you want to hear from; the audience is filled from it</p>
+              </div>
+              <Button variant="secondary" leftIcon={SPARKLE} onClick={() => setAsking(true)}>Fill with AI</Button>
             </div>
-            <Button variant="secondary" leftIcon={SPARKLE} onClick={fillWithAi}>Fill with AI</Button>
+            {result && (
+              <div className="flex flex-col gap-1 border-t-1 border-stroke-2 pt-3 text-text-regular" aria-live="polite">
+                {result.filled.length > 0 && <p className="text-text-title">From your description: {result.filled.join('; ')}.</p>}
+                {result.missing.length > 0 && <p className="text-text-subtitle">Not in your description, so left as they were: {result.missing.join(', ')}.</p>}
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col">
@@ -139,9 +171,15 @@ export default function Audience() {
                 <Field label="Gender">
                   <Picker value={draft.gender} options={AUDIENCE_OPTIONS.gender} onPick={(v) => set('gender', v)} />
                 </Field>
-                <Field label="Level of Education">
-                  <Picker value={draft.education} options={AUDIENCE_OPTIONS.education} onPick={(v) => set('education', v)} />
-                </Field>
+                <div className="flex flex-col gap-0.5" role="group" aria-label="Level of Education">
+                  <span className="text-text-regular text-text-subtitle">Level of Education <span className="text-text-body">(tick every level that qualifies; none ticked means any)</span></span>
+                  <div className="grid grid-cols-2 overflow-hidden rounded-sm border-1 border-stroke-input bg-bg">
+                    {AUDIENCE_OPTIONS.education.map((e) => (
+                      <Checkbox key={e} label={e} checked={education.includes(e)}
+                        onChange={() => set('education', education.includes(e) ? education.filter((x) => x !== e) : [...education, e])} />
+                    ))}
+                  </div>
+                </div>
 
                 <div className="flex flex-col gap-2">
                   <Field label="Age Range">
@@ -161,13 +199,30 @@ export default function Audience() {
 
             <Section icon={TIE} title="Work details" sub="Who qualifies for this study" headPad="pb-[15px]">
               <div className="flex flex-col gap-3.5">
-                <Field label="Roles"><TextBox value={draft.roles} placeholder="Choose job roles..." onChange={(v) => set('roles', v)} /></Field>
-                <Field label="Work Functions"><TextBox value={draft.functions} placeholder="Select job functions..." onChange={(v) => set('functions', v)} /></Field>
-                <Field label="Skills"><TextBox value={draft.skills} placeholder="Choose skills..." onChange={(v) => set('skills', v)} /></Field>
-                <Field label="Industries"><TextBox value={draft.industries} placeholder="Choose industry domains..." onChange={(v) => set('industries', v)} /></Field>
+                <label className="flex flex-col gap-0.5">
+                  <span className="text-text-regular text-text-subtitle">{need('Work Function', true)}</span>
+                  <TextBox value={draft.functions} placeholder="e.g. Product, Engineering, Marketing" onChange={(v) => set('functions', v)}
+                    className={noFunction ? 'border-state-danger' : undefined} />
+                  <Help text="The area of work, not the job title. A product manager's work function is Product." error={noFunction ? 'Enter a work function, for example Product' : undefined} />
+                </label>
+                <label className="flex flex-col gap-0.5">
+                  <span className="text-text-regular text-text-subtitle">{need('Industry', true)}</span>
+                  <TextBox value={draft.industries} placeholder="e.g. Healthcare, Finance" onChange={(v) => set('industries', v)}
+                    className={noIndustry ? 'border-state-danger' : undefined} />
+                  {noIndustry && <Help text="" error="Enter an industry, for example Healthcare" />}
+                </label>
+                <label className="flex flex-col gap-0.5">
+                  <span className="text-text-regular text-text-subtitle">{need('Role', false)}</span>
+                  <TextBox value={draft.roles} placeholder="e.g. Product Manager" onChange={(v) => set('roles', v)} />
+                  <Help text="The job title. A product manager's role is Product Manager." />
+                </label>
+                <label className="flex flex-col gap-0.5">
+                  <span className="text-text-regular text-text-subtitle">{need('Skills', false)}</span>
+                  <TextBox value={draft.skills} placeholder="e.g. SQL, Figma" onChange={(v) => set('skills', v)} />
+                </label>
+                <p className="text-text-regular text-text-body">Separate several with commas.</p>
               </div>
             </Section>
-
             <Section icon={FUNNEL} title="Set conditions to apply" sub="Allow participants to apply only if they meet the following criteria" headPad="pb-[15px]">
               <div className="flex flex-col gap-3.5">
                 <div className="flex flex-col gap-4 rounded-md border-1 border-stroke-input bg-bg p-4">
@@ -206,6 +261,12 @@ export default function Audience() {
               <span className="text-[32px] font-semibold leading-10 tracking-[-0.02em] text-brand-primary">
                 ~{fit.count.toLocaleString('en-US')} <span className="text-body-regular font-normal text-text-subtitle">eligible members</span>
               </span>
+              {fit.count === 0 && (
+                <span className="flex items-center justify-between gap-3 pt-2">
+                  <span className="text-text-medium text-text-title">No matching respondents?</span>
+                  <Button size="sm" onClick={() => navigate('/help?panel=ask')}>Contact Us</Button>
+                </span>
+              )}
             </div>
 
             <div className="flex flex-col gap-3 rounded-md border-1 border-stroke-input p-4">
@@ -226,6 +287,8 @@ export default function Audience() {
           </div>
         </aside>
       </div>
+      <PromptDialog open={asking} onClose={() => setAsking(false)} onGenerate={generate} action="Fill Audience"
+        lead="Describe your study: who you want to hear from (their job, industry, age, where they live) and what it is about." />
     </CreateShell>
   )
 }

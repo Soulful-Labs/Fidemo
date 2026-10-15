@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { MARKS, blankForm, blankQuestion, formFromStudy } from '@shared/studyForm'
+import { MARKS, blankForm, blankQuestion, educationOf, formFromStudy } from '@shared/studyForm'
 import type { FormOption, FormQuestion, FormType, StudyForm } from '@shared/studyForm'
 import type { AuthoredKind } from '@shared/questions'
 import type { Study } from '@shared/types'
@@ -18,6 +18,8 @@ export type Question = FormQuestion
 export type CreateDraft = StudyForm & {
   /** The survey, diary or availability composer is open beside the settings. Not part of the study. */
   surveyOpen: boolean
+  /** What the client typed into Generate with AI, shared by the steps that generate from it. Not part of the study. */
+  aiPrompt?: string
 }
 export { blankQuestion }
 
@@ -37,7 +39,7 @@ interface Ctx {
 }
 const CreateCtx = createContext<Ctx | null>(null)
 
-const fresh = (): CreateDraft => ({ ...blankForm(), surveyOpen: false })
+const fresh = (): CreateDraft => ({ ...blankForm(), surveyOpen: false, aiPrompt: '' })
 
 /**
  * Work in progress is kept in this browser as it is typed, per client account,
@@ -50,7 +52,8 @@ interface Kept { owner: string; draft: CreateDraft; draftId?: string }
 function kept(owner: string): Kept | undefined {
   try {
     const k = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Kept | null
-    return k && k.owner === owner && k.draft && Array.isArray(k.draft.questions) ? k : undefined
+    // A draft kept before education took several levels holds one string; it is read as a list.
+    return k && k.owner === owner && k.draft && Array.isArray(k.draft.questions) ? { ...k, draft: { ...k.draft, education: educationOf(k.draft) } } : undefined
   } catch { return undefined }
 }
 
@@ -76,7 +79,7 @@ export function CreateProvider({ children }: { children: ReactNode }) {
     inProgress: () => Boolean(draftId) || Boolean(draft.title.trim() || draft.description.trim() || draft.thumbnail || draft.tasks.length || draft.addresses.length || draft.sessions.length
       || draft.availabilitySet || draft.questions.some((q) => q.text.trim())),
     set: (k, v) => setDraft((d) => ({ ...d, [k]: v })),
-    form: () => { const { surveyOpen: _open, ...form } = draft; return form },
+    form: () => { const { surveyOpen: _open, aiPrompt: _prompt, ...form } = draft; return { ...form, education: educationOf(form) } },
   }), [draft, draftId, open, reset])
   return <CreateCtx.Provider value={value}>{children}</CreateCtx.Provider>
 }

@@ -130,8 +130,8 @@ const fillAudience = (participants) => `(async () => {
   await __choose(__btn('2 countries selected'), 'United Kingdom', 'Canada')
   await __choose(__btn('All Genders'), 'Female')
   await __choose(__btn('2 range selected'), '18–20', '21–29', '30–39', '40–49')
-  __ph('Choose job roles...', ${JSON.stringify(AUDIENCE.roles)}); __ph('Select job functions...', ${JSON.stringify(AUDIENCE.functions)})
-  __ph('Choose skills...', ${JSON.stringify(AUDIENCE.skills)}); __ph('Choose industry domains...', ${JSON.stringify(AUDIENCE.industries)})
+  __ph('e.g. Product Manager', ${JSON.stringify(AUDIENCE.roles)}); __ph('e.g. Product, Engineering, Marketing', ${JSON.stringify(AUDIENCE.functions)})
+  __ph('e.g. SQL, Figma', ${JSON.stringify(AUDIENCE.skills)}); __ph('e.g. Healthcare, Finance', ${JSON.stringify(AUDIENCE.industries)})
   __all('[role=radio]')[1].click(); await __wait()
   await __choose(__btn('Select tiers...'), 'Silver and above')
   return true })()`
@@ -173,17 +173,18 @@ const alive = async () => (await R.alive()) && (await C.alive()) && (await I.ali
     await C.click('Create Study', 800); await C.ev(FORMS)
     await C.click('Survey')
     await C.ev(`(() => { __type(__al('Duration'), '15'); __ph('Enter title of your study', ${JSON.stringify(S.title)}); __ph('Enter study description', 'A short survey made to follow one study through all three apps.'); return true })()`)
-    await C.click('Continue'); await C.click('Continue')
+    await C.click('Continue')
+    // Work Function and Industry are required; this audience is everyone in healthcare.
+    await C.ev(`(() => { __ph('e.g. Product, Engineering, Marketing', 'Consultation, Patient Care, Research'); __ph('e.g. Healthcare, Finance', 'Healthcare'); return true })()`); await sleep(150)
+    await C.click('Continue')
     await C.ev(buildScreener(THREE)); await sleep(200)
     await C.click('Continue')
     await C.click('Create Survey Questionnaire', 500)
     await C.ev(`(async () => { __ph('Enter question text...', 'How often do you shop online?'); __ph('Enter option', 'Weekly', 0); __ph('Enter option', 'Monthly', 1); return true })()`); await sleep(200)
     await C.click('Submit Survey', 500)
     await C.ev(`(() => { __type(__al('Incentive Amount'), '$${S.incentive}'); return true })()`); await sleep(150)
-    // AutoPay off, so the payout in check 4 waits for the client.
-    await C.ev(`__al('AutoPay').click()`); await sleep(150)
     await C.click('Proceed to Publish', 700); await C.ev(FORMS)
-    await C.ev(`(() => { __ph('0000 0000 0000 0000', '4242 4242 4242 4242'); __ph('MM / YYYY', '12 / 2028'); __ph('000', '123'); __ph('Enter name', 'Jennifer Lee'); return true })()`)
+    // The demo client's saved card is already selected at Publish.
     await C.click('Publish Study', 1200)
     const s = await study()
     if (!s) g.push('the client app did not store the study')
@@ -277,12 +278,17 @@ try {
     await sleep(8000)
     const waited = await part()
     if (waited?.state !== 'completed') g.push('the survey was not completed: ' + waited?.state)
-    if (waited?.paidAt || await wallet() !== before) g.push('paid before the client approved, with AutoPay off')
+    if (waited?.paidAt || await wallet() !== before) g.push('paid automatically, before the team processed it')
     await R.go('/wallet'); await sleep(500)
     const shownBefore = await R.ev(`document.querySelector('main').innerText.replace(/\\s+/g, ' ').slice(0, 60)`)
-    await C.go(`/client/studies/${S.id}/pay`); await sleep(700)
-    await C.click('Approve 1', 1200)
-    if (!(await part())?.paidAt) g.push('approving on the Pay tab did not pay him: ' + await C.ev(`document.querySelector('[role=status], [role=alert]')?.innerText ?? ''`))
+    // The client finishes the study; the team processes the payout by hand in the console.
+    await C.go('/client/studies'); await sleep(500)
+    await C.ev(`(() => { const row = [...document.querySelectorAll('tr')].find((r) => r.innerText.includes(${JSON.stringify(S.title)})); row.querySelector('[aria-label="Study options"]').click(); return true })()`); await sleep(300)
+    await C.click('Stop-complete Study', 900)
+    await I.go('/internal/finance/payouts'); await sleep(600)
+    await I.ev(`(() => { const row = [...document.querySelectorAll('div')].filter((r) => r.innerText?.includes(${JSON.stringify(S.title)}) && [...r.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Process Payouts')).sort((a, b) => a.innerText.length - b.innerText.length)[0]; [...row.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Process Payouts').click(); return true })()`); await sleep(400)
+    await I.ev(`(() => { [...document.querySelectorAll('[role=dialog] button')].find((x) => /^Process [0-9]/.test(x.textContent.trim())).click(); return true })()`); await sleep(1200)
+    if (!(await part())?.paidAt) g.push('processing the payout in the console did not pay him')
     await sleep(2500)
     const after = await wallet()
     if (after !== before + S.incentive) g.push(`the wallet went from ${before} to ${after}, not up by ${S.incentive}`)
@@ -298,8 +304,8 @@ try {
     if (!shownAfter.includes('$' + after.toLocaleString('en-US'))) g.push(`the Wallet screen reads "${shownAfter}", not $${after}`)
     if (shownAfter === shownBefore) g.push('the Wallet screen did not change without a reload')
     if (!(await alive())) g.push('a tab reloaded')
-    say(4, "A payout approved in the client app reaches the respondent's wallet", g, `8 seconds after completing: not paid, wallet $${before}. The client approved 1 payout on the Pay tab: wallet $${after} (+$${after - before}). Wallet screen before: "${shownBefore}" and after: "${shownAfter}"`)
-  } catch (e) { say(4, "A payout approved in the client app reaches the respondent's wallet", [...g, e.message]) }
+    say(4, "A payout processed by the team reaches the respondent's wallet", g, `8 seconds after completing: not paid, wallet $${before}. The client finished the study and the team processed 1 payout in the console: wallet $${after} (+$${after - before}). Wallet screen before: "${shownBefore}" and after: "${shownAfter}"`)
+  } catch (e) { say(4, "A payout processed by the team reaches the respondent's wallet", [...g, e.message]) }
 }
 
 // ---- 5. a support ticket raised in the respondent app appears in the console

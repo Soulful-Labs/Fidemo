@@ -12,7 +12,7 @@ export const PROFILE_FIELDS = {
     label: 'Workspace',
     fields: [
       { label: 'Company Name', value: 'SoulfulLabs' },
-      { label: 'VAT (Tax) Number', value: 'EAS56893231459' },
+      { label: 'Tax ID (optional)', value: '84-2931459' },
       { label: 'Company Website', value: 'https://www.soulfullabs.ai', locked: true, verified: true },
       { label: 'Industry', value: 'IT & Consultation', select: true },
       { label: 'Location', value: 'NYC, New York, USA' },

@@ -1,4 +1,5 @@
 import Toggle from '../../components/ui/Toggle'
+import Button from '../../components/ui/Button'
 import { Calendar, Clock, DiaryBookIcon, InPersonIcon, Info, SurveyIcon, TaskIcon, Upload, VideoIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { useDraft } from '../../mock/createStore'
@@ -86,27 +87,28 @@ export default function About() {
             </div>
           </Section>
 
-          <Section icon={<Clock className="h-5 w-5" />} title="Set Durations" sub="Set the estimated time duration to complete the study">
+          <Section icon={<Clock className="h-5 w-5" />} title="Set Durations" sub="How long the study is expected to take, and when it closes">
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-2 rounded-md bg-bg-1 p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-text-regular text-text-subtitle">Duration</span>
-                  <span className="text-body-medium text-text-title">{draft.duration} mins</span>
+                  <span className="text-text-regular text-text-subtitle">Expected time to complete</span>
+                  <span className="text-body-medium text-text-title">About {draft.duration} mins</span>
                 </div>
                 <input type="range" min={5} max={120} step={5} value={draft.duration} aria-label="Duration"
                   onChange={(e) => set('duration', Number(e.target.value))} className="slider w-full"
                   style={{ ['--slider-track' as string]: `linear-gradient(to right, #fca311 0 ${((draft.duration - 5) / 115) * 100}%, #eeedec ${((draft.duration - 5) / 115) * 100}% 100%)` }} />
+                <span className="text-text-regular text-text-subtitle">An estimate shown to participants, not a time limit. Nobody has to finish within it.</span>
               </div>
               <span className="flex flex-col gap-0.5">
                 <span className="text-text-regular text-text-subtitle">
-                  Study End Date <span className="text-text-body">(optional)</span>
+                  Study End Date, the deadline <span className="text-text-body">(optional)</span>
                 </span>
                 <span className="relative flex">
                   <TextBox value={draft.endDate} placeholder="DD / MM / YYYY" onChange={(v) => set('endDate', v)} className="h-[38px] pr-11" />
                   <Calendar className="pointer-events-none absolute right-4 top-[9px] h-5 w-5 text-text-subtitle" />
                 </span>
               </span>
-              <p className="pt-[5px] text-text-regular text-text-subtitle">Study gets ended after 60 days max or when its filled before it</p>
+              <p className="pt-[5px] text-text-regular text-text-subtitle">Participants must finish by the end date. The study ends then, after 60 days at most, or sooner if it fills.</p>
             </div>
           </Section>
 
@@ -124,14 +126,26 @@ export default function About() {
                 {/* The picture is read here and kept with the study (shared/studyForm.ts `image`); it is the study's image in all three apps. */}
                 <input id="thumbnail-file" type="file" accept="image/jpeg,image/png" className="sr-only"
                   onChange={(e) => { void choose(e.target.files?.[0]); e.target.value = '' }} />
+                {draft.image ? (
+                  <div className="flex h-[100px] items-center gap-4 rounded-sm border-1 border-stroke-input bg-bg px-4">
+                    <img src={draft.image} alt="Study thumbnail" className="h-[72px] w-24 shrink-0 rounded-sm object-cover" />
+                    <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                      <span className="truncate text-body-medium text-text-title">{draft.thumbnail || 'Thumbnail image'}</span>
+                      <span className="text-text-regular text-text-subtitle">.jpeg or .png file&nbsp; |&nbsp; 2 MB max.</span>
+                    </span>
+                    <Button variant="tertiary" size="row" className="px-3" onClick={() => document.getElementById('thumbnail-file')?.click()}>Change</Button>
+                    <Button variant="tertiary" size="row" className="px-3" onClick={() => { set('image', ''); set('thumbnail', ''); toast('Thumbnail removed') }}>Remove</Button>
+                  </div>
+                ) : (
                 <button type="button" onClick={() => document.getElementById('thumbnail-file')?.click()}
                   className="flex h-[100px] flex-col items-center justify-center gap-1 rounded-sm border-1 border-stroke-input bg-bg">
                   <span className="flex items-center gap-2 text-body-medium text-text-title">
-                    {draft.image ? <img src={draft.image} alt="" className="h-9 w-12 rounded-sm object-cover" /> : <Upload className="h-5 w-5" />}{draft.thumbnail || 'Upload Thumbnail Image'}
+                    <Upload className="h-5 w-5" />Upload Thumbnail Image
                   </span>
                   <span className="text-text-regular text-text-subtitle">Keep image in 4:3 aspect ratio</span>
                   <span className="text-text-regular text-text-subtitle">.jpeg or .png file&nbsp; |&nbsp; 2 MB max.</span>
                 </button>
+                )}
               </Field>
             </div>
           </Section>

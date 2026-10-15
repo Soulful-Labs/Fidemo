@@ -20,7 +20,6 @@ import TicketChat from './screens/help/TicketChat'
 import Account from './screens/account/Account'
 import { CheckEmail, InReview, OrganizationDetails, PaymentMethod, SignIn, SignUp, Welcome } from './screens/onboarding/Onboarding'
 import RespondentResult from './screens/studies/RespondentResult'
-import AudienceNoMatch from './screens/create/AudienceNoMatch'
 import About from './screens/create/About'
 import Audience from './screens/create/Audience'
 import Screener from './screens/create/Screener'
@@ -81,7 +80,7 @@ const routes: ScreenRoute[] = [
   // ----- Create, one flow for every type (see CLAUDE.md) -----
   { path: '/studies/create/about', label: 'Create, About', node: '1622:81504', section: 'Create', kind: 'page', element: guard(createElement(About)) },
   { path: '/studies/create/audience', label: 'Create, Audience', node: '1622:81615', section: 'Create', kind: 'page', element: guard(createElement(Audience)) },
-  { path: '/studies/create/audience/no-match', label: 'Create, no matching audience', node: '1518:91273', section: 'Create', kind: 'page', element: guard(createElement(AudienceNoMatch)) },
+  { path: '/studies/create/audience/no-match', label: 'Create, no matching audience', node: '1518:91273', section: 'Create', kind: 'page', element: guard(createElement(Audience)) }, // the same step: it shows the no-match prompt when nothing fits
   { path: '/studies/create/screener', label: 'Create, Screener', node: '1622:81771', section: 'Create', kind: 'page', element: guard(createElement(Screener)) },
   { path: '/studies/create/study', label: 'Create, Study setup', node: '1518:91922 (survey), 1518:92729 (video), 1518:93678 (in-person), 1518:94580 (diary)', section: 'Create', kind: 'page', element: guard(createElement(StudySetup)) },
   { path: '/studies/create/publish', label: 'Create, Payment & Publish', node: '1518:92247 / 1622:84446 / 86775 / 87629 (one screen)', section: 'Create', kind: 'page', element: guard(createElement(Publish)) },

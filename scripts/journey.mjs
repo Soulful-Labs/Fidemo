@@ -136,13 +136,16 @@ await step(1, 'Client creates and publishes a study', async () => {
   await C.click('Video Call')
   await C.ev(`(() => { __type(document.querySelector('input[placeholder="Enter title of your study"]'), ${JSON.stringify(TITLE)}); __type(document.querySelector('textarea[placeholder="Enter study description"]'), 'How people use sleep trackers week to week.'); return true })()`)
   await C.click('Continue'); expect((await C.path()).endsWith('/audience'), 'Continue did not reach Audience: ' + await C.path())
+  // Work Function and Industry are required; Role and Skills are not.
+  await C.ev(`(() => { const f = (ph, v) => __type(document.querySelector('input[placeholder="' + ph + '"]'), v); f('e.g. Product, Engineering, Marketing', 'Consultation, Patient Care, Research'); f('e.g. Healthcare, Finance', 'Healthcare'); return true })()`)
   await C.click('Continue'); expect((await C.path()).endsWith('/screener'), 'Continue did not reach Screener: ' + await C.path())
   // The client's own screener: one eligibility question and two more, in three answer types.
   await C.ev(BUILD_SCREENER)
   await C.click('Continue'); expect((await C.path()).endsWith('/study'), 'Continue did not reach Study setup: ' + await C.path())
   await C.click('Set Timing Availability'); await C.ev(SET_HOURS); await C.click('Submit')
   await C.click('Proceed to Publish'); expect((await C.path()).endsWith('/publish'), 'did not reach Publish: ' + await C.path())
-  await C.ev(`(() => { const f = (ph, v) => __type(document.querySelector('input[placeholder="' + ph + '"]'), v); f('0000 0000 0000 0000', '4242 4242 4242 4242'); f('MM / YYYY', '12 / 2028'); f('000', '123'); f('Enter name', 'Jennifer Lee'); return true })()`)
+  // The demo client's saved card is already selected, so nothing is typed.
+  expect(await C.ev(`[...document.querySelectorAll('[role=radio]')].some((r) => r.getAttribute('aria-checked') === 'true')`), 'no saved card selected at Publish')
   await C.click('Publish Study', 900)
   expect((await C.path()).endsWith('/published'), 'did not reach Published: ' + await C.path())
   const s = await C.ev(`__st().studies.find((s) => s.title === ${JSON.stringify(TITLE)})`)
@@ -260,7 +263,16 @@ await step(9, 'The client marks them completed', async () => {
 })
 
 await step(10, 'The respondent\'s wallet, points and Trust Score all rise', async () => {
+  // Nothing is paid automatically: the study finishes, then the team processes the payout in the console.
   await sleep(6000)
+  const waiting = await user()
+  expect(waiting.wallet === before.wallet, `paid on a timer: wallet ${before.wallet}->${waiting.wallet}`)
+  await C.go('/client/studies')
+  await C.ev(`(() => { const row = [...document.querySelectorAll('tr')].find((r) => r.innerText.includes(${JSON.stringify(TITLE)})); row.querySelector('[aria-label="Study options"]').click(); return true })()`); await sleep(300)
+  await C.click('Stop-complete Study', 900)
+  await I.go('/internal/finance/payouts')
+  await I.ev(`(() => { const row = [...document.querySelectorAll('div')].filter((r) => r.innerText?.includes(${JSON.stringify(TITLE)}) && [...r.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Process Payouts')).sort((a, b) => a.innerText.length - b.innerText.length)[0]; [...row.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Process Payouts').click(); return true })()`); await sleep(400)
+  await I.ev(`(() => { [...document.querySelectorAll('[role=dialog] button')].find((x) => /^Process [0-9]/.test(x.textContent.trim())).click(); return true })()`); await sleep(1200)
   const after = await user()
   expect(after.wallet > before.wallet && after.points > before.points && after.trust > before.trust, `wallet ${before.wallet}->${after.wallet}, points ${before.points}->${after.points}, trust ${before.trust}->${after.trust}`)
   await R.go('/dashboard')

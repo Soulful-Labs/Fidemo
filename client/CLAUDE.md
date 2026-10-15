@@ -1601,3 +1601,46 @@ What changed in the client app to follow the 13 October 2026 policy:
 
 `node --experimental-websocket scripts/cleanup-check.mjs` (repo root) checks
 the policy changes across the three apps in a browser.
+
+## Ten changes, 15 Oct 2026
+
+- **Tax ID, not VAT.** Clients are US based. `Client.taxId` (was `vat`), labelled
+  "Tax ID (optional)" on Organization Details and Account. The business check
+  needs the company and website; the tax ID is optional.
+- **Card optional at onboarding, required at publish.** Payment Method has
+  "Skip for now" (`cardSkipped` on the session; `nextOnboardingStep`). A card
+  entered at onboarding is saved to the platform (`addCard`), so Publish shows
+  it already selected. With no card, Publish asks for one and stays disabled;
+  the store refuses a study from a client with no card. Account > Payment
+  Method has "Edit or Replace" (`EditCardPanel`, `updateCard`); Payments' card
+  tiles have Edit too.
+- **Duration is an estimate.** About reads "Expected time to complete", "not a
+  time limit", and names the end date as the deadline. The Publish chip reads
+  "About N mins".
+- **Level of Education takes several levels** (checkboxes; `StudyForm.education`
+  is a list, `educationOf` reads old single-string drafts).
+- **Thumbnail** can be changed and removed on About.
+- **Work Function and Industry are required; Role and Skills optional.**
+  Continue on Audience (`CreateShell` `check`) and `buildStudy`
+  (`audienceFault`) both ask. Labels say "(required)" / "(optional)" with the
+  product-manager example.
+- **Generate with AI asks for a description** (`PromptDialog`, kept on the
+  draft as `aiPrompt` and shared by Audience, Screener and the survey and diary
+  composers). There is no model: `lib/fromPrompt.ts` matches words and simple
+  patterns and fills only what the text says, reporting what it filled and
+  what it did not find. A text that names nothing generates nothing.
+  `/studies/create/audience/no-match` now renders the real Audience step, which
+  shows the no-match prompt when the forecast is zero.
+- **Delete a question in one click**: a bin on the question, then a
+  confirmation. The three-dot menu is gone.
+- **No AutoPay.** Nothing is paid automatically anywhere. When a study is
+  marked completed the client is notified that its participants will now be
+  paid (stored on `Client.notifications`, shown in the bell and on
+  Notifications), and the team is notified (`PlatformState.teamNotices`). The
+  team processes payouts by hand in the console. The Pay tab's payout list is
+  read-only.
+- **Studies tabs** read Drafts, Ongoing, Completed, Sessions. `/studies` is
+  still Ongoing.
+
+`node --experimental-websocket scripts/ten-check.mjs` (repo root) checks all
+thirteen in a browser.

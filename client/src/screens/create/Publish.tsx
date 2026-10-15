@@ -1,8 +1,7 @@
 import { useToast } from '../../components/ui/Toast'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Button from '../../components/ui/Button'
-import Checkbox from '../../components/ui/Checkbox'
 import { Clock, DiaryBookIcon, InPersonIcon, Info, PaymentsIcon, PoolIcon, StudiesIcon, SurveyIcon, VideoIcon } from '../../components/ui/icons'
 import { summarise } from '@shared/studyForm'
 import { useDraft } from '../../mock/createStore'
@@ -11,7 +10,7 @@ import BreakdownPanel from './BreakdownPanel'
 import { laterLine, useQuote } from './StudyBits'
 import { money } from '@shared/format'
 import { useStudies } from '../../platform'
-import { AddCardPanel } from '../payments/PaymentPanels'
+import { AddCardPanel, CardMark } from '../payments/PaymentPanels'
 import { useWorkspace } from '../../mock/workspace'
 
 const FORM = (
@@ -77,27 +76,34 @@ export default function Publish() {
   const built = summarise(state, form())
   const TypeIcon = draft.type === 'survey' ? SurveyIcon : draft.type === 'video_call' ? VideoIcon : draft.type === 'in_person' ? InPersonIcon : DiaryBookIcon
   const toast = useToast()
-  const { cards } = useWorkspace()
+  const { cards, addCard: saveCardToAccount } = useWorkspace()
   const [breakdown, setBreakdown] = useState(false)
   const quote = useQuote()
   const [addCard, setAddCard] = useState(false)
-  const [saveCard, setSaveCard] = useState(false)
   const [card, setCard] = useState<Record<string, string>>({})
   const cardField = (k: string) => ({ value: card[k], onChange: (v: string) => setCard((c) => ({ ...c, [k]: v })) })
+  /**
+   * The card this study is charged to. A card saved at onboarding or on the
+   * account is already selected (the default one), so nothing is typed again.
+   * "Use a different card" opens the form instead.
+   */
+  const [picked, setPicked] = useState<string | null>(null)
+  const [typing, setTyping] = useState(false)
+  const chosen = typing ? undefined : cards.find((c) => c.last4 === picked) ?? cards.find((c) => c.isDefault) ?? cards[0]
 
   /**
-   * What unlocks Publish Study. The frame draws it disabled on three types
-   * and enabled on the fourth, and its own secondary button says why: "Add
-   * Card to Publish". So it opens once this study has a card to charge,
-   * either typed into the form here or added through the panel. `?state=ready`
-   * still forces it, which is how the enabled frame is compared.
+   * What unlocks Publish Study: a card to charge. Either a saved card is
+   * selected, or a full card is typed into the form, which is then saved to
+   * the account on publish. With neither, Publish stays disabled: a client
+   * who skipped the card at onboarding cannot publish until they add one.
+   * `?state=ready` still forces it, which is how the enabled frame is compared.
    */
-  const cardsAtOpen = useRef(cards.length)
-  const typed = (card['Card Number'] ?? '').replace(/\D/g, '').length >= 12
+  const digits = (card['Card Number'] ?? '').replace(/\D/g, '')
+  const typed = digits.length >= 12
     && /\d{2}\s*\/\s*\d{2,4}/.test(card['Expiry Date'] ?? '')
     && (card['CVV'] ?? '').length >= 3
     && (card['Name on Card'] ?? '').trim().length > 0
-  const ready = params.get('state') === 'ready' || typed || cards.length > cardsAtOpen.current || resubmitting
+  const ready = params.get('state') === 'ready' || Boolean(chosen) || typed || resubmitting
 
   /**
    * Workflow steps 7 and 11, which the frame already agrees with: Publish
@@ -106,6 +112,12 @@ export default function Publish() {
    * created `in_review` and the team takes it to recruiting.
    */
   const publish = () => {
+    if (!chosen && !typed && !resubmitting && params.get('state') !== 'ready') { toast('Add a card to publish this study'); return }
+    // A card typed here is kept on the account for future payments, as the note under the form says.
+    if (!chosen && typed && !cards.some((c) => c.last4 === digits.slice(-4))) {
+      const [mm, yy] = (card['Expiry Date'] ?? '').replace(/\s/g, '').split('/')
+      saveCardToAccount({ brand: digits.startsWith('4') ? 'VISA' : 'Mastercard', last4: digits.slice(-4), expires: `Expires ${mm}/${(yy ?? '').slice(-2)}` })
+    }
     /** The store refuses a study it cannot ask the screener of, and says which question. Nothing is created then. */
     const made = submitStudy(form(), draftId)
     if (!made.ok) { toast(made.why); return }
@@ -124,7 +136,7 @@ export default function Publish() {
         <div className="flex w-[600px] shrink-0 flex-col gap-2">
           <Review icon={<Info className="h-5 w-5" />} title="About">
             <Chip value={built.typeLabel} icon={<TypeIcon className="h-4 w-4 text-brand-secondary" />} />
-            <Chip value={`${draft.duration} mins`} icon={<Clock className="h-4 w-4" />} />
+            <Chip value={`About ${draft.duration} mins`} icon={<Clock className="h-4 w-4" />} />
           </Review>
 
           <Review icon={<PoolIcon className="h-5 w-5" />} title="Audience" action={
@@ -179,7 +191,29 @@ export default function Publish() {
             <PaymentsIcon className="h-5 w-5 text-brand-secondary" />Payment Method
           </h2>
 
+          {cards.length > 0 && !typing ? (
+            <div className="flex flex-col gap-2" role="radiogroup" aria-label="Card to charge">
+              {cards.map((c) => {
+                const on = chosen?.last4 === c.last4
+                return (
+                  <button key={c.last4} type="button" role="radio" aria-checked={on} onClick={() => setPicked(c.last4)}
+                    className={`flex h-14 items-center gap-3 rounded-md border-1 px-4 text-left ${on ? 'border-brand-primary bg-yellow-30' : 'border-stroke-input bg-bg'}`}>
+                    <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-1.5 ${on ? 'border-cta-primary' : 'border-neutral-1000'}`}>
+                      {on && <span className="h-2.5 w-2.5 rounded-full bg-cta-primary" />}
+                    </span>
+                    <CardMark brand={c.brand} />
+                    <span className="flex flex-1 flex-col">
+                      <span className="text-text-regular text-text-title">{c.brand} &bull; **** {c.last4}</span>
+                      <span className="text-text-regular text-text-subtitle">{c.expires}{c.isDefault ? ' · Default' : ''}</span>
+                    </span>
+                  </button>
+                )
+              })}
+              <button type="button" onClick={() => setTyping(true)} className="self-start text-text-medium text-text-title underline hover:text-brand-primary">Use a different card</button>
+            </div>
+          ) : (
           <div className="flex flex-col gap-2.5">
+            {cards.length === 0 && <p className="text-text-regular text-text-subtitle">No card is on file yet. Add one to publish this study.</p>}
             <CardField label="Card Number" placeholder="0000 0000 0000 0000" {...cardField('Card Number')} />
             <div className="grid grid-cols-2 gap-3">
               <CardField label="Expiry Date" placeholder="MM / YYYY" {...cardField('Expiry Date')} />
@@ -190,11 +224,13 @@ export default function Publish() {
               <CardField label="Billing Address" placeholder="Enter street or area" {...cardField('Billing Address')} />
               <CardField label="Zip Code" placeholder="Enter zip code" {...cardField('Zip Code')} />
             </div>
+            {cards.length > 0 && (
+              <button type="button" onClick={() => setTyping(false)} className="self-start text-text-medium text-text-title underline hover:text-brand-primary">Use a saved card</button>
+            )}
           </div>
+          )}
 
-          <Checkbox checked={saveCard} label="Save this card" onChange={() => setSaveCard((v) => !v)} />
-
-          <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" onClick={() => setAddCard(true)}>Add Card to Publish</Button>
+          {!chosen && <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" onClick={() => setAddCard(true)}>Add Card to Publish</Button>}
 
           {/* The frame's first note, a 3% card processing fee, is not here: no fee table holds it and nothing charges it. */}
           <ul className="flex list-disc flex-col gap-1 pl-4 text-text-regular text-text-subtitle marker:text-text-body">
