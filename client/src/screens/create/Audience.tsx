@@ -86,7 +86,7 @@ function Help({ text, error }: { text: string; error?: string }) {
   return (
     <>
       {text && <span className="pt-1 text-text-regular text-text-subtitle">{text}</span>}
-      {error && <span className="pt-0.5 text-text-regular text-state-danger">{error}</span>}
+      {error && <span className="pt-0.5 text-text-regular text-red-600">{error}</span>}
     </>
   )
 }
@@ -118,6 +118,8 @@ export default function Audience() {
   const state = usePlatform()
   const fit = cohort(audiencePeople(state, form()).map((p) => poolPerson(state, p)))
   const tier = (t: string) => fit.tiers.find((x) => x.tier === t)?.pct ?? 0
+  /** Fewer people fit the audience than the study asks for. */
+  const insufficient = fit.count < Math.max(1, Number(draft.participants) || 0)
   const education = educationOf(draft)
   const genders = gendersOf(draft)
   const industries = draft.industries.split(',').map((x) => x.trim()).filter(Boolean)
@@ -203,7 +205,7 @@ export default function Audience() {
                 <label className="flex flex-col gap-0.5">
                   <span className="text-text-regular text-text-subtitle">{need('Work Function', true)}</span>
                   <TextBox value={draft.functions} placeholder="e.g. Product, Engineering, Marketing" onChange={(v) => set('functions', v)}
-                    className={noFunction ? 'border-state-danger' : undefined} />
+                    className={noFunction ? 'border-red-600' : undefined} />
                   <Help text="The area of work, not the job title. A product manager's work function is Product." error={noFunction ? 'Enter a work function, for example Product' : undefined} />
                 </label>
                 {/* Industries (15 Oct 2026): the drawn list, with its search, opens under the field. Typing still works. */}
@@ -215,7 +217,7 @@ export default function Audience() {
                     field={(open) => (
                       <span onFocus={open} onClick={open}>
                         <TextBox value={draft.industries} placeholder="e.g. Healthcare, Finance" onChange={(v) => set('industries', v)}
-                          className={noIndustry ? 'border-state-danger' : undefined} />
+                          className={noIndustry ? 'border-red-600' : undefined} />
                       </span>
                     )} />
                   {noIndustry && <Help text="" error="Enter an industry, for example Healthcare" />}
@@ -272,16 +274,19 @@ export default function Audience() {
           </h2>
 
           <div className="flex flex-col gap-4 p-4">
-            <div className="flex flex-col gap-1 rounded-md bg-yellow-30 px-4 py-4">
-              <span className="flex items-center gap-2 text-text-regular text-text-subtitle">
-                <PoolIcon className="h-4 w-4" />Estimated
+            {/* Fewer people fit than the study needs: "Insufficient", with Contact Us beside it (NO Matching Audience, 15 Oct 2026). */}
+            <div className="flex items-start justify-between gap-3 rounded-md bg-yellow-30 px-4 py-4">
+              <span className="flex flex-col gap-1">
+                <span className="flex items-center gap-2 text-text-regular text-text-subtitle">
+                  <PoolIcon className="h-4 w-4" />Estimated
+                </span>
+                <span className="text-[32px] font-semibold leading-10 tracking-[-0.02em] text-brand-primary">
+                  {insufficient ? 'Insufficient' : `~${fit.count.toLocaleString('en-US')}`} <span className="text-body-regular font-normal text-text-subtitle">eligible members</span>
+                </span>
               </span>
-              <span className="text-[32px] font-semibold leading-10 tracking-[-0.02em] text-brand-primary">
-                ~{fit.count.toLocaleString('en-US')} <span className="text-body-regular font-normal text-text-subtitle">eligible members</span>
-              </span>
-              {fit.count === 0 && (
-                <span className="flex items-center justify-between gap-3 pt-2">
-                  <span className="text-text-medium text-text-title">No matching respondents?</span>
+              {insufficient && (
+                <span className="flex flex-col items-end gap-2">
+                  <span className="text-text-medium text-text-title">Insufficient participants?</span>
                   <Button size="sm" onClick={() => navigate('/help?panel=ask')}>Contact Us</Button>
                 </span>
               )}
@@ -295,7 +300,7 @@ export default function Audience() {
             </div>
 
             <dl className="flex flex-col">
-              {[['Average Score', fit.count ? `${fit.averageScore}%` : '—'], ['Recommended Incentive', '$100-200'], ['Estimated Time To Fill', '15-20 days']].map(([k, v]) => (
+              {[['Average Score', fit.count ? `${fit.averageScore}%` : 'N/A'], ['Recommended Incentive', '$100-200'], ['Estimated Time To Fill', insufficient ? 'N/A' : '15-20 days']].map(([k, v]) => (
                 <div key={k} className="flex items-center justify-between border-b-1 border-stroke-input py-2 last:border-b-0">
                   <dt className="text-text-regular text-text-subtitle">{k}</dt>
                   <dd className="text-text-medium text-text-title">{v}</dd>

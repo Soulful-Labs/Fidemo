@@ -56,9 +56,15 @@ export default function SurveyComposer({
     toast(`${lines.length} question${lines.length === 1 ? '' : 's'} read from ${f.name}`)
   }
 
-  /** The frame opens the composer with its first questions already there, empty. */
+  /**
+   * The frame opens the composer with its first questions already there,
+   * empty. The survey (Create Survey_Study, 15 Oct 2026) draws five, one per
+   * answer type: Single-select, Number input, Multi-line input, Slider,
+   * Ranking. Empty questions are left out when the form is submitted.
+   */
   useEffect(() => {
-    if (draft.tasks.length === 0) set('tasks', Array.from({ length: seed }, (_, i) => fresh(i + 1)))
+    const kinds: QuestionKind[] = dayGroup ? Array.from({ length: seed }, () => kind) : ['Single-select', 'Number input', 'Multi-line input', 'Slider', 'Ranking']
+    if (draft.tasks.length === 0) set('tasks', kinds.map((k, i) => fresh(i + 1, k)))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

@@ -151,8 +151,8 @@ const emailA = `ada.${tag}@stonelabs.com`
 await signUp('Ada Stone', emailA)
 const orgPage = await organization(`Stone Labs ${tag}`)
 const afterOrg = await C.path()
-const skipShown = await C.has('Skip for now')
-await C.click('Skip for now', 900)
+const skipShown = await C.has('Do It Later')
+await C.click('Do It Later', 900)
 await finishOnboarding()
 const idA = await clientId(emailA)
 {
@@ -182,12 +182,12 @@ const idA = await clientId(emailA)
 }
 {
   const g = []
-  if (!skipShown) g.push('no Skip for now on Payment Method')
+  if (!skipShown) g.push('no Do It Later on Payment Method')
   const where = await C.path()
   if (!where.endsWith('/dashboard') && !where.endsWith('/account')) g.push(`did not reach the app (on ${where})`)
   const cards = await st(C, `s.clients.find((c) => c.id === ${JSON.stringify(idA)}).cards.length`)
   if (cards !== 0) g.push(`${cards} cards on file`)
-  say(2, 'client', 'Client onboarding completes with no card', g, `Skip for now, then In Review, Welcome, and into the app with 0 cards on file`)
+  say(2, 'client', 'Client onboarding completes with no card', g, `Do It Later, then In Review, Welcome, and into the app with 0 cards on file`)
 }
 
 // ---- The skipped-card client builds a survey: duration copy, thumbnail, required fields, education, AI, delete

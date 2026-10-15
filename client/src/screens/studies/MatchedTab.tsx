@@ -9,7 +9,8 @@ import type { Respondent } from '../../components/client/RespondentCard'
 import RespondentPanel from '../dashboard/RespondentPanel'
 import { StudyFrame } from '../../components/client/StudyFrame'
 import { SentModal } from '../pool/PoolModals'
-import { ChevronRight } from '../../components/ui/icons'
+import { ChevronRight, PoolIcon } from '../../components/ui/icons'
+import InviteFromPool from './InviteFromPool'
 import { useStudies, useStudy } from '../../platform'
 import { recruits } from '@shared/derive'
 import { useToast } from '../../components/ui/Toast'
@@ -41,16 +42,33 @@ export default function MatchedTab() {
   const people = matched.slice(0, shown)
   /** Respondent Profile Details (1627:98130) is the Dashboard's panel, reused. */
   const [profile, setProfile] = useState<Respondent | null>(null)
-  const [sent, setSent] = useState(false)
+  /** Who was just invited, for the Sent dialog. */
+  const [sent, setSent] = useState<string | null>(null)
+  /** Invite From Pool (15 Oct 2026): the whole pool, inside this tab, for every study type. */
+  const [fromPool, setFromPool] = useState(false)
+  const invite = (pid: string, name: string) => {
+    const res = moveRespondent(s.id, pid, 'invited')
+    if (res.ok) setSent(name.split(' ')[0] ?? name); else toast(res.why)
+  }
 
   return (
     <AppShell crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
       <StudyFrame study={s} active="matched" minH="min-h-[1307px]" bodyMinH="min-h-[1057px]">
+        {fromPool ? (
+          <InviteFromPool study={s} onBack={() => setFromPool(false)} onInvite={(p) => invite(p.id, p.name)}
+            onView={(p) => setProfile(p as unknown as Respondent)} />
+        ) : (
         <div className="flex flex-col px-4 pt-4">
-          <h2 className="text-title-s leading-[22px] text-text-title">Matched Respondents</h2>
-          <p className="pt-2 text-text-regular text-text-subtitle">
-            Surfaced from the Pool who are matching with target audience criteria. Invite those who you like to get insights from.
-          </p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-title-s leading-[22px] text-text-title">Matched Respondents</h2>
+              <p className="pt-2 text-text-regular text-text-subtitle">
+                Surfaced from the Pool who are matching with target audience criteria. Invite those who you like to get insights from.
+              </p>
+            </div>
+            <Button variant="tertiary" size="none" className="h-[46px] shrink-0 px-4 text-body-regular" onClick={() => setFromPool(true)}
+              leftIcon={<PoolIcon className="h-5 w-5" />}>Invite From Pool</Button>
+          </div>
 
           <div className="flex items-center justify-between gap-4 pt-4">
             <Tabs variant="segmented" className="w-[238px]" value={state} onChange={(k) => setState(k as 'matched' | 'invited')}
@@ -73,10 +91,7 @@ export default function MatchedTab() {
               <RespondentCard key={r.id} respondent={r} actions={
                 state === 'matched' ? (
                   <>
-                    <Button variant="secondary" size="none" className="h-11 flex-1" onClick={() => {
-                      const res = moveRespondent(s.id, r.id, 'invited')
-                      if (res.ok) setSent(true); else toast(res.why)
-                    }}>Invite To Study</Button>
+                    <Button variant="secondary" size="none" className="h-11 flex-1" onClick={() => invite(r.id, r.name)}>Invite To Study</Button>
                     <Button variant="tertiary" size="none" className="h-11 flex-1" onClick={() => setProfile(r)}
                       rightIcon={<ChevronRight className="h-4 w-4" />}>View Profile</Button>
                   </>
@@ -93,9 +108,10 @@ export default function MatchedTab() {
             )}
           </div>
         </div>
+        )}
       </StudyFrame>
       <RespondentPanel open={!!profile} respondent={profile} onClose={() => setProfile(null)} />
-      <SentModal open={sent} onClose={() => setSent(false)} />
+      <SentModal open={sent !== null} name={sent ?? undefined} study={s.title} onClose={() => setSent(null)} />
     </AppShell>
   )
 }

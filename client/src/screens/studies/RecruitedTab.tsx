@@ -144,7 +144,7 @@ export default function RecruitedTab() {
                                 {slotOf(r.participation)?.day} <span className="text-text-body">&bull;</span> {slotOf(r.participation)?.time}
                                 {r.participation.state === 'scheduled' && (
                                   <button type="button" onClick={() => setCancelling({ id: r.id, name: r.name })}
-                                    className="ml-2 text-text-regular text-text-subtitle underline hover:text-state-danger">Cancel</button>
+                                    className="ml-2 text-text-regular text-text-subtitle underline hover:text-red-600">Cancel</button>
                                 )}
                               </span>
                               {i === 0 && (

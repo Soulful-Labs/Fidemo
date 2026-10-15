@@ -162,6 +162,8 @@ export default function Publish() {
             <Chip label={built.studySummary.label} value={built.studySummary.value} />
             <Chip label="Incentive" value={`$${draft.incentive}`} />
           </Review>
+          {/* Edit Study Details (15 Oct 2026): back to the first step, with everything kept. */}
+          <Button variant="secondary" size="none" className="mt-1 h-12 self-start px-4 text-body-medium" onClick={() => navigate('/studies/create/about')}>Edit Study Details</Button>
         </div>
 
         <aside className="sticky top-[88px] flex w-[488px] shrink-0 flex-col gap-2.5 rounded-lg bg-bg-1 p-4">
@@ -178,7 +180,7 @@ export default function Publish() {
             </button>
           </div>
 
-          <div className="flex flex-col">
+          <div className="flex flex-col rounded-md bg-bg-0 px-3 py-1">
             {[['Total Study Cost', money(quote.total)], ['To pay upfront', money(quote.deposit)]].map(([k, v]) => (
               <div key={k} className="flex items-center justify-between gap-4 border-b-1 border-stroke-input py-2 last:border-b-0">
                 <span className="text-text-regular text-text-title">{k}</span>

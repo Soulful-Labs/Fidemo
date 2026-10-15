@@ -271,7 +271,7 @@ export function OrganizationDetails() {
 }
 
 /**
- * Payment Method (1512:68177). Optional: Skip for now reaches the app with no
+ * Payment Method (1512:68177). Optional: Do It Later (15 Oct 2026) reaches the app with no
  * card, and Publish asks for one before the first study goes out. A card
  * added here is saved to the account, so Publish already has it selected.
  */
@@ -323,10 +323,9 @@ export function PaymentMethod() {
       {error && <p className="pt-2 text-text-regular text-[#e33a38]">{error}</p>}
       <Button fullWidth size="none" className="mt-8 h-12 text-body-medium" onClick={submit}>Continue</Button>
       <button type="button" onClick={skip}
-        className="mt-3 flex h-12 w-full items-center justify-center rounded-sm border-1 border-cta-tertiaryStroke text-body-medium text-text-title hover:bg-bg-1">
-        Skip for now
+        className="mt-3 flex h-12 w-full items-center justify-center rounded-sm border-1 border-cta-tertiaryStroke text-body-regular text-text-subtitle hover:bg-bg-1">
+        Do It Later
       </button>
-      <p className="pt-2 text-center text-text-regular text-text-subtitle">You can add a card later. You will need one to publish a study.</p>
     </OnboardShell>
   )
 }

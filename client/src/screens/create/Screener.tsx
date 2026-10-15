@@ -25,7 +25,7 @@ const LIST = (
   </svg>
 )
 const GRIP = (
-  <span className="grid w-3 shrink-0 grid-cols-2 gap-[3px] pt-3 text-text-body" aria-hidden="true">
+  <span className="grid h-fit w-3 shrink-0 grid-cols-2 content-start gap-[3px] self-start pt-4 text-text-body" aria-hidden="true">
     {Array.from({ length: 6 }).map((_, i) => <span key={i} className="h-[3px] w-[3px] rounded-full bg-current" />)}
   </span>
 )
@@ -88,8 +88,8 @@ function Pick({ value, tone, className, options, onPick }: {
 
 const MARK_TONE: Record<string, string> = {
   Correct: 'text-brand-secondary', 'Must Select': 'text-brand-secondary',
-  Incorrect: 'text-state-danger', 'May Select': 'text-text-subtitle',
-  Qualify: 'text-brand-secondary', Disqualify: 'text-state-danger',
+  Incorrect: 'text-red-600', 'May Select': 'text-text-subtitle',
+  Qualify: 'text-brand-secondary', Disqualify: 'text-red-600',
 }
 
 /** The option rows a select question is answered with. */
@@ -116,7 +116,7 @@ function Options({ q, marks, markWidth, onAdd, onRemove, onText, onMark, removab
             <Plus className="h-5 w-5" />
           </button>
           {removable && (
-            <button type="button" aria-label="Delete option" onClick={() => onRemove(o.id)} className="text-text-subtitle hover:text-state-danger">
+            <button type="button" aria-label="Delete option" onClick={() => onRemove(o.id)} className="text-text-subtitle hover:text-red-600">
               <Trash className="h-5 w-5" />
             </button>
           )}
@@ -168,7 +168,7 @@ function DeleteQuestion({ label, onDelete }: { label: string; onDelete: () => vo
   return (
     <span className="relative flex shrink-0">
       <button type="button" aria-label={`Delete ${label}`} title="Delete question" onClick={() => setAsking(true)}
-        className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-sm border-1 border-stroke-input bg-bg text-text-subtitle hover:text-state-danger">
+        className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-sm border-1 border-stroke-input bg-bg text-text-subtitle hover:text-red-600">
         <Trash className="h-5 w-5" />
       </button>
       <Modal open={asking} onClose={() => setAsking(false)} title="Delete Question?"

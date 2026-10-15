@@ -79,12 +79,8 @@ export default function StudyOverview() {
   const facts: [string, string][] = [
     ['Average Trust Score', average ? String(average) : '—'],
     ['Required Participants', String(s.required)],
-    ['Days Remaining', String(s.daysRemaining)],
   ]
   const tiles: { label: string; value: string; suffix?: string; empty?: boolean }[] = [
-    // Nothing on the platform counts who saw or opened a study, so these two say so rather than show a figure.
-    { label: 'Impressions', value: 'Not tracked yet', empty: true },
-    { label: 'Clicks', value: 'Not tracked yet', empty: true },
     { label: 'Rated By You', value: String(c.rated), suffix: `/${c.completed} completed` },
     { label: 'Billed Till Now', value: money(billed) },
     { label: 'Created On', value: new Date(s.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) },
@@ -141,7 +137,7 @@ export default function StudyOverview() {
                     {!pace ? 'No pace yet' : pace.state === 'done' ? 'Target reached' : pace.state === 'ahead' ? 'Going On track' : 'Behind pace'}
                   </span>
                   <span className="text-body-regular text-text-subtitle">
-                    {!pace ? 'Waiting for the first completion' : pace.state === 'done' ? 'Every seat is completed' : `~ ${pace.daysToFinish} days to finish`}
+                    {!pace ? 'Waiting for the first completion' : pace.state === 'done' ? 'Every seat is completed' : `~ Approx. ${pace.daysToFinish} days more to fill`}
                   </span>
                 </div>
               </div>
@@ -156,7 +152,8 @@ export default function StudyOverview() {
             </section>
           </div>
 
-          <dl className="grid grid-cols-5 gap-2">
+          {/* 15 Oct 2026: three tiles; Impressions and Clicks (never tracked) are no longer drawn. */}
+          <dl className="grid grid-cols-3 gap-2">
             {tiles.map((t) => (
               <div key={t.label} className="flex h-[71px] flex-col justify-center gap-1 rounded-md border-1 border-stroke-1 px-[11px]">
                 <dt className="text-text-regular text-text-subtitle">{t.label}</dt>

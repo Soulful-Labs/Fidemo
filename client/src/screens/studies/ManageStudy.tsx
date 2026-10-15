@@ -7,6 +7,7 @@ import { useParams } from 'react-router-dom'
 import { canEditStudy } from '@shared/lifecycle'
 import { useDraft } from '../../mock/createStore'
 import { useStudy } from '../../platform'
+import SubmittedStudy from './SubmittedStudy'
 
 const FORM = (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
@@ -84,6 +85,8 @@ export default function ManageStudy() {
   const r = s.review
   const { open } = useDraft()
   if (!r) return null
+  /** A submitted study the team has not taken live yet reads back on its own screen (Manage Study, 15 Oct 2026). */
+  if (s.state === 'in_review') return <SubmittedStudy s={s} />
   /**
    * Edit opens this study in the Create flow, on the step it belongs to. A
    * study can be changed until the team takes it live (shared/lifecycle.ts
