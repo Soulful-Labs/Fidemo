@@ -144,10 +144,10 @@ const made = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Journey study', type
   check('create: diary settings are the study\'s, as chosen', diary.ok && diary.study.diary?.totalDays === 7 && diary.study.diary.minDays === 6 && diary.study.diary.frequency === 'Every day' && diary.study.tasks?.[0]?.prompt === 'What happened today?')
   check('create: a diary minimum under four fifths of its entries is refused (policy 5: at least 4 of 5)', !buildStudy(formOf({ title: 't', type: 'diary', studyDuration: '7 days', minimumRequired: '5 days', tasks: asForm([{ kind: 'Multi-line input', text: 'x' }]), tasksSubmitted: true }), now).ok && !buildStudy(formOf({ title: 't', type: 'diary', studyDuration: '5 days', minimumRequired: '3 days', tasks: asForm([{ kind: 'Multi-line input', text: 'x' }]), tasksSubmitted: true }), now).ok && buildStudy(formOf({ title: 't', type: 'diary', studyDuration: '5 days', minimumRequired: '4 days', tasks: asForm([{ kind: 'Multi-line input', text: 'x' }]), tasksSubmitted: true }), now).ok)
   check('create: a survey with no form, or a diary asking for more days than it runs, is refused', !buildStudy(formOf({ title: 't', type: 'survey' }), now).ok && !buildStudy(formOf({ title: 't', type: 'diary', studyDuration: '3 days', minimumRequired: '5 days', tasks: asForm([{ kind: 'Multi-line input', text: 'x' }]), tasksSubmitted: true }), now).ok)
-  const aud = formOf({ title: 't', countries: ['United States of America'], gender: 'Female', education: [], ageRanges: [], roles: 'Oncologist, Nurse', functions: 'Consultation', industries: 'Healthcare', condition: 'never', tiers: 'Gold and above' })
+  const aud = formOf({ title: 't', countries: ['United States of America'], gender: ['Female'], education: [], ageRanges: [], roles: 'Oncologist, Nurse', functions: 'Consultation', industries: 'Healthcare', condition: 'never', tiers: 'Gold and above' })
   const sum = summarise(st(), aud, now)
   check('create: the audience is written as entered, and sets the repeat rule', sum.audience.some((a) => a.label === 'Roles' && a.value === 'Oncologist, Nurse') && sum.audience.some((a) => a.label === 'Gender' && a.value === 'Female') && sum.audience.some((a) => a.label === 'Profile Tiers') && (() => { const b = buildStudy(aud, now); return b.ok && b.study.repeatRule === 'exclude' && b.study.targetProfession === 'Oncologist, Nurse' })())
-  const everyone = estimateAudience(st(), formOf({ countries: [], gender: 'All Genders', education: [], ageRanges: [], functions: '', industries: '' }), now)
+  const everyone = estimateAudience(st(), formOf({ countries: [], gender: ['All Genders'], education: [], ageRanges: [], functions: '', industries: '' }), now)
   check('create: the estimated audience is counted from the pool and narrows with the audience', everyone > 0 && estimateAudience(st(), aud, now) < everyone && sum.estimatedAudience === String(estimateAudience(st(), aud, now)), `${everyone} -> ${sum.estimatedAudience}`)
   check('create: the summary names the type and the setup that was built', sum.typeLabel === 'Video Call' && sum.studySummary.value === 'available 5 days/week, custom timings' && sum.screenerSummary === '3 inputs', `${sum.typeLabel} / ${sum.studySummary.value} / ${sum.screenerSummary}`)
 
@@ -272,7 +272,9 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
 
   const q = quoteStudy('video_call', 8, 150)
   check('money: a quote is the fee table, line by line', q.incentives === 1200 && q.recruitment === 8 * (FEES.RECRUITMENT_BASE + FEES.RECRUITMENT_TYPE_ADDON) && q.moderation === 8 * FEES.MODERATION && q.platformFee === FEES.PLATFORM && q.total === 1200 + 400 + 80 + 100, JSON.stringify(q))
-  check('money: one deposit rule, the incentives for the full sample', q.deposit === 1200 && q.later === q.total - 1200 && depositFor(q.rates, 8) === q.deposit && quoteStudy('survey', 12, 60).recruitment === 12 * FEES.RECRUITMENT_BASE)
+  check('money: one deposit rule, 25% of recruitment + 25% of incentives', q.depositIncentive === 300 && q.depositRecruitment === 100 && q.deposit === 400 && q.later === q.total - 400 && depositFor(q.rates, 8) === q.deposit && quoteStudy('survey', 12, 60).recruitment === 12 * FEES.RECRUITMENT_BASE, JSON.stringify({ i: q.depositIncentive, r: q.depositRecruitment, d: q.deposit }))
+  const drawn = quoteStudy('survey', 20, 70)
+  check('money: the designer card, with the labels right: $1,400 incentives -> $350, $500 recruitment -> $125, $475 upfront', drawn.incentives === 1400 && drawn.recruitment === 500 && drawn.depositIncentive === 350 && drawn.depositRecruitment === 125 && drawn.deposit === 475)
   const paid = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Money study', participants: '8', incentive: 150 }))
   const money = paid.ok ? st().studies.find((x) => x.id === paid.id)! : undefined
   check('money: the store takes that deposit, and the bill projects that total', money?.payments[0]?.amount === q.deposit && billing(money!).deposit === q.deposit && billing(money!).totalCost === q.total, money ? `${money.payments[0]?.amount} / ${billing(money).totalCost}` : '')
@@ -281,7 +283,7 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
     if (!paid.ok) return false
     const again = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Money study, revised', participants: '10', incentive: 150 }), paid.id)
     const now2 = st().studies.find((x) => x.id === paid.id)!
-    return again.ok && again.id === paid.id && now2.title === 'Money study, revised' && now2.required === 10 && now2.state === 'in_review' && now2.payments.length === 1 && now2.payments[0]!.amount === 1500 && st().studies.filter((x) => x.title.startsWith('Money study')).length === 1
+    return again.ok && again.id === paid.id && now2.title === 'Money study, revised' && now2.required === 10 && now2.state === 'in_review' && now2.payments.length === 1 && now2.payments[0]!.amount === depositFor(now2.rates, 10) && now2.payments[0]!.amount === 500 && st().studies.filter((x) => x.title.startsWith('Money study')).length === 1
   })())
   check('edit: a live study is refused, and saving a submitted study as a draft is refused', (() => {
     if (!paid.ok) return false
@@ -296,7 +298,7 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
 {
   p.reset(); clock = now.getTime()
   const me: Actor = { kind: 'participant', id: DEMO_PERSON_ID }
-  const narrow = formOf({ type: 'survey', title: 'Narrow audience', ...SURVEY, countries: [], gender: 'Female', education: [], ageRanges: [], roles: '', functions: 'Consultation, Patient Care, Research', industries: 'Healthcare', tiers: '', image: 'data:image/jpeg;base64,AAAA', thumbnail: 'cover.jpg' })
+  const narrow = formOf({ type: 'survey', title: 'Narrow audience', ...SURVEY, countries: [], gender: ['Female'], education: [], ageRanges: [], roles: '', functions: 'Consultation, Patient Care, Research', industries: 'Healthcare', tiers: '', image: 'data:image/jpeg;base64,AAAA', thumbnail: 'cover.jpg' })
   const made2 = p.submitStudy(DEMO_CLIENT_ID, narrow)
   const id2 = (made2 as { id: string }).id
   const study2 = () => st().studies.find((x) => x.id === id2)!
@@ -333,7 +335,7 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   const pool = people.filter((x) => x.id !== DEMO_PERSON_ID)
   check('pictures: every seeded pool person has one, drawn and not a photograph; the demo participant starts with none', pool.every((x) => x.photo?.startsWith('data:image/svg+xml,')) && new Set(pool.map((x) => x.photo)).size > pool.length / 2 && !people.find((x) => x.id === DEMO_PERSON_ID)?.photo, `${pool.filter((x) => x.photo).length} of ${pool.length}`)
   check('profiles: every seeded person has work functions and skills', people.every((x) => x.profile.workFunctions.length > 0 && x.profile.skills.length > 0))
-  const wide = formOf({ countries: [], gender: 'All Genders', education: [], ageRanges: [], functions: '', industries: '' })
+  const wide = formOf({ countries: [], gender: ['All Genders'], education: [], ageRanges: [], functions: '', industries: '' })
   const all = audiencePeople(st(), wide, now).length
   const byFunction = audiencePeople(st(), { ...wide, functions: 'Engineering' }, now)
   const bySkill = audiencePeople(st(), { ...wide, skills: 'triage, coaching' }, now)
@@ -450,13 +452,23 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   const why = (f: Partial<StudyForm>) => { const r = buildStudy(formOf({ title: 't', ...f }), now); return r.ok ? 'ok' : r.why }
   check('audience: work function and industry are required', /work function/.test(why({ functions: ' ' })) && /industry/.test(why({ industries: '' })), `${why({ functions: ' ' })} / ${why({ industries: '' })}`)
   check('audience: role and skills are optional', why({ roles: '', skills: '' }) === 'ok')
-  const base = formOf({ countries: [], gender: 'All Genders', ageRanges: [], functions: '', industries: '' })
+  const base = formOf({ countries: [], gender: ['All Genders'], ageRanges: [], functions: '', industries: '' })
   const bachelors = audiencePeople(st(), { ...base, education: ["Graduate or Bachelor's"] }, now).length
   const both = audiencePeople(st(), { ...base, education: ["Graduate or Bachelor's", "Master's degree"] }, now).length
   const masters = audiencePeople(st(), { ...base, education: ["Master's degree"] }, now).length
   check('education: several levels are accepted together', both === bachelors + masters && bachelors > 0, `${bachelors} + ${masters} = ${both}`)
   check('education: shown as every level ticked', summarise(st(), { ...base, education: ["Graduate or Bachelor's", 'Doctorate'] }, now).audience.some((a) => a.label === 'Education' && a.value === "Graduate or Bachelor's, Doctorate"))
   check('education: a form saved with one level reopens as a list', formFromStudy({ ...st().studies[0]!, form: { ...base, education: 'Doctorate' as unknown as string[] } }).education.join() === 'Doctorate')
+}
+
+// ------------------------------------------------ gender takes several
+{
+  p.reset(); clock = now.getTime()
+  const base = formOf({ countries: [], ageRanges: [], functions: '', industries: '', education: [] })
+  const of = (g: string[]) => audiencePeople(st(), { ...base, gender: g }, now).length
+  const men = of(['Male']), women = of(['Female']), both = of(['Male', 'Female']), all = of(['All Genders'])
+  check('gender: several genders are accepted together, and All Genders is everyone', both === men + women && men > 0 && women > 0 && all >= both, `${men} + ${women} = ${both}; all ${all}`)
+  check('gender: a form saved with one gender reads as a list', formFromStudy({ ...st().studies[0]!, form: { ...base, gender: 'Female' as unknown as string[] } }).gender.join() === 'Female')
 }
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nall checks passed')

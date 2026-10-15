@@ -226,8 +226,11 @@ const fill = async (text) => {
 const ai1 = await fill(AI_1)
 const ai2 = await fill(AI_2)
 // 7: tick a second education level
-await C.ev(`(() => { const b = [...document.querySelectorAll('[role=checkbox]')].find((x) => x.textContent.includes("Master's degree")); b.click(); return true })()`); await sleep(300)
-const education = await C.ev(`[...document.querySelectorAll('[role=group][aria-label="Level of Education"] [role=checkbox]')].map((b) => b.textContent.trim() + '=' + b.getAttribute('aria-checked'))`)
+// Education is a dropdown of checkboxes since the 15 Oct 2026 designs: open it, tick a second level.
+await C.ev(`(() => { [...document.querySelectorAll('button')].find((b) => b.textContent.trim().startsWith("Graduate or Bachelor")).click(); return true })()`); await sleep(300)
+await C.ev(`(() => { const b = [...document.querySelectorAll('[role=menu][aria-label="Level of Education"] [role=menuitemcheckbox]')].find((x) => x.textContent.includes("Master's degree")); b.click(); return true })()`); await sleep(300)
+const education = await C.ev(`[...document.querySelectorAll('[role=menu][aria-label="Level of Education"] [role=menuitemcheckbox]')].map((b) => b.textContent.trim() + '=' + b.getAttribute('aria-checked'))`)
+await C.ev(`(() => { document.querySelector('button[aria-label=Close].fixed')?.click(); return true })()`); await sleep(200)
 const eduDraft = (await draftOf(C)).education
 // Role and Skills cleared: Continue still goes on, now that Work Function and Industry are in
 await C.ev(`(() => { __ph('e.g. Product Manager', ''); __ph('e.g. SQL, Figma', ''); return true })()`); await sleep(200)
@@ -260,7 +263,9 @@ await C.ev(`(() => { [...document.querySelectorAll('button')].find((b) => b.getA
 const surveyConfirm = await C.has('Delete Question?')
 await clickExact(C, 'Delete'); await sleep(400)
 const surveyAfter = await countQ()
-await C.click('Submit Survey', 600)
+await C.click('Save & Continue', 600)
+// Study setup and pricing are two steps (15 Oct 2026): the incentive is on Pricing.
+await C.click('Continue', 700); await C.ev(FORMS);
 await C.ev(`(() => { __type(__al('Incentive Amount'), '$40'); return true })()`); await sleep(200)
 const studyText2 = await body(C)
 await C.click('Proceed to Publish', 800); await C.ev(FORMS)
@@ -302,8 +307,8 @@ await C.ev(`(() => { const q = [...document.querySelectorAll('input')].filter((e
 await C.click('Continue', 600); await C.ev(FORMS)
 await C.click('Create Survey Questionnaire', 500); await C.ev(FORMS)
 await C.ev(`(() => { __ph('Enter question text...', 'Which editor do you use?'); __ph('Enter option', 'VS Code', 0); __ph('Enter option', 'Vim', 1); return true })()`)
-await C.click('Submit Survey', 500)
-await C.click('Proceed to Publish', 800); await C.ev(FORMS)
+await C.click('Save & Continue', 500)
+await C.click('Continue', 700); await C.ev(FORMS); await C.click('Proceed to Publish', 800); await C.ev(FORMS)
 const pubB = await C.ev(`(() => ({ radio: [...document.querySelectorAll('[role=radio]')].map((r) => r.textContent.trim().replace(/\\s+/g, ' ') + '=' + r.getAttribute('aria-checked')), cardFields: [...document.querySelectorAll('input')].filter((e) => e.placeholder === '0000 0000 0000 0000').length }))()`)
 const disabledB = await disabled(C, 'Publish Study')
 await C.click('Publish Study', 1000)
@@ -460,13 +465,16 @@ await C.go(`/client/studies/${target.id}/pay`); const payTab = await body(C)
     `Study step has no AutoPay, nor does the client bundle. "${target.title}" finished via the ${completeVia}; 6.5 s later still ${paidAfterWait} paid (nothing automatic). Client: "${clientNote.match(/Your study has finished[^]{0,160}/)?.[0]}". Console dashboard: "Payouts ready to process"; Finance > Payouts > Process Payouts paid ${paidAfterTeam - paidBefore} by hand`)
 }
 
-// ---- 13: tab order
+// ---- 13: tab order. Changed 15 Oct 2026 by decision: My Studies reads Ongoing, Drafts, Completed, and Sessions is its own item under Studies in the sidebar.
 await C.go('/client/studies')
-const tabs = await C.ev(`[...document.querySelectorAll('main a, main button, main [role=tab]')].filter(__vis).map((e) => e.textContent.trim().replace(/\\s*\\d+$/, '')).filter((t) => ['Drafts', 'Ongoing', 'Completed', 'Sessions'].includes(t))`)
+const tabs = await C.ev(`[...document.querySelectorAll('main [role=tab], main a, main button')].filter(__vis).map((e) => e.textContent.trim()).filter((t) => ['Drafts', 'Ongoing', 'Completed', 'Sessions'].includes(t))`)
+const side = await C.ev(`[...document.querySelectorAll('nav li li a')].map((a) => a.textContent.trim())`)
 {
   const g = []
-  if (tabs.slice(0, 4).join(', ') !== 'Drafts, Ongoing, Completed, Sessions') g.push(`reads ${tabs.join(', ')}`)
-  say(13, 'client', 'The client\'s Studies tabs read Drafts, Ongoing, Completed, Sessions', g, `reads ${tabs.slice(0, 4).join(', ')}`)
+  const shown = [...new Set(tabs)]
+  if (shown.join(', ') !== 'Ongoing, Drafts, Completed') g.push(`tabs read ${shown.join(', ')}`)
+  if (side.join(', ') !== 'My Studies, Sessions') g.push(`sidebar under Studies reads ${side.join(', ')}`)
+  say(13, 'client', 'The Studies tabs read Ongoing, Drafts, Completed, and Sessions sits under Studies in the sidebar (15 Oct 2026 decision)', g, `tabs ${shown.join(', ')}; sidebar ${side.join(', ')}`)
 }
 
 console.log(`\n${results.filter(Boolean).length} of 13 yes  (${base})`)

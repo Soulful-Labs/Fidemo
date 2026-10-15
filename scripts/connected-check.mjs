@@ -133,7 +133,7 @@ const fillAudience = (participants) => `(async () => {
   __ph('e.g. Product Manager', ${JSON.stringify(AUDIENCE.roles)}); __ph('e.g. Product, Engineering, Marketing', ${JSON.stringify(AUDIENCE.functions)})
   __ph('e.g. SQL, Figma', ${JSON.stringify(AUDIENCE.skills)}); __ph('e.g. Healthcare, Finance', ${JSON.stringify(AUDIENCE.industries)})
   __all('[role=radio]')[1].click(); await __wait()
-  await __choose(__btn('Select tiers...'), 'Silver and above')
+  __btn('Select tiers...').click(); await __wait(); [...document.querySelectorAll('[role=option]')].find((o) => o.textContent.trim().startsWith('Silver Tier')).click(); await __wait()
   return true })()`
 /** Education is left as the step opens with it; the pool holds one level of education, so any other would estimate an audience of none. */
 const AUDIENCE_SHOWN = ['United States of America, Canada', 'Female', "Graduate or Bachelor's", '30–39, 40–54', 'Oncologist, Nurse', 'Consultation', 'Triage', 'Healthcare', 'Prefer fresh people', 'Silver and above']
@@ -181,7 +181,9 @@ const alive = async () => (await R.alive()) && (await C.alive()) && (await I.ali
     await C.click('Continue')
     await C.click('Create Survey Questionnaire', 500)
     await C.ev(`(async () => { __ph('Enter question text...', 'How often do you shop online?'); __ph('Enter option', 'Weekly', 0); __ph('Enter option', 'Monthly', 1); return true })()`); await sleep(200)
-    await C.click('Submit Survey', 500)
+    await C.click('Save & Continue', 500)
+    // Study setup and pricing are two steps (15 Oct 2026): the incentive is on Pricing.
+    await C.click('Continue', 700); await C.ev(FORMS);
     await C.ev(`(() => { __type(__al('Incentive Amount'), '$${S.incentive}'); return true })()`); await sleep(150)
     await C.click('Proceed to Publish', 700); await C.ev(FORMS)
     // The demo client's saved card is already selected at Publish.

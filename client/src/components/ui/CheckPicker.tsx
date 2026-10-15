@@ -39,20 +39,20 @@ export default function CheckPicker({
   }
   const Box = ({ on }: { on: boolean }) => (
     <span className={cn('flex h-5 w-5 shrink-0 items-center justify-center rounded-[6px] border-1.5',
-      on ? 'border-cta-primary bg-cta-primary text-bg-0' : 'border-neutral-700 bg-bg-0')}>
+      on ? 'border-cta-primary bg-cta-primary text-bg-0' : 'border-text-body bg-bg-0')}>
       {on && <Check className="h-3.5 w-3.5" />}
     </span>
   )
   const Row = ({ on, onClick, children, tall }: { on: boolean; onClick: () => void; children: ReactNode; tall?: boolean }) => (
     <button type="button" role={single ? 'option' : 'menuitemcheckbox'} aria-checked={on} aria-selected={single ? on : undefined} onClick={onClick}
-      className={cn('flex w-full items-center gap-3 rounded-md px-3 text-left text-body-regular text-text-title transition-colors',
+      className={cn('flex w-full shrink-0 items-center gap-3 rounded-md px-3 text-left text-body-regular text-text-title transition-colors',
         tall ? 'min-h-[64px] py-2' : 'h-[38px]', on ? 'bg-yellow-30' : 'hover:bg-bg-1')}>
       {children}
     </button>
   )
   return (
     <div className="relative">
-      {field ? field(() => setOpen(true)) : <Select label={label} value={value} className={className} onClick={() => setOpen((o) => !o)} />}
+      {field ? field(() => setOpen(true)) : <Select value={value} className={className} onClick={() => setOpen((o) => !o)} />}
       {open && (
         <>
           <button type="button" aria-label="Close" onClick={() => setOpen(false)} className="fixed inset-0 z-20 cursor-default" />

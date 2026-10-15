@@ -134,7 +134,7 @@ const fillAudience = (participants) => `(async () => {
   __ph('e.g. Product Manager', ${JSON.stringify(AUDIENCE.roles)}); __ph('e.g. Product, Engineering, Marketing', ${JSON.stringify(AUDIENCE.functions)})
   __ph('e.g. SQL, Figma', ${JSON.stringify(AUDIENCE.skills)}); __ph('e.g. Healthcare, Finance', ${JSON.stringify(AUDIENCE.industries)})
   __all('[role=radio]')[1].click(); await __wait()
-  await __choose(__btn('Select tiers...'), 'Silver and above')
+  __btn('Select tiers...').click(); await __wait(); [...document.querySelectorAll('[role=option]')].find((o) => o.textContent.trim().startsWith('Silver Tier')).click(); await __wait()
   return true })()`
 /** Education is left as the step opens with it; the pool holds one level of education, so any other would estimate an audience of none. */
 const AUDIENCE_SHOWN = ['United States of America, Canada', 'Female', "Graduate or Bachelor's", '30–39, 40–54', 'Oncologist, Nurse', 'Consultation', 'Triage', 'Healthcare', 'Prefer fresh people', 'Silver and above']
@@ -147,9 +147,9 @@ const off = after(9)
 /** Six studies, one of each type, each with its own step 4. `setup` runs with the composer open; `expect` is what the study must then show. */
 const STUDIES = [
   {
-    key: 'survey', card: 'Survey', duration: 20, participants: '12', incentive: 60, screener: EIGHT, opener: 'Create Survey Questionnaire', submit: 'Submit Survey',
+    key: 'survey', card: 'Survey', duration: 20, participants: '12', incentive: 60, screener: EIGHT, opener: 'Create Survey Questionnaire', submit: 'Save & Continue',
     setup: `__ph('Enter question text...', 'How often do you shop online?'); __ph('Enter option', 'Weekly', 0); __ph('Enter option', 'Monthly', 1);
-      __btn('Add Question').click(); await __wait(); await __choose(__all('button').filter((b) => b.textContent.trim() === 'Single-select').pop(), 'Multi-line input'); __ph('Enter question text...', 'What stops you buying?', 1);`,
+      __btn('Add Question').click(); await __wait(); await __choose(__all('button').filter((b) => b.textContent.trim() === 'Single-select').pop(), 'Multi-line input'); __ph('Enter question text...', 'What stops you buying?', 5);`,
     typeLabel: 'Survey', summary: '2 inputs',
     client: ['How often do you shop online?', 'Weekly · Monthly', 'What stops you buying?'],
     console: ['How often do you shop online?', 'Weekly', 'Monthly', 'What stops you buying?'],
@@ -190,7 +190,7 @@ const STUDIES = [
     sessions: [[after(6), '11:00 AM'], [after(8), '03:30 PM']], places: ['9 Canal St, Leeds, UK, LS1 4AP'],
   },
   {
-    key: 'diary', card: 'Diary Study', duration: 15, participants: '9', incentive: 75, screener: THREE, opener: 'Create Survey Questionnaire', submit: 'Submit Diary Form',
+    key: 'diary', card: 'Diary Study', duration: 15, participants: '9', incentive: 75, screener: THREE, opener: 'Create Survey Questionnaire', submit: 'Save & Continue',
     before: `await __choose(__btn('Every 2 days'), 'Every 3 days'); await __choose(__btn('5 days'), '7 days');`,
     // Policy section 5, four fifths of the entries: a 7-day diary's minimum moves to 6 by itself and nothing lower is offered.
     setup: `__ph('Enter question text...', 'What did you eat today?', 0); __ph('Enter question text...', 'How did you feel afterwards?', 1);`,
@@ -242,6 +242,8 @@ async function studyStep(s) {
   await C.click(s.submit, 500)
   const stuck = await C.ev(`Boolean(__all('button').find((b) => b.textContent.trim() === ${JSON.stringify(s.submit)}))`)
   if (stuck) throw new Error(`${s.key}: the composer did not accept Submit: ` + await C.ev(`document.querySelector('[role=status], [role=alert]')?.innerText ?? '(no reason shown)'`))
+  // Study setup and pricing are two steps (15 Oct 2026): the incentive is on Pricing.
+  await C.click('Continue', 700); await C.ev(FORMS);
   await C.ev(`(() => { __type(__al('Incentive Amount'), '$${s.incentive}'); return true })()`); await sleep(150)
 }
 
@@ -265,8 +267,13 @@ for (const s of STUDIES) console.log(`      ${s.key}: type chip ${s.publishShows
 
 console.log('\n2. Reload, open each one: everything entered is still there (client app, Manage Study)')
 for (const s of STUDIES.filter((x) => x.id)) {
-  await C.open(`/client/studies/${s.id}/manage`)
-  note(2, s.key, await missing(C, [s.title, s.description, ...durationShown(s.duration), dmy(s.end), s.participants, ...AUDIENCE_SHOWN, ...promptsOf(s.screener), `$${s.incentive}`, s.typeLabel, s.summary, ...s.client]))
+  // A study in review reads back on its own six-tab screen (15 Oct 2026): every tab is read.
+  let text = ''
+  for (const t of ['about', 'audience', 'screener', 'study', 'payment']) { await C.open(`/client/studies/${s.id}/manage?tab=${t}`); text += ' ' + await C.ev('document.body.innerText') }
+  const formRow = s.tasks ? [`${s.tasks.length} Question`] : [s.summary]
+  const want = [s.title, s.description, ...durationShown(s.duration), dmy(s.end), s.participants, ...AUDIENCE_SHOWN, ...promptsOf(s.screener), `$${s.incentive}`, s.typeLabel, ...formRow, ...s.client]
+    .flatMap((x) => (x.includes(' · ') ? x.split(' · ') : [x]))
+  note(2, s.key, want.filter((x) => !text.includes(x)))
 }
 
 console.log('\n3. The console sees the same (Review, every tab)')
@@ -365,6 +372,8 @@ console.log('\n5. Save a draft, leave, come back: nothing was lost')
     await C.click(s.opener, 500)
     await C.ev(`(async () => { ${s.setup} return true })()`); await sleep(200)
     await C.click(s.submit, 500)
+    // Study setup and pricing are two steps (15 Oct 2026): the incentive is on Pricing.
+    await C.click('Continue', 700); await C.ev(FORMS);
     await C.ev(`(() => { __type(__al('Incentive Amount'), '$${s.incentive}'); return true })()`); await sleep(150)
     await C.click('Save Draft & Exit', 800)
     if (!(await C.path()).endsWith('/studies/drafts')) gaps.push('did not land on Drafts: ' + await C.path())
@@ -384,7 +393,9 @@ console.log('\n5. Save a draft, leave, come back: nothing was lost')
     await C.click('Continue')
     await need('Screener', promptsOf(s.screener))
     await C.click('Continue')
-    await need('Study', [`$${s.incentive}`, s.summary])
+    await need('Study', [s.summary])
+    // The incentive is on the Pricing step since 15 Oct 2026.
+    await C.go('/client/studies/create/pricing'); await need('Pricing', [`$${s.incentive}`]); await C.go('/client/studies/create/study'); await C.ev(FORMS)
     await C.click('Update Address & Availability', 500)
     await need('Availability', ['12 Main St, Austin, Texas, 73301', '4 Dock Road, Houston, Texas, 77002'])
     const times = await C.ev(`({ from: __al('Monday from').innerText.trim(), to: __al('Friday to').innerText.trim(), sat: __al('Saturday').getAttribute('aria-checked'), notice: Boolean(__all('button').find((b) => b.textContent.trim() === '1 Day')) })`)

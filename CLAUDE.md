@@ -363,9 +363,11 @@ nudge so a demo can show the whole loop. Use a short fake delay and a toast:
 - Submitting the screener moves `applying` to `applied`, then after 3 seconds to
   `invited_to_schedule` for session studies, or `invited_to_complete` for survey and
   diary studies, with a notification added to the list.
-- Completing a study moves it to `in_process`, then after 5 seconds to `paid`, adding
-  the reward to the wallet balance, 25 points to the points balance, and 1 to the
-  Trust Score.
+- Completing a study moves it to `in_process`. Nothing is paid automatically (changed
+  15 Oct 2026): when the study finishes, the client and the Focus Insite team are
+  notified, and the team processes the payout by hand in the console (Finance,
+  Payouts). Only then does it become `paid`, adding the reward to the wallet balance,
+  25 points to the points balance, and 1 to the Trust Score.
 
 Put these timings in one place, `src/mock/store.tsx`, so they can be changed or
 removed later.
@@ -605,7 +607,7 @@ When the build is done this must run without a dead end:
 4. See it move to Applied, then to Invites as Invited to Schedule
 5. Schedule it: pick a date, a slot, agree to recording, review, confirm
 6. Open it, Submit PIN with 407060, see it confirmed
-7. Complete it, watch it move to History and become Paid
+7. Complete it, watch it move to History; once the team processes the payout in the console, it becomes Paid
 8. See the wallet balance, points and Trust Score all go up
 9. Rate the client, see the review recorded
 10. Redeem 1000 points, see the wallet rise and points fall

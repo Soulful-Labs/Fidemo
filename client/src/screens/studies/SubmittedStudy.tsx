@@ -81,6 +81,7 @@ export default function SubmittedStudy({ s }: { s: Study }) {
   const { open } = useDraft()
   const { cards } = useWorkspace()
   const card = cards.find((c) => c.isDefault) ?? cards[0]
+  const form = s.form
   const pills = s.setup?.audience ?? s.review?.audience ?? []
   const target = pills.filter((p) => !p.label || ['Gender', 'Education', 'Age'].includes(p.label))
   const work = pills.filter((p) => p.label && ['Work Functions', 'Roles', 'Industry', 'Skills'].includes(p.label))
@@ -135,6 +136,8 @@ export default function SubmittedStudy({ s }: { s: Study }) {
                 <Row label="Description">{s.description || <span className="text-text-body">None given</span>}</Row>
                 <Row label="Study Type"><StudyTypeTag type={s.type} /></Row>
                 <Row label="Study Time">{durationLabel(s.durationMins)}</Row>
+                {/* Not drawn on the frame; kept so the end date the client set is read back somewhere (flagged for the designer). */}
+                <Row label="Study End Date">{form?.endDate || new Date(s.endsAt).toLocaleDateString('en-GB').replace(/\//g, ' / ')}</Row>
                 <Row label="Thumbnail">
                   {s.image ? <img src={s.image} alt="" className="h-[89px] w-[160px] rounded-md object-cover" /> : <span className="text-text-body">None uploaded</span>}
                 </Row>
@@ -172,9 +175,11 @@ export default function SubmittedStudy({ s }: { s: Study }) {
                 <p className="flex h-[30px] items-center justify-center rounded-full bg-bgAlt-1 text-text-regular text-text-subtitle">
                   {s.review?.studyRow.label ?? 'Study'}: <span className="pl-1 text-text-title">{s.tasks?.length ? `${s.tasks.length} Question${s.tasks.length === 1 ? '' : 's'}` : s.review?.studyRow.value}</span>
                 </p>
+                {/* A diary's settings, and a session study's schedule, read back above any questions. */}
+                {s.details.map((d) => <Row key={d.label} label={d.label}>{d.value}</Row>)}
                 {s.tasks?.length ? s.tasksOutline.map((q, i) => (
                   <QuestionRead key={q.id} label={`Q${i + 1}`} kind={q.type} prompt={q.prompt} options={q.options} marks={s.tasks?.find((x) => x.id === q.id)?.marks ?? {}} />
-                )) : s.details.map((d) => <Row key={d.label} label={d.label}>{d.value}</Row>)}
+                )) : null}
               </div>
             )}
 

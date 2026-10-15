@@ -135,7 +135,7 @@ const fillAudience = (participants) => `(async () => {
   __ph('e.g. Product Manager', ${JSON.stringify(AUDIENCE.roles)}); __ph('e.g. Product, Engineering, Marketing', ${JSON.stringify(AUDIENCE.functions)})
   __ph('e.g. SQL, Figma', ${JSON.stringify(AUDIENCE.skills)}); __ph('e.g. Healthcare, Finance', ${JSON.stringify(AUDIENCE.industries)})
   __all('[role=radio]')[1].click(); await __wait()
-  await __choose(__btn('Select tiers...'), 'Silver and above')
+  __btn('Select tiers...').click(); await __wait(); [...document.querySelectorAll('[role=option]')].find((o) => o.textContent.trim().startsWith('Silver Tier')).click(); await __wait()
   return true })()`
 /** Education is left as the step opens with it; the pool holds one level of education, so any other would estimate an audience of none. */
 const AUDIENCE_SHOWN = ['United States of America, Canada', 'Female', "Graduate or Bachelor's", '30–39, 40–54', 'Oncologist, Nurse', 'Consultation', 'Triage', 'Healthcare', 'Prefer fresh people', 'Silver and above']
@@ -153,7 +153,9 @@ const usd = (n) => '$' + n.toLocaleString('en-US')
 const costOf = (surveyType, n, incentive) => {
   const rec = FEE.recruitment + (surveyType ? 0 : FEE.typeAddon)
   const c = { incentives: n * incentive, recruitment: n * rec, moderation: n * FEE.moderation, platform: FEE.platform, rec }
-  return { ...c, total: c.incentives + c.recruitment + c.moderation + c.platform, deposit: n * incentive }
+  // The deposit (15 Oct 2026): 25% of the incentive cost and 25% of the recruitment cost, for the full sample.
+  const depInc = Math.round(c.incentives * 25) / 100, depRec = Math.round(c.recruitment * 25) / 100
+  return { ...c, total: c.incentives + c.recruitment + c.moderation + c.platform, depInc, depRec, deposit: depInc + depRec }
 }
 const flat = (s) => s.replace(/\s+/g, '')
 const lacks = async (t, strings) => { const text = flat(await t.ev('document.body.innerText')); return strings.filter((x) => !text.includes(flat(x))) }
@@ -198,10 +200,9 @@ async function money(s, surveyType, where) {
   const want = where === 'summary'
     ? [`Total Study Cost${usd(c.total)}`, `To pay upfront${usd(c.deposit)}`]
     : [`${n}x participants`, `Incentive Cost•${n} x ${usd(s.incentive)}${usd(c.incentives)}`, `Recruitment Cost•${n} x ${usd(c.rec)}${usd(c.recruitment)}`, `Moderation Cost•${n} x ${usd(FEE.moderation)}${usd(c.moderation)}`,
-        `Platform Fee•one-time${usd(c.platform)}`, `Total Study Cost${usd(c.total)}`, `Incentive deposit•${n} x ${usd(s.incentive)}${usd(c.deposit)}`, `To pay upfront${usd(c.deposit)}`]
+        `Platform Fee•one-time${usd(c.platform)}`, `Total Study Cost${usd(c.total)}`, `Incentive deposit•25% of cost${usd(c.depInc)}`, `Recruitment deposit•25% of cost${usd(c.depRec)}`, `To pay upfront${usd(c.deposit)}`]
   const text = flat(await C.ev('document.body.innerText'))
   const gaps = want.filter((x) => !text.includes(flat(x))).map((x) => `${where}: ${x}`)
-  if (text.includes('25%')) gaps.push(`${where}: still claims a 25% deposit`)
   if (text.includes('$1,900') || text.includes('$475')) gaps.push(`${where}: still shows $1,900 or $475`)
   return { gaps, c }
 }
@@ -228,8 +229,10 @@ const g3 = []
 await C.go('/client/studies/create/study'); await C.ev(FORMS); await sleep(300)
 await C.click('Create Survey Questionnaire', 500)
 await C.ev(`(async () => { __ph('Enter question text...', 'How often do you shop online?'); __ph('Enter option', 'Weekly', 0); __ph('Enter option', 'Monthly', 1);
-  __btn('Add Question').click(); await __wait(); await __choose(__all('button').filter((b) => b.textContent.trim() === 'Single-select').pop(), 'Multi-line input'); __ph('Enter question text...', 'What stops you buying?', 1); return true })()`)
-await sleep(200); await C.click('Submit Survey', 500)
+  __btn('Add Question').click(); await __wait(); await __choose(__all('button').filter((b) => b.textContent.trim() === 'Single-select').pop(), 'Multi-line input'); __ph('Enter question text...', 'What stops you buying?', 5); return true })()`)
+await sleep(200); await C.click('Save & Continue', 500)
+// Study setup and pricing are two steps (15 Oct 2026): the incentive is on Pricing.
+await C.click('Continue', 700); await C.ev(FORMS);
 await C.ev(`(() => { __type(__al('Incentive Amount'), '$${SURVEY.incentive}'); return true })()`); await sleep(200)
 const m1 = await money(SURVEY, true, 'Study step'); g3.push(...m1.gaps)
 await C.click('Proceed to Publish', 600)
@@ -267,7 +270,9 @@ await C.click('Continue'); await C.ev(FORMS)
 await C.ev(`(async () => { await __choose(__btn('Every 2 days'), 'Every 3 days'); await __choose(__btn('5 days'), '3 days'); return true })()`); await sleep(150)
 await C.click('Create Survey Questionnaire', 500)
 await C.ev(`(() => { __ph('Enter question text...', 'What did you eat today?', 0); __ph('Enter question text...', 'How did you feel afterwards?', 1); return true })()`); await sleep(200)
-await C.click('Submit Diary Form', 500)
+await C.click('Save & Continue', 500)
+// Study setup and pricing are two steps (15 Oct 2026): the incentive is on Pricing.
+await C.click('Continue', 700); await C.ev(FORMS);
 await C.ev(`(() => { __type(__al('Incentive Amount'), '$${DIARY.incentive}'); return true })()`); await sleep(150)
 await C.click('Proceed to Publish', 600); await C.ev(FORMS); await C.ev(card); await C.click('Publish Study', 900)
 DIARY.id = await idOf(DIARY)
@@ -279,6 +284,8 @@ await C.click('Set Address & Availability', 500)
 await C.ev(`(async () => { ${address('12 Main St', 'Austin, Texas', '73301')} ${address('4 Dock Road', 'Houston, Texas', '77002')} await __choose(__btn('15 minutes'), '10 minutes'); await __choose(__btn('10 Minutes'), '1 Hour'); ${hours('09:00 AM', '05:00 PM')}
   __al('Add hours to Tuesday').click(); await __wait(); await __time('Tuesday from', '06:00 PM', 1); await __time('Tuesday to', '08:00 PM', 1); return true })()`)
 await sleep(200); await C.click('Submit', 500)
+// Study setup and pricing are two steps (15 Oct 2026): the incentive is on Pricing.
+await C.click('Continue', 700); await C.ev(FORMS);
 await C.ev(`(() => { __type(__al('Incentive Amount'), '$${PLACE.incentive}'); return true })()`); await sleep(150)
 await C.click('Save Draft & Exit', 800)
 await C.open('/client/studies/drafts'); await C.ev(FORMS)
@@ -288,6 +295,8 @@ const draftAbout = await C.ev(`__all('main input, main textarea').map((e) => e.v
 for (const x of [PLACE.title, PLACE.description, dmy(end)]) if (!draftAbout.includes(x)) g4.push('draft, About: ' + x)
 await C.go('/client/studies/create/study'); await C.ev(FORMS); await sleep(300)
 g4.push(...(await lacks(C, ['2 addresses, available 5 days/week, custom timings'])).map((x) => 'draft, Study: ' + x))
+// The costs are on the Pricing step now (15 Oct 2026).
+await C.click('Continue', 700); await C.ev(FORMS)
 const m2 = await money(PLACE, false, 'Study step'); g3.push(...m2.gaps)
 await C.click('Proceed to Publish', 600)
 g3.push(...(await money(PLACE, false, 'summary')).gaps)

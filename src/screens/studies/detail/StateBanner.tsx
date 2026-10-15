@@ -1,4 +1,3 @@
-import { WAITS } from '@shared/platform'
 import { diaryWords } from '@shared/platform'
 import type { ReactNode } from 'react'
 import { cn } from '../../../lib/cn'
@@ -80,8 +79,8 @@ function bannerContent(study: Study): BannerContent | null {
       return { tone: 'green', title: `Session code confirmed! #${ATTENDANCE_PIN}`, body: 'Both sides entered the code, so your attendance is on record. Complete the study to have your earnings credited.' }
     case 'in_process':
       return {
-        tone: 'blue', title: 'In Process', headline: `${money(study.reward)} credited, awaiting client approval`,
-        body: `Your study response is under process. The client approves the payout list against the people they approved into the study, usually within ${WAITS.REVIEW}, and the reward then lands in your wallet.`,
+        tone: 'blue', title: 'In Process', headline: `${money(study.reward)} credited, awaiting payout`,
+        body: 'Your study response is under process. When the study finishes, the Focus Insite team processes the payouts and the reward lands in your wallet.',
       }
     case 'not_needed':
       return {

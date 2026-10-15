@@ -133,7 +133,7 @@ const fillAudience = (participants) => `(async () => {
   __ph('Choose job roles...', ${JSON.stringify(AUDIENCE.roles)}); __ph('Select job functions...', ${JSON.stringify(AUDIENCE.functions)})
   __ph('Choose skills...', ${JSON.stringify(AUDIENCE.skills)}); __ph('Choose industry domains...', ${JSON.stringify(AUDIENCE.industries)})
   __all('[role=radio]')[1].click(); await __wait()
-  await __choose(__btn('Select tiers...'), 'Silver and above')
+  __btn('Select tiers...').click(); await __wait(); [...document.querySelectorAll('[role=option]')].find((o) => o.textContent.trim().startsWith('Silver Tier')).click(); await __wait()
   return true })()`
 /** Education is left as the step opens with it; the pool holds one level of education, so any other would estimate an audience of none. */
 const AUDIENCE_SHOWN = ['United States of America, Canada', 'Female', "Graduate or Bachelor's", '30–39, 40–54', 'Oncologist, Nurse', 'Consultation', 'Triage', 'Healthcare', 'Prefer fresh people', 'Silver and above']

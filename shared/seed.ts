@@ -623,7 +623,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
   const tickets: Ticket[] = [
     ticket('FI-S562357', me, 'Incentive payment not received', 'money', 'open', [
       ['user', 'I completed the Commuting and EV charging call two weeks ago and the incentive has not reached my wallet yet.', at(-4, 9, 0)],
-      ['auto', 'Payments are released once the client approves the payout list, usually within 3-5 days of the session. Your session on this study shows as completed; we have asked the client to confirm.', at(-4, 9, 1)],
+      ['auto', 'Payments are processed by the Focus Insite team once the study finishes. Your session on this study shows as completed, so your reward is on the payout list.', at(-4, 9, 1)],
       ['team', 'This has now been approved and should land in your wallet within 2 working days.', at(-2, 10, 15), 'tm-sophia'],
     ], 'Commuting and EV charging'),
     ticket('FI-S562401', me, 'Reschedule outside the app', 'general', 'open', [
