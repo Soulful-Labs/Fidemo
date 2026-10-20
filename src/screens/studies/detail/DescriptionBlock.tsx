@@ -14,8 +14,9 @@ export default function DescriptionBlock({ study, thumbnail = false }: { study: 
 
   const text = (
     <div className="flex min-w-0 flex-col gap-2">
-      <h1 className={cn('text-text-title', thumbnail ? 'text-title-s' : 'text-title-l leading-tight')}>{study.title}</h1>
-      <p className={cn('text-body-regular text-text-body', !expanded && 'line-clamp-2')}>{study.description}</p>
+      {/* 19 Oct 2026 (Survey - Study Detail): a 20px title and 14px description under the picture. */}
+      <h1 className={cn('text-text-title', thumbnail ? 'text-title-s' : 'text-title-m leading-tight')}>{study.title}</h1>
+      <p className={cn('text-text-regular text-text-body', !expanded && 'line-clamp-2')}>{study.description}</p>
       {expanded && (
         <p className="text-text-regular text-text-body">
           For{' '}
@@ -28,7 +29,7 @@ export default function DescriptionBlock({ study, thumbnail = false }: { study: 
       <button
         type="button"
         onClick={() => setExpanded((e) => !e)}
-        className="flex items-center gap-1 self-start text-body-regular text-text-body"
+        className="flex items-center gap-1 self-start text-text-regular text-text-body"
       >
         {expanded ? 'View less' : 'View more'}
         <ChevronDown className={cn('h-4 w-4 transition-transform', expanded && 'rotate-180')} />

@@ -20,6 +20,8 @@ export interface ModalProps {
   alt?: boolean
   /** Something finished or was earned: the dialog lands with weight instead of fading in. */
   earned?: boolean
+  /** The page colour with a hairline edge, as Report Study draws it (19 Oct 2026). Default is bg-2. */
+  plain?: boolean
 }
 
 /** Locks body scroll and wires Escape while any overlay is open. */
@@ -50,6 +52,7 @@ export default function Modal({
   showClose = true,
   alt = false,
   earned = false,
+  plain = false,
 }: ModalProps) {
   useOverlay(open, onClose)
 
@@ -74,7 +77,7 @@ export default function Modal({
         onClick={(e) => e.stopPropagation()}
         className={cn(
           'flex w-full max-w-content flex-col gap-4 rounded-lg p-4',
-          alt ? 'bg-bgAlt-2' : 'bg-bg-2',
+          plain ? 'border-1 border-stroke-3 bg-bg-0' : alt ? 'bg-bgAlt-2' : 'bg-bg-2',
         )}
       >
         {(title || showClose) && (

@@ -20,6 +20,7 @@ import ReviewBlock from './ReviewBlock'
 import StateBanner, { bannerFor, diaryBannerFor } from './StateBanner'
 import StudyLocations from './StudyLocations'
 import { useDetailActions } from './useDetailActions'
+import ReportStudy from './ReportStudy'
 import { LocationsModal } from '../questions/ScreenerModals'
 import Button from '../../../components/ui/Button'
 import { resumeLabel } from '../complete/DiaryOverview'
@@ -42,7 +43,8 @@ export default function StudyDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { back } = useAppNav()
-  const { studyById, toggleSaved, cancelStudy, rejectInvitation, toast } = useStore()
+  const { studyById, toggleSaved, cancelStudy, rejectInvitation, toast, reportStudy } = useStore()
+  const [reporting, setReporting] = useState(false)
   const [reject, setReject] = useState(false)
   const [cancel, setCancel] = useState(false)
   const [locations, setLocations] = useState(false)
@@ -140,9 +142,13 @@ export default function StudyDetail() {
           </button>
         )}
 
-        <HowItWorks defaultOpen={!afterApply || study.status === 'applied'} />
+        {/* Collapsed until tapped (Survey - Study Detail, 19 Oct 2026); still open once applied, as before. */}
+        <HowItWorks defaultOpen={study.status === 'applied'} />
 
         {study.timeline.length > 0 && <Timeline entries={study.timeline} />}
+
+        {/* Report (Survey - Study Detail, 19 Oct 2026): a quiet line under the study, opening Report Study. */}
+        <button type="button" onClick={() => setReporting(true)} className="self-start py-1 text-text-regular text-text-body hover:text-text-title">Report</button>
       </div>
 
       <DetailActions study={study} onPrimary={actions.primary} onSecondary={actions.secondary} />
@@ -159,6 +165,8 @@ export default function StudyDetail() {
         locations={study.locations ?? []}
         onClose={() => { setLocations(false); navigate(`/studies/${study.id}/screener`) }}
       />
+
+      <ReportStudy open={reporting} onClose={() => setReporting(false)} onSubmit={(reason, detail) => reportStudy(study.id, reason, detail)} />
 
       <CancelStudyModal
         open={cancel}

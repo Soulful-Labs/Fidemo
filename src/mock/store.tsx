@@ -286,6 +286,8 @@ export function useStoreValue() {
       return made.id
     },
     sendTicketMessage: (ticketId: string, text: string) => run(p.replyTicket(ticketId, 'user', text, actor)),
+    /** Report Study (19 Oct 2026): the report goes to the console's Reported Studies. */
+    reportStudy: (studyId: string, reason: string, detail: string) => p.reportStudy(me, studyId, reason, detail),
   }
 
   const dispatch = useCallback((a: Action) => {
