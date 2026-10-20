@@ -1,9 +1,9 @@
 import Button from '../../components/ui/Button'
-import { Info, PoolIcon } from '../../components/ui/icons'
+import { PoolIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { useDraft } from '../../mock/createStore'
 import CreateShell from './CreateShell'
-import { Chip, Field, Section, TextBox, TierBar } from './CreateBits'
+import { Chip, Field, Section, TextBox } from './CreateBits'
 import { useToast } from '../../components/ui/Toast'
 import Picker from '../../components/ui/Picker'
 import { useState } from 'react'
@@ -11,13 +11,13 @@ import { useNavigate } from 'react-router-dom'
 import PromptDialog from './PromptDialog'
 import { audienceFromPrompt } from '../../lib/fromPrompt'
 import { AUDIENCE_OPTIONS } from './CreateBits'
-import { cohort, poolPerson } from '@shared/derive'
-import { audienceFault, audiencePeople, educationOf, gendersOf } from '@shared/studyForm'
+import { tierOf } from '@shared/derive'
+import { EXPERIENCE_RANGES, INCOME_RANGES, audienceFault, educationOf, gendersOf } from '@shared/studyForm'
 import { TIERS } from '@shared/rules'
 import CheckPicker from '../../components/ui/CheckPicker'
 import { GoldMark, PlatinumMark, SilverMark } from '../../components/ui/icons'
 import type { StudyForm } from '@shared/studyForm'
-import { usePlatform } from '../../platform'
+import { useClient, usePlatform } from '../../platform'
 
 const SPARKLE = (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
@@ -102,7 +102,7 @@ function Help({ text, error }: { text: string; error?: string }) {
 export default function Audience() {
   const toast = useToast()
   const navigate = useNavigate()
-  const { draft, set, form } = useDraft()
+  const { draft, set } = useDraft()
   const [asking, setAsking] = useState(false)
   /** What the last Generate filled, and what the text did not mention, shown under the card. */
   const [result, setResult] = useState<{ filled: string[]; missing: string[] } | null>(null)
@@ -116,10 +116,10 @@ export default function Audience() {
   }
   /** The people on the platform who fit what is entered on this step, so the forecast moves with it. */
   const state = usePlatform()
-  const fit = cohort(audiencePeople(state, form()).map((p) => poolPerson(state, p)))
-  const tier = (t: string) => fit.tiers.find((x) => x.tier === t)?.pct ?? 0
-  /** Fewer people fit the audience than the study asks for. */
-  const insufficient = fit.count < Math.max(1, Number(draft.participants) || 0)
+  const client = useClient()
+  const pool = state.people.filter((p) => p.status === 'active' && p.identity.state === 'verified')
+  /** The share of the pool at these tiers, for the Profile Tiers lines. */
+  const share = (ts: string[]) => pool.length ? Math.round((pool.filter((p) => ts.includes(tierOf(state, p.id))).length / pool.length) * 100) : 0
   const education = educationOf(draft)
   const genders = gendersOf(draft)
   const industries = draft.industries.split(',').map((x) => x.trim()).filter(Boolean)
@@ -137,7 +137,7 @@ export default function Audience() {
                 <p className="flex items-center gap-2 text-body-medium text-text-title">
                   <span className="text-text-title">{SPARKLE}</span>Generate with AI
                 </p>
-                <p className="text-text-regular text-text-subtitle">Describe your study and who you want to hear from; the audience is filled from it</p>
+                <p className="text-text-regular text-text-subtitle">Set target audience base with AI using study context</p>
               </div>
               <Button variant="secondary" leftIcon={SPARKLE} onClick={() => setAsking(true)}>Fill with AI</Button>
             </div>
@@ -227,6 +227,17 @@ export default function Audience() {
                   <TextBox value={draft.roles} placeholder="e.g. Product Manager" onChange={(v) => set('roles', v)} />
                   <Help text="The job title. A product manager's role is Product Manager." />
                 </label>
+                {/* Experience and Household Income (19 Oct 2026): the drawn ranges; a participant matches when their own band overlaps. */}
+                <Field label="Experience">
+                  <CheckPicker label="Experience" all="All" picked={draft.experience ?? []} options={Object.keys(EXPERIENCE_RANGES).map((v) => ({ value: v }))}
+                    value={(draft.experience ?? []).length ? `${(draft.experience ?? []).length} ranges added  •  Select experience range` : 'Select experience range'}
+                    onChange={(next) => set('experience', next)} />
+                </Field>
+                <Field label="Household Income">
+                  <CheckPicker label="Household Income" all="All" picked={draft.income ?? []} options={Object.keys(INCOME_RANGES).map((v) => ({ value: v }))}
+                    value={(draft.income ?? []).length ? `${(draft.income ?? []).length} ranges added  •  Select income range` : 'Select income range'}
+                    onChange={(next) => set('income', next)} />
+                </Field>
                 <label className="flex flex-col gap-0.5">
                   <span className="text-text-regular text-text-subtitle">{need('Skills', false)}</span>
                   <TextBox value={draft.skills} placeholder="e.g. SQL, Figma" onChange={(v) => set('skills', v)} />
@@ -247,19 +258,19 @@ export default function Audience() {
                     label="Prefer fresh people"
                     sub="Repeat participants are still matched, but ranked below people new to your studies" />
                   <Radio on={draft.condition === 'never'} onClick={() => set('condition', 'never')}
-                    label="Has never participated in any study with Soulful Labs (You) before"
+                    label={`Has never participated in any study with ${client?.company || 'you'} (You) before`}
                     sub="Turn this on to exclude people who have previously participated in your studies" />
                 </div>
-                {/* Profile Tiers (15 Oct 2026): one choice, each with its icon and the Trust Score it means.
-                    The drawn "top 10% / top 25% of participants" is left out: nothing measures it. */}
+                {/* Profile Tiers (19 Oct 2026, as drawn): one choice, each with its icon, the Trust Score it means and
+                    the share of verified, active participants at that tier or above, counted from the pool. */}
                 <Field label="Profile Tiers">
                   <CheckPicker single label="Profile Tiers" value={draft.tiers || 'Select tiers...'} picked={[draft.tiers || 'Any tier']}
                     onChange={([v]) => set('tiers', !v || v === 'Any tier' ? '' : v)}
                     options={[
                       { value: 'Any tier', label: 'Any', sub: 'For all tiers' },
-                      { value: 'Platinum only', label: 'Platinum Tier', sub: `${TIERS.platinum}+ Trust score`, icon: <PlatinumMark className="h-6 w-6 text-tier-platinum" /> },
-                      { value: 'Gold and above', label: 'Gold Tier and above', sub: `${TIERS.gold}+ Trust score`, icon: <GoldMark className="h-6 w-6 text-tier-gold" /> },
-                      { value: 'Silver and above', label: 'Silver Tier and above', sub: `${TIERS.silver}+ Trust score`, icon: <SilverMark className="h-6 w-6 text-tier-silver" /> },
+                      { value: 'Platinum only', label: 'Platinum Tier', sub: `${TIERS.platinum}+ Trust score, top ${share(['platinum'])}% of participants`, icon: <PlatinumMark className="h-6 w-6 text-tier-platinum" /> },
+                      { value: 'Gold and above', label: 'Gold Tier and above', sub: `${TIERS.gold}+ Trust score, top ${share(['gold', 'platinum'])}% of participants`, icon: <GoldMark className="h-6 w-6 text-tier-gold" /> },
+                      { value: 'Silver and above', label: 'Silver Tier and above', sub: `${TIERS.silver}+ Trust score, all participants`, icon: <SilverMark className="h-6 w-6 text-tier-silver" /> },
                     ]} />
                 </Field>
               </div>
@@ -267,43 +278,23 @@ export default function Audience() {
           </div>
         </div>
 
+        {/* Check Participation Forecast (19 Oct 2026): availability is checked with the team; the figures are drawn as coming soon. */}
         <aside className="sticky top-[88px] w-[488px] shrink-0 rounded-lg border-1 border-stroke-input bg-bg-0">
-          <h2 className="flex items-center gap-2 border-b-1 border-stroke-input px-4 py-4 text-body-medium text-text-title">
-            Participation Forecast
-            <Info className="h-4 w-4 text-text-body" />
-          </h2>
-
+          <h2 className="border-b-1 border-stroke-input px-4 py-4 text-body-medium text-text-title">Check Participation Forecast</h2>
           <div className="flex flex-col gap-4 p-4">
-            {/* Fewer people fit than the study needs: "Insufficient", with Contact Us beside it (NO Matching Audience, 15 Oct 2026). */}
-            <div className="flex items-start justify-between gap-3 rounded-md bg-yellow-30 px-4 py-4">
-              <span className="flex flex-col gap-1">
-                <span className="flex items-center gap-2 text-text-regular text-text-subtitle">
-                  <PoolIcon className="h-4 w-4" />Estimated
-                </span>
-                <span className="text-[32px] font-semibold leading-10 tracking-[-0.02em] text-brand-primary">
-                  {insufficient ? 'Insufficient' : `~${fit.count.toLocaleString('en-US')}`} <span className="text-body-regular font-normal text-text-subtitle">eligible members</span>
-                </span>
-              </span>
-              {insufficient && (
-                <span className="flex flex-col items-end gap-2">
-                  <span className="text-text-medium text-text-title">Insufficient participants?</span>
-                  <Button size="sm" onClick={() => navigate('/help?panel=ask')}>Contact Us</Button>
-                </span>
-              )}
+            <div className="flex flex-col items-start gap-3 rounded-md bg-bg-1 p-4">
+              <span className="text-text-medium text-text-title">Contact us to check matching participants availability</span>
+              <Button size="sm" onClick={() => navigate('/help?panel=ask')}>Contact Us</Button>
             </div>
-
-            <div className="flex flex-col gap-3 rounded-md border-1 border-stroke-input p-4">
+            <div className="flex h-12 items-center justify-between rounded-md border-1 border-stroke-input px-4">
               <span className="text-label uppercase tracking-wide text-text-body">Tier Distribution</span>
-              <TierBar label="Silver" value={tier('silver')} colour="#7f9ab0" />
-              <TierBar label="Gold" value={tier('gold')} colour="#f2c200" />
-              <TierBar label="Platinum" value={tier('platinum')} colour="#9139f6" />
+              <span className="text-text-medium uppercase text-text-body">Coming soon</span>
             </div>
-
             <dl className="flex flex-col">
-              {[['Average Score', fit.count ? `${fit.averageScore}%` : 'N/A'], ['Recommended Incentive', '$100-200'], ['Estimated Time To Fill', insufficient ? 'N/A' : '15-20 days']].map(([k, v]) => (
+              {['Average Score', 'Recommended Incentive', 'Estimated Time To Fill'].map((k) => (
                 <div key={k} className="flex items-center justify-between border-b-1 border-stroke-input py-2 last:border-b-0">
                   <dt className="text-text-regular text-text-subtitle">{k}</dt>
-                  <dd className="text-text-medium text-text-title">{v}</dd>
+                  <dd className="text-text-regular uppercase text-text-body">Coming soon</dd>
                 </div>
               ))}
             </dl>

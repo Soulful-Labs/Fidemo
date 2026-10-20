@@ -208,7 +208,7 @@ await C.ev(`(async () => {
   await __choose(__btn('2 range selected'), '18–20', '21–29')
   __ph('e.g. Healthcare, Finance', 'Healthcare'); __ph('e.g. Product, Engineering, Marketing', 'Consultation, Patient Care, Research')
   return true })()`); await sleep(300)
-const forecast = await C.ev(`(/~([\\d,]+)\\s*eligible members/.exec(document.body.innerText) || [])[1]`)
+// The Audience step forecast is drawn as Coming soon (19 Oct 2026); Publish's Estimated Audience is the count.
 await C.click('Continue')
 await C.ev(buildScreener(THREE)); await sleep(200)
 await C.click('Continue')
@@ -263,7 +263,7 @@ const consoleStrangers = people.outsiders.filter((n) => !people.matched.some((m)
 if (!people.matched.slice(0, 3).every((m) => consoleText.includes(m.name) || consoleText.includes(short(m.name)))) g5.push('console Matched does not list the matched people')
 if (consoleStrangers.length) g5.push('console Matched shows people who do not fit: ' + consoleStrangers.slice(0, 5).join(', '))
 if (String(people.matched.length) !== audienceChip) g5.push(`Publish estimated ${audienceChip}; ${people.matched.length} were matched`)
-say(5, 'With a narrow audience, Matched only shows people who fit it', g5, `audience: women in healthcare. ${people.matched.length} of the ${people.pool} people in the pool fit; the Audience step forecast ~${forecast}, Publish estimated ${audienceChip}, and Matched lists those ${people.matched.length} in the client app and the console`)
+say(5, 'With a narrow audience, Matched only shows people who fit it', g5, `audience: women in healthcare. ${people.matched.length} of the ${people.pool} people in the pool fit; Publish estimated ${audienceChip}, and Matched lists those ${people.matched.length} in the client app and the console`)
 
 // ---- 1. a live study has no Edit anywhere
 const g1 = []

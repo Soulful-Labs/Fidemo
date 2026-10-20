@@ -27,14 +27,18 @@ function questions(step: string, before: FormQuestion[], after: FormQuestion[]):
   const real = (qs: FormQuestion[]) => qs.filter((q) => q.text.trim())
   const b = real(before), a = real(after)
   const out: FieldChange[] = []
+  // The same question, by id, or by its words when it was rebuilt with a new id.
+  const twin = (q: FormQuestion) => b.find((x) => x.id === q.id) ?? b.find((x) => x.text.trim() === q.text.trim())
+  const kept = new Set<string>()
   a.forEach((q, i) => {
     const label = `Q${i + 1}`
-    const was = b.find((x) => x.id === q.id)
+    const was = twin(q)
+    if (was) kept.add(was.id)
     if (!was) { out.push({ path: [step, label], added: [q.text.trim()] }); return }
     out.push(...value([step, label, 'Question'], was.text.trim(), q.text.trim()))
     out.push(...lists([step, label, 'Option'], was.options.map((o) => o.text.trim()).filter(Boolean), q.options.map((o) => o.text.trim()).filter(Boolean)))
   })
-  b.filter((q) => !a.some((x) => x.id === q.id)).forEach((q) => out.push({ path: [step, 'Question'], removed: [q.text.trim()] }))
+  b.filter((q) => !kept.has(q.id)).forEach((q) => out.push({ path: [step, 'Question'], removed: [q.text.trim()] }))
   return out
 }
 
@@ -58,6 +62,8 @@ export function diffForms(before: StudyForm, after: StudyForm): FieldChange[] {
     ...lists(['Audience', 'Work Functions'], list(before.functions), list(after.functions)),
     ...lists(['Audience', 'Skills'], list(before.skills), list(after.skills)),
     ...lists(['Audience', 'Industries'], list(before.industries), list(after.industries)),
+    ...lists(['Audience', 'Experience'], before.experience ?? [], after.experience ?? []),
+    ...lists(['Audience', 'Household Income'], before.income ?? [], after.income ?? []),
     ...lists(['Audience', 'Profile Tiers'], list(before.tiers), list(after.tiers)),
     ...value(['Audience', 'Condition'], CONDITION[before.condition], CONDITION[after.condition]),
     ...questions('Screener', before.questions, after.questions),

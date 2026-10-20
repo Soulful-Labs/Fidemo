@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom'
+import { ChevronRight } from '../../components/ui/icons'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Button from '../../components/ui/Button'
 import CreateShell from './CreateShell'
 
@@ -9,6 +10,9 @@ import CreateShell from './CreateShell'
  */
 export default function Published() {
   const navigate = useNavigate()
+  /** Edit Study ends here too (19 Oct 2026, Changes Published): the same mark, its own words, and the way back to the study. */
+  const [params] = useSearchParams()
+  const edited = params.get('edited')
 
   return (
     <CreateShell step="publish" action={<span />}>
@@ -23,14 +27,17 @@ export default function Published() {
           </span>
 
           <div className="flex max-w-[400px] flex-col items-center gap-1 text-center">
-            <h1 className="text-title-s text-text-title">Your study has been summited for review!</h1>
+            <h1 className="text-title-s text-text-title">{edited ? 'Your changes has been published!' : 'Your study has been summited for review!'}</h1>
             <p className="text-text-regular text-text-subtitle">
-              Our internal team will have a quick review on the study within 24 hours and will get it live for the participants.
+              {edited ? 'It will be updated and applicable to new upcoming participants.' : 'Our internal team will have a quick review on the study within 24 hours and will get it live for the participants.'}
             </p>
           </div>
 
-          <Button variant="secondary" size="none" className="h-12 px-6 text-body-medium"
-            onClick={() => navigate('/studies')}>Track and manage studies</Button>
+          {edited
+            ? <Button variant="secondary" size="none" className="h-12 px-6 text-body-medium" rightIcon={<ChevronRight className="h-4 w-4" />}
+                onClick={() => navigate(`/studies/${edited}`)}>Done! View Details</Button>
+            : <Button variant="secondary" size="none" className="h-12 px-6 text-body-medium"
+                onClick={() => navigate('/studies')}>Track and manage studies</Button>}
         </div>
       </div>
     </CreateShell>

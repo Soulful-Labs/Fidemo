@@ -7,6 +7,7 @@
  * through store.ts and checks every legal move lands and every illegal one
  * is refused with a reason.
  */
+import { studyHistory } from '../shared/revisions'
 import {
   billing, consoleDashboard, hasCertificate, payoutsToProcess, referralCode, counts, financeTotals, personFigures, pointsRows, poolPerson, recruit, refundsPending, respondentStudies, sharedPhoto, sharedVideo, trustInputs,
 } from '../shared/derive'
@@ -162,6 +163,16 @@ const made = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Journey study', type
   check('draft: an unfinished draft is refused at submit and stays a draft', !early.ok && saved.ok && st().studies.find((x) => x.id === saved.id)!.state === 'draft', early.ok ? '' : early.why)
   const done = saved.ok ? p.submitStudy(DEMO_CLIENT_ID, { ...half, questions: asForm(BUILT), hours: NINE_TO_FIVE, availabilitySet: true }, saved.id) : saved
   check('draft: finished, it is submitted in place', done.ok && saved.ok && done.id === saved.id && st().studies.filter((x) => x.id === saved.id).length === 1 && st().studies.find((x) => x.id === saved.id)!.state === 'in_review' && st().studies.find((x) => x.id === saved.id)!.locations?.[0]?.label === 'Leeds')
+  {
+    // Edit Study (19 Oct 2026): resubmitting a study in review records what changed, field by field, in Revisions History.
+    const fin = { ...half, questions: asForm(BUILT), hours: NINE_TO_FIVE, availabilitySet: true }
+    const edited = done.ok ? p.submitStudy(DEMO_CLIENT_ID, { ...fin, title: 'Half built, final', experience: ['3-5 years'] }, done.id) : done
+    const rec = edited.ok ? st().studies.find((x) => x.id === edited.id)!.edits ?? [] : []
+    check('revisions: an edit to a study in review is recorded by field', edited.ok && rec.length === 1 && rec[0]!.by === 'client'
+      && rec[0]!.changes.some((c) => c.path.join('>') === 'About>Title' && c.to === 'Half built, final')
+      && rec[0]!.changes.some((c) => c.path.join('>') === 'Audience>Experience' && c.added?.[0] === '3-5 years'), JSON.stringify(rec))
+    check('revisions: the history lists the edit before the first submission', edited.ok && studyHistory(st().studies.find((x) => x.id === edited.id)!).map((h) => h.kind).join(',') === 'edit,submitted')
+  }
   check('create: the step-4 read-back lists the hours and the address', studyDetails({ ...half, hours: NINE_TO_FIVE }).some((r) => r.label === 'Monday' && r.value === '09:00 AM to 05:00 PM') && studyDetails(half).some((r) => r.label === 'Address 1' && r.value.includes('1 Park Row')))
 }
 check('1. client publishes a study, it waits in review', made.ok && st().studies.find((s) => s.id === (made as { id: string }).id)!.state === 'in_review')

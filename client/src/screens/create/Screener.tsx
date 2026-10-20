@@ -344,7 +344,7 @@ export default function Screener() {
           <div className="ml-7 flex flex-col gap-3 rounded-lg border-1 border-stroke-2 bg-bgAlt-1 p-[14px]">
             <div className="flex flex-col gap-0.5">
               <p className="flex items-center gap-2 text-body-medium text-text-title">{SPARKLE}Generate with AI</p>
-              <p className="text-text-regular text-text-subtitle">Describe your study and our AI-assistant writes screener questions from it</p>
+              <p className="text-text-regular text-text-subtitle">Let our AI-assistant generate questions</p>
             </div>
             <div className="flex items-center gap-3">
               <Button variant="secondary" size="row" leftIcon={SPARKLE} onClick={() => setAsking('add')}>Generate</Button>
@@ -354,7 +354,7 @@ export default function Screener() {
                   <path d="M4 20h4l10-10a2.8 2.8 0 0 0-4-4L4 16v4Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
                 </svg>
                 {/* The description Generate works from: the same text the Audience step's Fill with AI took. */}
-                <Box value={draft.aiPrompt ?? ''} onChange={(v) => set('aiPrompt', v)} placeholder="Describe your study, then Generate" className="pl-10" />
+                <Box value={draft.aiPrompt ?? ''} onChange={(v) => set('aiPrompt', v)} placeholder="Write - Tell AI what to do" className="pl-10" />
               </span>
             </div>
           </div>

@@ -74,6 +74,10 @@ export interface StudyForm {
   industries: string
   condition: 'na' | 'fresh' | 'never'
   tiers: string
+  /** Years of experience the study accepts (19 Oct 2026), as the drawn ranges. Empty means any. */
+  experience?: string[]
+  /** Household income the study accepts (19 Oct 2026). Empty means any. */
+  income?: string[]
   // 3. Screener
   questions: FormQuestion[]
   // 4. Study
@@ -137,7 +141,7 @@ export function blankForm(): StudyForm {
     gender: ['All Genders'], education: ["Graduate or Bachelor's"],
     ageRanges: ['18–20', '21–29'],
     roles: '', functions: '', skills: '', industries: '',
-    condition: 'na', tiers: '',
+    condition: 'na', tiers: '', experience: [], income: [],
     questions: [
       blankQuestion('Pre-screener - Q1', 'Single-select'), blankQuestion('Pre-screener - Q2', 'Multi-select'),
       blankQuestion('Pre-screener - Q3', 'Single-line input'), blankQuestion('Q4', 'Number input'),
@@ -259,6 +263,34 @@ const inRange = (age: number, range: string) => {
   return age >= lo! && age <= (hi ?? lo!)
 }
 
+type Band = [number, number] | undefined
+/**
+ * Experience and Household Income (19 Oct 2026). A client picks the drawn
+ * ranges; a participant gave their own band on their profile. They match when
+ * the two overlap. A participant who gave nothing, or "Prefer not to say",
+ * does not match a study that sets the criterion, as with an unknown age.
+ */
+export const EXPERIENCE_RANGES: Record<string, Band> = {
+  Fresher: [0, 1], '1-3 years': [1, 3], '3-5 years': [3, 5], '5-10 years': [5, 10], '10+ years': [10, Infinity],
+}
+export const INCOME_RANGES: Record<string, Band> = {
+  '$50K or less': [0, 50_000], '$50K - $100K': [50_000, 100_000], '$100K - $500K': [100_000, 500_000], '$500K - $1M': [500_000, 1_000_000], '$1M+': [1_000_000, Infinity],
+}
+/** The respondent app's own bands (onboarding options), and "N years" as typed. */
+const EXPERIENCE_BANDS: Record<string, Band> = {
+  'Less than 1 year': [0, 1], '1-3 years': [1, 3], '3-5 years': [3, 5], '5-10 years': [5, 10], '10 years': [10, 11], 'More than 10 years': [10, Infinity],
+}
+const INCOME_BANDS: Record<string, Band> = {
+  'Under $25,000': [0, 25_000], '$25,000 - $50,000': [25_000, 50_000], '$50,000 - $100,000': [50_000, 100_000],
+  '$100,000 - $150,000': [100_000, 150_000], 'Over $150,000': [150_000, Infinity],
+}
+const band = (value: string, known: Record<string, Band>): Band => {
+  if (known[value]) return known[value]
+  const n = Number.parseInt(value, 10)
+  return Number.isFinite(n) && /year/i.test(value) ? [n, n + 1] : undefined
+}
+const overlaps = (mine: Band, wanted: Band[]): boolean => !!mine && wanted.some((w) => !!w && mine[0] < w[1] && w[0] < mine[1])
+
 /**
  * How many people on the platform fit the audience as entered: verified,
  * active, and matching every criterion the audience sets, work functions and
@@ -283,6 +315,8 @@ export function audiencePeople(state: PlatformState, f: StudyForm, now: Date = n
     if (industries.length && !industries.some((r) => p.profile.industry.toLowerCase().includes(r))) return false
     if (functions.length && !has(p.profile.workFunctions ?? [], functions)) return false
     if (skills.length && !has(p.profile.skills ?? [], skills)) return false
+    if (f.experience?.length && !overlaps(band(p.profile.experience, EXPERIENCE_BANDS), f.experience.map((r) => EXPERIENCE_RANGES[r]))) return false
+    if (f.income?.length && !overlaps(band(p.profile.income, INCOME_BANDS), f.income.map((r) => INCOME_RANGES[r]))) return false
     if (tiers && !tiers.includes(tierOf(state, p.id, now))) return false
     return true
   })
@@ -306,6 +340,7 @@ export function audiencePills(f: StudyForm): StudySetup['audience'] {
     ...pill('Gender', gendersOf(f).join(', ') || 'All Genders'), ...pill('Education', educationOf(f).join(', ')), ...pill('Age', f.ageRanges.join(', ')),
     ...pill('Work Functions', list(f.functions).join(', ')), ...pill('Roles', list(f.roles).join(', ')),
     ...pill('Industry', list(f.industries).join(', ')), ...pill('Skills', list(f.skills).join(', ')),
+    ...pill('Experience', (f.experience ?? []).join(', ')), ...pill('Household Income', (f.income ?? []).join(', ')),
     ...pill('Condition', CONDITION[f.condition].label ?? ''), ...pill('Profile Tiers', f.tiers),
   ]
 }

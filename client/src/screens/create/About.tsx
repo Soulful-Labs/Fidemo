@@ -1,3 +1,5 @@
+import NewStudyDialog from './NewStudyDialog'
+import { useSearchParams } from 'react-router-dom'
 import Toggle from '../../components/ui/Toggle'
 import Button from '../../components/ui/Button'
 import { Calendar, Clock, DiaryBookIcon, InPersonIcon, Info, SurveyIcon, TaskIcon, Upload, VideoIcon } from '../../components/ui/icons'
@@ -5,7 +7,7 @@ import { cn } from '../../lib/cn'
 import { useDraft } from '../../mock/createStore'
 import { useToast } from '../../components/ui/Toast'
 import type { CreateType } from '../../mock/createStore'
-import CreateShell from './CreateShell'
+import CreateShell, { useEditing } from './CreateShell'
 import { useState } from 'react'
 import { AboutPreview, PreviewButton, PreviewPanel } from './ScreenerPreview'
 import { Field, Section, TextBox } from './CreateBits'
@@ -22,10 +24,12 @@ const TYPES: { key: CreateType; label: string; sub: string; Icon: typeof Info; g
 function TypeCard({ t }: { t: (typeof TYPES)[number] }) {
   const { draft, set } = useDraft()
   const on = draft.type === t.key
+  /** A submitted study keeps its type: the other cards are greyed and do nothing. */
+  const locked = useEditing()
   return (
     <div className={cn('flex flex-col rounded-lg border-1',
-      on ? 'border-brand-primary bg-yellow-30' : 'border-stroke-1 bg-bg-0')}>
-      <button type="button" onClick={() => set('type', t.key)} aria-pressed={on}
+      on ? (locked ? 'border-stroke-1 bg-bg-1' : 'border-brand-primary bg-yellow-30') : 'border-stroke-1 bg-bg-0', locked && !on && 'opacity-60')}>
+      <button type="button" disabled={locked} onClick={() => set('type', t.key)} aria-pressed={on}
         className="flex items-start gap-3 p-[11px] text-left">
         <span className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-md [&>svg]:h-5 [&>svg]:w-5',
           on ? 'bg-yellow-40 text-brand-primary' : 'bg-bg-1 text-text-subtitle')}>
@@ -71,6 +75,8 @@ async function readPicture(file: File): Promise<string> {
 
 export default function About() {
   const { draft, set } = useDraft()
+  const [params, setParams] = useSearchParams()
+  const editing = useEditing()
   const toast = useToast()
   /** The participant preview (15 Oct 2026): closed until the client opens it. */
   const [preview, setPreview] = useState(false)
@@ -86,7 +92,7 @@ export default function About() {
       <div className={cn('relative min-h-[1242px] rounded-lg bg-bg-0 px-6 pt-[9px]', preview && 'flex items-start gap-12 py-6')}>
         {!preview && <span className="absolute right-6 top-6"><PreviewButton onClick={() => setPreview(true)} /></span>}
         <div className={cn('flex w-[600px] flex-col', !preview && 'mx-auto')}>
-          <Section icon={<TaskIcon className="h-5 w-5" />} title="Select Study Type" sub="Choose the study type suitable to your research needs">
+          <Section icon={<TaskIcon className="h-5 w-5" />} title="Select Study Type" sub={editing ? 'The study type cannot be changed after published' : 'Choose the study type suitable to your research needs'}>
             <div className="flex flex-col gap-2">
               {TYPES.map((t) => <TypeCard key={t.key} t={t} />)}
             </div>
@@ -161,6 +167,7 @@ export default function About() {
           </PreviewPanel>
         )}
       </div>
+    <NewStudyDialog open={params.get('start') === '1'} onClose={() => setParams({}, { replace: true })} />
     </CreateShell>
   )
 }

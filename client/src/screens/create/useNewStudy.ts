@@ -20,6 +20,7 @@ export function useNewStudy() {
       if (saved.ok) toast('The study you were working on is in Drafts')
     }
     reset()
-    navigate('/studies/create/about')
+    // New Study (19 Oct 2026) opens over the About step: describe it and fill, or fill from scratch.
+    navigate('/studies/create/about?start=1')
   }
 }

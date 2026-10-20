@@ -28,6 +28,35 @@ const STEPS: { key: CreateStep; label: string; Icon: typeof Info; to: string }[]
  * draft study (shared/store.ts saveStudyDraft), so it reopens from Drafts with
  * everything in it. Saving again from a reopened draft saves over it.
  */
+/**
+ * Edit Study (19 Oct 2026, Edit Survey Study): the open draft is a study
+ * already sent to the team, so the flow edits it rather than creating one.
+ */
+export function useEditing(): boolean {
+  const { draftId } = useDraft()
+  const { study } = useStudies()
+  return study(draftId)?.state === 'in_review'
+}
+
+/** Edit Study's two actions: Cancel leaves it as it was submitted; Publish sends the changes back to the team. */
+function EditActions() {
+  const navigate = useNavigate()
+  const toast = useToast()
+  const { form, draftId, reset } = useDraft()
+  const { submitStudy } = useStudies()
+  return (
+    <>
+      <Button variant="tertiary" size="row" onClick={() => { const id = draftId; reset(); navigate(id ? `/studies/${id}` : '/studies') }}>Cancel</Button>
+      <Button size="row" onClick={() => {
+        const res = submitStudy(form(), draftId)
+        if (!res.ok) { toast(res.why); return }
+        reset()
+        navigate(`/studies/create/published?edited=${res.id}`)
+      }}>Publish</Button>
+    </>
+  )
+}
+
 export function SaveDraftButton() {
   const navigate = useNavigate()
   const toast = useToast()
@@ -58,6 +87,7 @@ export default function CreateShell({ step, action, children, check }: {
   const navigate = useNavigate()
   const toast = useToast()
   const { draft } = useDraft()
+  const editing = useEditing()
 
   return (
     <div className="flex min-h-screen bg-yellow-20">
@@ -65,7 +95,7 @@ export default function CreateShell({ step, action, children, check }: {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-[69px] shrink-0 items-center justify-between gap-6 border-b-1 border-stroke-input bg-yellow-20 px-4">
-          <span className="text-body-regular text-text-subtitle">Create Study / <span className="text-text-title">{draft.title.trim() || 'Study Name'}</span></span>
+          <span className="min-w-0 truncate text-body-regular text-text-subtitle">{editing ? 'Edit Study' : 'Create Study'} / <span className="text-text-title">{draft.title.trim() || 'Study Name'}</span></span>
 
           <ol className="flex items-center">
             {STEPS.map((s, i) => {
@@ -86,7 +116,7 @@ export default function CreateShell({ step, action, children, check }: {
           </ol>
 
           <div className="flex items-center gap-3">
-            {action ?? (
+            {editing && !action ? <EditActions /> : action ?? (
               <>
                 <SaveDraftButton />
                 <Button size="row" onClick={() => {
