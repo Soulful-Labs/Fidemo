@@ -78,7 +78,8 @@ const asDate = (created: string) => new Date(created.replace(',', '')).getTime()
  */
 export default function StudiesList({ tab }: { tab: StudiesTab }) {
   const navigate = useNavigate()
-  const [view, setView] = useState<'table' | 'grid'>('table')
+  /** Cards first (19 Oct 2026, Studies); the toggle, or `?view=table`, shows the table. */
+  const [view, setView] = useState<'table' | 'grid'>(() => (new URLSearchParams(window.location.search).get('view') === 'table' ? 'table' : 'grid'))
   const [types, setTypes] = useState<StudyType[]>([])
   const [typeMenu, setTypeMenu] = useState(false)
   const [rowMenu, setRowMenu] = useState<string | null>(null)

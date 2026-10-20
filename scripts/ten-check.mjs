@@ -430,7 +430,7 @@ const respAfter = flat(await R.ev(`(() => { const lab = [...document.querySelect
 
 // ---- 12: no AutoPay; finishing a study notifies the client and the team, and the team pays by hand
 const target = await st(C, `(() => { const x = s.studies.find((y) => y.clientId === 'cl-soulful' && ['recruiting', 'ongoing'].includes(y.state) && y.participations.some((p) => p.state === 'completed' && !p.paidAt && (!/call|person/.test(y.type) || (p.code?.byClient && p.code?.byParticipant)))); return x && { id: x.id, title: x.title, owed: x.participations.filter((p) => p.state === 'completed' && !p.paidAt).length } })()`)
-await C.open('/client/studies', `localStorage.setItem('fi-client-session', JSON.stringify({ accounts: [], current: 'jennifer@soulfullabs.com' }))`); await C.ev(FORMS)
+await C.open('/client/studies?view=table', `localStorage.setItem('fi-client-session', JSON.stringify({ accounts: [], current: 'jennifer@soulfullabs.com' }))`); await C.ev(FORMS)
 const paidBefore = await st(C, `s.studies.find((x) => x.id === ${JSON.stringify(target.id)}).participations.filter((p) => p.paidAt).length`)
 let completeVia = 'Studies list row menu'
 const onPage = await C.ev(`(() => { const row = [...document.querySelectorAll('tr')].find((r) => r.innerText.includes(${JSON.stringify(target.title)})); if (!row) return false; row.querySelector('[aria-label="Study options"]').click(); return true })()`)

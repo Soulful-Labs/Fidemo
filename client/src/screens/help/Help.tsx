@@ -168,7 +168,7 @@ export default function Help() {
         )}
       </div>
 
-      <AskSupportPanel open={panel === 'ask'} onClose={() => setPanel('')}
+      <AskSupportPanel open={panel === 'ask'} onClose={() => setPanel('')} subject={params.get('subject') ?? ''}
         onSent={(id) => { setRaised(id); setPanel('sent') }} />
       <SentSuccessModal open={panel === 'sent'} onClose={() => setPanel('')}
         onOpenChat={raised ? () => { setPanel(''); nav(`/help/tickets/${raised}`) } : undefined} />

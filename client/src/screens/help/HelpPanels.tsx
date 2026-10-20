@@ -20,11 +20,11 @@ export function SuccessMark() {
 
 /** Ask Support (1663:104557): Contact Support opens it from either Help tab. */
 export function AskSupportPanel({
-  open, onClose, onSent,
-}: { open: boolean; onClose: () => void; onSent?: (id: string) => void }) {
+  open, onClose, onSent, subject: start = '',
+}: { open: boolean; onClose: () => void; onSent?: (id: string) => void; subject?: string }) {
   const { raiseTicket } = useWorkspace()
   const toast = useToast()
-  const [subject, setSubject] = useState('')
+  const [subject, setSubject] = useState(start)
   const [message, setMessage] = useState('')
 
   const submit = () => {

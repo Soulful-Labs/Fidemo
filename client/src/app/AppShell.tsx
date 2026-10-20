@@ -1,3 +1,4 @@
+import StuckHelp from './StuckHelp'
 import { useNewStudy } from '../screens/create/useNewStudy'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
@@ -33,7 +34,8 @@ export function SideNav() {
     <nav className="sticky top-0 flex h-screen max-h-[960px] w-nav shrink-0 flex-col border-r-1 border-stroke-warm bg-yellow-20">
       {/* The wordmark sits over the same rule the top bar ends on (y 68 in every 13 Oct 2026 export). */}
       <div className="flex h-[68px] shrink-0 items-center border-b-1 border-stroke-warm pl-7">
-        <span className="text-title-l text-text-title">Focus Insite</span>
+        {/* HumanLayer in every sidebar of the 19 Oct 2026 export (Sidebard). */}
+        <span className="text-title-l text-text-title">HumanLayer</span>
       </div>
 
       <ul className="flex flex-1 flex-col gap-1.5 pl-4 pr-[18px] pt-5">
@@ -83,6 +85,7 @@ export function SideNav() {
         })}
       </ul>
 
+      <StuckHelp />
       <div className="ml-4 mr-[18px] border-t-1 border-stroke-warm" />
       <NavLink to="/account" className="mb-4 ml-4 mr-[18px] mt-4 flex h-[58px] items-center gap-2 rounded-md bg-bg-0 px-2 hover:bg-bg-1">
         {account?.photo

@@ -267,7 +267,7 @@ await step(10, 'The respondent\'s wallet, points and Trust Score all rise', asyn
   await sleep(6000)
   const waiting = await user()
   expect(waiting.wallet === before.wallet, `paid on a timer: wallet ${before.wallet}->${waiting.wallet}`)
-  await C.go('/client/studies')
+  await C.go('/client/studies?view=table')
   await C.ev(`(() => { const row = [...document.querySelectorAll('tr')].find((r) => r.innerText.includes(${JSON.stringify(TITLE)})); row.querySelector('[aria-label="Study options"]').click(); return true })()`); await sleep(300)
   await C.click('Stop-complete Study', 900)
   await I.go('/internal/finance/payouts')
