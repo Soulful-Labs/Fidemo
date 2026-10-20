@@ -8,10 +8,10 @@
  * is refused with a reason.
  */
 import { studyHistory } from '../shared/revisions'
-import {
+import { withdrawals,
   billing, consoleDashboard, hasCertificate, payoutsToProcess, referralCode, counts, financeTotals, personFigures, pointsRows, poolPerson, recruit, refundsPending, respondentStudies, sharedPhoto, sharedVideo, trustInputs,
 } from '../shared/derive'
-import { respondentStatus, participationOf } from '../shared/lifecycle'
+import { PAYOUT_MOVES, respondentStatus, participationOf } from '../shared/lifecycle'
 import { FEES, TIMINGS, depositFor, diaryWords, quoteStudy } from '../shared/platform'
 import { POINTS, REDEEM, TIERS, TRUST, starsForRating, starsFromDimensions, trustScore } from '../shared/rules'
 import { DEMO_CLIENT_ID, DEMO_PERSON_ID, MASTER_ADMIN_ID, buildSeed } from '../shared/seed'
@@ -214,6 +214,16 @@ check('redeem below the minimum is refused', !p.redeem(DEMO_PERSON_ID, 500).ok)
 check('redeem 1,000 points moves $10', p.redeem(DEMO_PERSON_ID, 1000).ok && fig().points === pts - 1000 && fig().walletBalance === after.walletBalance + 10)
 check('points history lists every award', pointsRows(st(), DEMO_PERSON_ID).some((r) => r.detail === 'Journey study'))
 check('withdrawing more than the balance is refused', !p.requestPayout(DEMO_PERSON_ID, 1e6, '****7790').ok)
+{
+  // Withdrawal payouts (19 Oct 2026): requested as pending, released by the team only, once.
+  p.updatePerson(DEMO_PERSON_ID, { taxFormDone: true })
+  const asked = p.requestPayout(DEMO_PERSON_ID, 20, '****7790')
+  const mine = () => st().people.find((x) => x.id === DEMO_PERSON_ID)!.payouts.find((x) => asked.ok && x.id === asked.id)!
+  check('withdrawal: a request waits for the team as pending', asked.ok && mine().status === 'pending' && withdrawals(st(), 'pending').some((r) => r.payout.id === mine().id), asked.ok ? '' : asked.why)
+  check('withdrawal: only the team can release it', asked.ok && !p.releasePayout(DEMO_PERSON_ID, mine().id, client).ok)
+  check('withdrawal: the team releases it once, and it is paid', asked.ok && p.releasePayout(DEMO_PERSON_ID, mine().id, team).ok && mine().status === 'paid' && Boolean(mine().releasedAt) && !p.releasePayout(DEMO_PERSON_ID, mine().id, team).ok)
+  check('withdrawal: the full state set is in the lifecycle', ['pending', 'approved', 'held', 'paid', 'failed'].every((k) => k in PAYOUT_MOVES))
+}
 // The journey study finished underfilled above, so it has a refund of its own: the count drops by the one confirmed.
 const refundsBefore = refundsPending(st()).length
 check('refund: confirmed once, refused twice', p.confirmRefund('st-uf-1', team).ok && !p.confirmRefund('st-uf-1', team).ok && refundsPending(st()).length === refundsBefore - 1)

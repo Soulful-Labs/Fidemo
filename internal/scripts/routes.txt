@@ -170,3 +170,5 @@ studies/st-24/sessions/s1
 
 signup
 finance/payouts
+finance/payouts/gen-13/po-g13
+finance/payouts/gen-07/po-g07

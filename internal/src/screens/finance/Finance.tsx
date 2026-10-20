@@ -11,6 +11,7 @@ import { PERIOD_OPTIONS, TX_TABS, TYPE_OPTIONS, useFinance } from '../../mock/fi
 import type { Refund, Tx, TxKind } from '../../mock/finance'
 import TransactionDetails from './TransactionDetails'
 import Payouts from './Payouts'
+import Withdrawals from './Withdrawals'
 import type { DetailKind } from './TransactionDetails'
 
 const what = (r: Tx) => r.kind ? <span className="flex gap-2">{r.kind}<span aria-hidden="true">•</span>{r.what}</span> : r.what
@@ -63,7 +64,13 @@ export default function Finance({ refunds, payouts }: { refunds?: boolean; payou
     <AppShell className="pb-8" crumbs={[{ label: 'Finance' }]}>
       <SegmentedTabs className="w-[420px]" segmentClassName="flex-1 min-w-0" value={payouts ? 'payouts' : refunds ? 'refunds' : 'overview'} onChange={(v) => navigate(v === 'overview' ? '/finance' : `/finance/${v}`)}
         items={[{ key: 'overview', label: 'Overview' }, { key: 'refunds', label: 'Refunds' }, { key: 'payouts', label: 'Payouts' }]} />
-      {payouts ? <Payouts /> : refunds ? (
+      {payouts ? (
+        <>
+          <Withdrawals />
+          {/* Study incentives to process (15 Oct 2026, not drawn): the team pays a finished study's participants into their wallets here. */}
+          <div className="mt-10 border-t-1 border-stroke-1 pt-2"><Payouts /></div>
+        </>
+      ) : refunds ? (
         <>
           <h2 className="pt-6 text-title-s leading-[25px] text-text-title">Pending Refund Confirmations</h2>
           <p className="pt-1 text-text-regular leading-5 text-text-body">Confirm the pending refund transactions to clients for studies</p>

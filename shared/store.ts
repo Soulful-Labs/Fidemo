@@ -10,7 +10,7 @@
  * by the others through the storage event, without a reload.
  */
 import { applyRepeatRule, barredFrom, billing, diaryReady, freshCertificateId, hasTakenPartWith, sessionNotStarted, openAvailability, personById, personFigures, profileCompletion, referralCode } from './derive'
-import { canEditStudy, canMoveParticipation, canMoveStudy, canReopen, isLive, participationOf } from './lifecycle'
+import { canEditStudy, canMoveParticipation, canMovePayout, canMoveStudy, canReopen, isLive, participationOf } from './lifecycle'
 import { DECISION_UNDO_MS, DEMO_SESSION_CODE, REPORT_MAX_CHARS, RESTRICTION_DAYS, TIMINGS, canCancel, canReschedule, canWithdraw, depositFor, isSessionType, priceStudy, targets, withdrawalExpectedBy } from './platform'
 import { POINTS, canRedeem, starsForRating, starsFromDimensions } from './rules'
 import { monthDayYear } from './format'
@@ -895,8 +895,25 @@ export function createPlatform(options: Options = {}) {
       const ok = canWithdraw(amount, f.walletBalance)
       if (!ok.ok) return no(ok.reason ?? 'That amount cannot be withdrawn')
       const id = uid('po')
-      person.payouts.unshift({ id, at: iso(), amount, destination, txId: `#${Math.floor(100000000000 + Math.random() * 899999999999)}`, status: 'processing', expectedBy: withdrawalExpectedBy(iso()) })
+      person.payouts.unshift({ id, at: iso(), amount, destination, txId: `#${Math.floor(100000000000 + Math.random() * 899999999999)}`, status: 'pending', expectedBy: withdrawalExpectedBy(iso()) })
       return yes({ id })
+    }),
+
+    /**
+     * Release Payout (console 2317:160440): the team sends a participant's
+     * withdrawal. It is paid from here, the participant is told, and the
+     * member who released it is on the record.
+     */
+    releasePayout: (personId: string, payoutId: string, actor: Actor) => move((s) => {
+      if (actor.kind !== 'team') return no('Only the team can release a payout')
+      const person = personById(s, personId)
+      const payout = person?.payouts.find((x) => x.id === payoutId)
+      if (!person || !payout) return no('No such withdrawal')
+      if (!canMovePayout(payout.status, 'paid')) return no('This withdrawal has already been released')
+      payout.status = 'paid'; payout.releasedAt = iso(); payout.releasedBy = actor.id
+      // The respondent app tells them from the payout itself (src/lib/notifications.ts), dated when it was released.
+      log(s, actor, `Released a $${payout.amount.toLocaleString('en-US')} withdrawal to ${person.name}`, 'Finance / Payouts / Release')
+      return yes()
     }),
 
     /** Policy section 4: 100 points to $1, 1,000 points at least. */

@@ -142,7 +142,7 @@ export function buildNotifications(src: Sources): AppNotification[] {
 
   for (const p of src.payouts) {
     if (p.status === 'completed') add({ id: `nt-${p.id}`, kind: 'money', title: 'Your withdrawal has been processed!',
-      body: `Withdrawal of $${p.amount} has been completed and credited to your ${bank(p.destination)} account ${p.destination} successfully.`, at: shift(p.at, 2 * 24 * 60), to: `/wallet/payouts/${p.id}` })
+      body: `Withdrawal of $${p.amount} has been completed and credited to your ${bank(p.destination)} account ${p.destination} successfully.`, at: p.releasedAt ?? shift(p.at, 2 * 24 * 60), to: `/wallet/payouts/${p.id}` })
     else add({ id: `nt-${p.id}`, kind: 'money', title: 'Withdrawal request submitted',
       body: `Your withdrawal request of $${p.amount} to ${bank(p.destination)} ${p.destination} has been submitted. It will reach your bank within ${WAITS.WITHDRAWAL}.`, at: p.at, to: `/wallet/payouts/${p.id}` })
   }

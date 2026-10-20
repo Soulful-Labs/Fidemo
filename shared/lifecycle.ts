@@ -5,7 +5,7 @@
  * from it. A state is what a thing is; what each app calls it is a label,
  * and the labels sit apart at the bottom so each app keeps its frames' words.
  */
-import type { Participation, ParticipationState, Study, StudyState, StudyType } from './types'
+import type { Participation, ParticipationState, PayoutStatus, Study, StudyState, StudyType } from './types'
 import { isSessionType } from './platform'
 
 // ---------------------------------------------------------------- the study
@@ -190,3 +190,20 @@ export const canEditStudy = (state: StudyState): boolean => state === 'draft' ||
 /** A study report (19 Oct 2026): pending until the team resolves the study's open reports, then resolved for good. */
 export type StudyReportState = 'pending' | 'resolved'
 export const studyReportState = (r: { resolution?: unknown }): StudyReportState => (r.resolution ? 'resolved' : 'pending')
+
+/**
+ * A withdrawal payout (console Finance > Payouts, 19 Oct 2026). Requested as
+ * pending; the team releases it (paid). Approved, held and failed are part of
+ * the contract for the back end, though no screen draws them yet.
+ */
+export const PAYOUT_MOVES: Record<PayoutStatus, PayoutStatus[]> = {
+  pending: ['approved', 'held', 'paid', 'failed'],
+  approved: ['paid', 'held', 'failed'],
+  held: ['pending', 'approved'],
+  failed: ['pending'],
+  paid: [],
+}
+/** A stored status, older names read as their new ones. */
+export const payoutState = (status: string): PayoutStatus =>
+  status === 'processing' ? 'pending' : status === 'completed' ? 'paid' : (status as PayoutStatus)
+export const canMovePayout = (from: string, to: PayoutStatus): boolean => PAYOUT_MOVES[payoutState(from)].includes(to)

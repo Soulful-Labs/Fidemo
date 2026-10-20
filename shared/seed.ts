@@ -201,9 +201,9 @@ export function buildSeed(now: Date = new Date()): PlatformState {
       { id: 'pm-2', bankName: 'Chase Bank', accountNumber: '9921 4410 7788 4521', routingCode: '80123344', type: 'Savings', isDefault: false },
     ],
     payouts: [
-      { id: 'po-1', at: at(-5, 23, 0), amount: 100, destination: '****7790', txId: '#152356789107', status: 'processing', expectedBy: withdrawalExpectedBy(at(-5, 23, 0)) },
-      { id: 'po-2', at: at(-120, 14, 20), amount: 250, destination: '****7790', txId: '#152356712004', status: 'completed' },
-      { id: 'po-3', at: at(-330, 10, 5), amount: 500, destination: '****4521', txId: '#152356698771', status: 'completed' },
+      { id: 'po-1', at: at(-5, 23, 0), amount: 100, destination: '****7790', txId: '#152356789107', status: 'pending', expectedBy: withdrawalExpectedBy(at(-5, 23, 0)) },
+      { id: 'po-2', at: at(-120, 14, 20), amount: 250, destination: '****7790', txId: '#152356712004', status: 'paid' },
+      { id: 'po-3', at: at(-330, 10, 5), amount: 500, destination: '****4521', txId: '#152356698771', status: 'paid' },
     ],
     redemptions: [{ id: 'rd-1', at: at(-52, 9, 0), points: 300, reference: '#058260552' }],
     /** The eight people who joined through his link are in the pool; five have had a first study paid. */
@@ -754,6 +754,18 @@ export function buildSeed(now: Date = new Date()): PlatformState {
       if (study.type === 'diary' && part.diaryDays?.length) part.diaryAnswers = Object.fromEntries(part.diaryDays.map((d) => [String(d), answersFor(study, k + d)]))
     })
   }
+
+  // Finance > Payouts (console 2317:159697): a few participants have asked to withdraw what they earned; one was released last week.
+  const withdraw = (personId: string, id: string, amount: number, daysAgo: number, bank: string, account: string, type: 'Savings' | 'Checking', paid?: boolean) => {
+    const p = people.find((x) => x.id === personId)
+    if (!p) return
+    p.payoutMethods.push({ id: `pm-${id}`, bankName: bank, accountNumber: account, routingCode: '021000021', type, isDefault: p.payoutMethods.length === 0 })
+    p.payouts.unshift({ id, at: at(-daysAgo, 11, 0), amount, destination: `****${account.replace(/\s/g, '').slice(-4)}`, txId: `#2356${id.replace(/\D/g, '').padStart(4, '0')}`, status: paid ? 'paid' : 'pending', expectedBy: withdrawalExpectedBy(at(-daysAgo, 11, 0)), ...(paid ? { releasedAt: at(-daysAgo + 2, 15, 0), releasedBy: 'tm-maya' } : {}) })
+  }
+  withdraw('gen-13', 'po-g13', 60, 4, 'American Bank', '1234 5678 9012 1234', 'Savings')
+  withdraw('gen-16', 'po-g16', 80, 3, 'Chase Bank', '4410 2290 7788 3301', 'Checking')
+  withdraw('gen-18', 'po-g18', 50, 2, 'Wells Fargo', '6012 4455 1290 5528', 'Savings')
+  withdraw('gen-07', 'po-g07', 90, 9, 'Bank of America', '3300 1122 8890 4417', 'Checking', true)
 
   // Reported Studies (console 2314:146859): respondents report live studies; one round on the survey study was resolved before.
   const sr = (id: string, studyId: string, personId: string, reason: string, detail: string, when: string, resolution?: StudyReport['resolution']): StudyReport =>

@@ -24,6 +24,7 @@ function missing(state: PlatformState, pathname: string): boolean {
   if (a === 'clients' && b && b !== 'verifications') return !state.clients.some((x) => x.id === b)
   if (a === 'support' && b) return !state.tickets.some((t) => t.id === b)
   if (a === 'finance' && b === 'refunds' && c) return study(c)
+  if (a === 'finance' && b === 'payouts' && c) { const d = pathname.split('/')[4]; return !state.people.some((p) => p.id === c && p.payouts.some((x) => x.id === d)) }
   if (a === 'sub-admin' && b && b !== 'new') return !state.team.some((t) => t.id === b)
   return false
 }

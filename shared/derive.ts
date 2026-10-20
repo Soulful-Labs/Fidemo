@@ -13,11 +13,12 @@ import {
   participationOf, recruitingTab, respondentStatus, STUDY_TAG,
 } from './lifecycle'
 import type { ClientTag, RespondentStatus } from './lifecycle'
+import { payoutState } from './lifecycle'
 import { CERTIFICATE, POINTS, TRUST, pointsToUsd, tierFor, trustForStars, trustScore } from './rules'
 import type { TrustInputs } from './rules'
 import type {
-  AppNotification, Booking, Client, Participation, ParticipationState, Person, PlatformState, PreScreenQuestion,
-  Question, RatingState, RepeatRule, Report, ReportResolution, Study, StudyReport, StudyPayment, StudyType, TeamMember, TeamNotice, Ticket, Tier,
+  AppNotification, Booking, Client, Participation, Payout, PayoutMethod, ParticipationState, Person, PlatformState, PreScreenQuestion,
+  PayoutStatus, Question, RatingState, RepeatRule, Report, ReportResolution, Study, StudyReport, StudyPayment, StudyType, TeamMember, TeamNotice, Ticket, Tier,
 } from './types'
 
 // ------------------------------------------------------------------ helpers
@@ -139,7 +140,7 @@ const CATEGORY: Record<StudyType, EarningCategory> = {
 }
 
 export interface WalletRow { id: string; studyId?: string; approved?: boolean; title: string; at: string; amount: number; txNumber: string; category: EarningCategory }
-export interface PayoutRow { id: string; at: string; amount: number; fee: number; net: number; destination: string; txId: string; status: 'processing' | 'completed'; expectedBy?: string }
+export interface PayoutRow { id: string; at: string; amount: number; fee: number; net: number; destination: string; txId: string; status: 'processing' | 'completed'; state: PayoutStatus; expectedBy?: string; releasedAt?: string }
 
 const txNumber = (seed: string) => `#${200 + (hash(seed) % 60)}-${String(100 + (hash(seed + '#') % 900))}`
 
@@ -158,7 +159,7 @@ export function walletRows(state: PlatformState, personId: string): WalletRow[] 
 }
 
 export const payoutRows = (person: Person | undefined): PayoutRow[] =>
-  (person?.payouts ?? []).map((p) => ({ ...p, fee: FEES.WITHDRAWAL, net: p.amount - FEES.WITHDRAWAL }))
+  (person?.payouts ?? []).map((p) => ({ ...p, state: payoutState(p.status), status: payoutState(p.status) === 'paid' ? 'completed' as const : 'processing' as const, fee: FEES.WITHDRAWAL, net: p.amount - FEES.WITHDRAWAL }))
 
 // --------------------------------------------------------------------- points
 
@@ -1152,3 +1153,19 @@ export function paceOf(s: Study, completed: number, now: Date = new Date()) {
 /** When a stopped study's balance falls due: seven days after it was marked completed. Both apps read this one rule. */
 export const balanceDueBy = (study: Study): string | undefined =>
   study.completedAt ? new Date(new Date(study.completedAt).getTime() + 7 * 86_400_000).toISOString() : undefined
+
+export interface WithdrawalRow { person: Person; payout: Payout; state: PayoutStatus; method?: PayoutMethod }
+
+/**
+ * Finance > Payouts (2317:159697): every participant's withdrawal requests.
+ * Pending is what the team still has to release; the rest is history. Each
+ * row carries the bank account it goes to, matched on its last four digits.
+ */
+export function withdrawals(state: PlatformState, which: 'pending' | 'released' | 'all' = 'all'): WithdrawalRow[] {
+  return state.people.flatMap((person) => person.payouts.map((payout) => {
+    const digits = payout.destination.replace(/\D/g, '')
+    const method = person.payoutMethods.find((m) => m.accountNumber.replace(/\s/g, '').endsWith(digits))
+    return { person, payout, state: payoutState(payout.status), method }
+  })).filter((r) => which === 'all' || (which === 'pending' ? r.state === 'pending' : r.state !== 'pending'))
+    .sort((a, b) => a.payout.at.localeCompare(b.payout.at))
+}

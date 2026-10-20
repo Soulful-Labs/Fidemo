@@ -22,6 +22,7 @@ import Support from './screens/support/Support'
 import TicketPage from './screens/support/TicketPage'
 import Finance from './screens/finance/Finance'
 import RefundDetail from './screens/finance/RefundDetail'
+import WithdrawalDetail from './screens/finance/WithdrawalDetail'
 import EditPricing from './screens/pricing/EditScreens'
 import Pricing from './screens/pricing/Pricing'
 import Account, { EditAccount } from './screens/account/Account'
@@ -78,6 +79,7 @@ const routes: RouteObject[] = [
   { path: '/finance/refunds', element: inside(Finance, { refunds: true }) },
   { path: '/finance/payouts', element: inside(Finance, { payouts: true }) },
   { path: '/finance/refunds/:id', element: inside(RefundDetail) },
+  { path: '/finance/payouts/:personId/:payoutId', element: inside(WithdrawalDetail) },
   { path: '/pricing', element: inside(Pricing) },
   { path: '/pricing/:what', element: inside(EditPricing) },
   { path: '/sub-admin', element: inside(SubAdmins) },

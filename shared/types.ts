@@ -265,9 +265,15 @@ export interface Payout {
   /** "****7790" */
   destination: string
   txId: string
-  status: 'processing' | 'completed'
+  /** Withdrawal payouts (19 Oct 2026): every state the back end needs, though the console draws only Release (pending to paid). Older records said 'processing' / 'completed'. */
+  status: PayoutStatus | 'processing' | 'completed'
   expectedBy?: string
+  /** When the team released it, and who. */
+  releasedAt?: string
+  releasedBy?: string
 }
+
+export type PayoutStatus = 'pending' | 'approved' | 'held' | 'paid' | 'failed'
 
 export interface Redemption { id: string; at: string; points: number; reference: string }
 
