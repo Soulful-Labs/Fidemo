@@ -322,7 +322,7 @@ void by
   await fetchFile('Invoice row, with Pay All open', C, '/client/payments?panel=payall', `const b = document.querySelector('button[aria-label="Download invoice"]'); if (!b) throw new Error('no invoice row'); b.click()`)
   await fetchFile('Results summaries', C, '/client/studies/st-pay/results', btn('Download', 0))
   await fetchFile('Results certificate', C, '/client/studies/st-pay/results', btn('Download', 1))
-  await fetchFile('Pay tab receipt', C, '/client/studies/st-pay/pay', btn('Receipt'))
+  await fetchFile('Pay tab invoice', C, '/client/studies/st-pay/pay', btn('Invoice'))
   await fetchFile('Session attendance list', C, '/client/studies/st-fitness/recruited?panel=downloads', btn('Download List'))
   await C.go('/client/studies/st-sleep/respondent/ferry-l/result?session=running'); await sleep(900)
   const notes = await C.ev(`Boolean(document.querySelector('button[aria-label="Download notes"]'))`)

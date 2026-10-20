@@ -46,7 +46,8 @@ export function useStudyActions(study: ClientStudy | null) {
       <StopCompleteModal open={dialog === 'stop'} left={left} onClose={close} onConfirm={() => {
         close(); const res = moveStudy(study.id, 'completed')
         toast(res.ok ? `${study.title} marked completed` : res.why)
-        if (res.ok) nav(`/studies/${study.id}`)
+        // The balance falls due on stopping, and Pay is where it is shown and paid (1645:132608).
+        if (res.ok) nav(`/studies/${study.id}/pay`)
       }} />
       <RepublishModal open={dialog === 'republish'} onClose={close} onConfirm={() => {
         close(); const res = moveStudy(study.id, 'recruiting')

@@ -207,7 +207,16 @@ check('withdrawing more than the balance is refused', !p.requestPayout(DEMO_PERS
 const refundsBefore = refundsPending(st()).length
 check('refund: confirmed once, refused twice', p.confirmRefund('st-uf-1', team).ok && !p.confirmRefund('st-uf-1', team).ok && refundsPending(st()).length === refundsBefore - 1)
 check('a completed study cannot be paused', !p.moveStudy('st-sleep', 'paused', client).ok)
+{
+  // Re-publish and Recruit (19 Oct 2026): a completed study reopens only while unsettled, and falls due again on the same rule when stopped again.
+  const sleep = () => st().studies.find((s) => s.id === 'st-sleep')!
+  const firstDue = sleep().completedAt
+  const reopened = p.moveStudy('st-sleep', 'recruiting', client).ok && sleep().state === 'recruiting' && !sleep().completedAt && billing(sleep()).outstanding === 0
+  check('an unpaid completed study can be re-published, and nothing is due while it recruits', reopened)
+  check('stopping it again makes the balance due again', p.moveStudy('st-sleep', 'completed', client).ok && Boolean(sleep().completedAt) && sleep().completedAt! >= (firstDue ?? '') && billing(sleep()).outstanding > 0)
+}
 check('paying a balance clears the Billing pill', billing(st().studies.find((s) => s.id === 'st-sleep')!).outstanding > 0 && p.payBalance('st-sleep').ok && billing(st().studies.find((s) => s.id === 'st-sleep')!).outstanding === 0)
+check('a paid study cannot be re-published', !p.moveStudy('st-sleep', 'recruiting', client).ok)
 p.reset()
 check('a patch without an email keeps the email', p.updatePerson(DEMO_PERSON_ID, { name: 'Jonathan Reeve', email: undefined }).ok && st().people.find((x) => x.id === DEMO_PERSON_ID)!.email === 'jonathan.reeve@example.com')
 check('reset puts everything back', !st().studies.some((s) => s.id === id) && refundsPending(st()).length === 2)

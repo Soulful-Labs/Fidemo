@@ -20,11 +20,20 @@ export const STUDY_MOVES: Record<StudyState, StudyState[]> = {
   recruiting: ['ongoing', 'paused', 'completed', 'cancelled'],
   ongoing: ['paused', 'completed', 'cancelled'],
   paused: ['recruiting', 'ongoing', 'completed', 'cancelled'],
-  completed: [],
+  /** Re-publish and Recruit (19 Oct 2026): only while the balance is unpaid, which the store checks (`canReopen`). */
+  completed: ['recruiting'],
   cancelled: [],
 }
 
 export const canMoveStudy = (from: StudyState, to: StudyState): boolean => STUDY_MOVES[from].includes(to)
+
+/**
+ * A completed study can be re-published to recruit more only while it is
+ * unsettled: no balance paid and no refund confirmed. Once either has
+ * happened it is closed.
+ */
+export const canReopen = (study: { state: StudyState; payments: { kind: string }[] }): boolean =>
+  study.state === 'completed' && !study.payments.some((p) => p.kind === 'balance' || p.kind === 'refund')
 
 /** A study respondents can see and apply to. */
 export const isLive = (s: StudyState): boolean => s === 'recruiting' || s === 'ongoing'

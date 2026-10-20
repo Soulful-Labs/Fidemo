@@ -64,7 +64,7 @@ export function useBill(studyId?: string) {
       },
       /** The deposit and the balance as the Transactions list writes them. */
       transactions: (study?.payments ?? []).map((x) => ({
-        label: x.kind === 'deposit' ? 'Deposit Paid' : x.kind === 'balance' ? 'Balance Paid' : 'Refund Received',
+        label: x.kind === 'deposit' ? 'Incentive Deposit Paid' : x.kind === 'balance' ? 'Balance Paid' : 'Refund Received',
         amount: money(x.amount), at: monthDayYearTime(x.at),
         sub: x.kind === 'deposit' && study ? DEPOSIT_RULE : `Invoice ${number}`,
       })),

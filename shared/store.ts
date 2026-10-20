@@ -10,7 +10,7 @@
  * by the others through the storage event, without a reload.
  */
 import { applyRepeatRule, barredFrom, billing, diaryReady, freshCertificateId, hasTakenPartWith, sessionNotStarted, openAvailability, personById, personFigures, profileCompletion, referralCode } from './derive'
-import { canEditStudy, canMoveParticipation, canMoveStudy, isLive, participationOf } from './lifecycle'
+import { canEditStudy, canMoveParticipation, canMoveStudy, canReopen, isLive, participationOf } from './lifecycle'
 import { DECISION_UNDO_MS, DEMO_SESSION_CODE, RESTRICTION_DAYS, TIMINGS, canCancel, canReschedule, canWithdraw, depositFor, isSessionType, priceStudy, targets, withdrawalExpectedBy } from './platform'
 import { POINTS, canRedeem, starsForRating, starsFromDimensions } from './rules'
 import { monthDayYear } from './format'
@@ -369,6 +369,13 @@ export function createPlatform(options: Options = {}) {
       if (!study) return no('No such study')
       if (!canMoveStudy(study.state, to)) return no(`A ${study.state.replace('_', ' ')} study cannot become ${to.replace('_', ' ')}`)
       if (study.state === 'in_review' && to === 'recruiting' && actor.kind !== 'team') return no('Only the team can take a study live')
+      if (study.state === 'completed') {
+        // Re-publish and Recruit: the balance stops being due until the study is stopped again, on the same rule as the first time.
+        if (!canReopen(study)) return no('This study has been paid and is closed')
+        study.completedAt = undefined
+        s.teamNotices = (s.teamNotices ?? []).filter((n) => !(n.kind === 'payouts' && n.studyId === study.id))
+        log(s, actor, `Re-published ${study.title} to recruit more`, 'Studies / Manage / Re-publish')
+      }
       if (study.state === 'draft' && to === 'in_review') {
         study.submittedAt = iso()
         if (!study.payments.some((p) => p.kind === 'deposit') && study.required > 0) study.payments.push({ id: `${study.id}-deposit`, kind: 'deposit', amount: depositFor(study.rates, study.required), at: iso() })

@@ -696,6 +696,12 @@ export interface Billing {
   outstanding: number
   /** The unused incentive to return when the study underfilled. Zero otherwise. */
   refund: number
+  /**
+   * Billing States, Estimated (19 Oct 2026): the same lines at the required
+   * number of participants, i.e. the quote the study was published at, and
+   * what that would leave payable after the deposit. Display only.
+   */
+  estimate: { lines: { label: string; amount: number; sub?: string; info?: boolean }[]; total: number; net: number }
   refundPaid: number
 }
 
@@ -708,12 +714,13 @@ const paidOf = (study: Study, kind: StudyPayment['kind']) => sum(study.payments.
 export function billing(study: Study): Billing {
   const { recruitingPer, incentivePer, moderationPer, platformFee } = study.rates
   const delivered = counts(study).delivered
-  const lines = [
+  const linesAt = (n: number) => [
     { label: 'Platform Fee', amount: platformFee },
-    { label: 'Recruiting Fee', amount: recruitingPer * delivered, sub: `$${recruitingPer} x ${delivered} participants`, info: true },
-    { label: 'Incentives', amount: incentivePer * delivered, sub: `$${incentivePer} x ${delivered} participants`, info: true },
-    { label: 'Moderation Fee', amount: moderationPer * delivered, sub: `$${moderationPer} x ${delivered} participants`, info: true },
+    { label: 'Recruiting Fee', amount: recruitingPer * n, sub: `$${recruitingPer} x ${n} participants`, info: true },
+    { label: 'Incentives', amount: incentivePer * n, sub: `$${incentivePer} x ${n} participants`, info: true },
+    { label: 'Moderation Fee', amount: moderationPer * n, sub: `$${moderationPer} x ${n} participants`, info: true },
   ]
+  const lines = linesAt(delivered)
   const total = sum(lines, (l) => l.amount)
   const deposit = depositFor(study.rates, study.required)
   const projected = platformFee + (recruitingPer + incentivePer + moderationPer) * study.required
@@ -726,6 +733,7 @@ export function billing(study: Study): Billing {
     lines, total, deposit, totalCost, due: totalCost - deposit, net, setupFee: Math.round(total * FEES.SETUP_SHARE), delivered,
     balancePaid, outstanding: closed ? Math.max(0, net - balancePaid) : 0,
     refund: closed && net < 0 ? -net : 0, refundPaid,
+    estimate: { lines: linesAt(study.required), total: projected, net: projected - deposit },
   }
 }
 
