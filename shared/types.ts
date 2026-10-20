@@ -363,6 +363,27 @@ export type ReportReason =
   | 'Was asking to collaborate outside' | 'Participant is misrepresenting their identity'
   | 'Profession looks like a scam or suspicious' | 'Participant had an inappropriate behavior' | 'Other'
 
+/** One time the team closed a study's open reports: the statement, who and when, and the chat with the client if there was one. */
+export interface ReportResolution { id: string; at: string; by?: string; statement: string; ticketId?: string }
+
+/**
+ * A respondent's report about a study (respondent Report Study; console
+ * Reported Studies 2314:146859). It is pending until the team marks the
+ * study's reports resolved, which closes every open one together.
+ */
+export interface StudyReport {
+  id: string
+  studyId: string
+  /** Who reported it. */
+  personId: string
+  reason: string
+  detail: string
+  at: string
+  /** The chat the team opened with the client about these reports, before resolving them. */
+  ticketId?: string
+  resolution?: ReportResolution
+}
+
 export interface Report {
   id: string
   personId: string
@@ -512,6 +533,8 @@ export interface PlatformState {
   pending: Pending[]
   /** What the platform has told the internal team, newest first. */
   teamNotices: TeamNotice[]
+  /** Reports respondents make about a study (19 Oct 2026); the console's Reported Studies. Absent on older states. */
+  studyReports?: StudyReport[]
 }
 
 export interface Refusal { ok: false; why: string }

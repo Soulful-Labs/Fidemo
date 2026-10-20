@@ -1,3 +1,5 @@
+import { reportedStudies } from '@shared/derive'
+import { usePlatform } from '../platform'
 import { Link, useLocation } from 'react-router-dom'
 import { LogoMark } from '../components/ui/Logo'
 import { useDashboard } from '../mock/dashboard'
@@ -29,6 +31,9 @@ export default function Sidebar() {
   /** The two badges are counts from the shared platform: everything pending on the Dashboard, and open tickets. */
   const { badges } = useDashboard()
   const badgeFor: Record<string, string> = { dashboard: String(badges.dashboard), support: String(badges.support) }
+  /** Reported, under Studies: the studies with open reports. */
+  const reported = reportedStudies(usePlatform(), 'pending').length
+  const childBadge: Record<string, string | undefined> = { 'studies-reported': reported ? String(reported) : undefined }
 
   return (
     <nav aria-label="Main" className="fixed inset-y-0 left-0 z-30 flex w-nav flex-col border-r-1 border-shell-edge bg-bg-1">
@@ -45,7 +50,7 @@ export default function Sidebar() {
             <p className={cn('px-4 pb-1.5 text-text-regular leading-5 text-text-body', g === 0 ? 'pt-[17px]' : 'pt-3.5')}>{group}</p>
             <ul className="flex flex-col gap-0.5">
               {items.map((item) => (
-                <NavRow key={item.key} item={item.badge ? { ...item, badge: badgeFor[item.key] === '0' ? undefined : badgeFor[item.key] ?? item.badge } : item} active={active.item === item.key} activeChild={active.child} />
+                <NavRow key={item.key} item={{ ...(item.badge ? { ...item, badge: badgeFor[item.key] === '0' ? undefined : badgeFor[item.key] ?? item.badge } : item), children: item.children?.map((c) => ({ ...c, badge: childBadge[c.key] })) }} active={active.item === item.key} activeChild={active.child} />
               ))}
             </ul>
           </div>
@@ -95,6 +100,7 @@ function NavRow({ item, active, activeChild }: { item: NavItem; active: boolean;
                   className={cn('ml-[52px] mr-4 flex h-12 items-center border-1 px-4 text-body-regular',
                     on ? cn(pill, 'text-brand-primary') : 'border-transparent text-text-subtitle hover:text-text-title')}>
                   {child.label}
+                  {child.badge && <span className="ml-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-green-alpha15 px-2 text-text-medium text-brand-secondary">{child.badge}</span>}
                 </Link>
               </li>
             )

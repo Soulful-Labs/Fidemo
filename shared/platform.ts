@@ -244,3 +244,10 @@ export const CLIENT_REPORT_REASONS = [
 ] as const
 /** The description box on both report flows takes 500 characters at most. */
 export const REPORT_MAX_CHARS = 500
+
+/** Report Study (respondent app, 19 Oct 2026): the reasons a respondent can give, in the order drawn. */
+export const STUDY_REPORT_REASONS = [
+  'Client is offering payment outside', 'Client is misrepresenting their identity',
+  'Study looks like a scam or contains a suspicious link', 'Study contains contact information',
+  'Study seems illegal or unethical', 'Study is unclear or incomplete', 'This is ad, not a study', 'Other',
+] as const

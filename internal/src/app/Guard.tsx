@@ -16,6 +16,7 @@ import AppShell from './AppShell'
 function missing(state: PlatformState, pathname: string): boolean {
   const [, a, b, c] = pathname.split('/')
   const study = (id?: string) => !state.studies.some((s) => s.id === id)
+  if (a === 'studies' && b === 'reported') return c ? study(c) : false
   if (a === 'studies' && b) return study(b === 'review' ? c : b)
   if (a === 'participants' && b === 'verifications' && c) return c.startsWith('rp') ? !state.reports.some((r) => r.id === c) : !state.people.some((p) => p.id === c.replace(/^(iv|pc)-/, ''))
   if (a === 'participants' && b && b !== 'verifications') return !state.people.some((p) => p.id === b)

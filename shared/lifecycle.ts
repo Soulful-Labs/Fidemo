@@ -186,3 +186,7 @@ export const participationOf = (study: Study, personId: string): Participation |
  * Once the team has taken it live it is fixed.
  */
 export const canEditStudy = (state: StudyState): boolean => state === 'draft' || state === 'in_review'
+
+/** A study report (19 Oct 2026): pending until the team resolves the study's open reports, then resolved for good. */
+export type StudyReportState = 'pending' | 'resolved'
+export const studyReportState = (r: { resolution?: unknown }): StudyReportState => (r.resolution ? 'resolved' : 'pending')

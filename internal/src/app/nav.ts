@@ -4,7 +4,7 @@ import {
   ClientsIcon, DashboardIcon, FinanceIcon, ParticipantsIcon, PricingIcon, StudiesIcon, SubAdminIcon, SupportIcon,
 } from '../components/ui/icons'
 
-export interface NavChild { key: string; label: string; to: string; owns: string[] }
+export interface NavChild { key: string; label: string; to: string; owns: string[]; badge?: string }
 export interface NavItem {
   key: string
   label: string
@@ -25,7 +25,14 @@ export const NAV: { group: string; items: NavItem[] }[] = [
     group: 'Users',
     items: [
       { key: 'dashboard', label: 'Dashboard', to: '/dashboard', Icon: DashboardIcon, badge: '2', owns: ['/dashboard'] },
-      { key: 'studies', label: 'Studies', to: '/studies', Icon: StudiesIcon, owns: ['/studies'] },
+      {
+        // Reported Studies (19 Oct 2026, 2314:146859): Studies opens to All Studies and Reported.
+        key: 'studies', label: 'Studies', to: '/studies', Icon: StudiesIcon, owns: ['/studies'],
+        children: [
+          { key: 'studies-all', label: 'All Studies', to: '/studies', owns: ['/studies'] },
+          { key: 'studies-reported', label: 'Reported', to: '/studies/reported', owns: ['/studies/reported'] },
+        ],
+      },
       {
         key: 'participants', label: 'Participants', to: '/participants', Icon: ParticipantsIcon, owns: ['/participants'],
         children: [

@@ -28,6 +28,7 @@ import Account, { EditAccount } from './screens/account/Account'
 import SubAdminProfile from './screens/subadmin/SubAdminProfile'
 import SubAdmins from './screens/subadmin/SubAdmins'
 import Studies from './screens/studies/Studies'
+import ReportedStudies from './screens/studies/reported/ReportedStudies'
 import ReviewStudy from './screens/studies/review/ReviewStudy'
 import ManageStudy from './screens/studies/manage/ManageStudy'
 import RespondentPage from './screens/studies/respondent/RespondentPage'
@@ -57,6 +58,7 @@ const routes: RouteObject[] = [
   { path: '/dashboard', element: inside(Dashboard) },
   { path: '/studies', element: inside(Studies) },
   { path: '/studies/review/:id', element: inside(ReviewStudy) },
+  { path: '/studies/reported', element: inside(ReportedStudies) },
   { path: '/studies/:id', element: inside(ManageStudy) },
   { path: '/studies/:id/respondents/:rid', element: inside(RespondentPage) },
   { path: '/studies/:id/sessions/:sid', element: inside(SessionPage) },

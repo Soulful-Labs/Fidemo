@@ -991,6 +991,57 @@ export function createPlatform(options: Options = {}) {
       return yes({ id })
     }),
 
+    /** Report Study (respondent app): a respondent reports a study they can see. Nothing changes for the study until the team looks. */
+    reportStudy: (personId: string, studyId: string, reason: string, detail: string) => move<{ id: string }>((s) => {
+      if (!personById(s, personId)) return no('No such account')
+      const study = s.studies.find((x) => x.id === studyId)
+      if (!study || study.state === 'draft' || study.state === 'in_review') return no('That study is not open to report')
+      if (!reason.trim()) return no('Choose a reason')
+      const text = detail.trim()
+      if (!text) return no('Describe your report')
+      if (text.length > REPORT_MAX_CHARS) return no(`Keep it to ${REPORT_MAX_CHARS} characters`)
+      const id = uid('sr')
+      s.studyReports = [{ id, studyId, personId, reason: reason.trim(), detail: text, at: iso() }, ...(s.studyReports ?? [])]
+      return yes({ id })
+    }),
+
+    /** Chat With Client: a support ticket to the study's client about its open reports, kept with those reports. */
+    chatAboutReports: (studyId: string, actor: Actor) => move<{ id: string }>((s) => {
+      const study = s.studies.find((x) => x.id === studyId)
+      if (!study) return no('No such study')
+      const open = (s.studyReports ?? []).filter((r) => r.studyId === studyId && !r.resolution)
+      if (!open.length) return no('This study has no open reports')
+      const already = open.find((r) => r.ticketId)?.ticketId
+      if (already && s.tickets.some((t) => t.id === already && t.status === 'open')) return yes({ id: already })
+      const id = `FI-S${Math.floor(100000 + Math.random() * 899999)}`
+      s.tickets.unshift({
+        id, owner: { kind: 'client', id: study.clientId }, createdByTeam: true, subject: `Reports on ${study.title}`, studyTitle: study.title,
+        message: `Participants have reported ${study.title} (${open.length} open). We would like to talk this through with you.`, topic: 'general', status: 'open',
+        createdAt: iso(), lastActivityAt: iso(), messages: [],
+      })
+      open.forEach((r) => { r.ticketId = id })
+      log(s, actor, `Opened a chat with the client about reports on ${study.title}`, 'Studies / Reported / Chat With Client')
+      return yes({ id })
+    }),
+
+    /**
+     * Mark Reports Resolved (2314:147678): every open report on the study is
+     * closed with one statement, confirmed with the team member's password.
+     */
+    resolveStudyReports: (studyId: string, statement: string, password: string, actor: Actor) => move<{ count: number }>((s) => {
+      if (actor.kind !== 'team') return no('Only the team can resolve reports')
+      const member = s.team.find((t) => t.id === actor.id)
+      if (!member || member.password !== password) return no('That password is not right')
+      const open = (s.studyReports ?? []).filter((r) => r.studyId === studyId && !r.resolution)
+      if (!open.length) return no('This study has no open reports')
+      if (!statement.trim()) return no('A statement is required')
+      const resolution = { id: uid('rs'), at: iso(), by: actor.id, statement: statement.trim(), ticketId: open.find((r) => r.ticketId)?.ticketId }
+      open.forEach((r) => { r.resolution = resolution })
+      const study = s.studies.find((x) => x.id === studyId)
+      log(s, actor, `Resolved ${plural(open.length, 'report')} on ${study?.title ?? 'a study'}`, 'Studies / Reported / Mark Resolved')
+      return yes({ count: open.length })
+    }),
+
     decideReport: (reportId: string, outcome: NonNullable<Report['outcome']>, statement: string, actor: Actor) => move((s) => {
       const report = s.reports.find((r) => r.id === reportId)
       if (!report) return no('No such report')

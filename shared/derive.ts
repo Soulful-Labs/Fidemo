@@ -17,7 +17,7 @@ import { CERTIFICATE, POINTS, TRUST, pointsToUsd, tierFor, trustForStars, trustS
 import type { TrustInputs } from './rules'
 import type {
   AppNotification, Booking, Client, Participation, ParticipationState, Person, PlatformState, PreScreenQuestion,
-  Question, RatingState, RepeatRule, Report, Study, StudyPayment, StudyType, TeamMember, TeamNotice, Ticket, Tier,
+  Question, RatingState, RepeatRule, Report, ReportResolution, Study, StudyReport, StudyPayment, StudyType, TeamMember, TeamNotice, Ticket, Tier,
 } from './types'
 
 // ------------------------------------------------------------------ helpers
@@ -1091,3 +1091,45 @@ export const ratingLabel = (rating: { stars: number; state?: RatingState } | und
 
 /** Notifications newest first, with the count unread. */
 export const unreadCount = (rows: AppNotification[]): number => rows.filter((n) => !n.read).length
+
+// ---------------------------------------------------------- study reports
+
+/** The reason given most often, the first one given when tied. */
+const mostOf = (xs: string[]): string => {
+  const n = new Map<string, number>()
+  xs.forEach((x) => n.set(x, (n.get(x) ?? 0) + 1))
+  return [...n.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? ''
+}
+
+export interface ReportedStudyRow { study: Study; client?: Client; lastAt: string; users: number; reports: StudyReport[] }
+
+/**
+ * Reported Studies (console 2314:146860, 2317:158478). Pending: studies with
+ * open reports, the number of people who reported them, newest report first.
+ * History: studies whose reports have been resolved, counted the same way.
+ */
+export function reportedStudies(state: PlatformState, tab: 'pending' | 'history'): ReportedStudyRow[] {
+  const mine = (state.studyReports ?? []).filter((r) => (tab === 'pending' ? !r.resolution : !!r.resolution))
+  return state.studies.flatMap((study) => {
+    const reports = mine.filter((r) => r.studyId === study.id)
+    if (!reports.length) return []
+    const lastAt = reports.map((r) => r.at).sort().at(-1)!
+    return [{ study, client: clientById(state, study.clientId), lastAt, users: new Set(reports.map((r) => r.personId)).size, reports }]
+  }).sort((a, b) => b.lastAt.localeCompare(a.lastAt))
+}
+
+export interface ReportRound { total: number; mostReason: string; reports: StudyReport[] }
+
+/** One study's reports: the open round, and every resolved round with its statement, newest first. */
+export function studyReportView(state: PlatformState, studyId: string): {
+  open: ReportRound; resolved: (ReportRound & { resolution: ReportResolution })[]
+} {
+  const all = (state.studyReports ?? []).filter((r) => r.studyId === studyId).sort((a, b) => a.at.localeCompare(b.at))
+  const round = (reports: StudyReport[]): ReportRound => ({ total: reports.length, mostReason: mostOf(reports.map((r) => r.reason)), reports })
+  const byResolution = new Map<string, StudyReport[]>()
+  all.filter((r) => r.resolution).forEach((r) => byResolution.set(r.resolution!.id, [...(byResolution.get(r.resolution!.id) ?? []), r]))
+  return {
+    open: round(all.filter((r) => !r.resolution)),
+    resolved: [...byResolution.values()].map((rs) => ({ ...round(rs), resolution: rs[0]!.resolution! })).sort((a, b) => b.resolution.at.localeCompare(a.resolution.at)),
+  }
+}

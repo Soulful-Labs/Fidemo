@@ -23,7 +23,7 @@ import { TRUST, starsForRating, trustForStars } from './rules'
 import type { Answers } from './types'
 import type {
   Activity, Client, EarlierReview, Location, Participation, ParticipationState, Person, PlatformState,
-  Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudySetup, StudyType, TeamMember, Ticket,
+  Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudyReport, StudySetup, StudyType, TeamMember, Ticket,
 } from './types'
 
 export const SEED_VERSION = 10
@@ -755,7 +755,21 @@ export function buildSeed(now: Date = new Date()): PlatformState {
     })
   }
 
-  const state: PlatformState = { version: SEED_VERSION, seededAt: now.toISOString(), people, clients, studies, reports, tickets, team, activity, pending: [], teamNotices: [] }
+  // Reported Studies (console 2314:146859): respondents report live studies; one round on the survey study was resolved before.
+  const sr = (id: string, studyId: string, personId: string, reason: string, detail: string, when: string, resolution?: StudyReport['resolution']): StudyReport =>
+    ({ id, studyId, personId, reason, detail, at: when, ...(resolution ? { resolution } : {}) })
+  const settled = { id: 'rs-1', at: at(-6, 9, 30), by: 'tm-maya', statement: 'We have talked with the client and guided about the fair practice and can ensure the same for the future activities.' }
+  const studyReports: StudyReport[] = [
+    sr('sr-1', 'st-social', 'gen-13', 'Client is offering payment outside', 'The screener asks to be paid through another app for a bonus.', at(-1, 17, 35)),
+    sr('sr-2', 'st-social', 'gen-14', 'Client is offering payment outside', 'Asked to message them outside the platform for extra payment.', at(-1, 14, 45)),
+    sr('sr-3', 'st-social', 'gen-15', 'Study seems illegal or unethical', 'Asks for login details of a social account.', at(-1, 9, 30)),
+    sr('sr-4', 'st-goal', 'gen-16', 'Study is unclear or incomplete', 'The description does not say what the call will cover.', at(-2, 11, 0)),
+    sr('sr-5', 'st-goal', 'gen-18', 'Study is unclear or incomplete', 'No questions match the title.', at(-2, 16, 10)),
+    sr('sr-6', 'st-fitness', 'gen-07', 'Study contains contact information', 'A phone number is written in the study description.', at(-3, 10, 15)),
+    sr('sr-7', 'st-social', 'gen-07', 'Client is offering payment outside', 'Offered a gift card for answering outside the study.', at(-8, 10, 0), settled),
+    sr('sr-8', 'st-social', 'gen-11', 'Client is misrepresenting their identity', 'The company name does not match the website.', at(-7, 11, 15), settled),
+  ]
+  const state: PlatformState = { version: SEED_VERSION, seededAt: now.toISOString(), people, clients, studies, reports, tickets, team, activity, pending: [], teamNotices: [], studyReports }
   /**
    * Certificates issued at verification (policy section 7), each ID generated
    * once and never reused. A fixed sequence stands in for Math.random so the
