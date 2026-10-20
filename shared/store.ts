@@ -11,7 +11,7 @@
  */
 import { applyRepeatRule, barredFrom, billing, diaryReady, freshCertificateId, hasTakenPartWith, sessionNotStarted, openAvailability, personById, personFigures, profileCompletion, referralCode } from './derive'
 import { canEditStudy, canMoveParticipation, canMoveStudy, canReopen, isLive, participationOf } from './lifecycle'
-import { DECISION_UNDO_MS, DEMO_SESSION_CODE, RESTRICTION_DAYS, TIMINGS, canCancel, canReschedule, canWithdraw, depositFor, isSessionType, priceStudy, targets, withdrawalExpectedBy } from './platform'
+import { DECISION_UNDO_MS, DEMO_SESSION_CODE, REPORT_MAX_CHARS, RESTRICTION_DAYS, TIMINGS, canCancel, canReschedule, canWithdraw, depositFor, isSessionType, priceStudy, targets, withdrawalExpectedBy } from './platform'
 import { POINTS, canRedeem, starsForRating, starsFromDimensions } from './rules'
 import { monthDayYear } from './format'
 import { sessionStartOf as sessionStart } from './derive'
@@ -964,6 +964,23 @@ export function createPlatform(options: Options = {}) {
      * deactivate it. An upheld report of AI or bot activity is the fraud the
      * policy deducts 20 for.
      */
+    /**
+     * Report Participant (client 2313:83208): a client reports someone on one
+     * of its studies. It opens a case in the console's Reported queue, which
+     * `decideReport` settles; nothing happens to the person until then.
+     */
+    reportParticipant: (clientId: string, personId: string, reason: Report['reason'], detail: string, studyId?: string) => move<{ id: string }>((s) => {
+      if (!s.clients.some((c) => c.id === clientId)) return no('No such client')
+      if (!personById(s, personId)) return no('No such participant')
+      if (studyId && !s.studies.some((x) => x.id === studyId && x.clientId === clientId)) return no('That study is not yours')
+      const text = detail.trim()
+      if (!text) return no('Describe your report')
+      if (text.length > REPORT_MAX_CHARS) return no(`Keep it to ${REPORT_MAX_CHARS} characters`)
+      const id = uid('rp')
+      s.reports.unshift({ id, personId, reportedBy: clientId, reason, detail: text, studyId, at: iso() })
+      return yes({ id })
+    }),
+
     decideReport: (reportId: string, outcome: NonNullable<Report['outcome']>, statement: string, actor: Actor) => move((s) => {
       const report = s.reports.find((r) => r.id === reportId)
       if (!report) return no('No such report')

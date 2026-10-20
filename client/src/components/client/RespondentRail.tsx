@@ -1,3 +1,4 @@
+import { cn } from '../../lib/cn'
 import IntroVideo from './IntroVideo'
 import { sharedPhoto, sharedVideo } from '@shared/derive'
 import Button from '../ui/Button'
@@ -28,16 +29,16 @@ export function RatePrompt({ wide, onRate, name }: {
   return (
     <div className={wide
       ? 'flex h-20 items-center justify-between gap-4 rounded-lg bg-green-50 px-4'
-      : 'flex flex-col gap-2 bg-green-50 px-3 py-4'}>
+      : 'm-3 mb-0 flex flex-col gap-2 rounded-md bg-green-50 p-4'}>
       <div className="flex flex-col gap-1">
-        <p className="inline-flex items-center gap-2 text-body-large text-text-title">
+        <p className={cn('inline-flex items-center gap-2 text-text-title', wide ? 'text-body-large' : 'text-text-medium')}>
           <Star className="h-5 w-5 text-brand-secondary" />{title}
         </p>
         <p className={wide ? 'text-text-regular text-text-subtitle' : 'max-w-[248px] text-text-regular text-text-subtitle'}>
           {wide ? RATE_PROMPT.wide : RATE_PROMPT.rail}
         </p>
       </div>
-      <Button size="none" className={wide ? 'h-12 px-6' : 'mt-3 h-12 w-full'} onClick={onRate}>{cta}</Button>
+      <Button size="none" className={wide ? 'h-12 px-6' : 'mt-2 h-[38px] w-full'} onClick={onRate}>{cta}</Button>
     </div>
   )
 }
@@ -46,8 +47,10 @@ export function RatePrompt({ wide, onRate, name }: {
  * The 304px rail beside a respondent's result (1627:97305). It is the same
  * facts as the Respondent Profile Details panel, stacked for a narrow column.
  */
-export default function RespondentRail({ rate, onRate, person }: {
+export default function RespondentRail({ rate, onRate, person, onReport }: {
   rate?: boolean; onRate?: () => void
+  /** Report Participant (19 Oct 2026), the rail's last row. */
+  onReport?: () => void
   /**
    * Who the rail is describing. The frames draw it seeded with John M, and
    * open it from rows naming someone else, so without this the rail named the
@@ -141,6 +144,13 @@ export default function RespondentRail({ rate, onRate, person }: {
           ))}
         </dl>
       </Block>
+
+      {onReport && (
+        <button type="button" onClick={onReport}
+          className="flex h-12 items-center border-t-1 border-stroke-1 px-3 text-left text-text-medium text-text-title hover:text-red-600">
+          Report Participant
+        </button>
+      )}
     </aside>
   )
 }

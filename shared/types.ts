@@ -351,12 +351,22 @@ export interface Person {
 export interface Restriction { at: string; until: string; category: string; reason: string; by: string }
 
 /** A report raised against a participant (console, Verifications > Reported). */
+/**
+ * Why a participant was reported. The first four are the categories the
+ * platform and the team use; the rest are what a client picks on Report
+ * Participant (client 2313:83072, 19 Oct 2026).
+ */
+export type ReportReason =
+  | 'AI/Bot Activity' | 'Abusive Behaviour' | 'Spam Apply' | 'Wrong Match'
+  | 'Was asking to collaborate outside' | 'Participant is misrepresenting their identity'
+  | 'Profession looks like a scam or suspicious' | 'Participant had an inappropriate behavior' | 'Other'
+
 export interface Report {
   id: string
   personId: string
   /** 'system' or a client id. */
   reportedBy: string
-  reason: 'AI/Bot Activity' | 'Abusive Behaviour' | 'Spam Apply' | 'Wrong Match'
+  reason: ReportReason
   detail: string
   studyId?: string
   at: string

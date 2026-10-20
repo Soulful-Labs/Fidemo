@@ -6,8 +6,9 @@ import { copyText } from '../../lib/copy'
 import { useStudies } from '../../platform'
 import type { ClientStudy } from '../../platform'
 import { useToast } from '../ui/Toast'
+import { DoneModal } from './ReportParticipant'
 
-type Dialog = null | 'pause' | 'stop' | 'republish'
+type Dialog = null | 'pause' | 'stop' | 'republish' | 'republished'
 
 /**
  * The common study actions (19 Oct 2026, every study type): Copy Study Link,
@@ -50,10 +51,11 @@ export function useStudyActions(study: ClientStudy | null) {
         if (res.ok) nav(`/studies/${study.id}/pay`)
       }} />
       <RepublishModal open={dialog === 'republish'} onClose={close} onConfirm={() => {
-        close(); const res = moveStudy(study.id, 'recruiting')
-        toast(res.ok ? 'Study published again' : res.why)
-        if (res.ok) nav(`/studies/${study.id}`)
+        const res = moveStudy(study.id, 'recruiting')
+        if (res.ok) setDialog('republished'); else { close(); toast(res.why) }
       }} />
+      <DoneModal open={dialog === 'republished'} onClose={() => { close(); nav(`/studies/${study.id}`) }} title="Study has been re-published!"
+        body="Your study has been published live for participants and you will keep receiving the participants until you stop the study or it expires by validity." />
     </>
   )
   return { act, dialogs }

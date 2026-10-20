@@ -236,3 +236,11 @@ export const withdrawalExpectedBy = (requestedAt: string): string => workingDays
 
 /** Tables in the client app and the console page at ten rows. */
 export const PAGE_SIZE = 10
+
+/** Report Participant (client 2313:83072): the reasons a client can give, in the order drawn. */
+export const CLIENT_REPORT_REASONS = [
+  'Was asking to collaborate outside', 'Participant is misrepresenting their identity',
+  'Profession looks like a scam or suspicious', 'Participant had an inappropriate behavior', 'Other',
+] as const
+/** The description box on both report flows takes 500 characters at most. */
+export const REPORT_MAX_CHARS = 500

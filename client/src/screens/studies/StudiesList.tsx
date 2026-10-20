@@ -19,6 +19,7 @@ import SessionsTab from './SessionsTab'
 import { upcomingSessions } from '../../lib/insight'
 import { Calendar, Search } from '../../components/ui/icons'
 import { studyTab } from '@shared/lifecycle'
+import { DoneModal } from '../../components/client/ReportParticipant'
 import { CompletedMenu, DeleteStudyModal, DraftMenu, OngoingMenu, PauseStudyModal, RepublishModal, StopCompleteModal, StudyTypeMenu } from './StudyMenus'
 import { useToast } from '../../components/ui/Toast'
 import { copyText } from '../../lib/copy'
@@ -85,6 +86,7 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
   const [pausing, setPausing] = useState<Study | null>(null)
   const [stopping, setStopping] = useState<Study | null>(null)
   const [resuming, setResuming] = useState<Study | null>(null)
+  const [republished, setRepublished] = useState(false)
   const [deleting, setDeleting] = useState<Study | null>(null)
   const [search, setSearch] = useState('')
   const { studies, moveStudy } = useStudies()
@@ -291,8 +293,10 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
           setResuming(null)
           if (!st) return
           const res = moveStudy(st.id, 'recruiting')
-          toast(res.ok ? 'Study published again' : res.why)
+          if (res.ok) setRepublished(true); else toast(res.why)
         }} />
+      <DoneModal open={republished} onClose={() => setRepublished(false)} title="Study has been re-published!"
+        body="Your study has been published live for participants and you will keep receiving the participants until you stop the study or it expires by validity." />
       <DeleteStudyModal open={deleting !== null} onClose={() => setDeleting(null)} name={deleting?.name ?? ''}
         onConfirm={() => {
           const st = deleting

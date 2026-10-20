@@ -5,6 +5,8 @@ import Button from '../../components/ui/Button'
 import RespondentRail, { RatePrompt } from '../../components/client/RespondentRail'
 import StudyTypeTag from '../../components/client/StudyTypeTag'
 import RatePanel from './RatePanel'
+import ReportParticipant from '../../components/client/ReportParticipant'
+import { STUDY_TYPE } from '../../lib/studyTypes'
 import NoShowModal from './NoShowModal'
 import { ActivityList, DayBar, NotesCard, PinCard, QARow, SessionCard } from './respondentBits'
 import { CheckCircle, Clock, Close, DiaryBookIcon, NoteIcon, SurveyIcon } from '../../components/ui/icons'
@@ -52,7 +54,8 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
   const nav = useNavigate()
   const [params, setParams] = useSearchParams()
   const s = useStudy(id)
-  const { moveRespondent, enterCode, state: world } = useStudies()
+  const { moveRespondent, enterCode, reportParticipant, state: world } = useStudies()
+  const [reporting, setReporting] = useState(false)
   const [rate, setRate] = useState(params.get('rate') === '1' || params.get('rate') === 'rated')
   const [noShow, setNoShow] = useState<'one' | 'all' | null>((params.get('noshow') as 'one' | 'all') ?? null)
 
@@ -118,7 +121,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
     + (done ? '' : '?state=recruited')
 
   return (
-    <AppShell crumbs={[
+    <AppShell hideCreate crumbs={[
       { label: 'Studies', to: '/studies' },
       { label: s.title.length > 12 ? `${s.title.slice(0, 11)}…` : s.title, to: `/studies/${s.id}` },
       { label: crumbTab, to: `/studies/${s.id}/${done ? 'results' : 'recruited'}` },
@@ -219,7 +222,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                     <>
                       <p className="flex flex-col">
                         <span className="text-text-medium text-brand-secondary">Marked as completed!</span>
-                        <span className="text-text-regular text-text-subtitle">The diary study has been successfully completed by {person?.name.split(' ')[0] ?? 'the respondent'}.</span>
+                        <span className="text-text-regular text-text-subtitle">The {STUDY_TYPE[s.type].label.toLowerCase()} study has been successfully completed by {person?.name.split(' ')[0] ?? 'the respondent'}.</span>
                       </p>
                       <span className="flex h-11 items-center gap-2 rounded-sm bg-green-50 px-4 text-text-medium text-brand-secondary">
                         <CheckCircle className="h-4 w-4" />Completed
@@ -262,12 +265,14 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
               )}
             </section>
 
-            <RespondentRail rate={rated} onRate={() => setRate(true)}
+            <RespondentRail rate={rated} onRate={() => setRate(true)} onReport={() => setReporting(true)}
               person={person && { id: person.id, name: person.name, role: person.role, score: person.score, tier: person.tier }} />
           </div>
         </div>
       </div>
 
+      <ReportParticipant open={reporting} onClose={() => setReporting(false)}
+        onSubmit={(reason, detail) => reportParticipant(person.id, reason, detail, s.id)} />
       <RatePanel open={rate} onClose={() => setRate(false)} study={s} personId={person?.id}
         rated={params.get('rate') === 'rated'} />
       <NoShowModal open={!!noShow} scope={noShow ?? 'one'} onClose={() => setNoShow(null)}
