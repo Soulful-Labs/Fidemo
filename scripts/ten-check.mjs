@@ -434,7 +434,7 @@ await C.open('/client/studies?view=table', `localStorage.setItem('fi-client-sess
 const paidBefore = await st(C, `s.studies.find((x) => x.id === ${JSON.stringify(target.id)}).participations.filter((p) => p.paidAt).length`)
 let completeVia = 'Studies list row menu'
 const onPage = await C.ev(`(() => { const row = [...document.querySelectorAll('tr')].find((r) => r.innerText.includes(${JSON.stringify(target.title)})); if (!row) return false; row.querySelector('[aria-label="Study options"]').click(); return true })()`)
-if (onPage) { await sleep(300); await C.click('Stop-complete Study', 800) } else {
+if (onPage) { await sleep(300); await C.click('Stop-complete Study', 400); await C.click('Yes, Stop-complete', 800) } else {
   completeVia = 'console Manage Study, Mark as completed'
   await I.open(`/internal/studies/${target.id}`); await I.click('Mark as', 500); await I.click('Mark', 800)
 }

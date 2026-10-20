@@ -269,7 +269,7 @@ await step(10, 'The respondent\'s wallet, points and Trust Score all rise', asyn
   expect(waiting.wallet === before.wallet, `paid on a timer: wallet ${before.wallet}->${waiting.wallet}`)
   await C.go('/client/studies?view=table')
   await C.ev(`(() => { const row = [...document.querySelectorAll('tr')].find((r) => r.innerText.includes(${JSON.stringify(TITLE)})); row.querySelector('[aria-label="Study options"]').click(); return true })()`); await sleep(300)
-  await C.click('Stop-complete Study', 900)
+  await C.click('Stop-complete Study', 400); await C.click('Yes, Stop-complete', 900)
   await I.go('/internal/finance/payouts')
   await I.ev(`(() => { const row = [...document.querySelectorAll('div')].filter((r) => r.innerText?.includes(${JSON.stringify(TITLE)}) && [...r.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Process Payouts')).sort((a, b) => a.innerText.length - b.innerText.length)[0]; [...row.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Process Payouts').click(); return true })()`); await sleep(400)
   await I.ev(`(() => { [...document.querySelectorAll('[role=dialog] button')].find((x) => /^Process [0-9]/.test(x.textContent.trim())).click(); return true })()`); await sleep(1200)

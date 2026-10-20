@@ -284,9 +284,9 @@ try {
     await R.go('/wallet'); await sleep(500)
     const shownBefore = await R.ev(`document.querySelector('main').innerText.replace(/\\s+/g, ' ').slice(0, 60)`)
     // The client finishes the study; the team processes the payout by hand in the console.
-    await C.go('/client/studies'); await sleep(500)
+    await C.go('/client/studies?view=table'); await sleep(500)
     await C.ev(`(() => { const row = [...document.querySelectorAll('tr')].find((r) => r.innerText.includes(${JSON.stringify(S.title)})); row.querySelector('[aria-label="Study options"]').click(); return true })()`); await sleep(300)
-    await C.click('Stop-complete Study', 900)
+    await C.click('Stop-complete Study', 400); await C.click('Yes, Stop-complete', 900)
     await I.go('/internal/finance/payouts'); await sleep(600)
     await I.ev(`(() => { const row = [...document.querySelectorAll('div')].filter((r) => r.innerText?.includes(${JSON.stringify(S.title)}) && [...r.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Process Payouts')).sort((a, b) => a.innerText.length - b.innerText.length)[0]; [...row.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Process Payouts').click(); return true })()`); await sleep(400)
     await I.ev(`(() => { [...document.querySelectorAll('[role=dialog] button')].find((x) => /^Process [0-9]/.test(x.textContent.trim())).click(); return true })()`); await sleep(1200)
