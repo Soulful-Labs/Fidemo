@@ -35,7 +35,9 @@ export default function BillingCard({ study, stopped }: { study: Study; stopped:
   const lines = estimated ? b.estimate.lines : b.lines
   const total = estimated ? b.estimate.total : b.total
   const net = estimated ? b.estimate.net : b.net
-  const payable = net < 0 ? 'Credited to your next study' : stopped && !estimated ? 'Net Payable' : 'Payable'
+  /** A credit only exists once the study is stopped; while it runs, the deposit simply covers the bill so far. */
+  const credited = stopped && !estimated && net < 0
+  const payable = credited ? 'Credited to your next study' : stopped && !estimated ? 'Net Payable' : 'Payable'
 
   return (
     <div className={cn('overflow-hidden rounded-lg border-1 border-stroke-1', stopped ? 'bg-bg-0' : 'bg-bg-1')}>
@@ -57,7 +59,7 @@ export default function BillingCard({ study, stopped }: { study: Study; stopped:
       ))}
       <Line label="Total cost" amount={usd(total)} />
       <Line label="Less: Incentive Deposit" amount={usd(-b.deposit)} info={estimated} />
-      <Line label={payable} amount={usd(Math.abs(net))} strong last tall />
+      <Line label={payable} amount={usd(credited ? Math.abs(net) : Math.max(0, net))} strong last tall />
     </div>
   )
 }

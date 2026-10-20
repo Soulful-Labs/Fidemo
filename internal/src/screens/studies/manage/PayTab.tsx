@@ -2,9 +2,11 @@ import type { ReactNode } from 'react'
 import Button from '../../../components/ui/Button'
 import { DownloadIcon, ReceiptIcon } from '../../../components/ui/icons'
 import type { ManagedStudy } from '../../../mock/manage'
-import { BillLine, Mastercard } from '../review/PaymentRevisions'
-import { billing } from '@shared/derive'
-import { money, monthDayYearTime } from '@shared/format'
+import { BillLine } from '../review/PaymentRevisions'
+import { balanceDueBy, billing } from '@shared/derive'
+import { dayMonthYear, money, monthDayYearTime } from '@shared/format'
+import { fileName, pdf, save } from '@shared/files'
+import { notice } from '../../../components/app/Notice'
 import { DEPOSIT_RULE } from '@shared/platform'
 import type { Study } from '@shared/types'
 import { usePlatform } from '../../../platform'
@@ -19,13 +21,14 @@ export const Money = ({ label, value, short }: { label: string; value: string; s
 )
 
 /** One line under Transactions: what was paid, when, how it was counted, and its receipt. */
-export function Transaction({ title, amount, detail, at }: { title: string; amount: string; detail: string; at?: string }) {
+export function Transaction({ title, amount, detail, at, action = 'Receipt', of = '' }: { title: string; amount: string; detail: string; at?: string; action?: 'Receipt' | 'Invoice'; of?: string }) {
+  const download = () => notice(`Saved ${save(fileName(`${action} ${title} ${of}`, 'pdf'), pdf(`${action}: ${title}`, [of, at ?? '', detail, '', `Amount: ${amount}`]))}`)
   return (
     <div className="flex flex-col gap-1 rounded-md border-1 border-stroke-1 p-3 text-text-regular leading-5">
       <p className="flex justify-between text-text-title"><span className="flex items-center gap-1"><ReceiptIcon className="h-5 w-5" />{title}</span><span>{amount}</span></p>
       <div className="flex items-center justify-between text-text-subtitle">
-        <div className="flex flex-col gap-1"><p>{at ?? 'Aug 5, 2026, 10:24 AM'}</p><p>{detail}</p></div>
-        <Button variant="tertiary" size="md" className="px-3" leftIcon={<DownloadIcon className="h-5 w-5" />}>Receipt</Button>
+        <div className="flex flex-col gap-1">{at && <p>{at}</p>}<p>{detail}</p></div>
+        <Button variant="tertiary" size="md" className="px-3" leftIcon={<DownloadIcon className="h-5 w-5" />} onClick={download}>{action}</Button>
       </div>
     </div>
   )
@@ -52,48 +55,44 @@ export function Billing({ children, lines = FEES }: { children: ReactNode; lines
 }
 
 /**
- * Pay (1952:77992 and its five siblings, identical but for the header): the
- * client's bill for the study, shown to the team. "Payment Overview": the
- * amount due on a yellow-30 card with its due date and the card it will be
- * auto-debited from, then Deposit Paid and Total Cost. Billing: the fee lines
- * down to "Net payable cost". Transactions: what the client has paid, with a
- * receipt. Nothing here acts on money; the only control is Receipt.
+ * Pay (1932:107773, 19 Oct 2026): the client's bill, as the client app draws
+ * it. Billing on the left, down to Payable (Net Payable once the study is
+ * stopped); Payment Overview on the right, with Payment Due once the balance
+ * falls due, then Deposit Paid and Total Cost; and Transactions, each with
+ * its invoice. The console takes no money here.
  */
 export default function PayTab({ study }: { study: ManagedStudy }) {
   const state = usePlatform()
   const real = state.studies.find((x) => x.id === study.id)
   if (!real) return null
   const b = billing(real)
-  const due = real.state === 'completed' ? b.outstanding : Math.max(0, b.due)
-  const deposits = real.payments.filter((x) => x.kind === 'deposit' || x.kind === 'balance')
+  const stopped = real.state === 'completed'
+  const paid = real.payments.filter((x) => x.kind === 'deposit' || x.kind === 'balance')
   return (
-    <div className={study.tight ? undefined : 'pt-0.5'}>
-      <h2 className="text-title-s leading-[25px] text-text-title">Payment Overview</h2>
-      <div className="grid grid-cols-2 gap-6 pt-3">
-        <div className="flex h-[93px] flex-col justify-center rounded-md bg-yellow-30 px-4">
-          <p className="flex items-center justify-between"><span className="text-title-l leading-[31px] text-text-title">{money(due)}</span>
-            <span className="self-start text-text-regular text-brand-primary">{real.state === 'completed' ? 'Payment Due' : 'Due when the study completes'}</span></p>
-          <p className="flex items-center gap-2 pt-1 text-text-regular text-text-title">If not paid, will be auto-debited from
-            <span className="flex h-7 items-center gap-2 rounded-full bg-bgAlt-2 px-2.5"><Mastercard /><span>•••• &nbsp;4242</span></span></p>
-        </div>
-        <div className="flex items-center gap-3"><Money label="Deposit Paid" value={money(b.deposit)} /><Money label="Total Cost" value={money(b.totalCost)} /></div>
+    <div className="grid grid-cols-2 items-start gap-6">
+      <div>
+        <h2 className="pb-3 text-title-s leading-[25px] text-text-title">Billing</h2>
+        <Billing lines={feeLines(real)}>
+          <BillLine line={{ label: 'Total cost', amount: money(b.total) }} />
+          <Rule />
+          <BillLine line={{ label: 'Less: Incentive Deposit', amount: `-${money(b.deposit)}` }} />
+          <Rule />
+          <BillLine bold line={{ label: stopped && b.net < 0 ? 'Credited to the next study' : stopped ? 'Net Payable' : 'Payable', amount: money(stopped ? Math.abs(b.net) : Math.max(0, b.net)) }} />
+        </Billing>
       </div>
-      <div className="grid grid-cols-2 items-start gap-6 pt-6">
-        <div>
-          <h2 className="pb-3 text-title-s leading-[25px] text-text-title">Billing</h2>
-          <Billing lines={feeLines(real)}>
-            <BillLine line={{ label: 'Total cost', amount: money(b.total) }} />
-            <BillLine line={{ label: 'Less: Deposit', detail: DEPOSIT_RULE, amount: `-${money(b.deposit)}`, info: true }} />
-            <Rule />
-            <BillLine bold line={{ label: 'Net payable cost', amount: money(Math.max(0, b.net)) }} />
-          </Billing>
-        </div>
-        <div>
-          <h2 className="pb-3 text-title-s leading-[25px] text-text-title">Transactions</h2>
-          <div className="flex flex-col gap-2">
-            {deposits.map((x) => <Transaction key={x.id} title={x.kind === 'deposit' ? 'Deposit Paid' : 'Balance Paid'} amount={money(x.amount)} at={monthDayYearTime(x.at)} detail={x.kind === 'deposit' ? DEPOSIT_RULE : 'Billed on delivery'} />)}
-            {deposits.length === 0 && <p className="text-text-regular text-text-subtitle">Nothing has been paid on this study yet.</p>}
+      <div className="flex flex-col gap-3">
+        <h2 className="text-title-s leading-[25px] text-text-title">Payment Overview</h2>
+        {stopped && b.outstanding > 0 && (
+          <div className="flex h-[79px] flex-col justify-center rounded-md bg-yellow-30 px-4">
+            <p className="text-text-regular text-text-subtitle">Payment Due{balanceDueBy(real) ? ` by ${dayMonthYear(balanceDueBy(real))}` : ''}</p>
+            <p className="pt-1 text-title-l leading-[31px] text-text-title">{money(b.outstanding)}</p>
           </div>
+        )}
+        <div className="flex gap-3"><Money short label="Deposit Paid" value={money(b.deposit)} /><Money short label="Total Cost" value={money(b.totalCost)} /></div>
+        <h2 className="pt-6 text-title-s leading-[25px] text-text-title">Transactions</h2>
+        <div className="flex flex-col gap-2">
+          {paid.map((x) => <Transaction key={x.id} action="Invoice" of={real.title} title={x.kind === 'deposit' ? 'Incentive Deposit Paid' : 'Balance Paid'} amount={money(x.amount)} at={monthDayYearTime(x.at)} detail={x.kind === 'deposit' ? DEPOSIT_RULE : 'Billed on delivery'} />)}
+          {paid.length === 0 && <p className="text-text-regular text-text-subtitle">Nothing has been paid on this study yet.</p>}
         </div>
       </div>
     </div>

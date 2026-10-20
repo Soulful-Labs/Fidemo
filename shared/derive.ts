@@ -1133,3 +1133,22 @@ export function studyReportView(state: PlatformState, studyId: string): {
     resolved: [...byResolution.values()].map((rs) => ({ ...round(rs), resolution: rs[0]!.resolution! })).sort((a, b) => b.resolution.at.localeCompare(a.resolution.at)),
   }
 }
+
+/**
+ * A study's pace: completions since it went live against the days it has
+ * left. Undefined before the first completion. The client's and the console's
+ * Overview both read it, so they say the same thing.
+ */
+export function paceOf(s: Study, completed: number, now: Date = new Date()) {
+  const left = Math.max(0, s.required - completed)
+  if (left === 0) return { state: 'done' as const, daysToFinish: 0, perWeek: 0 }
+  const since = s.approvedAt ? Math.max(1, (now.getTime() - new Date(s.approvedAt).getTime()) / 86_400_000) : 0
+  if (!since || completed === 0) return undefined
+  const remaining = daysRemaining(s, now)
+  const daysToFinish = Math.ceil(left / (completed / since))
+  return { state: daysToFinish <= remaining ? 'ahead' as const : 'behind' as const, daysToFinish, perWeek: Math.ceil((left / Math.max(1, remaining)) * 7) }
+}
+
+/** When a stopped study's balance falls due: seven days after it was marked completed. Both apps read this one rule. */
+export const balanceDueBy = (study: Study): string | undefined =>
+  study.completedAt ? new Date(new Date(study.completedAt).getTime() + 7 * 86_400_000).toISOString() : undefined

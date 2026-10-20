@@ -1,4 +1,4 @@
-import { billing, counts, recruits, sessionSeats, sessionStartOf, unpaidStudies } from '@shared/derive'
+import { billing, counts, paceOf, recruits, sessionSeats, sessionStartOf, unpaidStudies } from '@shared/derive'
 import { isLive } from '@shared/lifecycle'
 import type { PlatformState } from '@shared/types'
 import type { ClientStudy } from '../platform'
@@ -11,17 +11,8 @@ import type { StudyType } from './studyTypes'
  * a forecast model and nothing is written into the seed; where there is not
  * enough to say something, it says nothing.
  */
-const DAY = 86_400_000
-
-/** A study's pace: completions since it went live against the days it has left. Undefined before the first completion. */
-export function paceOf(s: ClientStudy, completed: number, now: Date = new Date()) {
-  const left = Math.max(0, s.required - completed)
-  if (left === 0) return { state: 'done' as const, daysToFinish: 0, perWeek: 0 }
-  const since = s.approvedAt ? Math.max(1, (now.getTime() - new Date(s.approvedAt).getTime()) / DAY) : 0
-  if (!since || completed === 0) return undefined
-  const daysToFinish = Math.ceil(left / (completed / since))
-  return { state: daysToFinish <= s.daysRemaining ? 'ahead' as const : 'behind' as const, daysToFinish, perWeek: Math.ceil((left / Math.max(1, s.daysRemaining)) * 7) }
-}
+/** A study's pace (shared/derive.ts, so the console's Overview says the same). */
+export { paceOf }
 
 export interface SessionRow { key: string; at: Date; title: string; type: StudyType; study: string; details: string; start: string }
 

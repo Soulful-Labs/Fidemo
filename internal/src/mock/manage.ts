@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { clientById, counts, daysRemaining, durationLabel, progressPct, shareLink, studyById, targetMet } from '@shared/derive'
+import { clientById, counts, daysRemaining, durationLabel, progressPct, shareLink, showsTargetMet, studyById } from '@shared/derive'
 import { longDateTime, money } from '@shared/format'
 import { STUDY_TAG } from '@shared/lifecycle'
 import type { PlatformState, Study } from '@shared/types'
@@ -48,7 +48,7 @@ export function managedStudy(state: PlatformState, s: Study): ManagedStudy {
   const client = clientById(state, s.clientId)
   const roles = s.setup?.audience.find((a) => a.label === 'Roles')?.value ?? s.targetProfession
   const summary = s.setup?.studySummary
-  const met = targetMet(s)
+  const met = showsTargetMet(s)
   return {
     id: s.id, type: consoleType(s.type), title: s.title, image: pics.image, thumbnail: pics.thumb, time: durationLabel(s.durationMins), industry: s.industry,
     description: s.description, tileQualified: [String(c.everQualified), `/${c.everApplied} applied`],

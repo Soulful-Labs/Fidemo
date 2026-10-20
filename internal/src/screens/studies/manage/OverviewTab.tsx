@@ -1,12 +1,13 @@
-import { copyText } from '../../../components/app/Notice'
 import { Fragment } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../../../components/ui/Button'
-import { CopyIcon, ExternalIcon, MailIcon } from '../../../components/ui/icons'
+import { ExternalIcon, MailIcon } from '../../../components/ui/icons'
 import { Avatar } from '../../../components/ui/Tag'
 import { cn } from '../../../lib/cn'
 import type { ManagedStudy } from '../../../mock/manage'
+import { averageScore, counts, paceOf } from '@shared/derive'
+import { usePlatform } from '../../../platform'
 
 export const Tile = ({ label, value, rest, children }: { label: string; value: string; rest?: string; children?: ReactNode }) => (
   <div className="flex h-[77px] flex-1 items-center justify-between rounded-md bg-yellow-30 p-3">
@@ -28,18 +29,11 @@ const Ring = ({ pct }: { pct: number }) => (
   </svg>
 )
 
-const Field = ({ label, children }: { label: string; children: ReactNode }) => (
-  <div className="flex flex-col gap-1">
-    <p className="text-text-regular leading-5 text-text-subtitle">{label}</p>
-    {children}
-  </div>
-)
-
 /** About Client (304 wide on bg-1): who owns the study, four facts, and a way to their profile. */
-export function ClientCard({ client: C, className }: { client: ManagedStudy['client']; className?: string }) {
+export function ClientCard({ client: C, className, wide }: { client: ManagedStudy['client']; className?: string; wide?: boolean }) {
   const navigate = useNavigate()
   return (
-    <aside className={cn('w-[304px] shrink-0 self-start rounded-lg bg-bg-1 p-3 text-text-regular leading-5', className)}>
+    <aside className={cn(wide ? 'w-full' : 'w-[304px] shrink-0 self-start', 'rounded-lg bg-bg-1 p-3 text-text-regular leading-5', className)}>
       <h3 className="text-text-body">About Client</h3>
       <div className="flex items-center gap-2 pt-3">
         <Avatar src={C.avatar} name={C.name} size={48} />
@@ -62,33 +56,105 @@ export function ClientCard({ client: C, className }: { client: ManagedStudy['cli
   )
 }
 
+const SPARKLE = (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+    <path d="m10.5 4 1.9 4.6L17 10.5l-4.6 1.9L10.5 17l-1.9-4.6L4 10.5l4.6-1.9L10.5 4Zm8 9.5.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+  </svg>
+)
+const BLOCK = ['h-[126px] bg-yellow-200', 'h-[94px] bg-yellow-400', 'h-[62px] bg-brand-primary']
+const BAR = ['bg-yellow-200', 'bg-yellow-400', 'bg-brand-primary']
+
 /**
- * Overview (1952:76685): four yellow-30 tiles (Progress with its ring,
- * Completed, Qualified, Days Remaining), the study description, the share
- * link in a read-only box with Copy, and "Active Since"; About Client sits
- * beside them. The paused frame (1952:75945) draws the same without the
- * client card, the tiles running the full width.
+ * Overview (1932:106948, 19 Oct 2026): the client's Overview for the team. An
+ * insight line on the study's pace, the recruitment funnel with About Client
+ * under it, the participation forecast with three figures under it. Every
+ * number is the study's own (shared/derive.ts, the same as the client app's).
+ * The paused study draws the same without the client card.
  */
 export default function OverviewTab({ study, paused }: { study: ManagedStudy; paused: boolean }) {
+  const state = usePlatform()
+  const s = study.raw
+  const c = counts(s)
+  const pace = paceOf(s, c.completed)
+  const pct = s.required ? Math.min(100, Math.floor((c.completed / s.required) * 100)) : 0
+  const steps: [string, number][] = [['Applied', c.everApplied], ['Qualified', c.everQualified], ['Completed', c.completed]]
+  const top = Math.max(1, c.everApplied)
+  const billed = s.payments.reduce((sum, p) => sum + (p.kind === 'refund' ? -p.amount : p.amount), 0)
+  const average = averageScore(state, s)
+  const days = study.figures.daysRemaining
+  const tiles: [string, string, string][] = [
+    ['Rated By You', String(c.rated), `/${c.completed} completed`],
+    ['Billed Till Now', `$${billed.toLocaleString('en-US')}`, ''],
+    ['Created On', new Date(s.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }), ''],
+  ]
   return (
-    <div className="flex gap-6">
-      <div className="flex min-w-0 flex-1 flex-col gap-6">
-        <div className="flex gap-2">
-          <Tile label="Progress" value={study.figures.progress}><Ring pct={study.raw.required ? Number.parseInt(study.figures.progress, 10) : 0} /></Tile>
-          <Tile label="Completed" value={study.figures.completed[0]!} rest={study.figures.completed[1]} />
-          <Tile label="Qualified" value={study.figures.qualified[0]} rest={study.figures.qualified[1]} />
-          <Tile label="Days Remaining" value={study.figures.daysRemaining} />
+    <div className="flex flex-col gap-6">
+      {pace && pace.state !== 'done' && (
+        <section className="flex flex-col gap-2 rounded-lg bg-gradient-to-r from-yellow-30 to-bg-1 px-4 py-3">
+          <p className="flex items-center gap-2 text-body-medium text-brand-primary">{SPARKLE}AI Super Insight</p>
+          <p className="text-body-regular text-text-subtitle">
+            <span className="text-text-title">{pace.state === 'ahead' ? 'You are ahead of pace.' : 'You are behind pace.'}</span>{' '}
+            {pace.state === 'ahead'
+              ? `At this rate the study fills in about ${pace.daysToFinish} days, with ${days} left.`
+              : `At this rate it needs about ${pace.daysToFinish} days and has ${days}. About ${pace.perWeek} completions a week would finish it in time.`}
+          </p>
+        </section>
+      )}
+      <div className="grid grid-cols-2 gap-6">
+        <div className="flex flex-col gap-6">
+          <section className="flex flex-col rounded-lg border-1 border-stroke-1 bg-bg-1 px-4 pb-5 pt-4">
+            <h2 className="text-title-s text-text-subtitle">Recruitment Funnel</h2>
+            <div className="flex h-[126px] items-center justify-center pt-6" aria-hidden="true">
+              {steps.map(([label, n], i) => (
+                <span key={label} className={cn('flex w-[110px] items-center justify-center text-[40px] font-semibold text-bg-0', BLOCK[i], i === 0 && 'rounded-l-sm', i === 2 && 'rounded-r-sm')}>{n}</span>
+              ))}
+            </div>
+            <dl className="mt-8 flex flex-col gap-3 border-t-1 border-stroke-input px-2 pt-5">
+              {steps.map(([label, n], i) => (
+                <div key={label} className="flex h-6 items-center">
+                  <dt className="w-[100px] text-body-regular text-text-title">{label}</dt>
+                  <dd className="w-[44px] text-title-s text-text-title">{n}</dd>
+                  <span className="h-2.5 flex-1"><span className={cn('block h-full rounded-full', BAR[i])} style={{ width: `${Math.round((n / top) * 100)}%` }} /></span>
+                  <span className="w-[52px] text-right text-body-regular text-text-body">{Math.round((n / top) * 100)}%</span>
+                </div>
+              ))}
+            </dl>
+          </section>
+          {!paused && <ClientCard client={study.client} wide />}
         </div>
-        <Field label="Study Description"><p className="text-body-regular leading-[22px] text-text-title">{study.description}</p></Field>
-        <Field label="Share Link">
-          <div className="flex gap-3">
-            <p className="flex h-12 min-w-0 flex-1 items-center truncate rounded-md border-1 border-stroke-input bg-bg-0 px-3 text-body-regular text-text-subtitle">{study.figures.shareLink}</p>
-            <Button variant="tertiary" className="w-[103px] px-0" leftIcon={<CopyIcon className="h-5 w-5" />} onClick={() => { void copyText(study.figures.shareLink, 'Study link') }}>Copy</Button>
-          </div>
-        </Field>
-        <Field label="Active Since"><p className="text-body-regular leading-[22px] text-text-subtitle">{study.figures.activeSince}</p></Field>
+        <div className="flex flex-col gap-6">
+          <section className="flex flex-col rounded-lg border-1 border-stroke-1 px-4 pb-2 pt-4">
+            <h2 className="text-title-s text-text-subtitle">Participation Forecast</h2>
+            <div className="mt-6 flex h-[87px] items-center justify-between gap-4 rounded-md bg-bgAlt-2 px-4">
+              <span className="flex flex-col gap-1"><span className="text-title-m text-text-title">{pct}%</span><span className="text-body-regular text-text-subtitle">Progress</span></span>
+              <Ring pct={pct} />
+              <span className="flex flex-col gap-1">
+                <span className={cn('text-title-m', !pace ? 'text-text-subtitle' : pace.state === 'behind' ? 'text-brand-primary' : 'text-brand-secondary')}>
+                  {!pace ? 'No pace yet' : pace.state === 'done' ? 'Target reached' : pace.state === 'ahead' ? 'Going On track' : 'Behind pace'}
+                </span>
+                <span className="text-body-regular text-text-subtitle">
+                  {!pace ? 'Waiting for the first completion' : pace.state === 'done' ? 'Every seat is completed' : `~ Approx. ${pace.daysToFinish} days more to fill`}
+                </span>
+              </span>
+            </div>
+            <dl className="mt-6 flex flex-col">
+              {[['Average Trust Score', average ? String(average) : 'None yet'], ['Required Participants', String(s.required)]].map(([k, v]) => (
+                <div key={k} className="flex h-[52px] items-center justify-between border-t-1 border-stroke-input text-body-regular text-text-title">
+                  <dt>{k}</dt><dd className="text-body-medium">{v}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+          <dl className="grid grid-cols-3 gap-2">
+            {tiles.map(([k, v, r]) => (
+              <div key={k} className="flex h-[71px] flex-col justify-center gap-1 rounded-md border-1 border-stroke-1 px-3">
+                <dt className="text-text-regular text-text-subtitle">{k}</dt>
+                <dd className="flex items-baseline gap-1 text-title-s text-text-title">{v}{r && <span className="text-body-regular text-text-subtitle">{r}</span>}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
       </div>
-      {!paused && <ClientCard client={study.client} />}
     </div>
   )
 }

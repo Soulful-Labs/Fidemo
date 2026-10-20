@@ -13,6 +13,7 @@ import OverviewTab from './OverviewTab'
 import PauseStudy from './PauseStudy'
 import PayTab from './PayTab'
 import RecruitedTab from './RecruitedTab'
+import RevisionsTab from './RevisionsTab'
 import ResultsTab from './ResultsTab'
 import StudyHeader from './StudyHeader'
 
@@ -23,6 +24,7 @@ const TABS = [
   { key: 'matched', label: 'Matched', width: 'w-[97px]' },
   { key: 'recruited', label: 'Recruited', width: 'w-[104px]' },
   { key: 'results', label: 'Results', width: 'w-[88px]' },
+  { key: 'revisions', label: 'Revisions History', width: 'w-[159px]' },
   { key: 'pay', label: 'Pay', width: 'w-[60px]' },
 ] as const
 type Tab = (typeof TABS)[number]['key']
@@ -67,9 +69,9 @@ export default function ManageStudy() {
   return (
     <AppShell className={study.tight && !paused ? 'flex flex-col gap-3 p-4 pb-6' : 'flex flex-col gap-3 pb-8'}
       crumbs={[{ label: 'Studies', to: '/studies' }, { label: 'Ongoing', to: '/studies?tab=ongoing' }, { label: study.title }]}>
-      {congrats && <CongratsBanner />}
+      {congrats && <CongratsBanner required={study.raw.required} />}
       {paused && <PausedBanner onResume={() => platform().moveStudy(study.id, 'recruiting', TEAM)} onComplete={() => { platform().moveStudy(study.id, 'completed', TEAM); setParams({}, { replace: true }) }} />}
-      <StudyHeader study={study} onPause={() => setPausing(true)}
+      <StudyHeader study={study} onPause={() => setPausing(true)} onResume={() => say(platform().moveStudy(study.id, 'recruiting', TEAM))}
         onComplete={() => { if (say(platform().moveStudy(study.id, 'completed', TEAM))) setParams({}, { replace: true }) }} />
       <section className="flex-1 overflow-hidden rounded-lg border-1 border-stroke-1">
         <PanelTabs tabs={TABS} value={tab} onChange={(k) => go({ tab: k as Tab })} />
@@ -79,6 +81,7 @@ export default function ManageStudy() {
           {tab === 'matched' && <MatchedTab study={study} invited={invited} onSegment={(v) => go({ invited: v })} />}
           {tab === 'pay' && <PayTab study={study} />}
           {tab === 'results' && <ResultsTab study={study} />}
+          {tab === 'revisions' && <RevisionsTab study={study.raw} />}
           {tab === 'recruited' && <RecruitedTab study={study} view={view} onView={(v) => go({ view: v })} />}
         </div>
       </section>

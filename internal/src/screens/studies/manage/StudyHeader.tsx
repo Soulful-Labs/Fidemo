@@ -35,14 +35,16 @@ const MENU = ['Copy Study Link', 'Pause Study', 'Stop-complete Study']
  * copy (1961:182276) also shows Stop-complete Study and Edit, which the other
  * five switch off.
  */
-export default function StudyHeader({ study, onPause, onComplete }: { study: ManagedStudy; onPause: () => void; onComplete: () => void }) {
+export default function StudyHeader({ study, onPause, onComplete, onResume }: { study: ManagedStudy; onPause: () => void; onComplete: () => void; onResume?: () => void }) {
   const [menu, setMenu] = useState(false)
   const copy = () => { void copyText(study.figures.shareLink, 'Study link') }
-  const items = MENU
+  /** The common actions on every study type (19 Oct 2026); a paused study offers Resume Study where Pause is. */
+  const items = study.paused ? MENU.map((m) => (m === 'Pause Study' ? 'Resume Study' : m)) : MENU
   const pick = (item: string) => {
     setMenu(false)
     if (item === 'Copy Study Link') copy()
     if (item === 'Pause Study') onPause()
+    if (item === 'Resume Study') onResume?.()
     if (item === 'Stop-complete Study') onComplete()
   }
   return (

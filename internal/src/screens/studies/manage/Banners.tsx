@@ -20,8 +20,8 @@ function Banner({ tone, title, children, actions, className }: { tone: 'yellow' 
  * "Congrats!" (video 1:1, 1952:80462): the target is met and the client is
  * expected to pay. It offers the team nothing: its two CTAs are hidden layers.
  */
-export const CongratsBanner = () => (
-  <Banner tone="yellow" title={<><span className="text-state-success">Congrats!</span> 30 required participants are fulfilled and completed now!</>}>
+export const CongratsBanner = ({ required }: { required: number }) => (
+  <Banner tone="yellow" title={<><span className="text-state-success">Congrats!</span> {required} required participants are fulfilled and completed now!</>}>
     Client will complete the study by a payment or get more participants if needed. If not paid manually, will be auto-paid from saved method.
   </Banner>
 )

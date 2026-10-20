@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { billing, counts, invoiceNumber, progressPct } from '@shared/derive'
+import { balanceDueBy, billing, counts, invoiceNumber, progressPct } from '@shared/derive'
 import { clockTime, dayLongMonthYear, dayMonthYear, money, monthDayYear, monthDayYearTime } from '@shared/format'
 import { useClient, useStudies } from '../platform'
 import { DEPOSIT_RULE } from '@shared/platform'
@@ -29,7 +29,7 @@ export function useBill(studyId?: string) {
     const number = study ? invoiceNumber(study) : ''
     const due = b ? (b.outstanding > 0 ? b.outstanding : Math.max(0, b.net)) : 0
     const balance = study?.payments.find((x) => x.kind === 'balance')
-    const dueBy = study?.completedAt ? new Date(new Date(study.completedAt).getTime() + 7 * 86_400_000).toISOString() : undefined
+    const dueBy = study ? balanceDueBy(study) : undefined
     const BILLING: BillingRow[] = (b?.lines ?? []).map((l) => ({ label: l.label, amount: money(l.amount), sub: l.sub, info: l.info }))
     return {
       study, card,
