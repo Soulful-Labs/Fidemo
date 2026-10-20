@@ -115,13 +115,14 @@ export function StudyHeader({ study }: { study: Study }) {
   )
 }
 
-/** The six tabs, in the frames' order. */
+/** The seven tabs, in the frames' order (Revisions History added 19 Oct 2026, 2322:211934). */
 export const STUDY_TABS = [
   { key: 'overview', label: 'Overview', path: '' },
   { key: 'manage', label: 'Manage Study', path: '/manage' },
   { key: 'matched', label: 'Matched', path: '/matched' },
   { key: 'recruited', label: 'Recruited', path: '/recruited' },
   { key: 'results', label: 'Results', path: '/results' },
+  { key: 'revisions', label: 'Revisions History', path: '/revisions' },
   { key: 'pay', label: 'Pay', path: '/pay' },
 ] as const
 

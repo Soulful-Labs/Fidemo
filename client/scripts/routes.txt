@@ -21,6 +21,7 @@ studies/st-pay/recruited
 studies/st-sleep/recruited
 studies/st-fitness/recruited
 studies/st-pay/results
+studies/st-social/revisions
 studies/st-pay/respondent/ferry-l?state=recruited
 studies/st-pay/respondent/ferry-l/result
 studies/st-pay/respondent/ferry-l/activity

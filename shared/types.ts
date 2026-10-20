@@ -155,6 +155,8 @@ export interface Study {
   createdAt: string
   /** Workflow 7: when the client submitted it for review. */
   submittedAt?: string
+  /** The first time the study was sent to the team; a resubmit moves `submittedAt` and leaves this. */
+  firstSubmittedAt?: string
   /** Workflow 11: when the team took it live. */
   approvedAt?: string
   completedAt?: string
@@ -190,8 +192,16 @@ export interface Study {
   payments: StudyPayment[]
   /** Workflow 7: changes the team asked for before approving. */
   revisions: { text: string; at: string; by: string }[]
+  /** Every saved round of changes to the study after it was first submitted, by the client or the team (shared/revisions.ts). */
+  edits?: StudyEdit[]
   pausedReason?: string
 }
+
+/** One field a round of changes touched: where it sits in the Create steps ("About", "Title"), and what it was and became. */
+export interface FieldChange { path: string[]; from?: string; to?: string; added?: string[]; removed?: string[] }
+
+/** One saved round of changes to a submitted study. `byId` is the team member when the team made it. */
+export interface StudyEdit { at: string; by: 'client' | 'team'; byId?: string; changes: FieldChange[] }
 
 // ------------------------------------------------------------------- people
 

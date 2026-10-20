@@ -26,7 +26,7 @@ import type {
   Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudySetup, StudyType, TeamMember, Ticket,
 } from './types'
 
-export const SEED_VERSION = 9
+export const SEED_VERSION = 10
 export const DEMO_PERSON_ID = 'jonathan'
 export const DEMO_PERSON_EMAIL = 'jonathan.reeve@example.com'
 export const DEMO_CLIENT_ID = 'cl-soulful'
@@ -452,6 +452,25 @@ export function buildSeed(now: Date = new Date()): PlatformState {
     'How do you design social media posts and what tools do you use for it',
     'canva.jpg', 30, 36, 94, 'exclude', 'design', 'Marketers, Small business owners, Content creators', {}, SURVEY_SOCIAL)
   social.setup = setup(SUMMARY.survey, 'Social Media Influencer, Creator, Digital Marketer, Graphic Designer', `${social.preScreener.length + social.screener.length} inputs`)
+  // Revisions History (client 2322:211934): the team asked for changes and edited the description, then the client resubmitted.
+  const sent = social.submittedAt!
+  const after = (hours: number) => new Date(new Date(sent).getTime() + hours * 3_600_000).toISOString()
+  const optioned = social.screener.findIndex((q) => 'options' in q && q.options.length > 0)
+  const option = optioned >= 0 ? (social.screener[optioned] as { options: string[] }).options.at(-1) : undefined
+  social.firstSubmittedAt = sent
+  social.submittedAt = after(5)
+  social.revisions = [{
+    text: 'We have reviewed your study and noticed the following things should be updated:\n\n1. About section:\n    a. The description is too vague to tell what the study is about.\n2. Screener section:\n    a. Some answers do not suit the type of question.\n\nUpdate the above and resubmit it to get it live. Thanks!',
+    at: after(1), by: 'tm-maya',
+  }]
+  social.edits = [
+    { at: after(3), by: 'team', byId: 'tm-maya', changes: [{ path: ['About', 'Description'], from: 'Tell us about the posts you make', to: social.description }] },
+    { at: after(5), by: 'client', changes: [
+      { path: ['About', 'Title'], from: 'Designing posts for social media', to: social.title },
+      { path: ['Audience', 'Industries'], added: [social.industry], removed: ['Lifestyle'] },
+      ...(option ? [{ path: ['Screener', `Q${optioned + 1}`, 'Option'], added: [option] }] : []),
+    ] },
+  ]
   social.participations = fill(social, { rated: 1, completed: 4, noShow: 1, recruited: 5, qualified: 8, disqualified: 4, applied: 14, invited: 7, matched: 9 }, { doneFrom: -20, doneTo: -2 })
 
   /** One of the demo client's studies is waiting on the team, so the console's To Review queue starts with it. */

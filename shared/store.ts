@@ -18,6 +18,7 @@ import { sessionStartOf as sessionStart } from './derive'
 import { EMPTY_PROFILE } from './seed/people'
 import { MAX_RUN_DAYS, buildStudy, fitsStudy, studyTypeOf, summarise } from './studyForm'
 import type { StudyForm } from './studyForm'
+import { editOf } from './revisions'
 import { DEMO_TEAM_PASSWORD, MASTER_ADMIN_ID, SEED_VERSION, buildEmpty, buildSeed } from './seed'
 import type {
   Answers, AppNotification, Booking, Check, Client, ClientReview, Module, ParticipantRating, Participation, ParticipationState,
@@ -309,10 +310,14 @@ export function createPlatform(options: Options = {}) {
       if (!built.ok) return no(built.why)
       const id = draft?.id ?? uid('st')
       const kept = structuredClone(form)
+      // A study the team has already seen keeps a record of what this save changed (Revisions History).
+      const firstSubmittedAt = draft?.firstSubmittedAt ?? draft?.submittedAt
+      const edit = firstSubmittedAt ? editOf(draft?.form, kept, 'client', iso()) : null
       const study: Study = {
-        id, clientId, state: 'in_review', createdAt: draft?.createdAt ?? iso(), submittedAt: iso(),
+        id, clientId, state: 'in_review', createdAt: draft?.createdAt ?? iso(), submittedAt: iso(), firstSubmittedAt: firstSubmittedAt ?? iso(),
         linkCode: draft?.linkCode || `HL-${id.slice(-3).toUpperCase()}-A`, ...built.study, image: built.study.image ?? draft?.image,
         setup: summarise(s, kept, clock()), form: kept, participations: [], payments: [], revisions: draft?.revisions ?? [],
+        edits: [...(draft?.edits ?? []), ...(edit ? [edit] : [])],
       }
       study.payments.push({ id: `${id}-deposit`, kind: 'deposit', amount: depositFor(study.rates, study.required), at: iso() })
       if (draft) s.studies.splice(s.studies.indexOf(draft), 1)

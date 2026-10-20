@@ -2,11 +2,13 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import AppShell from '../../app/AppShell'
 import StudyTypeTag from '../../components/client/StudyTypeTag'
-import { CheckCircle, ClockArrow, DiaryIcon, Download, Edit, Info, PaymentsIcon, PoolIcon, StudiesIcon } from '../../components/ui/icons'
+import { ClockArrow, DiaryIcon, Download, Edit, Info, PaymentsIcon, PoolIcon, StudiesIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { useToast } from '../../components/ui/Toast'
 import { useDraft } from '../../mock/createStore'
 import { useWorkspace } from '../../mock/workspace'
+import RevisionsTimeline from '../../components/client/RevisionsTimeline'
+import { usePlatform } from '../../platform'
 import { CardMark } from '../payments/PaymentPanels'
 import type { ClientStudy as Study } from '../../platform'
 import { DEPOSIT_RULE } from '@shared/platform'
@@ -80,6 +82,7 @@ export default function SubmittedStudy({ s }: { s: Study }) {
   const tab = (TABS.some((t) => t.key === params.get('tab')) ? params.get('tab') : 'about') as TabKey
   const { open } = useDraft()
   const { cards } = useWorkspace()
+  const clientName = usePlatform().clients.find((c) => c.id === s.clientId)?.name ?? ''
   const card = cards.find((c) => c.isDefault) ?? cards[0]
   const form = s.form
   const pills = s.setup?.audience ?? s.review?.audience ?? []
@@ -223,30 +226,7 @@ export default function SubmittedStudy({ s }: { s: Study }) {
               </div>
             )}
 
-            {tab === 'revisions' && (
-              <div className="flex flex-col gap-3 pt-4">
-                {[...s.revisions].reverse().map((r, i) => (
-                  <div key={i} className="flex gap-3 rounded-lg border-1 border-stroke-1 p-4">
-                    <CheckCircle className="h-5 w-5 shrink-0 text-brand-secondary" />
-                    <div className="flex flex-1 flex-col gap-2">
-                      <p className="text-body-regular text-text-title">Requested changes.</p>
-                      <p className="whitespace-pre-line rounded-md bg-bg-1 p-3 text-body-regular text-text-subtitle">{r.text}</p>
-                      <p className="text-text-regular text-text-body">{monthDayYearTime(r.at)}</p>
-                    </div>
-                  </div>
-                ))}
-                {s.submittedAt && (
-                  <div className="flex gap-3 rounded-lg border-1 border-stroke-1 p-4">
-                    <CheckCircle className="h-5 w-5 shrink-0 text-brand-secondary" />
-                    <div className="flex flex-col gap-1">
-                      <p className="text-body-regular text-text-title">Created and submitted the study for review.</p>
-                      <p className="text-text-regular text-text-body">{monthDayYearTime(s.submittedAt)}</p>
-                    </div>
-                  </div>
-                )}
-                {!s.submittedAt && s.revisions.length === 0 && <p className="text-text-regular text-text-subtitle">Nothing yet. Revisions appear here once the study is submitted.</p>}
-              </div>
-            )}
+            {tab === 'revisions' && <div className="pt-4"><RevisionsTimeline study={s} viewer="client" firstName={clientName.split(' ')[0] ?? ''} /></div>}
           </div>
         </section>
       </div>
