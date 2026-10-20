@@ -6,9 +6,11 @@ import { copyText } from '../../lib/copy'
 import { useStudies } from '../../platform'
 import type { ClientStudy } from '../../platform'
 import { useToast } from '../ui/Toast'
+import Button from '../ui/Button'
+import { UsersIcon } from '../ui/icons'
 import { DoneModal } from './ReportParticipant'
 
-type Dialog = null | 'pause' | 'stop' | 'republish' | 'republished'
+type Dialog = null | 'pause' | 'stop' | 'republish' | 'recruit' | 'republished'
 
 /**
  * The common study actions (19 Oct 2026, every study type): Copy Study Link,
@@ -20,7 +22,7 @@ type Dialog = null | 'pause' | 'stop' | 'republish' | 'republished'
 export function useStudyActions(study: ClientStudy | null) {
   const nav = useNavigate()
   const toast = useToast()
-  const { moveStudy, duplicateStudy } = useStudies()
+  const { moveStudy, duplicateStudy, recruitMore } = useStudies()
   const [dialog, setDialog] = useState<Dialog>(null)
   const close = () => setDialog(null)
   const left = study ? Math.max(0, study.required - counts(study).completed) : 0
@@ -30,6 +32,8 @@ export function useStudyActions(study: ClientStudy | null) {
     pause: () => setDialog('pause'),
     stop: () => setDialog('stop'),
     resume: () => setDialog('republish'),
+    /** The target is met: keep recruiting (the same Re-Publish confirmation, as its note describes). */
+    recruitMore: () => setDialog('recruit'),
     duplicate: () => {
       if (!study) return
       const res = duplicateStudy(study.id)
@@ -52,6 +56,10 @@ export function useStudyActions(study: ClientStudy | null) {
       }} />
       <RepublishModal open={dialog === 'republish'} onClose={close} onConfirm={() => {
         const res = moveStudy(study.id, 'recruiting')
+        if (res.ok) setDialog('republished'); else { close(); toast(res.why) }
+      }} />
+      <RepublishModal open={dialog === 'recruit'} onClose={close} onConfirm={() => {
+        const res = recruitMore(study.id)
         if (res.ok) setDialog('republished'); else { close(); toast(res.why) }
       }} />
       <DoneModal open={dialog === 'republished'} onClose={() => { close(); nav(`/studies/${study.id}`) }} title="Study has been re-published!"
@@ -78,5 +86,27 @@ export function StudyMenu({ study, open, onClose, act }: {
     <OngoingMenu open={open} onClose={onClose} paused={study.state === 'paused'}
       onPause={run(study.state === 'paused' ? act.resume : act.pause)} onCopy={run(act.copy)}
       onComplete={run(act.stop)} onDuplicate={run(act.duplicate)} />
+  )
+}
+
+/**
+ * "Congrats!" (1645:132015, 1645:132108): a running study has met its target.
+ * Recruit more keeps it live past the target; Mark Completed stops it, which
+ * makes the balance due. Drawn on Recruited and Results; shown on every tab.
+ */
+export function TargetBanner({ study }: { study: ClientStudy }) {
+  const { act, dialogs } = useStudyActions(study)
+  return (
+    <div className="flex items-center justify-between gap-6 rounded-lg border-1 border-yellow-300/70 bg-yellow-40 px-4 py-[13px]">
+      <div className="flex flex-col gap-1">
+        <p className="text-body-medium text-text-title"><span className="text-brand-secondary">Congrats!</span> Your {study.required} required participants are fulfilled and completed now!</p>
+        <p className="text-text-regular text-text-subtitle">You have received the target of {study.required} participants results. Complete the study by a payment or get more participants if needed.</p>
+      </div>
+      <div className="flex shrink-0 items-center gap-3">
+        <Button variant="secondary" size="none" className="h-9 px-3" leftIcon={<UsersIcon className="h-4 w-4" />} onClick={act.recruitMore}>Recruit more</Button>
+        <Button size="none" className="h-9 px-3" onClick={act.stop}>Mark Completed</Button>
+      </div>
+      {dialogs}
+    </div>
   )
 }

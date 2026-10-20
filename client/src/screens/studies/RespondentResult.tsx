@@ -14,6 +14,7 @@ import { cn } from '../../lib/cn'
 import { answersOf, resultsOf } from '../../mock/respondent'
 import { clockTime, longDay, monthDayYearTime } from '@shared/format'
 import { sessionStart } from '@shared/store'
+import { DECISION_UNDO_MS } from '@shared/platform'
 import { useToast } from '../../components/ui/Toast'
 import { useStudy } from '../../platform'
 import type { ClientStudy as Study } from '../../platform'
@@ -83,6 +84,8 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
   /** A session study is only rated once its slot has been sat. */
   const rated = session ? running : done
   const crumbTab = done ? 'Results' : 'Recruited'
+  const decidedAt = person?.participation.decidedAt
+  const undoable = !!decidedAt && Date.now() - new Date(decidedAt).getTime() <= DECISION_UNDO_MS
 
   /**
    * Sharing the PIN is the client's half of the session code (step 42). Without
@@ -189,13 +192,34 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                       already qualified, disqualified, recruited or scheduled is past
                       this point, so their standing is stated rather than offered
                       again — the store refused it, which read as a broken button. */}
-                  {!done && state !== 'applied' && (
+                  {/* Screener CTAs (1769:80372): a decision reads back in its colour, with Undo for the hour the store allows (DECISION_UNDO_MS). */}
+                  {!done && (state === 'qualified' || state === 'disqualified') && (
+                    <>
+                      <p className="flex flex-col text-text-regular">
+                        <span className={state === 'qualified' ? 'text-brand-secondary' : 'text-red-600'}>
+                          {state === 'qualified' ? 'You have qualified this respondent for the further study.' : 'You have disqualified this respondent for the further study.'}
+                        </span>
+                        <span className="text-text-title">The action can be undone within 1 hour only after it is taken.</span>
+                      </p>
+                      <span className="flex items-center gap-3">
+                        {undoable && (
+                          <Button variant="tertiary" size="none" className="h-12 px-5 text-body-medium" onClick={() => {
+                            const res = moveRespondent(s.id, person.id, 'applied')
+                            toast(res.ok ? 'Decision undone' : res.why)
+                          }}>Undo</Button>
+                        )}
+                        <span className={cn('flex h-12 items-center gap-2 rounded-md px-5 text-body-medium',
+                          state === 'qualified' ? 'bg-green-50 text-brand-secondary' : 'bg-red-50 text-red-600')}>
+                          {state === 'qualified' ? <><CheckCircle className="h-5 w-5" />Qualified</> : <><Close className="h-5 w-5" />Disqualified</>}
+                        </span>
+                      </span>
+                    </>
+                  )}
+                  {!done && state !== 'applied' && state !== 'qualified' && state !== 'disqualified' && (
                     <p className="flex flex-col text-text-regular">
                       <span className="text-text-subtitle">This application has already been decided.</span>
                       <span className="text-text-title">
-                        {state === 'disqualified' ? `${person.name} was disqualified from this study.`
-                          : state === 'scheduled' ? `${person.name} is qualified and has booked a session.`
-                          : `${person.name} is qualified for this study.`}
+                        {state === 'scheduled' ? `${person.name} is qualified and has booked a session.` : `${person.name} is qualified for this study.`}
                       </span>
                     </p>
                   )}

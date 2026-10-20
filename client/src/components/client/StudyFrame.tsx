@@ -6,9 +6,9 @@ import { Clock, DiaryBookIcon, LinkIcon, MoreVertical } from '../ui/icons'
 import { cn } from '../../lib/cn'
 import { useToast } from '../ui/Toast'
 import type { ClientStudy as Study } from '../../platform'
-import { counts, progressPct, statusTag } from '@shared/derive'
+import { counts, progressPct, showsTargetMet, statusTag } from '@shared/derive'
 import { useState } from 'react'
-import { StudyMenu, useStudyActions } from './StudyActions'
+import { StudyMenu, TargetBanner, useStudyActions } from './StudyActions'
 import { copyText } from '../../lib/copy'
 
 /**
@@ -155,7 +155,7 @@ export function StudyFrame({ study, active, muted, banner, children, minH = 'min
   return (
     <div className={cn(minH, 'rounded-lg bg-bg-0 p-4')}>
       <div className="flex flex-col gap-3">
-        {banner}
+        {banner ?? (showsTargetMet(study) && <TargetBanner study={study} />)}
         <StudyHeader study={study} />
         <section className={cn(bodyMinH, 'overflow-hidden rounded-lg border-1 border-stroke-1')}>
           <StudyTabs id={study.id} active={active} muted={muted} />

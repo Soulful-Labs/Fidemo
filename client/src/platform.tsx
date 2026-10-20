@@ -174,6 +174,7 @@ export function useStudies() {
       cancelSession: (studyId: string, personId: string, reason = ''): Result => p.cancelSessionFor(studyId, personId, actor, reason),
       setRepeatRule: (studyId: string, rule: RepeatRule): Result => p.setRepeatRule(studyId, rule),
       payBalance: (studyId: string): Result => p.payBalance(studyId),
+      recruitMore: (studyId: string): Result => p.recruitMore(studyId, actor),
       duplicateStudy: (studyId: string) => p.duplicateStudy(studyId),
       /** Workflow 5 and 7: the client submits a study; the team takes it live from the console. */
       submitStudy: (form: StudyForm, draftId?: string) => p.submitStudy(clientId, form, draftId),

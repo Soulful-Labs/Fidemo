@@ -62,7 +62,7 @@ export default function RecruitedTab() {
   }))
 
   return (
-    <AppShell crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
+    <AppShell hideCreate crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
       <StudyFrame study={s} active="recruited"
         minH={session ? 'min-h-[1186px]' : 'min-h-[1090px]'}
         bodyMinH={session ? 'min-h-[928px]' : 'min-h-[832px]'}>

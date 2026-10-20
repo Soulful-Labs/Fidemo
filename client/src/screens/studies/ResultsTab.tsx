@@ -65,7 +65,7 @@ export default function ResultsTab() {
   ]
 
   return (
-    <AppShell crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
+    <AppShell hideCreate crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
       <StudyFrame study={s} active="results" minH="min-h-[1481px]" bodyMinH="min-h-[1231px]">
         <div className="flex flex-col px-4 pt-4">
           <div className="grid grid-cols-[213px_213px_213px_1fr] gap-3">

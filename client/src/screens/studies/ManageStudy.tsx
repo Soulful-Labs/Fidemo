@@ -95,7 +95,7 @@ export default function ManageStudy() {
   const edit = (step: string) => (canEditStudy(s.state) ? () => { open(s); navigate(`/studies/create/${step}`) } : undefined)
 
   return (
-    <AppShell crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
+    <AppShell hideCreate crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
       <StudyFrame study={s} active="manage" minH="min-h-[1315px]" bodyMinH="min-h-[1057px]">
         <div className="flex flex-col gap-4 p-4">
           <Step icon={<Info className="h-5 w-5" />} title="About" onEdit={edit('about')}>

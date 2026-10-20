@@ -171,7 +171,7 @@ export default function StudyOverview() {
   const { id } = useParams()
   const s = useStudy(id)
   return (
-    <AppShell crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
+    <AppShell hideCreate crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
       <StudyFrame study={s} active="overview" minH="min-h-[1014px]" bodyMinH="min-h-[775px]">
         <OverviewBody s={s} />
       </StudyFrame>

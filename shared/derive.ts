@@ -1077,6 +1077,10 @@ export const consoleStudies = (state: PlatformState, tab: 'review' | 'ongoing' |
 /** Whether the study has met its target, which is when the "Congrats!" banner shows. */
 export const targetMet = (study: Study): boolean => study.required > 0 && counts(study).completed >= study.required
 
+/** The "Congrats!" banner: a running study that has met its target, unless the client chose to recruit more. */
+export const showsTargetMet = (study: Study): boolean =>
+  targetMet(study) && !study.beyondTarget && (study.state === 'recruiting' || study.state === 'ongoing')
+
 /** Diary and survey: whether a person has done enough to complete. */
 export const diaryReady = (study: Study, p: Participation | undefined): boolean =>
   !study.diary || (p?.diaryDays?.length ?? 0) >= (study.diary.minDays ?? DIARY.MIN_DAYS)

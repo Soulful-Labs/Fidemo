@@ -52,7 +52,7 @@ export default function MatchedTab() {
   }
 
   return (
-    <AppShell crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
+    <AppShell hideCreate crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
       <StudyFrame study={s} active="matched" minH="min-h-[1307px]" bodyMinH="min-h-[1057px]">
         {fromPool ? (
           <InviteFromPool study={s} onBack={() => setFromPool(false)} onInvite={(p) => invite(p.id, p.name)}

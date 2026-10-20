@@ -195,6 +195,8 @@ export interface Study {
   /** Every saved round of changes to the study after it was first submitted, by the client or the team (shared/revisions.ts). */
   edits?: StudyEdit[]
   pausedReason?: string
+  /** Recruit more (19 Oct 2026): the target was met and the client chose to keep recruiting, so the "Congrats!" banner is not shown again. */
+  beyondTarget?: boolean
 }
 
 /** One field a round of changes touched: where it sits in the Create steps ("About", "Title"), and what it was and became. */

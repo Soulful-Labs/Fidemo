@@ -403,6 +403,16 @@ export function createPlatform(options: Options = {}) {
     }),
 
     /** Workflow 7: the team sends a study back with the changes it needs. */
+    /** Recruit more: a running study that has met its target keeps recruiting, at the rates it was published at. */
+    recruitMore: (studyId: string, actor: Actor) => move((s) => {
+      const study = s.studies.find((x) => x.id === studyId)
+      if (!study) return no('No such study')
+      if (study.state !== 'recruiting' && study.state !== 'ongoing') return no('Only a running study can recruit more')
+      study.beyondTarget = true
+      log(s, actor, `Kept ${study.title} recruiting past its target`, 'Studies / Manage / Recruit more')
+      return yes()
+    }),
+
     requestChanges: (studyId: string, text: string, actor: Actor) => move((s) => {
       const study = s.studies.find((x) => x.id === studyId)
       if (!study) return no('No such study')
