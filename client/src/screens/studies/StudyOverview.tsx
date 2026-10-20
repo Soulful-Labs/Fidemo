@@ -2,6 +2,7 @@ import AppShell from '../../app/AppShell'
 import { StudyFrame } from '../../components/client/StudyFrame'
 import { useParams } from 'react-router-dom'
 import { useStudies, useStudy } from '../../platform'
+import type { ClientStudy } from '../../platform'
 import { averageScore, counts, progressPct } from '@shared/derive'
 import { money } from '@shared/format'
 import { cn } from '../../lib/cn'
@@ -59,11 +60,11 @@ function Funnel({ steps }: { steps: number[] }) {
  * 2.1 Study Overview, as redrawn in the 13 Oct 2026 export and applied to
  * every study type: an insight line, the recruitment funnel, the participation
  * forecast and five figures. Its sibling tab, Manage Study, holds what the
- * study is; this one holds how it is going.
+ * study is; this one holds how it is going. The paused study (19 Oct 2026)
+ * draws the same body under its banner, so it is exported.
  */
-export default function StudyOverview() {
-  const { id } = useParams()
-  const s = useStudy(id)
+/** `daysRow`: the paused study's forecast card also lists Days Remaining (19 Oct 2026 export). */
+export function OverviewBody({ s, daysRow }: { s: ClientStudy; daysRow?: boolean }) {
   const { state } = useStudies()
   const c = counts(s)
   const pct = progressPct(s)
@@ -79,6 +80,7 @@ export default function StudyOverview() {
   const facts: [string, string][] = [
     ['Average Trust Score', average ? String(average) : '—'],
     ['Required Participants', String(s.required)],
+    ...(daysRow ? [['Days Remaining', String(s.daysRemaining)] as [string, string]] : []),
   ]
   const tiles: { label: string; value: string; suffix?: string; empty?: boolean }[] = [
     { label: 'Rated By You', value: String(c.rated), suffix: `/${c.completed} completed` },
@@ -87,83 +89,91 @@ export default function StudyOverview() {
   ]
 
   return (
-    <AppShell crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
-      <StudyFrame study={s} active="overview" minH="min-h-[1014px]" bodyMinH="min-h-[775px]">
-        <div className="flex flex-col gap-6 p-4">
-          {pace && pace.state !== 'done' && (
-            <section className="flex min-h-[87px] flex-col justify-center gap-2 rounded-lg bg-gradient-to-r from-yellow-30 to-bg-1 px-4 py-3">
-              <p className="flex items-center gap-2 text-body-medium text-brand-primary">{SPARKLE}AI Super Insight</p>
-              <p className="text-[17px] leading-6 tracking-[-0.01em] text-text-subtitle">
-                <span className="text-text-title">{pace.state === 'ahead' ? 'You are ahead of pace.' : 'You are behind pace.'}</span>{' '}
-                {pace.state === 'ahead'
-                  ? `At this rate the study fills in about ${pace.daysToFinish} days, with ${s.daysRemaining} left.`
-                  : `At this rate it needs about ${pace.daysToFinish} days and has ${s.daysRemaining}. About ${pace.perWeek} completions a week would finish it in time.`}
-              </p>
-            </section>
-          )}
+    <div className="flex flex-col gap-6 p-4">
+      {pace && pace.state !== 'done' && (
+        <section className="flex min-h-[87px] flex-col justify-center gap-2 rounded-lg bg-gradient-to-r from-yellow-30 to-bg-1 px-4 py-3">
+          <p className="flex items-center gap-2 text-body-medium text-brand-primary">{SPARKLE}AI Super Insight</p>
+          <p className="text-[17px] leading-6 tracking-[-0.01em] text-text-subtitle">
+            <span className="text-text-title">{pace.state === 'ahead' ? 'You are ahead of pace.' : 'You are behind pace.'}</span>{' '}
+            {pace.state === 'ahead'
+              ? `At this rate the study fills in about ${pace.daysToFinish} days, with ${s.daysRemaining} left.`
+              : `At this rate it needs about ${pace.daysToFinish} days and has ${s.daysRemaining}. About ${pace.perWeek} completions a week would finish it in time.`}
+          </p>
+        </section>
+      )}
 
-          <div className="grid grid-cols-2 gap-6">
-            <section className="flex h-[367px] flex-col rounded-lg border-1 border-stroke-1 bg-bg-1 px-4 pt-[17px]">
-              <h2 className="text-title-s font-normal text-text-subtitle">Recruitment Funnel</h2>
-              <div className="pt-[23px]"><Funnel steps={funnel.map((f) => f.n)} /></div>
-              <dl className="mt-6 flex flex-col gap-[14px] border-t-1 border-stroke-input px-2 pt-[25px]">
-                {funnel.map((f) => (
-                  <div key={f.label} className="flex h-6 items-center">
-                    <dt className="w-[108px] text-body-regular text-text-title">{f.label}</dt>
-                    <dd className="w-[50px] text-title-m text-text-title">{f.n}</dd>
-                    <span className="h-2.5 w-[281px]"><span className={cn('block h-full rounded-full', f.bar)} style={{ width: `${Math.round((f.n / top) * 100)}%` }} /></span>
-                    <span className="flex-1 text-right text-body-regular text-text-body">{Math.round((f.n / top) * 100)}%</span>
-                  </div>
-                ))}
-              </dl>
-            </section>
-
-            <section className="flex h-[367px] flex-col rounded-lg border-1 border-stroke-1 px-4 pt-[17px]">
-              <h2 className="text-title-s font-normal text-text-subtitle">Participation Forecast</h2>
-              <div className="relative mt-[29px] flex h-[87px] items-center rounded-md bg-green-50 px-4">
-                <div className="flex w-[237px] flex-col gap-1.5">
-                  <span className="text-title-m leading-6 text-text-title">{pct}%</span>
-                  <span className="text-body-regular text-text-subtitle">Progress</span>
-                </div>
-                <svg viewBox="0 0 116 116" width="116" height="116" className="absolute left-[113px] top-[-15px]" aria-hidden="true">
-                  <circle cx="58" cy="58" r="57" fill="#fdfdfc" stroke="#edf3f0" />
-                  <circle cx="58" cy="58" r="40" fill="none" stroke="#e3edea" strokeWidth="9" />
-                  <circle cx="58" cy="58" r="40" fill="none" stroke="#3fb984" strokeWidth="9" strokeLinecap="round"
-                    strokeDasharray={`${(pct / 100) * 251.3} 251.3`} transform="rotate(-90 58 58)" />
-                </svg>
-                {/* The export only draws the study going well. Behind pace is not an error, so it is written in the brand orange, not red. */}
-                <div className="flex flex-col gap-1.5">
-                  <span className={cn('text-title-m leading-6', !pace ? 'text-text-subtitle' : pace.state === 'behind' ? 'text-brand-primary' : 'text-brand-secondary')}>
-                    {!pace ? 'No pace yet' : pace.state === 'done' ? 'Target reached' : pace.state === 'ahead' ? 'Going On track' : 'Behind pace'}
-                  </span>
-                  <span className="text-body-regular text-text-subtitle">
-                    {!pace ? 'Waiting for the first completion' : pace.state === 'done' ? 'Every seat is completed' : `~ Approx. ${pace.daysToFinish} days more to fill`}
-                  </span>
-                </div>
-              </div>
-              <dl className="mt-[39px] flex flex-col">
-                {facts.map(([label, value]) => (
-                  <div key={label} className="flex h-[55px] items-center justify-between border-t-1 border-stroke-input text-body-regular text-text-title">
-                    <dt>{label}</dt>
-                    <dd className="text-body-medium">{value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </section>
-          </div>
-
-          {/* 15 Oct 2026: three tiles; Impressions and Clicks (never tracked) are no longer drawn. */}
-          <dl className="grid grid-cols-3 gap-2">
-            {tiles.map((t) => (
-              <div key={t.label} className="flex h-[71px] flex-col justify-center gap-1 rounded-md border-1 border-stroke-1 px-[11px]">
-                <dt className="text-text-regular text-text-subtitle">{t.label}</dt>
-                <dd className={cn('flex items-baseline gap-1', t.empty ? 'text-body-regular text-text-body' : 'text-title-s leading-[25px] text-text-title')}>
-                  {t.value}{t.suffix && <span className="text-body-regular text-text-subtitle">{t.suffix}</span>}
-                </dd>
+      <div className="grid grid-cols-2 gap-6">
+        <section className="flex h-[367px] flex-col rounded-lg border-1 border-stroke-1 bg-bg-1 px-4 pt-[17px]">
+          <h2 className="text-title-s font-normal text-text-subtitle">Recruitment Funnel</h2>
+          <div className="pt-[23px]"><Funnel steps={funnel.map((f) => f.n)} /></div>
+          <dl className="mt-6 flex flex-col gap-[14px] border-t-1 border-stroke-input px-2 pt-[25px]">
+            {funnel.map((f) => (
+              <div key={f.label} className="flex h-6 items-center">
+                <dt className="w-[108px] text-body-regular text-text-title">{f.label}</dt>
+                <dd className="w-[50px] text-title-m text-text-title">{f.n}</dd>
+                <span className="h-2.5 w-[281px]"><span className={cn('block h-full rounded-full', f.bar)} style={{ width: `${Math.round((f.n / top) * 100)}%` }} /></span>
+                <span className="flex-1 text-right text-body-regular text-text-body">{Math.round((f.n / top) * 100)}%</span>
               </div>
             ))}
           </dl>
-        </div>
+        </section>
+
+        <section className="flex h-[367px] flex-col rounded-lg border-1 border-stroke-1 px-4 pt-[17px]">
+          <h2 className="text-title-s font-normal text-text-subtitle">Participation Forecast</h2>
+          <div className="relative mt-[29px] flex h-[87px] items-center rounded-md bg-green-50 px-4">
+            <div className="flex w-[237px] flex-col gap-1.5">
+              <span className="text-title-m leading-6 text-text-title">{pct}%</span>
+              <span className="text-body-regular text-text-subtitle">Progress</span>
+            </div>
+            <svg viewBox="0 0 116 116" width="116" height="116" className="absolute left-[113px] top-[-15px]" aria-hidden="true">
+              <circle cx="58" cy="58" r="57" fill="#fdfdfc" stroke="#edf3f0" />
+              <circle cx="58" cy="58" r="40" fill="none" stroke="#e3edea" strokeWidth="9" />
+              <circle cx="58" cy="58" r="40" fill="none" stroke="#3fb984" strokeWidth="9" strokeLinecap="round"
+                strokeDasharray={`${(pct / 100) * 251.3} 251.3`} transform="rotate(-90 58 58)" />
+            </svg>
+            {/* The export only draws the study going well. Behind pace is not an error, so it is written in the brand orange, not red. */}
+            <div className="flex flex-col gap-1.5">
+              <span className={cn('text-title-m leading-6', !pace ? 'text-text-subtitle' : pace.state === 'behind' ? 'text-brand-primary' : 'text-brand-secondary')}>
+                {!pace ? 'No pace yet' : pace.state === 'done' ? 'Target reached' : pace.state === 'ahead' ? 'Going On track' : 'Behind pace'}
+              </span>
+              <span className="text-body-regular text-text-subtitle">
+                {!pace ? 'Waiting for the first completion' : pace.state === 'done' ? 'Every seat is completed' : `~ Approx. ${pace.daysToFinish} days more to fill`}
+              </span>
+            </div>
+          </div>
+          <dl className="mt-[39px] flex flex-col">
+            {facts.map(([label, value]) => (
+              <div key={label} className="flex h-[55px] items-center justify-between border-t-1 border-stroke-input text-body-regular text-text-title">
+                <dt>{label}</dt>
+                <dd className="text-body-medium">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      </div>
+
+      {/* 15 Oct 2026: three tiles; Impressions and Clicks (never tracked) are no longer drawn. */}
+      <dl className="grid grid-cols-3 gap-2">
+        {tiles.map((t) => (
+          <div key={t.label} className="flex h-[71px] flex-col justify-center gap-1 rounded-md border-1 border-stroke-1 px-[11px]">
+            <dt className="text-text-regular text-text-subtitle">{t.label}</dt>
+            <dd className={cn('flex items-baseline gap-1', t.empty ? 'text-body-regular text-text-body' : 'text-title-s leading-[25px] text-text-title')}>
+              {t.value}{t.suffix && <span className="text-body-regular text-text-subtitle">{t.suffix}</span>}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  )
+}
+
+export default function StudyOverview() {
+  const { id } = useParams()
+  const s = useStudy(id)
+  return (
+    <AppShell crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
+      <StudyFrame study={s} active="overview" minH="min-h-[1014px]" bodyMinH="min-h-[775px]">
+        <OverviewBody s={s} />
       </StudyFrame>
     </AppShell>
   )

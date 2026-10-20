@@ -1,4 +1,3 @@
-import { canEditStudy } from '@shared/lifecycle'
 import type { ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import StudyTypeTag from './StudyTypeTag'
@@ -9,7 +8,7 @@ import { useToast } from '../ui/Toast'
 import type { ClientStudy as Study } from '../../platform'
 import { counts, progressPct, statusTag } from '@shared/derive'
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { StudyMenu, useStudyActions } from './StudyActions'
 import { copyText } from '../../lib/copy'
 
 /**
@@ -43,8 +42,8 @@ export function HeadStat({ label, value, suffix }: { label: string; value: strin
  */
 export function StudyHeader({ study }: { study: Study }) {
   const toast = useToast()
-  const nav = useNavigate()
   const [menu, setMenu] = useState(false)
+  const { act, dialogs } = useStudyActions(study)
   const c = counts(study)
   const status = statusTag(study)
   return (
@@ -78,19 +77,7 @@ export function StudyHeader({ study }: { study: Study }) {
                   className="flex h-[38px] w-[38px] items-center justify-center rounded-md border-1 border-stroke-input text-text-title hover:bg-bg-0">
                   <MoreVertical className="h-5 w-5" />
                 </button>
-                {menu && (
-                  <span className="absolute right-0 top-full z-30 mt-1 flex w-[200px] flex-col rounded-sm border-1 border-stroke-input bg-bg-0 py-1 shadow-lg">
-                    {/* Only while the study can still be changed (shared/lifecycle.ts): a live study has no Edit. */}
-                    {canEditStudy(study.state) && (
-                      <button type="button" onClick={() => { setMenu(false); nav(`/studies/${study.id}/manage`) }}
-                        className="px-3 py-2 text-left text-text-regular text-text-title hover:bg-bg-1">Edit study</button>
-                    )}
-                    <button type="button" onClick={() => { setMenu(false); nav(`/studies/${study.id}/pay`) }}
-                      className="px-3 py-2 text-left text-text-regular text-text-title hover:bg-bg-1">View billing</button>
-                    <button type="button" onClick={() => { setMenu(false); nav('/studies') }}
-                      className="px-3 py-2 text-left text-text-regular text-text-title hover:bg-bg-1">Back to all studies</button>
-                  </span>
-                )}
+                <StudyMenu study={study} open={menu} onClose={() => setMenu(false)} act={act} />
               </span>
             </div>
           </div>
@@ -111,6 +98,7 @@ export function StudyHeader({ study }: { study: Study }) {
           </div>
         </div>
       </div>
+      {dialogs}
     </section>
   )
 }

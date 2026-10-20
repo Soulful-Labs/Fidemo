@@ -9,27 +9,28 @@ import type { StudyType } from '../../lib/studyTypes'
 function Item({ children, onClick }: { children: string; onClick?: () => void }) {
   return (
     <button type="button" onClick={onClick}
-      className="flex w-full px-4 py-2.5 text-left text-body-regular text-text-title hover:bg-bg-1">
+      className="flex w-full px-5 py-2 text-left text-body-regular text-text-title hover:bg-bg-1">
       {children}
     </button>
   )
 }
 
 /**
- * Ongoing study options (1518:90959). The frame draws an Edit row under the
- * rule; a live study cannot be edited (shared/lifecycle.ts canEditStudy), so
- * the row is not there.
+ * Ongoing study options (1518:90959, again on 19 Oct 2026 for every study
+ * type). The frame draws an Edit row under the rule; a live study cannot be
+ * edited (shared/lifecycle.ts canEditStudy), so the row is not there. A
+ * paused study gets Resume Study in Pause's place (not drawn).
  */
-export function OngoingMenu({ open, onClose, onPause, onCopy, onComplete, onDuplicate }: {
+export function OngoingMenu({ open, onClose, onPause, onCopy, onComplete, onDuplicate, paused, width = 206 }: {
   open: boolean; onClose: () => void; onPause: () => void; onCopy: () => void
-  onComplete: () => void; onDuplicate: () => void
+  onComplete: () => void; onDuplicate: () => void; paused?: boolean; width?: number
 }) {
   return (
-    <Popover open={open} onClose={onClose} width={200}>
+    <Popover open={open} onClose={onClose} width={width} className="rounded-md py-1.5">
       <Item onClick={onCopy}>Copy Study Link</Item>
-      <Item onClick={onPause}>Pause Study</Item>
+      <Item onClick={onPause}>{paused ? 'Resume Study' : 'Pause Study'}</Item>
       <Item onClick={onComplete}>Stop-complete Study</Item>
-      <div className="my-1 border-t-1 border-stroke-input" />
+      <div className="mx-2 my-1 border-t-1 border-stroke-input" />
       <Item onClick={onDuplicate}>Duplicate to Drafts</Item>
     </Popover>
   )
@@ -85,6 +86,49 @@ export function PauseStudyModal({ open, onClose, onConfirm }: { open: boolean; o
         <>
           <Button variant="tertiary" className="flex-1" onClick={onClose}>No, Keep Live</Button>
           <Button className="flex-1" onClick={onConfirm}>Yes, Pause Study</Button>
+        </>
+      } />
+  )
+}
+
+/**
+ * Stop and Mark Study Completed? (2317:163036). The notice counts the seats
+ * still open against the target; a study that has filled has none, so the
+ * notice is not drawn.
+ */
+export function StopCompleteModal({ open, onClose, onConfirm, left }: { open: boolean; onClose: () => void; onConfirm: () => void; left: number }) {
+  return (
+    <Modal open={open} onClose={onClose} title="Stop and Mark Study Completed?"
+      footer={
+        <>
+          <Button variant="tertiary" className="flex-1" onClick={onClose}>No, Keep Live</Button>
+          <Button className="flex-1" onClick={onConfirm}>Yes, Stop-complete</Button>
+        </>
+      }>
+      {left > 0 && (
+        <p className="self-center rounded-sm bg-yellow-40 px-4 py-2 text-body-regular text-text-title">
+          Your study has <span className="text-brand-primary">{left} participant{left === 1 ? '' : 's'}</span> left to fill target.
+        </p>
+      )}
+      <p className="mx-auto max-w-[330px] text-body-regular text-text-subtitle">You will stop getting new applications of participants and will be marked completed.</p>
+    </Modal>
+  )
+}
+
+/** Re-Publish to recruit more? (19 Oct 2026 export, Pause Study Participation_-1): resuming a paused study. */
+export function RepublishModal({ open, onClose, onConfirm }: { open: boolean; onClose: () => void; onConfirm: () => void }) {
+  return (
+    <Modal open={open} onClose={onClose} title="Re-Publish to recruit more?"
+      body={
+        <div className="flex flex-col gap-2">
+          <p>Are you sure you want to publish the study back again to recruit more participants.</p>
+          <p className="text-text-title"><span className="underline">NOTE:</span><br />You will keep receiving the participants until you stop the study or it expires by validity.</p>
+        </div>
+      }
+      footer={
+        <>
+          <Button variant="tertiary" className="flex-1" onClick={onClose}>Cancel</Button>
+          <Button className="flex-1" onClick={onConfirm}>Re-publish</Button>
         </>
       } />
   )

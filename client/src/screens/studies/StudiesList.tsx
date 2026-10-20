@@ -19,7 +19,7 @@ import SessionsTab from './SessionsTab'
 import { upcomingSessions } from '../../lib/insight'
 import { Calendar, Search } from '../../components/ui/icons'
 import { studyTab } from '@shared/lifecycle'
-import { CompletedMenu, DeleteStudyModal, DraftMenu, OngoingMenu, PauseStudyModal, StudyTypeMenu } from './StudyMenus'
+import { CompletedMenu, DeleteStudyModal, DraftMenu, OngoingMenu, PauseStudyModal, RepublishModal, StopCompleteModal, StudyTypeMenu } from './StudyMenus'
 import { useToast } from '../../components/ui/Toast'
 import { copyText } from '../../lib/copy'
 
@@ -83,6 +83,8 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
   const [rowMenu, setRowMenu] = useState<string | null>(null)
   const [sort, setSort] = useState<{ key: string; dir: 1 | -1 } | null>(null)
   const [pausing, setPausing] = useState<Study | null>(null)
+  const [stopping, setStopping] = useState<Study | null>(null)
+  const [resuming, setResuming] = useState<Study | null>(null)
   const [deleting, setDeleting] = useState<Study | null>(null)
   const [search, setSearch] = useState('')
   const { studies, moveStudy } = useStudies()
@@ -169,7 +171,7 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
           <div className="grid grid-cols-3 gap-3">
             {cards.map((s) => (
               <StudyCard key={s.id} onOpen={() => open(s)} onMenu={() => setRowMenu(s.id)}
-                menu={<RowMenu tab={tab} row={s} open={rowMenu === s.id} onClose={() => setRowMenu(null)} onPause={() => { setRowMenu(null); setPausing(s) }} onDelete={() => { setRowMenu(null); setDeleting(s) }} />}
+                menu={<RowMenu tab={tab} row={s} open={rowMenu === s.id} onClose={() => setRowMenu(null)} onPause={() => { setRowMenu(null); if (s.state === 'paused') setResuming(s); else setPausing(s) }} onStop={() => { setRowMenu(null); setStopping(s) }} onDelete={() => { setRowMenu(null); setDeleting(s) }} />}
                 study={s} />
             ))}
           </div>
@@ -252,7 +254,7 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
                               <MoreVertical className="h-5 w-5" />
                             </button>
                             <RowMenu tab={tab} row={s} open={rowMenu === s.id} onClose={() => setRowMenu(null)}
-                              onPause={() => { setRowMenu(null); setPausing(s) }} onDelete={() => { setRowMenu(null); setDeleting(s) }} />
+                              onPause={() => { setRowMenu(null); if (s.state === 'paused') setResuming(s); else setPausing(s) }} onStop={() => { setRowMenu(null); setStopping(s) }} onDelete={() => { setRowMenu(null); setDeleting(s) }} />
                           </span>
                         )}
                       </td>
@@ -273,6 +275,23 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
           /* Pausing is a real move now, so the row, the pill and the tabs follow. */
           const res = moveStudy(st.id, 'paused')
           if (res.ok) navigate(`/studies/${st.id}/paused`); else toast(res.why)
+        }} />
+      <StopCompleteModal open={stopping !== null} left={stopping ? Math.max(0, stopping.required - counts(stopping).completed) : 0}
+        onClose={() => setStopping(null)}
+        onConfirm={() => {
+          const st = stopping
+          setStopping(null)
+          if (!st) return
+          const res = moveStudy(st.id, 'completed')
+          toast(res.ok ? `${st.title} marked completed` : res.why)
+        }} />
+      <RepublishModal open={resuming !== null} onClose={() => setResuming(null)}
+        onConfirm={() => {
+          const st = resuming
+          setResuming(null)
+          if (!st) return
+          const res = moveStudy(st.id, 'recruiting')
+          toast(res.ok ? 'Study published again' : res.why)
         }} />
       <DeleteStudyModal open={deleting !== null} onClose={() => setDeleting(null)} name={deleting?.name ?? ''}
         onConfirm={() => {
@@ -300,11 +319,11 @@ function SortMark({ active, dir }: { active?: boolean; dir?: 1 | -1 }) {
 
 /** The right menu for a row or card, which differs per tab. */
 function RowMenu({
-  tab, row, open, onClose, onPause, onDelete,
-}: { tab: StudiesTab; row: Study; open: boolean; onClose: () => void; onPause: () => void; onDelete: () => void }) {
+  tab, row, open, onClose, onPause, onStop, onDelete,
+}: { tab: StudiesTab; row: Study; open: boolean; onClose: () => void; onPause: () => void; onStop: () => void; onDelete: () => void }) {
   const toast = useToast()
   const nav = useNavigate()
-  const { moveStudy, duplicateStudy } = useStudies()
+  const { duplicateStudy } = useStudies()
   const copy = async () => {
     const ok = await copyText(`https://focusinsite.com/study/${row.id}`)
     toast(ok ? 'Link copied' : 'Could not reach the clipboard')
@@ -313,14 +332,9 @@ function RowMenu({
   /**
    * Stop-complete, Edit and Duplicate each only closed the menu, and a menu
    * closing looks like a consequence to an audit, which is why they survived
-   * one. Editing an ongoing study is its Manage tab, where each Create step
+   * one. Stop-complete now asks first (Stop and Mark Study Completed?). Editing an ongoing study is its Manage tab, where each Create step
    * reads back with an Edit of its own; editing a draft is the Create flow.
    */
-  const complete = () => {
-    const res = moveStudy(row.id, 'completed')
-    toast(res.ok ? `${row.title} marked completed` : res.why)
-    onClose()
-  }
   const { open: openDraft } = useDraft()
   const edit = () => {
     onClose()
@@ -335,6 +349,6 @@ function RowMenu({
   }
   if (tab === 'drafts') return <DraftMenu open={open} onClose={onClose} onDelete={onDelete} onEdit={edit} onDuplicate={duplicate} />
   if (tab === 'completed') return <CompletedMenu open={open} onClose={onClose} onCopy={copy} onDuplicate={duplicate} />
-  return <OngoingMenu open={open} onClose={onClose} onPause={onPause} onCopy={copy}
-    onComplete={complete} onDuplicate={duplicate} />
+  return <OngoingMenu open={open} onClose={onClose} onPause={onPause} onCopy={copy} paused={row.state === 'paused'}
+    onComplete={onStop} onDuplicate={duplicate} />
 }
