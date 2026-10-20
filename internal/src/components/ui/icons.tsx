@@ -44,6 +44,8 @@ export const ChevronLeft = (p: P) => <svg {...base(p)}><path d="m15 6-6 6 6 6" /
 export const ChevronUp = (p: P) => <svg {...base(p)}><path d="m6 15 6-6 6 6" /></svg>
 export const SearchIcon = (p: P) => <svg {...base(p)}><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>
 export const SortIcon = (p: P) => <svg {...base(p)}><path d="M8 4v16M4.5 7.5 8 4l3.5 3.5M16 20V4M12.5 16.5 16 20l3.5-3.5" /></svg>
+export const PlusIcon = (p: P) => <svg {...base(p)}><path d="M12 5v14M5 12h14" /></svg>
+export const TrashIcon = (p: P) => <svg {...base(p)}><path d="M4.500 7h15M9.500 7V5h5v2M6.500 7l1 12.500h9l1-12.500M10 10.500v6M14 10.500v6" /></svg>
 export const CheckIcon = (p: P) => <svg {...base(p)}><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
 export const LinkIcon = (p: P) => (
   <svg {...base(p)}><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1.4 1.4M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.4-1.4" /></svg>

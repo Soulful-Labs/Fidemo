@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { copyText } from '../../../components/app/Notice'
 import { useState } from 'react'
 import StudyTypeTag from '../../../components/app/StudyTypeTag'
@@ -21,7 +22,7 @@ const Stat = ({ label, value, rest }: { label: string; value: string; rest?: str
  * Study is drawn on the diary menu only; it works the same for any running
  * study, so it is on all of them.
  */
-const MENU = ['Copy Study Link', 'Pause Study', 'Stop-complete Study']
+const MENU = ['Copy Study Link', 'Pause Study', 'Stop-complete Study', 'Edit']
 
 /**
  * The header of a managed study (1952:76685), 1162 x 214 on bgAlt-1: the
@@ -37,6 +38,7 @@ const MENU = ['Copy Study Link', 'Pause Study', 'Stop-complete Study']
  */
 export default function StudyHeader({ study, onPause, onComplete, onResume }: { study: ManagedStudy; onPause: () => void; onComplete: () => void; onResume?: () => void }) {
   const [menu, setMenu] = useState(false)
+  const navigate = useNavigate()
   const copy = () => { void copyText(study.figures.shareLink, 'Study link') }
   /** The common actions on every study type (19 Oct 2026); a paused study offers Resume Study where Pause is. */
   const items = study.paused ? MENU.map((m) => (m === 'Pause Study' ? 'Resume Study' : m)) : MENU
@@ -46,6 +48,8 @@ export default function StudyHeader({ study, onPause, onComplete, onResume }: { 
     if (item === 'Pause Study') onPause()
     if (item === 'Resume Study') onResume?.()
     if (item === 'Stop-complete Study') onComplete()
+    // Edit Study (19 Oct 2026, decided 21 Oct): the team edits a live study; the money and bookings stay locked.
+    if (item === 'Edit') navigate(`/studies/${study.id}/edit`)
   }
   return (
     <header className="flex gap-6 rounded-lg bg-bgAlt-1 p-4">

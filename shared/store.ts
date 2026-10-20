@@ -16,7 +16,8 @@ import { POINTS, canRedeem, starsForRating, starsFromDimensions } from './rules'
 import { monthDayYear } from './format'
 import { sessionStartOf as sessionStart } from './derive'
 import { EMPTY_PROFILE } from './seed/people'
-import { MAX_RUN_DAYS, buildStudy, fitsStudy, studyTypeOf, summarise } from './studyForm'
+import { MAX_RUN_DAYS, audienceFault, buildStudy, fitsStudy, formFromStudy, liveEditFault, studyTypeOf, summarise } from './studyForm'
+import { buildScreener, buildTasks } from './questions'
 import type { StudyForm } from './studyForm'
 import { editOf } from './revisions'
 import { DEMO_TEAM_PASSWORD, MASTER_ADMIN_ID, SEED_VERSION, buildEmpty, buildSeed } from './seed'
@@ -403,6 +404,47 @@ export function createPlatform(options: Options = {}) {
     }),
 
     /** Workflow 7: the team sends a study back with the changes it needs. */
+    /**
+     * Edit Study in the console (19 Oct 2026, 2325:214085): the team changes a
+     * live study. The money and the bookings stay as they are (liveEditFault);
+     * everything else is rebuilt from the form, and the round of changes is
+     * recorded in Revisions History as the team's.
+     */
+    editLiveStudy: (studyId: string, form: StudyForm, actor: Actor) => move((s) => {
+      if (actor.kind !== 'team') return no('Only the team can edit a live study')
+      const study = s.studies.find((x) => x.id === studyId)
+      if (!study) return no('No such study')
+      if (!isLive(study.state) && study.state !== 'paused') return no('Only a live study is edited here')
+      const before = formFromStudy(study)
+      const after = structuredClone(form)
+      const fault = liveEditFault(before, after)
+      if (fault) return no(fault)
+      // Only what an edit may change is checked and rebuilt; the rates, target, bookings and payments are the study's own and stay.
+      if (!after.title.trim()) return no('Give the study a title on the About step')
+      const durationMins = Number(after.duration) || 0
+      if (durationMins <= 0) return no('Set how long the study takes on the About step')
+      { const f = audienceFault(after); if (f) return no(f) }
+      const screener = buildScreener(after.questions)
+      if (!screener.ok) return screener
+      const taskSet = study.type === 'survey' || study.type === 'diary' ? buildTasks(after.tasks) : undefined
+      if (taskSet && !taskSet.ok) return taskSet
+      const [d, m, y] = after.endDate.split('/').map((x) => Number(x.trim()))
+      const endsAt = after.endDate !== before.endDate && d && m && y ? new Date(y, m - 1, d, 18, 0).toISOString() : study.endsAt
+      const edit = editOf(before, after, 'team', iso(), actor.id)
+      if (!edit) return no('Nothing has changed')
+      Object.assign(study, {
+        title: after.title.trim(), description: after.description.trim(), image: after.image || study.image, durationMins, endsAt,
+        industry: after.industries.split(',').map((x) => x.trim()).filter(Boolean).join(', '),
+        targetProfession: after.roles.split(',').map((x) => x.trim()).filter(Boolean).join(', '),
+        preScreener: screener.preScreener, screener: screener.screener, ...(taskSet?.ok ? { tasks: taskSet.tasks } : {}),
+      })
+      study.form = after
+      study.setup = summarise(s, after, clock())
+      study.edits = [...(study.edits ?? []), edit]
+      log(s, actor, `Edited ${study.title} (${edit.changes.length} change${edit.changes.length === 1 ? '' : 's'})`, 'Studies / Manage / Edit Study')
+      return yes()
+    }),
+
     /** Recruit more: a running study that has met its target keeps recruiting, at the rates it was published at. */
     recruitMore: (studyId: string, actor: Actor) => move((s) => {
       const study = s.studies.find((x) => x.id === studyId)

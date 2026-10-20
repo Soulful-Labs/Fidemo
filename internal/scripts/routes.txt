@@ -5,6 +5,12 @@ set-password
 dashboard
 studies
 studies/reported
+studies/st-social/edit
+studies/st-social/edit?step=audience
+studies/st-social/edit?step=screener
+studies/st-social/edit?step=study
+studies/st-sleep/edit?step=study
+studies/st-social/edit/done
 studies/reported?tab=history
 studies/reported/st-social
 studies/reported/st-social?tab=history

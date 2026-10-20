@@ -173,6 +173,20 @@ const made = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Journey study', type
       && rec[0]!.changes.some((c) => c.path.join('>') === 'Audience>Experience' && c.added?.[0] === '3-5 years'), JSON.stringify(rec))
     check('revisions: the history lists the edit before the first submission', edited.ok && studyHistory(st().studies.find((x) => x.id === edited.id)!).map((h) => h.kind).join(',') === 'edit,submitted')
   }
+  {
+    // Edit Study in the console (19 Oct 2026): the team edits a live study; money and bookings are locked.
+    const live = () => st().studies.find((x) => x.id === 'st-social')!
+    const base = { ...formFromStudy(live()), functions: 'Marketing' }
+    const rates = JSON.stringify(live().rates)
+    check('live edit: the client cannot use it', !p.editLiveStudy('st-social', { ...base, title: 'x' }, client).ok)
+    const moneyMove = p.editLiveStudy('st-social', { ...base, incentive: base.incentive + 50 }, team)
+    check('live edit: the incentive is locked', !moneyMove.ok && /incentive/.test(moneyMove.why))
+    check('live edit: the target is locked', !p.editLiveStudy('st-social', { ...base, participants: String(Number(base.participants) + 5) }, team).ok)
+    const ok = p.editLiveStudy('st-social', { ...base, title: 'Designing social posts, the tools people use' }, team)
+    const last = live().edits?.at(-1)
+    check('live edit: a team edit is saved and recorded as the team\'s', ok.ok && live().title === 'Designing social posts, the tools people use' && last?.by === 'team' && last.changes.some((c) => c.path.join('>') === 'About>Title'), ok.ok ? '' : ok.why)
+    check('live edit: nothing the client is charged changes', JSON.stringify(live().rates) === rates)
+  }
   check('create: the step-4 read-back lists the hours and the address', studyDetails({ ...half, hours: NINE_TO_FIVE }).some((r) => r.label === 'Monday' && r.value === '09:00 AM to 05:00 PM') && studyDetails(half).some((r) => r.label === 'Address 1' && r.value.includes('1 Park Row')))
 }
 check('1. client publishes a study, it waits in review', made.ok && st().studies.find((s) => s.id === (made as { id: string }).id)!.state === 'in_review')

@@ -566,3 +566,31 @@ export function formFromStudy(s: Study): StudyForm {
     seats: s.sessions?.[0] ? `${s.sessions[0].seats} seats` : f.seats,
   }
 }
+
+/**
+ * The audience options, as the client's Audience step offers them (19 Oct
+ * 2026 lists first). The console's Edit Study reads these, so a study edited
+ * by the team uses the same words a client could have picked.
+ */
+export const AUDIENCE_LISTS = {
+  countries: ['United States of America', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'India', 'Japan'],
+  gender: ['All Genders', 'Male', 'Female', 'Other'],
+  education: ['Some High School', 'High School Graduate', 'Some College, no degree', 'Associate Degree', "Graduate or Bachelor's", "Master's degree", 'Doctorate'],
+  ageRanges: ['18–20', '21–29', '30–39', '40–54', '50–59', '60+'],
+  tiers: ['', 'Silver and above', 'Gold and above', 'Platinum only'],
+} as const
+
+/**
+ * What a live study may not change through an edit (19 Oct 2026, decided with
+ * the business): its type, its incentive, its participant target, and the
+ * places and times people may already have booked. Anything else may.
+ */
+export function liveEditFault(before: StudyForm, after: StudyForm): string | undefined {
+  if (studyTypeOf(before) !== studyTypeOf(after)) return 'The study type cannot change on a live study'
+  if (Number(before.incentive) !== Number(after.incentive)) return 'The incentive cannot change on a live study'
+  if (before.participants.trim() !== after.participants.trim()) return 'The number of participants cannot change on a live study'
+  const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
+  if (!same(before.hours, after.hours) || !same(before.overrides, after.overrides) || !same(before.addresses, after.addresses) || !same(before.sessions, after.sessions))
+    return 'Availability, addresses and sessions cannot change on a live study: people may already have booked them'
+  return undefined
+}

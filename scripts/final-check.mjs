@@ -283,9 +283,10 @@ if (!rowMenu.includes('Pause Study')) g1.push('the row menu did not open: ' + ro
 await I.go(`/internal/studies/${S.id}`); await sleep(500)
 await I.ev(`document.querySelector('[aria-label="Study options"]').click()`); await sleep(300)
 const consoleMenu = await I.ev(`[...document.querySelectorAll('[role=menuitem]')].map((b) => b.textContent.trim())`)
-if (consoleMenu.includes('Edit')) g1.push('the console\'s study menu offers Edit')
+// 21 Oct 2026: the team may edit a live study in the console (money and bookings locked); the client still may not.
+if (!consoleMenu.includes('Edit')) g1.push('the console\'s study menu has lost Edit')
 if (consoleMenu.length === 0) g1.push('the console\'s study menu did not open')
-say(1, 'A live study has no Edit anywhere, including the row menu', g1, `client row menu: ${rowMenu.join(', ')}; client header menu: ${headerMenu.join(', ')}; console study menu: ${consoleMenu.join(', ')}; no Edit button on Manage Study or Study Overview`)
+say(1, 'A live study has no Edit in the client app, and the console can edit it', g1, `client row menu: ${rowMenu.join(', ')}; client header menu: ${headerMenu.join(', ')}; console study menu: ${consoleMenu.join(', ')}; no Edit button on Manage Study or Study Overview`)
 
 // ---- 6. the picture, everywhere the study appears
 const g6 = []

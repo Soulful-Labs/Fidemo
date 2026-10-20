@@ -31,6 +31,8 @@ import SubAdmins from './screens/subadmin/SubAdmins'
 import Studies from './screens/studies/Studies'
 import ReportedStudies from './screens/studies/reported/ReportedStudies'
 import ReportedStudy from './screens/studies/reported/ReportedStudy'
+import EditStudy from './screens/studies/edit/EditStudy'
+import EditDone from './screens/studies/edit/EditDone'
 import ReviewStudy from './screens/studies/review/ReviewStudy'
 import ManageStudy from './screens/studies/manage/ManageStudy'
 import RespondentPage from './screens/studies/respondent/RespondentPage'
@@ -63,6 +65,8 @@ const routes: RouteObject[] = [
   { path: '/studies/reported', element: inside(ReportedStudies) },
   { path: '/studies/reported/:id', element: inside(ReportedStudy) },
   { path: '/studies/:id', element: inside(ManageStudy) },
+  { path: '/studies/:id/edit', element: inside(EditStudy) },
+  { path: '/studies/:id/edit/done', element: inside(EditDone) },
   { path: '/studies/:id/respondents/:rid', element: inside(RespondentPage) },
   { path: '/studies/:id/sessions/:sid', element: inside(SessionPage) },
   { path: '/participants', element: inside(Participants) },
