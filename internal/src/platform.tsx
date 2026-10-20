@@ -51,6 +51,9 @@ const CROPS: Record<string, { thumb: string; image: string; small: string }> = {
 const NO_PICTURE = '/img/review/thumbnail.png'
 export const studyPictures = (id: string, fallback?: string) => CROPS[id] ?? { thumb: fallback || NO_PICTURE, image: fallback || NO_PICTURE, small: fallback || NO_PICTURE }
 
+/** The signed-in team member's own password, for the decisions that ask for it. */
+export const checkPassword = (password: string) => platform().checkTeamPassword(TEAM.id, password)
+
 /** A refused move says why. */
 export const say = (res: { ok: boolean; why?: string }, toast?: (m: string) => void): boolean => {
   if (!res.ok && res.why) (toast ?? notice)(res.why)

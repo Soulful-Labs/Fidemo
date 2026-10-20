@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { checkPassword } from '../../../platform'
 import Button from '../../../components/ui/Button'
 import { PasswordInput, TextArea } from '../../../components/ui/Input'
 import { Modal, SuccessModal } from '../../../components/ui/Overlay'
@@ -29,10 +30,14 @@ export function AccountFlow({ kind, step, onStep, onDone, onReason, name = 'Samu
 }) {
   const [reason, setReason] = useState('')
   const [why, setWhy] = useState('')
+  const [password, setPassword] = useState('')
+  const [pwWhy, setPwWhy] = useState('')
+  /** The form asks for the team member's password; it has to be theirs before the decision is asked. */
+  const toConfirm = () => { const ok = checkPassword(password); if (!ok.ok) { setPwWhy(ok.why); return } setPwWhy(''); onStep('confirm') }
   const confirm = () => {
     const res = onReason?.(reason) ?? { ok: true }
     if (!res.ok) { setWhy(res.why ?? ''); onStep('form'); return }
-    setWhy(''); setReason(''); onStep('done')
+    setWhy(''); setReason(''); setPassword(''); onStep('done')
   }
   const off = kind === 'deactivate'
   const close = () => onStep(null)
@@ -40,7 +45,7 @@ export function AccountFlow({ kind, step, onStep, onDone, onReason, name = 'Samu
     <>
       <Modal open={step === 'form'} onClose={close} layout="titled" title={off ? 'Deactivate Account' : 'Reactivate Account'}
         footer={<><Button variant="secondary" onClick={close}>Cancel</Button>
-          {off ? <Button variant="danger" className="border-state-danger! bg-state-danger!" onClick={() => onStep('confirm')}>Deactivate</Button> : <Button variant="success" onClick={() => onStep('confirm')}>Yes, Reactivate</Button>}</>}>
+          {off ? <Button variant="danger" className="border-state-danger! bg-state-danger!" onClick={toConfirm}>Deactivate</Button> : <Button variant="success" onClick={toConfirm}>Yes, Reactivate</Button>}</>}>
         <div className="flex flex-col gap-5">
           <p className="text-text-regular leading-5 text-text-title">
             {off && <><span className="text-text-medium underline">Note:</span><br /></>}
@@ -50,7 +55,8 @@ export function AccountFlow({ kind, step, onStep, onDone, onReason, name = 'Samu
           {why && <p className="-mt-3 text-text-regular text-state-danger">{why}</p>}
           <div className="flex flex-col gap-2">
             <p className="text-text-regular text-text-title">Enter your account password to confirm deactivation.</p>
-            <PasswordInput size="sm" label="Password" placeholder="Enter password" />
+            <PasswordInput size="sm" label="Password" placeholder="Enter password" value={password} onChange={(e) => { setPassword(e.target.value); setPwWhy('') }} />
+            {pwWhy && <p className="text-text-regular text-state-danger">{pwWhy}</p>}
           </div>
         </div>
       </Modal>

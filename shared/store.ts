@@ -1230,6 +1230,13 @@ export function createPlatform(options: Options = {}) {
       return yes({ id: who.id, reset })
     },
 
+    /** A console decision confirmed with a password: is it this team member's own? Changes nothing. */
+    checkTeamPassword: (memberId: string, password: string): Result => {
+      const member = state.team.find((t) => t.id === memberId)
+      if (!password) return no('Enter your password')
+      return member && member.password === password ? yes() : no('That password is not right')
+    },
+
     /** Whether a new team account could be made with this email. */
     teamEmailFree: (email: string): boolean => {
       const key = email.trim().toLowerCase()

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { checkPassword } from '../../../platform'
 import { RESTRICTION_DAYS } from '@shared/platform'
 import Button from '../../../components/ui/Button'
 import { PasswordInput, TextArea } from '../../../components/ui/Input'
@@ -64,10 +65,14 @@ export default function DecisionFlow({ kind, step, onStep, onDone, onDecide, nam
   const c = Object.fromEntries(Object.entries({ ...COPY[kind], ...(kind === 'restrict' ? restrictCopy(offences) : {}) }).map(([k, v]) => [k, named(v)])) as (typeof COPY)[Decision]
   const [text, setText] = useState('')
   const [why, setWhy] = useState('')
+  const [password, setPassword] = useState('')
+  const [pwWhy, setPwWhy] = useState('')
+  /** The form asks for the team member's password; it has to be theirs before the decision is asked. */
+  const toConfirm = () => { const ok = checkPassword(password); if (!ok.ok) { setPwWhy(ok.why); return } setPwWhy(''); onStep('confirm') }
   const decide = () => {
     const res = onDecide?.(text) ?? { ok: true }
     if (!res.ok) { setWhy(res.why ?? ''); onStep('form'); return }
-    setWhy(''); setText(''); onStep('done')
+    setWhy(''); setText(''); setPassword(''); onStep('done')
   }
   const close = () => onStep(null)
   const field = <TextArea size="sm" rows={3} className={c.formTitle ? '[&_textarea]:h-[96px]' : '[&_textarea]:h-[96px]'} label={c.label} placeholder={c.placeholder} value={text} onChange={(e) => setText(e.target.value)} />
@@ -77,10 +82,10 @@ export default function DecisionFlow({ kind, step, onStep, onDone, onDecide, nam
       {c.formTitle ? (
         <>
           <Modal open={step === 'form'} onClose={close} layout="titled" title={c.formTitle}
-            footer={<><Button variant="secondary" onClick={close}>Cancel</Button><Button variant={c.tone} onClick={() => onStep('confirm')}>{c.go}</Button></>}>
+            footer={<><Button variant="secondary" onClick={close}>Cancel</Button><Button variant={c.tone} onClick={toConfirm}>{c.go}</Button></>}>
             <p className="text-text-regular leading-5 text-text-title">{c.note}</p>
             <div className="-mt-1">{field}{error}</div>
-            <div className="flex flex-col gap-2 pb-7 pt-1.5"><p className="text-text-regular text-text-title">Enter your account password to confirm this action.</p><PasswordInput size="sm" label="Password" placeholder="Enter password" /></div>
+            <div className="flex flex-col gap-2 pb-7 pt-1.5"><p className="text-text-regular text-text-title">Enter your account password to confirm this action.</p><PasswordInput size="sm" label="Password" placeholder="Enter password" value={password} onChange={(e) => { setPassword(e.target.value); setPwWhy('') }} />{pwWhy && <p className="text-text-regular text-state-danger">{pwWhy}</p>}</div>
           </Modal>
           <Modal open={step === 'confirm'} onClose={close} title={c.ask} footer={<><Button variant="tertiary" onClick={close}>Cancel</Button><Button onClick={decide}>Yes</Button></>}>
             <p className="text-body-regular text-text-subtitle">{c.askBody}</p>
