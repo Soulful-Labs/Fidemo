@@ -4,6 +4,10 @@ check-email
 set-password
 dashboard
 studies
+studies/reported
+studies/reported?tab=history
+studies/reported/st-social
+studies/reported/st-social?tab=history
 studies/review/st-goal
 studies/st-goal
 participants
