@@ -27,3 +27,6 @@ dist-ssr
 
 # written by scripts/ten-check.mjs on every run
 ten-check-files/
+
+# design exports, kept locally, not part of the build
+design-updates-19-10/
