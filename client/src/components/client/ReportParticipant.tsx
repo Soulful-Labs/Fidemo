@@ -62,7 +62,7 @@ export default function ReportParticipant({ open, onClose, onSubmit }: {
                 <span className="text-title-s text-text-title">Report Participant</span>
               </span>
               <button type="button" aria-label="Close" onClick={close}
-                className="flex h-8 w-8 items-center justify-center rounded-sm border-1 border-stroke-input text-text-title hover:bg-bg-1">
+                className="flex h-8 w-8 items-center justify-center rounded-sm border-1 border-cta-tertiaryStroke text-text-subtitle hover:bg-bg-1">
                 <Close className="h-4 w-4" />
               </button>
             </div>

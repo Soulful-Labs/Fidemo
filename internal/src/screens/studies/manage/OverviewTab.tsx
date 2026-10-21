@@ -63,6 +63,7 @@ const SPARKLE = (
 )
 const BLOCK = ['h-[126px] bg-yellow-200', 'h-[94px] bg-yellow-400', 'h-[62px] bg-brand-primary']
 const BAR = ['bg-yellow-200', 'bg-yellow-400', 'bg-brand-primary']
+const NECK = ['fill-yellow-300', 'fill-yellow-500']
 
 /**
  * Overview (1932:106948, 19 Oct 2026): the client's Overview for the team. An
@@ -106,7 +107,15 @@ export default function OverviewTab({ study, paused }: { study: ManagedStudy; pa
             <h2 className="text-title-s text-text-subtitle">Recruitment Funnel</h2>
             <div className="flex h-[126px] items-center justify-center pt-6" aria-hidden="true">
               {steps.map(([label, n], i) => (
-                <span key={label} className={cn('flex w-[110px] items-center justify-center text-[40px] font-semibold text-bg-0', BLOCK[i], i === 0 && 'rounded-l-sm', i === 2 && 'rounded-r-sm')}>{n}</span>
+                <span key={label} className="flex items-center">
+                  <span className={cn('flex w-[110px] items-center justify-center text-[40px] font-semibold text-bg-0', BLOCK[i], i === 0 && 'rounded-l-sm', i === 2 && 'rounded-r-sm')}>{n}</span>
+                  {/* The connecting shape to the next, shorter block (1932:106948): yellow-300, then yellow-500. */}
+                  {i < 2 && (
+                    <svg width={i === 0 ? 31 : 16} height={126 - i * 32} viewBox={`0 0 ${i === 0 ? 31 : 16} ${126 - i * 32}`} preserveAspectRatio="none">
+                      <path d={`M0 0 L${i === 0 ? 31 : 16} 16 V${126 - i * 32 - 16} L0 ${126 - i * 32} Z`} className={NECK[i]} />
+                    </svg>
+                  )}
+                </span>
               ))}
             </div>
             <dl className="mt-8 flex flex-col gap-3 border-t-1 border-stroke-input px-2 pt-5">

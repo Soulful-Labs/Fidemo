@@ -101,7 +101,7 @@ export function Range({ value, min, max, step = 1, label, disabled, onChange }: 
   return (
     <span className={cn('relative flex h-4 items-center', disabled && 'opacity-60')}>
       <span className="absolute inset-x-0 h-1.5 rounded-full bg-stroke-input" />
-      <span className="absolute left-0 h-1.5 rounded-full bg-brand-primary" style={{ width: `${at}%` }} />
+      <span className="absolute left-0 h-1.5 rounded-full bg-yellow-400" style={{ width: `${at}%` }} />
       <span className="absolute h-4 w-4 -translate-x-1/2 rounded-full border-4 border-brand-primary bg-bg-0" style={{ left: `${at}%` }} />
       <input type="range" min={min} max={max} step={step} value={value} disabled={disabled} aria-label={label}
         onChange={(e) => onChange?.(Number(e.target.value))} className="absolute inset-0 h-4 w-full cursor-pointer opacity-0 disabled:cursor-not-allowed" />

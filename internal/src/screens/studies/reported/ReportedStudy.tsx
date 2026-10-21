@@ -62,7 +62,7 @@ export default function ReportedStudy() {
               <h2 className="text-title-s text-text-title">Reports</h2>
               {view.open.total > 0 ? (
                 <>
-                  <div className="overflow-hidden rounded-lg bg-yellow-40">
+                  <div className="overflow-hidden rounded-lg bg-yellow-30">
                     <Summary round={view.open} className="border-b-1 border-stroke-input" />
                     <div className="flex gap-4 px-4 py-4">
                       <Button size="md" leftIcon={<SupportIcon className="h-4 w-4" />} onClick={chat}>Chat With Client</Button>

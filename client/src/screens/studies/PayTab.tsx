@@ -45,7 +45,7 @@ export default function PayTab() {
   const money = (n: number) => `$${Math.abs(n).toLocaleString('en-US')}`
 
   const banner = stopped && reopen && (
-    <div className="flex items-start justify-between gap-6 rounded-lg border-1 border-yellow-300/70 bg-yellow-40 px-4 py-[13px]">
+    <div className="flex items-start justify-between gap-6 rounded-lg border-1 border-yellow-200 bg-yellow-40 px-4 py-[13px]">
       <div className="flex flex-col gap-1">
         <p className="text-body-medium text-text-title">This study is stopped by you to mark completed!</p>
         <p className="text-text-regular text-text-subtitle">Complete the study by a payment or get more participants if needed.</p>

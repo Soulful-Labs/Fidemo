@@ -17,7 +17,7 @@ import { TEAM, say, usePlatform } from '../../platform'
 const Tile = ({ label, value, green }: { label: string; value: string; green?: boolean }) => (
   <div className={cn('flex h-[91px] flex-1 flex-col justify-center rounded-md border-1 border-stroke-1 px-3', green && 'bg-bgAlt-1')}>
     <p className="text-text-regular leading-5 text-text-subtitle">{label}</p>
-    <p className={cn('pt-1.5 text-title-l leading-[31px]', green ? 'text-state-success' : 'text-text-title')}>{value}</p>
+    <p className={cn('pt-1.5 text-title-l leading-[31px]', green ? 'text-brand-secondary' : 'text-text-title')}>{value}</p>
   </div>
 )
 
@@ -52,7 +52,7 @@ export default function WithdrawalDetail() {
         <Button variant="tertiary" size="md" leftIcon={<ExternalIcon className="h-4 w-4" />} onClick={() => nav(`/participants/${personId}`)}>Go To Full Profile</Button>
       </header>
 
-      <div className={cn('flex items-center justify-between gap-6 rounded-lg px-4 py-4', released ? 'bg-bg-1' : 'bg-yellow-40')}>
+      <div className={cn('flex items-center justify-between gap-6 rounded-lg px-4 py-4', released ? 'bg-bg-1' : 'bg-state-warningBg')}>
         <div className="flex flex-col gap-1">
           <p className="text-body-medium text-text-title">Confirm Withdrawal Payout</p>
           <p className="text-text-regular text-text-subtitle">{released

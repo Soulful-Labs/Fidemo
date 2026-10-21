@@ -40,7 +40,7 @@ export default function ReportStudy({ open, onClose, onSubmit }: {
             <p className="pb-2 text-text-regular text-text-body">Select reason to report this study</p>
             {STUDY_REPORT_REASONS.map((r, i) => (
               <button key={r} type="button" onClick={() => setReason(r)}
-                className={`flex min-h-12 items-center justify-between gap-3 py-2.5 text-left text-body-regular text-text-title ${i < STUDY_REPORT_REASONS.length - 1 ? 'border-b-1 border-stroke-3' : ''}`}>
+                className={`flex min-h-12 items-center justify-between gap-3 py-2.5 text-left text-body-regular text-text-title ${i < STUDY_REPORT_REASONS.length - 1 ? 'border-b-1 border-stroke-1' : ''}`}>
                 {r}<ChevronRight className="h-5 w-5 shrink-0 text-text-body" />
               </button>
             ))}

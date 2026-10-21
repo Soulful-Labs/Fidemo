@@ -28,7 +28,7 @@ export default {
           secondary: '#fed592', secondaryText: '#513303',
           tertiaryStroke: '#d0d0d0', tertiaryStrokeDisabled: '#e9e8e7',
         },
-        yellow: { 20: '#f7f4f0', 30: '#fff7ea', 40: '#fff3e0', 100: '#fee2b5', 300: '#fdc160', 400: '#fdb541', 500: '#fca311', 700: '#b3740c' },
+        yellow: { 20: '#f7f4f0', 30: '#fff7ea', 40: '#fff3e0', 100: '#fee2b5', 200: '#fed592', 300: '#fdc160', 400: '#fdb541', 500: '#fca311', 700: '#b3740c' },
         // 100 is the unfilled part of a progress bar; `ok` the tick beside a verified item. Both sampled off the exports.
         green: { 50: '#ecf8f3', 100: '#c3e9d9', 200: '#a7dfc6', 700: '#2d835e', ok: '#009951' },
         // Only for things that are wrong or destructive (Disqualify, Delete).

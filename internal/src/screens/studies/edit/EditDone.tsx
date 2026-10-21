@@ -13,8 +13,8 @@ export default function EditDone() {
   return (
     <AppShell crumbs={[{ label: 'Edit Study', to: `/studies/${id}` }, { label: study.title }]}>
       <div className="flex flex-col items-center gap-4 pt-[103px]">
-        <span className="flex h-40 w-40 items-center justify-center rounded-full bg-green-100">
-          <span className="flex h-[88px] w-[88px] items-center justify-center rounded-full bg-state-success text-bg-0"><CheckIcon className="h-11 w-11 [&>path]:stroke-[2.6]" /></span>
+        <span className="flex h-40 w-40 items-center justify-center rounded-full bg-state-successBg">
+          <span className="flex h-[88px] w-[88px] items-center justify-center rounded-full bg-state-successHover text-bg-0"><CheckIcon className="h-11 w-11 [&>path]:stroke-[2.6]" /></span>
         </span>
         <div className="flex max-w-[400px] flex-col items-center gap-1 text-center">
           <h1 className="text-title-s text-text-title">Your changes has been published!</h1>

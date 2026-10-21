@@ -34,9 +34,9 @@ export default function Withdrawals() {
     <>
       <h2 className="pt-6 text-title-s leading-[25px] text-text-title">Pending Payouts Confirmations</h2>
       <p className="pt-1 text-text-regular leading-5 text-text-body">Confirm the pending payout transactions to participant for withdrawals</p>
-      <div className="mt-3 flex h-[84px] items-center justify-between rounded-lg border-1 border-stroke-1 bg-bgAlt-1 px-4">
-        <div><p className="text-text-regular text-text-title">Payouts Pending</p><p className="pt-1 text-title-l text-state-success">{rows.length}</p></div>
-        <div className="text-right"><p className="text-text-regular text-text-title">Total withdrawal payouts value</p><p className="pt-1 text-title-l text-state-success">{money(total)}</p></div>
+      <div className="mt-3 flex h-[84px] items-center justify-between rounded-lg border-1 border-stroke-1 bg-bg-1 px-4">
+        <div><p className="text-text-regular text-text-title">Payouts Pending</p><p className="pt-1 text-title-l text-brand-secondary">{rows.length}</p></div>
+        <div className="text-right"><p className="text-text-regular text-text-title">Total withdrawal payouts value</p><p className="pt-1 text-title-l text-brand-secondary">{money(total)}</p></div>
       </div>
       <Table empty="Withdrawals participants ask for will appear here to be released." className="mt-4" rowHeight={56} rows={rows}
         rowKey={(r) => r.payout.id} columns={columns} onRowClick={(r) => navigate(`/finance/payouts/${r.person.id}/${r.payout.id}`)} />

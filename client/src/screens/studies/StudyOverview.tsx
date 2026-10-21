@@ -38,7 +38,7 @@ const SPARKLE = (
 /** One step of the funnel: its count on its own block, each block shorter than the last. */
 function Funnel({ steps }: { steps: number[] }) {
   const BLOCK = ['h-[126px] bg-cta-secondary', 'h-[94px] bg-yellow-400', 'h-[62px] bg-brand-primary']
-  const NECK = ['#fdc876', '#f1a528']
+  const NECK = ['fill-yellow-300', 'fill-yellow-500']
   return (
     <div className="flex h-[126px] items-center pl-[53px]" aria-hidden="true">
       {steps.map((n, i) => (
@@ -47,7 +47,7 @@ function Funnel({ steps }: { steps: number[] }) {
             BLOCK[i], i === 0 && 'rounded-l-sm', i === steps.length - 1 && 'rounded-r-sm')}>{n}</span>
           {i < steps.length - 1 && (
             <svg width={i === 0 ? 31 : 16} height={126 - i * 32} viewBox={`0 0 ${i === 0 ? 31 : 16} ${126 - i * 32}`} preserveAspectRatio="none">
-              <path d={`M0 0 L${i === 0 ? 31 : 16} 16 V${126 - i * 32 - 16} L0 ${126 - i * 32} Z`} fill={NECK[i]} />
+              <path d={`M0 0 L${i === 0 ? 31 : 16} 16 V${126 - i * 32 - 16} L0 ${126 - i * 32} Z`} className={NECK[i]} />
             </svg>
           )}
         </div>

@@ -77,7 +77,7 @@ export default function Modal({
         onClick={(e) => e.stopPropagation()}
         className={cn(
           'flex w-full max-w-content flex-col gap-4 rounded-lg p-4',
-          plain ? 'border-1 border-stroke-3 bg-bg-0' : alt ? 'bg-bgAlt-2' : 'bg-bg-2',
+          plain ? 'bg-bg-0' : alt ? 'bg-bgAlt-2' : 'bg-bg-2',
         )}
       >
         {(title || showClose) && (
