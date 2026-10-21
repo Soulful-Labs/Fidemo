@@ -1,10 +1,11 @@
-// Wiring audit: walks every route as the returning and a brand new user,
-// clicks every clickable element on every screen and reports what happened,
-// and checks that the card, the detail screen and the My Studies tab agree
-// for every study status. Prints markdown tables; exits 0 always (it reports,
-// the person decides).
+// Wiring audit: walks every route as the returning and a brand new user, and
+// clicks every clickable element on every screen and reports what happened.
+// Prints markdown tables; exits 0 always (it reports, the person decides).
+// Study statuses are covered by scripts/demo.mjs, which reaches each one
+// through the app's own actions; a status is derived from the shared store,
+// so there is nothing here to set it directly.
 //
-//   node --experimental-websocket scripts/audit.mjs [routes|clicks|statuses]
+//   node --experimental-websocket scripts/audit.mjs [routes|clicks]
 
 import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
@@ -158,35 +159,6 @@ async function walkClicks() {
   }
 }
 
-async function walkStatuses() {
-  console.log(`
-## Status surfaces (study ${study})
-
-| Status | Tab | Card tag | Card actions | Banner | Detail actions |
-|---|---|---|---|---|---|`)
-  const statuses = ['available', 'invited_to_apply', 'applying', 'draft', 'applied', 'invited_to_schedule', 'invited_to_complete', 'scheduled', 'pin_confirmed', 'in_process', 'paid', 'rejected', 'no_show', 'late_show', 'not_needed']
-  const LABELS = 'Open|Invited To Schedule|Invited To Complete|Invited|Applying|In Draft|In Review|Scheduled|Code Confirmed|In Process|Paid|Rejected|No Show|Late Show Up|Not needed'
-  for (const status of statuses) {
-    await goto('/dashboard?reset=1')
-    const title = await store(`st.studies.find((x) => x.id === ${JSON.stringify(study)}).title`)
-    await evaluate(`__hl.dispatch({ type: 'SET_STATUS', id: ${JSON.stringify(study)}, status: ${JSON.stringify(status)} })`)
-    if (['scheduled', 'pin_confirmed', 'no_show', 'late_show'].includes(status)) await evaluate(`__hl.dispatch({ type: 'SET_BOOKING', id: ${JSON.stringify(study)}, booking: { date: new Date(Date.now() + 3 * 864e5).toISOString(), slot: '10:00 AM', rescheduleCount: 0 } })`)
-    await sleep(200)
-    let card = null, where = '-'
-    for (const path of ['/studies', '/studies/saved', '/studies/mine/invites', '/studies/mine/scheduled', '/studies/mine/drafts', '/studies/mine/applied', '/studies/mine/history']) {
-      await nav(path, 500)
-      const found = await evaluate(`(() => { const a = [...document.querySelectorAll('article')].find((x) => x.textContent.includes(${JSON.stringify(title)})); if (!a) return null;
-        const tag = [...a.querySelectorAll('span')].map((t) => t.textContent.trim()).find((t) => new RegExp('^(${LABELS})$').test(t));
-        const buttons = [...a.querySelectorAll('button')].map((b) => (b.getAttribute('aria-label') || b.textContent).trim()).filter((t) => t && !/Save study|Remove from saved|Match score/.test(t));
-        return { tag: tag || '-', actions: buttons.join(' / ') } })()`)
-      if (found) { card = found; where = path.replace('/studies/mine/', '').replace('/studies', 'explore'); break }
-    }
-    await nav(`/studies/${study}`, 600)
-    const detail = await evaluate(`(() => { const banner = document.querySelector('main .rounded-lg span.text-body-medium'); const bar = document.querySelector('main .sticky.bottom-0'); const buttons = bar ? [...bar.querySelectorAll('button')].map((b) => (b.getAttribute('aria-label') || b.textContent).trim()) : []; return { banner: banner ? banner.textContent.trim() : '-', actions: buttons.join(' / ') } })()`)
-    console.log(`| ${status} | ${where} | ${card?.tag ?? 'NOT LISTED'} | ${card?.actions ?? '-'} | ${detail.banner} | ${detail.actions} |`)
-  }
-}
-
 if (!only || only === 'routes') {
   await goto('/dashboard?reset=1')
   await walkRoutes('returning')
@@ -195,6 +167,5 @@ if (!only || only === 'routes') {
   await walkRoutes('new')
 }
 if (!only || only === 'clicks') await walkClicks()
-if (!only || only === 'statuses') await walkStatuses()
 
 ws.close(); proc.kill()
