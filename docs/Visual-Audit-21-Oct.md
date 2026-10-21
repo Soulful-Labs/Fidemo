@@ -237,3 +237,33 @@ Both mark an answer that screens someone out, which is a choice the client makes
 - **Withdrawal detail:** the participant's avatar is larger in Figma.
 - **Profile Tiers copy:** "Gold Tier" and "70 to 90" in Figma; "Gold Tier and above" and "70+" in the build.
 - **Misnamed Figma node:** `1666:128049` is called "Profile Tiers" but is a saved-card picker.
+
+---
+
+## Status after the fixes of 21 October 2026
+
+**Fixed:**
+- **Token-level:** rows 1, 3, 26, 30, 31 and 40, and the Title-L line height.
+- **Respondent text greys (rows 28, 29):** now Figma's `#d0d0d0` and `#9e9e9e`.
+- **Single-screen:** rows 5, 10 to 14, 16 to 21, 22 (colour), 24, 25, 33, 34, 37 and 38.
+- **Part A:**
+  - A1: the client Screener has no bands;
+  - A2: the console preview starts collapsed;
+  - A3: rows 6 to 9, in `CheckPicker`.
+- **Out of scope, one line each:** Release Payout is 48px; Review shows its chevron (the column was too narrow); a reported study opens on the Study tab, as frames `2314:147794` and `2314:147851` both show.
+
+**Tokens added because the build now uses them:**
+- respondent `stroke.input` `#2d2b28`;
+- client `yellow.200` `#fed592` and `yellow.alpha20` `#fca31133`;
+- `boxShadow.menu` (Drop Shadow/300) in the client and console.
+
+**Not fixed, and why:**
+
+| What | Why |
+|---|---|
+| Rows 15, 22 (opacity), 23, 27, 32 | Deliberate, on the earlier clash list |
+| Rows 2, 4, 39; Figtree; APP/Body/Text-Regular; the Neutral (P) name; the sds colours | For the designer |
+| The `label` token (12px against Figma's 14px Lables) | Figma's 14px Lables is the same as the build's `text-regular`. The build's 12px `label` is used in 29 places that earlier frames draw at 12px, so changing the token would enlarge all of them. The one place that should have been 14px, Tier Distribution, now uses `text-regular` (row 11) |
+| Rows 35, 36 (respondent Study Detail) | Taken from a PNG, with no Figma frame. The values (`#0e1107`, `#241702`) are not tokens, so matching them would mean hard-coding |
+| Figma tokens nothing in the build uses (B2) | Not added, as instructed |
+| The shades-of-one-colour flags | For the designer |
