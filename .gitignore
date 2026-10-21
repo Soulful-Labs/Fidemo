@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 .vercel
 .env*
+
+# written by scripts/ten-check.mjs on every run
+ten-check-files/
