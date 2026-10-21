@@ -37,14 +37,19 @@ export function Checkbox({ checked, onChange, label, disabled }: { checked: bool
  * Radio, as on the Review screener answers (1984:114217): an 18px ring in
  * text-body; selected, the ring turns brand-secondary with a 10px dot.
  */
-export function Radio({ checked, onChange, label, name, disabled }: { checked: boolean; onChange?: () => void; label?: ReactNode; name?: string; disabled?: boolean }) {
+export function Radio({ checked, onChange, label, sub, name, disabled }: { checked: boolean; onChange?: () => void; label?: ReactNode; sub?: ReactNode; name?: string; disabled?: boolean }) {
   return (
-    <label className={cn('inline-flex items-center gap-2', disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer')}>
+    <label className={cn('inline-flex gap-2', sub ? 'items-start' : 'items-center', disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer')}>
       <input type="radio" name={name} className="sr-only" checked={checked} disabled={disabled} onChange={() => onChange?.()} />
-      <span aria-hidden="true" className={cn('flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-1.5', checked ? 'border-brand-secondary' : 'border-text-body')}>
+      <span aria-hidden="true" className={cn('flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-1.5', sub ? 'mt-px' : undefined, checked ? 'border-brand-secondary' : 'border-text-body')}>
         {checked && <span className="h-2.5 w-2.5 rounded-full bg-brand-secondary" />}
       </span>
-      {label && <span className="text-text-regular text-text-title">{label}</span>}
+      {(label || sub) && (
+        <span className="flex flex-col gap-0.5">
+          {label && <span className="text-text-regular text-text-title">{label}</span>}
+          {sub && <span className="text-text-regular text-text-body">{sub}</span>}
+        </span>
+      )}
     </label>
   )
 }

@@ -192,4 +192,4 @@ export function canRedeem(requested: number, balance: number): { ok: boolean; re
 export const NO_PUBLIC_LEADERBOARD = true
 
 /** "Each study can set its own rule on repeat participants: allow them, prefer fresh people, or exclude anyone who has taken part before." */
-export const REPEAT_RULES: RepeatRule[] = ['allow', 'prefer_fresh', 'exclude']
+export const REPEAT_RULES: RepeatRule[] = ['allow', 'exclude']

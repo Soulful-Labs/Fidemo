@@ -118,6 +118,5 @@ export function applyBlockerCopy(kind: ApplyBlocker['kind'] | null, clientName: 
 /** Copy for the repeat rule row on Study Details (workflow 57). */
 export const REPEAT_RULE_COPY: Record<Study['repeatRule'], { label: string; note: string }> = {
   allow: { label: 'Repeat participants welcome', note: 'You can take part even if you have done a study for this client before.' },
-  prefer_fresh: { label: 'Fresh participants preferred', note: 'People who have not worked with this client are ranked first, but you can still apply.' },
   exclude: { label: 'First-time participants only', note: 'Anyone who has taken part in a study for this client before is excluded.' },
 }

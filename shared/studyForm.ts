@@ -74,7 +74,8 @@ export interface StudyForm {
   skills: string
   /** Required. */
   industries: string
-  condition: 'na' | 'fresh' | 'never'
+  /** N/A, or never taken part with this client (2325:214416). A draft saved with the old "fresh" reads as N/A. */
+  condition: 'na' | 'never'
   tiers: string
   /** Years of experience the study accepts (19 Oct 2026), as the drawn ranges. Empty means any. */
   experience?: string[]
@@ -339,11 +340,12 @@ export function audiencePeople(state: PlatformState, f: StudyForm, now: Date = n
 export const fitsStudy = (state: PlatformState, study: Study, now: Date = new Date()): Person[] => (study.form ? audiencePeople(state, study.form, now) : [])
 export const estimateAudience = (state: PlatformState, f: StudyForm, now: Date = new Date()): number => audiencePeople(state, f, now).length
 
-const CONDITION: Record<StudyForm['condition'], { rule: RepeatRule; label?: string }> = {
+const CONDITIONS: Record<StudyForm['condition'], { rule: RepeatRule; label?: string }> = {
   na: { rule: 'allow' },
-  fresh: { rule: 'prefer_fresh', label: 'Prefer fresh people' },
   never: { rule: 'exclude', label: 'Has never participated in any of your studies before' },
 }
+/** The condition a form holds, read safely: anything else (an older draft's "fresh") is N/A. */
+const CONDITION = (c: string) => CONDITIONS[c as StudyForm['condition']] ?? CONDITIONS.na
 
 /** The audience as the Manage, Publish and Review screens write it: one pill per thing entered. */
 export function audiencePills(f: StudyForm): StudySetup['audience'] {
@@ -356,7 +358,7 @@ export function audiencePills(f: StudyForm): StudySetup['audience'] {
     ...pill('Work Functions', list(f.functions).join(', ')), ...pill('Roles', list(f.roles).join(', ')),
     ...pill('Industry', list(f.industries).join(', ')), ...pill('Skills', list(f.skills).join(', ')),
     ...pill('Experience', (f.experience ?? []).join(', ')), ...pill('Household Income', (f.income ?? []).join(', ')),
-    ...pill('Condition', CONDITION[f.condition].label ?? ''), ...pill('Profile Tiers', f.tiers),
+    ...pill('Condition', CONDITION(f.condition).label ?? ''), ...pill('Profile Tiers', f.tiers),
   ]
 }
 
@@ -450,7 +452,7 @@ export function buildStudy(f: StudyForm, now: Date = new Date()): { ok: true; st
   if (!Number.isFinite(f.incentive) || f.incentive <= 0) return no('Set the incentive amount on the Study step')
   const study: BuiltStudy = {
     title: f.title.trim(), description: f.description.trim(), image: f.image || undefined, type, industry: list(f.industries).join(', '), durationMins,
-    endsAt: endsAt.toISOString(), required, repeatRule: CONDITION[f.condition].rule, rates: priceStudy(type, f.incentive, { roles: targets(f.roles), skills: targets(f.skills) }),
+    endsAt: endsAt.toISOString(), required, repeatRule: CONDITION(f.condition).rule, rates: priceStudy(type, f.incentive, { roles: targets(f.roles), skills: targets(f.skills) }),
     targetProfession: list(f.roles).join(', '), preScreener: screener.preScreener, screener: screener.screener,
   }
 
@@ -590,7 +592,7 @@ export function formFromStudy(s: Study): StudyForm {
     ...f, type, groupVideo: s.type === 'group_video_call', groupInPerson: s.type === 'in_person_group',
     duration: s.durationMins || f.duration, title: s.title === 'Untitled study' ? '' : s.title, description: s.description, image: s.image ?? '',
     participants: s.required > 0 ? String(s.required) : f.participants, roles: s.targetProfession, industries: s.industry,
-    condition: s.repeatRule === 'exclude' ? 'never' : s.repeatRule === 'prefer_fresh' ? 'fresh' : 'na',
+    condition: s.repeatRule === 'exclude' ? 'never' : 'na',
     questions: pre.length + full.length ? [...pre, ...full] : f.questions,
     incentive: s.rates.incentivePer || f.incentive, tasks, tasksSubmitted: tasks.length > 0,
     studyDuration: s.diary ? `${s.diary.totalDays} ${diaryWords(s.diary.unit).units}` : f.studyDuration, minimumRequired: s.diary ? `${s.diary.minDays} ${diaryWords(s.diary.unit).units}` : f.minimumRequired,

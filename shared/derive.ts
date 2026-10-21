@@ -783,13 +783,11 @@ export const unpaidStudies = (studies: Study[]): Study[] => studies.filter((s) =
 /**
  * The policy guardrail and workflow 57: who a study's repeat rule allows.
  * `exclude` drops anyone who has completed one of this client's studies,
- * `prefer_fresh` ranks them last, `allow` leaves the order alone.
+ * `allow` leaves the list alone.
  */
 export function applyRepeatRule(state: PlatformState, study: Study, people: Person[]): Person[] {
-  if (study.repeatRule === 'allow') return people
-  const seen = (p: Person) => hasTakenPartWith(state, p.id, study.clientId, study.id)
-  if (study.repeatRule === 'exclude') return people.filter((p) => !seen(p))
-  return [...people].sort((a, b) => Number(seen(a)) - Number(seen(b)))
+  if (study.repeatRule !== 'exclude') return people
+  return people.filter((p) => !hasTakenPartWith(state, p.id, study.clientId, study.id))
 }
 
 /** A person as the client app's Pool and panels list them. */

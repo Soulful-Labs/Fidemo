@@ -56,7 +56,7 @@ export function catalogue({ at, CLIENTS }: CatalogueHelpers): CatalogueEntry[] {
     targetProfession: 'Cardiologists, Cardiac device nurses, Electrophysiologists', image: IMG('cardiac'), screenerSet: 'cardiac', client: CLIENTS.rjp, daysLeft: 20, repeatRule: 'exclude' }),
   mk({ id: 'st-24', saved: true, title: 'Radiology reporting workflows', type: 'group_video_call', status: 'available', reward: 400, durationMins: 75, industry: 'Healthcare', premium: true,
     description: 'Where reporting loses time: templates, dictation and AI pre-reads, discussed with five other reporting radiologists.',
-    targetProfession: 'Radiologists, Reporting radiographers', image: IMG('radiology'), screenerSet: 'radiology', client: CLIENTS.lumen, daysLeft: 15, repeatRule: 'prefer_fresh' }),
+    targetProfession: 'Radiologists, Reporting radiographers', image: IMG('radiology'), screenerSet: 'radiology', client: CLIENTS.lumen, daysLeft: 15, repeatRule: 'allow' }),
   mk({ id: 'st-28', title: 'Nurse leadership roundtable', type: 'in_person', status: 'available', reward: 380, durationMins: 90, industry: 'Healthcare', premium: true, city: 'Chicago',
     description: 'A roundtable for nurse leaders on retention, rostering and wellbeing, hosted in Chicago with lunch provided.',
     targetProfession: 'Nurse managers, Directors of nursing', image: IMG('roundtable'), screenerSet: 'leadership', client: CLIENTS.rjp, daysLeft: 24, repeatRule: 'allow' }),
@@ -64,7 +64,7 @@ export function catalogue({ at, CLIENTS }: CatalogueHelpers): CatalogueEntry[] {
   mk({ id: 'st-31', title: 'Weekend meal planning diary', type: 'diary', status: 'invited_to_complete', reward: 110, durationMins: 10, industry: 'Food',
     description: 'Five short entries on how you plan, shop for and cook dinner across a week.',
     targetProfession: 'People who cook dinner at home most nights', image: IMG('meal'), screenerSet: 'food', tasksSet: 'meals', client: CLIENTS.meadow,
-    diary: { totalDays: 5, minDays: 4, completedDays: [1, 2, 3] }, daysLeft: 13, repeatRule: 'prefer_fresh',
+    diary: { totalDays: 5, minDays: 4, completedDays: [1, 2, 3] }, daysLeft: 13, repeatRule: 'allow',
     timeline: [{ label: 'Applied', at: at(-6, 9, 40) }, { label: 'Invited to complete', at: at(-4, 10, 15) }] }),
 
   mk({ id: 'st-35', title: 'Airport lounge experience groups', type: 'in_person_group', status: 'available', reward: 150, durationMins: 90, industry: 'Travel', city: 'Chicago',

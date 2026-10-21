@@ -99,3 +99,43 @@ on the entrance, `/signup` and `/signup/verify`, and the store's
 Checks: console-auth's five sign-up steps are one step, "No one can sign
 up" (17 steps, was 22); landing-check expects only Log In on the entrance;
 `signup` is out of the console's route list (178 routes, was 179).
+
+### 2 to 4. Console Dashboard (`1872:72123`)
+
+- The whole action row opens its item; "View" is the row's label, not a second link.
+- "Payouts ready to process" sits under Manage, and counts in Manage's tab
+  number (it was under Studies). No frame draws this group; it was added on
+  15 October 2026.
+- A no-show row reads "[participant] • [study title]", not the client's company.
+
+### 5. Console Studies filters (`2367:68669`, `2368:68734` to `2368:68743`)
+
+All Studies is a checkbox list (All, Survey, Video Call, Group Video Call,
+In-Person, Group In-Person, Diary Study; All by default); Sort offers Recent,
+Earliest, Highest Participants, Lowest Participants, Highest Cost, Lowest
+Cost. Both filter and order the list on all three tabs. The console gains the
+tokens `yellow-600` and `yellow-alpha20`, which these menus draw.
+
+### 6. Publish confirmation (`2369:72188`)
+
+Approve to Publish asks "Publish live for participants?" ("The study will be
+published live on the participants app for them to apply for it.", Cancel /
+Approve and Publish) before the study goes live.
+
+### 7. Console Overview graphics (`2325:219889`, `2325:219853`)
+
+The Participation Forecast ring is a 114px disc standing out of its panel
+with a 90px brand-secondary ring; the funnel's numbers fade into their block.
+
+### 8. Two conditions to apply (`2325:214416` console, `2354:155031` client)
+
+| Document | Section | It says | The build now |
+|---|---|---|---|
+| PRD | workflow 57 and the Audience step | Three repeat rules: allow, prefer fresh people, exclude | Two: N/A (allow) and "Who has never participated in any study with [company] before" (exclude). Prefer fresh is gone everywhere: the form, the store (`RepeatRule` is `allow` or `exclude`), Matched's ranking and the respondent's eligibility row |
+| Signed policy | the guardrail on repeat participants | Names the three rules | Not edited. The build no longer offers "prefer fresh"; flagged here for the next policy revision |
+
+- Every demo study that preferred fresh people is now N/A. The seed version
+  moved to 12, so stored demo data is rebuilt without the rule; nothing hidden
+  still filters anyone. A draft saved with "fresh" reads as N/A.
+- The client app keeps "(You)" after its own company; the console shows the
+  study's client company with no "(You)", since the team is not the client.

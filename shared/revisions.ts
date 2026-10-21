@@ -42,7 +42,7 @@ function questions(step: string, before: FormQuestion[], after: FormQuestion[]):
   return out
 }
 
-const CONDITION: Record<StudyForm['condition'], string> = { na: 'Not applicable', fresh: 'Prefer fresh people', never: 'Never taken part before' }
+const CONDITION: Record<string, string> = { na: 'Not applicable', fresh: 'Not applicable', never: 'Never taken part before' }
 
 /** Every field one save changed, in the order of the Create steps. */
 export function diffForms(before: StudyForm, after: StudyForm): FieldChange[] {

@@ -199,7 +199,7 @@ export const anyStudy = (state: PlatformState, id?: string): Study | undefined =
 
 const EMPTY_STUDY: ClientStudy = clientStudy({
   id: 'none', clientId: '', title: 'No study', description: '', type: 'survey', state: 'draft', industry: '', durationMins: 0,
-  createdAt: new Date(0).toISOString(), endsAt: new Date(0).toISOString(), required: 0, repeatRule: 'prefer_fresh',
+  createdAt: new Date(0).toISOString(), endsAt: new Date(0).toISOString(), required: 0, repeatRule: 'allow',
   rates: { platformFee: 0, recruitingPer: 0, incentivePer: 0, moderationPer: 0 }, targetProfession: '', linkCode: '',
   preScreener: [], screener: [], participations: [], payments: [], revisions: [],
 })

@@ -73,9 +73,11 @@ export default function AudienceStep({ form, set, company }: { form: StudyForm; 
       </Section>
       <Section icon={<FilterIcon />} title="Set conditions to apply" sub="Allow participants to apply only if they meet the following criteria">
         <div className="flex flex-col gap-3 rounded-md border-1 border-stroke-input p-4" role="radiogroup" aria-label="Conditions to apply">
-          <Radio name="condition" checked={form.condition === 'na'} onChange={() => set('condition', 'na')} label="N/A" />
-          <Radio name="condition" checked={form.condition === 'fresh'} onChange={() => set('condition', 'fresh')} label="Prefer fresh people" />
-          <Radio name="condition" checked={form.condition === 'never'} onChange={() => set('condition', 'never')} label={`Has never participated in any study with ${company} before`} />
+          {/* Two choices since 22 Oct 2026 (2325:214416). The team is not the client, so the client's own company, with no "(You)". */}
+          <Radio name="condition" checked={form.condition !== 'never'} onChange={() => set('condition', 'na')} label="N/A" />
+          <Radio name="condition" checked={form.condition === 'never'} onChange={() => set('condition', 'never')}
+            label={`Who has never participated in any study with ${company} before`}
+            sub="Select this to exclude people who have previously participated in your studies" />
         </div>
         <Select size="sm" label="Profile Tiers" value={form.tiers || 'Any tier'} options={['Any tier', ...AUDIENCE_LISTS.tiers.filter(Boolean)]} onChange={(v) => set('tiers', v === 'Any tier' ? '' : v)} />
       </Section>

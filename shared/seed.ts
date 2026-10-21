@@ -26,7 +26,7 @@ import type {
   Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudyReport, StudySetup, StudyType, TeamMember, Ticket,
 } from './types'
 
-export const SEED_VERSION = 11
+export const SEED_VERSION = 12
 export const DEMO_PERSON_ID = 'jonathan'
 export const DEMO_PERSON_EMAIL = 'jonathan.reeve@example.com'
 export const DEMO_CLIENT_ID = 'cl-soulful'
@@ -382,7 +382,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
     const inPerson = s.type === 'in_person' || s.type === 'in_person_group'
     const n = [...s.id].reduce((a, c) => a + c.charCodeAt(0), 0)
     const study: Study = {
-      repeatRule: 'prefer_fresh', rates: priceStudy(s.type, incentive), linkCode: `HL-${String(n % 1000).padStart(3, '0')}-${['A', 'B', 'C', 'D'][n % 4]}`,
+      repeatRule: 'allow', rates: priceStudy(s.type, incentive), linkCode: `HL-${String(n % 1000).padStart(3, '0')}-${['A', 'B', 'C', 'D'][n % 4]}`,
       preScreener: SCREENERS[screenerSet]!.pre, screener: SCREENERS[screenerSet]!.full, tasks,
       locations: inPerson ? CITIES[s.city ?? 'New York'] : undefined,
       availability: s.type === 'video_call' || s.type === 'in_person' ? availabilityFor(n) : undefined,
@@ -419,7 +419,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
 
   const goal = live('st-goal', 'About goal-tracking methods', 'video_call', 'recruiting', 'Business', 60,
     'Discuss the effectiveness of the goal-setting tools in helping users achieve their fitness milestones.',
-    'goals.jpg', 40, 16, 74, 'prefer_fresh', 'education', 'People who set and track personal goals')
+    'goals.jpg', 40, 16, 74, 'allow', 'education', 'People who set and track personal goals')
   goal.participations = [
     /** The search has shortlisted Jonathan for this one; the client can invite him from Matched. */
     { personId: DEMO_PERSON_ID, state: 'matched', events: [] },
@@ -428,7 +428,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
 
   const pay = live('st-pay', 'How do you make your digital payments mostly?', 'diary', 'recruiting', 'Finance', 60,
     'Share about your ways of digital spending and payment methods you use in your daily life.',
-    'card.jpg', 30, 36, 79, 'prefer_fresh', 'fintech', 'Adults who pay by card or phone wallet most days', {}, TASKS.payments)
+    'card.jpg', 30, 36, 79, 'allow', 'fintech', 'Adults who pay by card or phone wallet most days', {}, TASKS.payments)
   pay.participations = fill(pay, { rated: 3, completed: 13, unpaid: 4, noShow: 2, recruited: 4, qualified: 9, disqualified: 6, applied: 19, invited: 7, matched: 9 }, { doneFrom: -40, doneTo: -1 })
 
   const sleep = live('st-sleep', 'Share about your sleep cycle', 'in_person', 'completed', 'Healthcare', 60,
@@ -438,7 +438,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
 
   const fitness = live('st-fitness', 'Fitness tracker apps experience', 'group_video_call', 'ongoing', 'Health', 60,
     'Talk through the fitness tracker apps you use and what keeps you coming back to them.',
-    'fitness.svg', 60, 12, 84, 'prefer_fresh', 'fitness', 'Regular users of a fitness or activity app')
+    'fitness.svg', 60, 12, 84, 'allow', 'fitness', 'Regular users of a fitness or activity app')
   fitness.sessions = sessionsFor(fitness, 6, 3)
   fitness.participations = fill(fitness, { rated: 2, completed: 16, unpaid: 2, noShow: 4, recruited: 2, scheduled: 10, qualified: 6, disqualified: 7, applied: 12, invited: 6, matched: 9 }, { doneFrom: -30, doneTo: -6 })
 
@@ -537,7 +537,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
       durationMins: e.durationMins, image: e.image, required, endsAt, completedAt: ended ? endsAt : undefined,
       createdAt: plus(approvedAt, -2), submittedAt: plus(approvedAt, -1), approvedAt,
       targetProfession: e.targetProfession, premium: e.premium, city: e.city,
-      repeatRule: e.repeatRule ?? (['allow', 'prefer_fresh', 'exclude'] as const)[n % 3]!,
+      repeatRule: e.repeatRule ?? (['allow', 'allow', 'exclude'] as const)[n % 3]!,
     }, e.reward, e.screenerSet, e.tasksSet ? TASKS[e.tasksSet] : undefined)
     study.linkCode = `HL-${String(n).padStart(3, '0')}-${['A', 'B', 'C', 'D'][n % 4]}`
     if (e.diary) study.diary = { totalDays: e.diary.totalDays, minDays: e.diary.minDays, unit: 'Day', frequency: 'Every day' }

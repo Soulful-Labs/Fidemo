@@ -24,7 +24,8 @@ export type ParticipationState =
   | 'qualified' | 'disqualified' | 'recruited' | 'scheduled'
   | 'completed' | 'no_show' | 'withdrawn'
 
-export type RepeatRule = 'allow' | 'prefer_fresh' | 'exclude'
+/** Who a study takes back (workflow 57). "Prefer fresh people" was dropped on 22 Oct 2026: a study allows everyone, or excludes anyone who has taken part with the client. */
+export type RepeatRule = 'allow' | 'exclude'
 export type Tier = 'silver' | 'gold' | 'platinum'
 export type Stars = 1 | 2 | 3 | 4 | 5
 /** The client's rating control (policy sign-off, workflow 52). Stored as stars, see rules.ts. */

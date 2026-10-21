@@ -270,18 +270,11 @@ export default function Audience() {
             <Section icon={FUNNEL} title="Set conditions to apply" sub="Allow participants to apply only if they meet the following criteria" headPad="pb-[15px]">
               <div className="flex flex-col gap-3.5">
                 <div className="flex flex-col gap-4 rounded-md border-1 border-stroke-input bg-bg p-4">
-                  <Radio on={draft.condition === 'na'} onClick={() => set('condition', 'na')} label="N/A" />
-                  {/* The signed policy's guardrail, and workflow step 57, give a
-                      study three repeat rules: allow them, prefer fresh people,
-                      or exclude anyone who has taken part before. The frame draws
-                      the first and the third; the middle one is the policy's own
-                      wording, added here and flagged for the designer. */}
-                  <Radio on={draft.condition === 'fresh'} onClick={() => set('condition', 'fresh')}
-                    label="Prefer fresh people"
-                    sub="Repeat participants are still matched, but ranked below people new to your studies" />
+                  {/* Two choices since 22 Oct 2026 (2354:155031): N/A, or never taken part with this client. */}
+                  <Radio on={draft.condition !== 'never'} onClick={() => set('condition', 'na')} label="N/A" />
                   <Radio on={draft.condition === 'never'} onClick={() => set('condition', 'never')}
-                    label={`Has never participated in any study with ${client?.company || 'you'} (You) before`}
-                    sub="Turn this on to exclude people who have previously participated in your studies" />
+                    label={`Who has never participated in any study with ${client?.company || 'you'} (You) before`}
+                    sub="Select this to exclude people who have previously participated in your studies" />
                 </div>
                 {/* Profile Tiers (19 Oct 2026, as drawn): one choice, each with its icon, the Trust Score it means and
                     the share of verified, active participants at that tier or above, counted from the pool. */}
