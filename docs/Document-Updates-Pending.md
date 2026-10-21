@@ -62,9 +62,13 @@ Rules the build adds, not in a signed document:
 - Every entry must have at least one question, and a diary cannot be made
   shorter while a dropped entry still holds a written question
   (`diaryDayFault` in `shared/studyForm.ts`). Each is refused with the reason.
-- Upload File and Generate add their questions to the first entry.
+- Upload File and Generate add their questions with no entry, so they are
+  asked on every entry and the form saves straight away. Each shows on every
+  day card, marked "Asked on every day", with "Change for this day only",
+  which gives every entry its own copy to edit.
 - A diary draft from before this change opens with its questions copied onto
-  every entry, so nothing it asked is lost.
+  every entry, once, so nothing it asked is lost (`perDay` on the form marks
+  it done).
 
 Drawn one way, built another, on purpose:
 - Each question keeps the one-click bin (15 Oct 2026 decision) where the

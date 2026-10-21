@@ -43,10 +43,12 @@ export default function SurveyComposer({
   const total = Number.parseInt(draft.studyDuration, 10) || 5
   const words = diaryWords(draft.durationUnit)
   const freshDay = (day: number): Question => ({ ...fresh(1), day })
-  /** What Upload and Generate write is added to the first entry of a diary, after what is already written there. */
-  const addMade = (made: Question[]) => write(diary
-    ? [...questions.filter((q) => q.day !== 1 || q.text.trim()), ...made.map((q) => ({ ...q, day: 1 }))]
-    : [...questions.filter((q) => q.text.trim()), ...made])
+  /**
+   * What Upload and Generate write goes after what is already written, and
+   * the empty questions go. In a diary it has no entry, so it is asked on
+   * every one and the form can be saved straight away.
+   */
+  const addMade = (made: Question[]) => write([...questions.filter((q) => q.text.trim()), ...made.map(({ day: _, ...q }) => q)])
   /**
    * Upload File reads a text or CSV file on this device: each line (a CSV
    * row's first cell) becomes an open question. Nothing is sent anywhere, and
@@ -59,7 +61,7 @@ export default function SurveyComposer({
     const kept = questions.filter((q) => q.text.trim())
     addMade(lines.map((text, i) => ({ ...fresh(kept.length + i + 1, 'Multi-line input'), text })))
     setFile(f.name)
-    toast(`${lines.length} question${lines.length === 1 ? '' : 's'} read from ${f.name}${diary ? ` into ${words.Unit} 1` : ''}`)
+    toast(`${lines.length} question${lines.length === 1 ? '' : 's'} read from ${f.name}${diary ? `, asked on every ${words.unit}` : ''}`)
   }
 
   /**
@@ -69,7 +71,8 @@ export default function SurveyComposer({
    * Ranking. Empty questions are left out when the form is submitted.
    */
   useEffect(() => {
-    if (diary) { const started = startDays(draft.tasks, total, freshDay); if (started !== draft.tasks) set('tasks', started); return }
+    // An older draft's questions are copied onto every entry once; after that, a question with no entry is asked on every one.
+    if (diary) { if (!draft.perDay) { const started = startDays(draft.tasks, total, freshDay); if (started !== draft.tasks) set('tasks', started); set('perDay', true) } return }
     const kinds: QuestionKind[] = ['Single-select', 'Number input', 'Multi-line input', 'Slider', 'Ranking']
     if (draft.tasks.length === 0) set('tasks', kinds.map((k, i) => fresh(i + 1, k)))
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -86,7 +89,7 @@ export default function SurveyComposer({
     const made = surveyFromPrompt(text, label, kept.length + 1, marksFor)
     if (made.length === 0) { toast('Your description does not say what the study is about, so nothing was written'); return }
     addMade(made)
-    toast(`${made.length} questions written from your description${diary ? ` into ${words.Unit} 1` : ''}`)
+    toast(`${made.length} questions written from your description${diary ? `, asked on every ${words.unit}` : ''}`)
   }
 
   const send = () => {

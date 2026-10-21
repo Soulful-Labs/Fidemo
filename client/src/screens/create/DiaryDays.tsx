@@ -40,7 +40,20 @@ export function fitDays(qs: Question[], total: number, unit: string, fresh: (day
   return { ok: true, qs: relabelDays([...kept, ...added]) }
 }
 
-/** One card per entry (DAY 1 to DAY 5 in 1518:94904), each with its own questions and its own Add Question. */
+/** A question asked on every entry, given its own copy on each, so each entry can then differ. */
+function splitOnto(qs: Question[], id: string, total: number): Question[] {
+  const q = qs.find((x) => x.id === id)
+  if (!q) return qs
+  const copies = Array.from({ length: total }, (_, i) => ({ ...q, id: `${q.id}-d${i + 1}`, day: i + 1 }))
+  return relabelDays([...qs.filter((x) => x.id !== id), ...copies])
+}
+
+/**
+ * One card per entry (DAY 1 to DAY 5 in 1518:94904), each with its own
+ * questions and its own Add Question. A question with no entry (from Upload
+ * File or Generate) is asked on every one, so it shows on every card, marked
+ * so; "Change for this day only" gives each entry its own copy.
+ */
 export function DiaryDays({ questions, total, unit, write, fresh, marksFor, onDeleted }: {
   questions: Question[]; total: number; unit: string
   write: (next: Question[]) => void; fresh: (day: number) => Question
@@ -51,10 +64,18 @@ export function DiaryDays({ questions, total, unit, write, fresh, marksFor, onDe
       {Array.from({ length: total }, (_, i) => i + 1).map((day) => (
         <section key={day} aria-label={`${unit} ${day}`} className="flex flex-col gap-4 rounded-lg border-1 border-stroke-1 bg-bg-0 p-4">
           <p className="flex h-7 items-center justify-center rounded-full bg-bgAlt-2 text-text-regular uppercase text-text-title">{unit} {day}</p>
-          {questions.filter((q) => q.day === day).map((q, i) => (
-            <QuestionBlock key={q.id} q={q} index={i} plain marksFor={marksFor} markWidth="w-[118px]" labelClass="h-8 bg-bgAlt-2 px-3.5" largePreview
-              write={(next) => write(questions.map((x) => (x.id === next.id ? next : x)))}
-              onDelete={() => { write(questions.filter((x) => x.id !== q.id)); onDeleted(`${unit} ${day} ${q.label}`) }} />
+          {questions.filter((q) => !q.day || q.day === day).map((q, i) => (
+            <div key={q.id} className="flex flex-col gap-1.5">
+              <QuestionBlock q={{ ...q, label: `Q${i + 1}` }} index={i} plain marksFor={marksFor} markWidth="w-[118px]" labelClass="h-8 bg-bgAlt-2 px-3.5" largePreview
+                write={(next) => write(questions.map((x) => (x.id === next.id ? { ...next, label: x.label } : x)))}
+                onDelete={() => { write(questions.filter((x) => x.id !== q.id)); onDeleted(q.day ? `${unit} ${day} Q${i + 1}` : `Q${i + 1}, asked every ${unit.toLowerCase()},`) }} />
+              {!q.day && (
+                <p className="flex items-center gap-2 pl-9 text-text-regular text-text-body">
+                  Asked on every {unit.toLowerCase()}
+                  <button type="button" className="text-text-title underline" onClick={() => write(splitOnto(questions, q.id, total))}>Change for this {unit.toLowerCase()} only</button>
+                </p>
+              )}
+            </div>
           ))}
           <Button variant="tertiary" size="row" className="w-full" leftIcon={<Plus className="h-5 w-5" />}
             onClick={() => write([...questions, fresh(day)])}>Add Question</Button>

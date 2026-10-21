@@ -92,6 +92,12 @@ export interface StudyForm {
   tasks: FormQuestion[]
   /** The form builder has been submitted. */
   tasksSubmitted: boolean
+  /**
+   * The diary form has been opened with its per-entry cards (21 Oct 2026), so
+   * a question with no entry is one asked on every entry on purpose, not a
+   * draft from before per-entry questions waiting to be copied onto each.
+   */
+  perDay?: boolean
   durationUnit: string
   frequency: string
   studyDuration: string
