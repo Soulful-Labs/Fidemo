@@ -35,9 +35,10 @@ export default function ActionGroupCard({ group }: { group: ActionGroup }) {
   )
 }
 
+/** The whole row opens the item (22 Oct 2026); "View" stays as the row's label, not a second link. */
 function Row({ row }: { row: ActionRow }) {
   return (
-    <div className="flex h-[68px] items-center gap-2 border-t-1 border-stroke-1 px-3">
+    <Link to={row.to} className="flex h-[68px] items-center gap-2 border-t-1 border-stroke-1 px-3 hover:bg-bg-1">
       {row.thumb && <img src={row.thumb} alt="" className="h-11 w-11 shrink-0 rounded-xs object-cover" />}
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <p className="truncate text-text-medium leading-5 text-text-title">
@@ -50,9 +51,9 @@ function Row({ row }: { row: ActionRow }) {
         </p>
       </div>
       <div className="flex shrink-0 flex-col items-end gap-1">
-        <Link to={row.to} className="text-text-regular leading-5 text-text-title">View</Link>
+        <span className="text-text-regular leading-5 text-text-title">View</span>
         <span className="text-text-regular leading-5 text-text-body">{row.when}</span>
       </div>
-    </div>
+    </Link>
   )
 }
