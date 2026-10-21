@@ -135,6 +135,8 @@ live site. Each prints a pass, YES or WORKING line per item and a total.
 | `internal/scripts/healthcheck.mjs` | Every console route renders without an error (179). Run with `BASE_URL=http://localhost:5180/internal` |
 | `client/scripts/containment.mjs` | Every client screen at 1440x900 and 1440x1200: nothing wider than the window (128) |
 
+`scripts/cleanup-check.mjs` occasionally hangs with a stuck browser. If it prints nothing for more than a few minutes, stop it and run it again on its own.
+
 **Other tools**
 
 | Command | What it does |
