@@ -77,7 +77,7 @@ export function useDashboard() {
     const noShows: ActionGroup = {
       key: 'no-show', title: 'No-show verifications', count: String(d.noShows.length), viewAll: '/studies?tab=ongoing',
       rows: d.noShows.slice(0, FIRST).map((c) => ({
-        id: `${c.study.id}-${c.person.id}`, title: shortName(c.person.name), meta: clientById(state, c.study.clientId)?.company,
+        id: `${c.study.id}-${c.person.id}`, title: shortName(c.person.name), meta: c.study.title, // the study, as 1872:72123 draws it
         detail: ['Marked as No-show by the client'], when: ago(c.p.events.find((e) => e.label === 'No Show')?.at, now), to: `/studies/${c.study.id}/respondents/${c.person.id}`,
       })),
     }
