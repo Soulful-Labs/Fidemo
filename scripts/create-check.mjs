@@ -191,13 +191,17 @@ const STUDIES = [
   },
   {
     key: 'diary', card: 'Diary Study', duration: 15, participants: '9', incentive: 75, screener: THREE, opener: 'Create Survey Questionnaire', submit: 'Save & Continue',
-    before: `await __choose(__btn('Every 2 days'), 'Every 3 days'); await __choose(__btn('5 days'), '7 days');`,
+    // Since 21 Oct 2026 (1518:94904) the schedule is set inside the diary form, and each day has its own questions.
     // Policy section 5, four fifths of the entries: a 7-day diary's minimum moves to 6 by itself and nothing lower is offered.
-    setup: `__ph('Enter question text...', 'What did you eat today?', 0); __ph('Enter question text...', 'How did you feel afterwards?', 1);`,
-    typeLabel: 'Diary Study', summary: '2 questions, 7 days logs',
-    client: ['Every 3 days', '7 days', '6 days', 'Day', 'What did you eat today?', 'How did you feel afterwards?'],
-    console: ['What did you eat today?', 'How did you feel afterwards?', '7 days', '6 days', 'Every 3 days'],
-    tasks: ['What did you eat today?', 'How did you feel afterwards?'], diaryDays: 7,
+    setup: `await __choose(__btn('Every 2 days'), 'Every 3 days'); await __choose(__btn('5 days'), '7 days');
+      __ph('Enter question text...', 'What did you eat today?', 0); __ph('Enter question text...', 'How did you feel afterwards?', 1);
+      for (let d = 2; d <= 7; d++) __ph('Enter question text...', 'What did you eat on day ' + d + '?', d);`,
+    typeLabel: 'Diary Study', summary: '8 questions, 7 days logs',
+    client: ['Every 3 days', '7 days', '6 days', 'Day', 'What did you eat today?', 'How did you feel afterwards?', 'What did you eat on day 7?'],
+    console: ['What did you eat today?', 'How did you feel afterwards?', 'What did you eat on day 7?', '7 days', '6 days', 'Every 3 days'],
+    tasks: ['What did you eat today?', 'How did you feel afterwards?', ...[2, 3, 4, 5, 6, 7].map((d) => `What did you eat on day ${d}?`)], diaryDays: 7,
+    // Day 2 asks its own question, and not day 1's.
+    day2: { asks: 'What did you eat on day 2?', not: 'How did you feel afterwards?' },
   },
 ].map((s) => ({ ...s, title: `CC ${s.key} ${tag}`, description: `Created by the create check to follow a ${s.key} study through all three apps.`, end: after(30) }))
 
@@ -356,6 +360,12 @@ for (const s of STUDIES.filter((x) => x.id)) {
       if (!first.includes(s.tasks[0])) gaps.push('first question not on screen: ' + s.tasks[0])
       for (const t of s.tasks) if (!held.includes(t)) gaps.push('question not in the study the respondent has: ' + t)
       if (held.length !== s.tasks.length) gaps.push(`respondent is asked ${held.length} questions, built ${s.tasks.length}`)
+      if (s.day2) {
+        await R.go(`/studies/${s.id}/diary/2`); await sleep(500)
+        const day2 = await R.ev('document.body.innerText')
+        if (!day2.includes(s.day2.asks)) gaps.push('day 2 does not ask its own question: ' + s.day2.asks)
+        if (day2.includes(s.day2.not)) gaps.push('day 2 asks a day 1 question: ' + s.day2.not)
+      }
     }
   } catch (e) { gaps.push(String(e.message)) }
   note(4, s.key, gaps)

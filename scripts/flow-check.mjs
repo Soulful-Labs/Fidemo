@@ -269,9 +269,13 @@ if (sameStudy.n !== 1 || sameStudy.id !== SURVEY.id || sameStudy.description !==
 // The diary, straight through. A 3-day diary's minimum is 3 by itself: four fifths, rounded up (policy section 5).
 await about(DIARY)
 await C.click('Continue'); await C.ev(FORMS)
-await C.ev(`(async () => { await __choose(__btn('Every 2 days'), 'Every 3 days'); await __choose(__btn('5 days'), '3 days'); return true })()`); await sleep(150)
+// Since 21 Oct 2026 (1518:94904) the schedule is set inside the diary form, and each day has its own
+// questions: the same two are written on each of the three days, using each day's own Add Question.
 await C.click('Create Survey Questionnaire', 500)
-await C.ev(`(() => { __ph('Enter question text...', 'What did you eat today?', 0); __ph('Enter question text...', 'How did you feel afterwards?', 1); return true })()`); await sleep(200)
+await C.ev(`(async () => { await __choose(__btn('Every 2 days'), 'Every 3 days'); await __choose(__btn('5 days'), '3 days'); return true })()`); await sleep(150)
+await C.ev(`(async () => { __btn('Add Question', 1).click(); await __wait(); __btn('Add Question', 2).click(); await __wait()
+  for (let d = 0; d < 3; d++) { __ph('Enter question text...', 'What did you eat today?', d * 2); __ph('Enter question text...', 'How did you feel afterwards?', d * 2 + 1) }
+  return true })()`); await sleep(200)
 await C.click('Save & Continue', 500)
 // Study setup and pricing are two steps (15 Oct 2026): the incentive is on Pricing.
 await C.click('Continue', 700); await C.ev(FORMS);
