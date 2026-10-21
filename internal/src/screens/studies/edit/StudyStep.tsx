@@ -31,8 +31,8 @@ function SurveyComposer({ form, setForm, label, onDone }: { form: StudyForm; set
   }
   const kept = form.tasks.filter((t) => t.text.trim()).length
   return (
-    <div className="flex flex-col gap-4 rounded-lg border-1 border-yellow-100 bg-yellow-30 p-4">
-      <div className="flex items-center gap-3">
+    <div className="flex flex-col gap-4 overflow-hidden rounded-lg border-1 border-yellow-100 bg-bg-0 p-4">
+      <div className="-mx-4 -mt-4 flex items-center gap-3 bg-yellow-30 px-4 py-3">
         <IconButton label="Back to Survey Settings" size={32} onClick={onDone}><ChevronLeft className="h-4 w-4" /></IconButton>
         <span className="flex-1 text-body-medium text-text-title">Create Survey</span>
         <span className="text-text-regular text-text-body">Auto-saved</span>
