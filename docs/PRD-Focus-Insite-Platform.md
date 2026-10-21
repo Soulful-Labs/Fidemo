@@ -1,11 +1,11 @@
 # Product Requirements Document
 # Focus Insite / HumanLayer Platform
 
-**13 October 2026 · Soulful Labs**
+**21 October 2026 · Soulful Labs**
 
 **The front end for all three apps is built, deployed and working. The job is to put a real back end behind it.** Section 23 is written for that.
 
-**This document and the BRD are self-contained, and nothing in them is left open.** The workflow is in Section 15, every policy value is in Section 6, and every decision is in Section 16.
+**This document and the BRD are self-contained.** The workflow is in Section 15, every policy value is in Section 6, and every decision is in Section 16. Three decisions are open, and are recorded as open in Section 16 (D32, D33 and D34). Nothing else is left open.
 
 ---
 
@@ -80,7 +80,7 @@ Three groups of people use the platform.
 
 **Clients** are companies who need to hear from specific kinds of people. They use a **desktop app**. They create a study, describe who they want, write screening questions, set an incentive, pay, and then watch the study fill up and collect the results.
 
-**The Focus Insite team** operates the platform. They use a **desktop console**. They verify people's identity and professional credentials, verify client businesses, review and approve every new study before it goes live, moderate reported accounts, answer support tickets, confirm refunds, and set the platform's fees and reward values.
+**The Focus Insite team** operates the platform. They use a **desktop console**. They verify people's identity and professional credentials, verify client businesses, review and approve every new study before it goes live, change a live study when it needs it, moderate reported accounts and reported studies, answer support tickets, release participant withdrawals, confirm refunds, and set the platform's fees and reward values.
 
 The central idea: **a verified human**. The platform's value is that a client talking to 30 people knows those 30 people are real, are who they say they are, and have the professional background they claim. Every feature serves that: identity verification, professional credential verification, the Trust Score, the tier system, the human certificate, and the team sitting in the middle checking things machines could not.
 
@@ -110,8 +110,11 @@ Read this before anything else. Several words mean something specific here.
 | **Reward points** | A second currency earned alongside cash. Redeemable for cash at 100 points to $1, minimum 1,000 points. |
 | **Human Certificate** | A badge a participant holds once identity is verified. |
 | **Incentive** | The cash a participant is paid for completing a study. |
-| **Deposit** | Money the client pays up front against the expected incentives. |
+| **Deposit** | Money the client pays when a study is submitted, set against what the study will cost. How much is an open decision; see D32. |
 | **Refund** | Money returned to a client when a study does not fill its target. |
+| **Study report** | A participant's report that something is wrong with a study, from a fixed list of reasons. The team reviews it in Studies > Reported. |
+| **Withdrawal** | A participant's request to move wallet money to their bank account. It waits until a team member releases it. |
+| **Revisions History** | The record of every round of changes to a submitted study: when, who (the client or the team), and field by field what changed. |
 | **Master Admin** | The Focus Insite team member with access to every module. |
 | **Sub-admin** | A team member with access to only some modules, set per module by the master admin. |
 
@@ -124,7 +127,7 @@ Read this before anything else. Several words mean something specific here.
 | Who does what | Detail |
 |---|---|
 | The client does | Creates a study end to end, invites matched people, qualifies or disqualifies applicants, marks attendance and completion, rates participants, pays invoices |
-| The team does | Approves every study before it goes live, approves every payout before money moves, verifies identities and businesses, handles reports and restrictions, answers support, sets fees and reward values |
+| The team does | Approves every study before it goes live, changes a live study when it needs it, releases every withdrawal before money moves, verifies identities and businesses, handles reports on people and on studies, and restrictions, answers support, sets fees and reward values |
 | The team only does | Nothing exclusive in the client-facing apps. A client searches the pool and invites directly |
 
 So: self-serve creation, team approval at the two gates that matter, self-serve running.
@@ -142,13 +145,13 @@ The earlier workflow said there was no self-serve option at all. The designs dra
 | Device | Mobile only | Desktop only | Desktop only |
 | Design width | 375px | 1440px | 1440px |
 | Theme | Dark | Light | Light |
-| Brand shown | HumanLayer | Focus Insite | Focus Insite (but see note) |
+| Brand shown | HumanLayer | HumanLayer | Admin Panel |
 | Navigation | Bottom tab bar, 4 tabs | Left sidebar, 240px | Left sidebar, 230px |
 | Screens | ~95 | ~90 | ~95 |
 
 **There is no desktop version of the respondent app and none is planned.** On a laptop it renders as a centred phone-width column inside a frame, with background either side. Every overlay, modal, sheet, confetti and glow is clipped by that frame. Do not build a wide layout for it.
 
-**Brand.** Focus Insite is what every user sees, in all three apps. HumanLayer is the operating entity and appears only where an entity name is legally required: finance records, invoices and legal documents. The current designs mix the two and are to be corrected. See D11.
+**Brand.** The respondent app and the client app carry the HumanLayer name. The console, used by Focus Insite's own team, is titled Admin Panel. See D11.
 
 ### 4.2 Design tokens
 
@@ -281,21 +284,26 @@ draft → in_review → recruiting → ongoing → completed
                  ↘ (changes requested) → draft
    recruiting/ongoing → paused → recruiting/ongoing
    recruiting/ongoing → cancelled
+   completed → recruiting (re-published while the balance is unpaid)
 ```
 
 | State | Who put it here | Where it appears | What can happen next |
 |---|---|---|---|
 | `draft` | Client saved and exited the create flow | Client > Studies > Drafts | Client resumes and publishes → `in_review` |
 | `in_review` | Client pressed Publish | Console > Studies > To Review | Team approves → `recruiting`. Team requests changes → `draft` with a note |
-| `recruiting` | Team approved | Client > Studies > Ongoing; Console > Studies > Ongoing | Target met or team/client acts → `ongoing`, `paused`, `completed` |
+| `recruiting` | Team approved | Client > Studies > Ongoing; Console > Studies > Ongoing | Target met or team/client acts → `ongoing`, `paused`, `completed`. When the target is met the client may choose Recruit more, and the study keeps recruiting |
 | `paused` | Client or team paused, with a reason | Both, with a red banner | Resume → previous state. Mark as completed → `completed` |
-| `completed` | Target met, or marked complete | Studies > Completed | Nothing. Read only, downloads still work |
+| `completed` | Target met, or marked complete | Studies > Completed | Read only, downloads still work. While the balance is unpaid and nothing has been refunded, the client may Re-publish and Recruit → `recruiting` |
 | `cancelled` | Not drawn in any screen | none | See D14 |
 
 **Rules:**
 
 - A study can only be in one state. The tab it appears under is derived from the state, never set separately.
-- A study cannot be edited after it goes live. No edit control exists on any live study in either app; every one drawn is switched off in the design, and the console's study-editing screens are a discarded section. See D7.
+- A live study is changed only by the team, in the console's Edit Study. The client cannot edit a live study. The study type cannot change, and nor can the availability, addresses or sessions people may already have booked. Whether the team may change the incentive or the number of participants is open; see D33. See D7.
+- Every round of changes to a submitted study, by the client before approval or by the team after it, is recorded in the study's Revisions History with who made it and what changed.
+- Marking a study complete asks for confirmation first.
+- **Re-publish and Recruit** reopens a completed study only while its balance is unpaid and nothing has been refunded. It changes no amount. The balance falls due again, on the same rule, when the study is next completed. Once the balance is paid, the option is gone.
+- **Recruit more**: when a study meets its target, the client is offered "Congrats!" with Recruit more. Choosing it keeps the study recruiting past its target, and the banner is not shown again.
 - Pausing stops new recruitment. It does not cancel booked sessions. The status tag in the console still reads "Recruiting" while paused, which is a design bug: it should read "Paused".
 
 ### 5.2 Respondent-in-study lifecycle
@@ -391,7 +399,7 @@ Three kinds of verification, all handled in the console, all following the same 
 
 **Decisions available:** Mark Verified, Reject, Chat.
 
-- **Mark Verified** requires a written Verification Statement and the team member's password, then a confirmation step, then an outcome message. Identity: "[Name]'s account is now fully active to participate in studies." Profession: "… will be displayed on [name]'s profile publicly."
+- **Mark Verified** requires a written Verification Statement and the team member's password, checked against the signed-in member's own password, then a confirmation step, then an outcome message. Identity: "[Name]'s account is now fully active to participate in studies." Profession: "… will be displayed on [name]'s profile publicly."
 - **Reject** requires a written Rejection Statement. Warns "necessary action will be taken with impacting this account".
 - **Chat** opens a support ticket. **It is the only way to ask someone for a better document.** There is no "request resubmission" state.
 
@@ -401,15 +409,36 @@ No undo is drawn for any verification decision. No decision records which team m
 
 ### 5.7 Report and moderation lifecycle
 
-Reports arrive in a second queue, from either the system or a person.
+There are two kinds of report: a report about a participant, and a report about a study.
 
-| Field | Values drawn |
+**Reports about a participant** arrive in a second verification queue, from the system, a person on the team, or a client.
+
+| Field | Values |
 |---|---|
-| Reported by | "System (Algo)", or a named person |
-| Category | AI/Bot Activity, Abusive Behaviour, Spam Apply, Wrong Match |
-| Reason | One line of free text |
+| Reported by | "System (Algo)", a named person, or the client who reported them |
+| Category, from the system or the team | AI/Bot Activity, Abusive Behaviour, Spam Apply, Wrong Match |
+| Category, from a client | Was asking to collaborate outside; Participant is misrepresenting their identity; Profession looks like a scam or suspicious; Participant had an inappropriate behavior; Other |
+| Reason | Free text. A client must describe the report, up to 500 characters |
+
+A client reports a participant from that participant's page in one of the client's studies.
 
 Decisions: **Reject Report** (warns "cannot be undone later"), **Restrict Account** (statement and password; "restricted to participate, withdraw earnings & rewards, for 15 days as for the 1st time"), **Deactivate Account**.
+
+**Reports about a study** come from participants, from the study's detail screen.
+
+```
+pending → resolved
+```
+
+| Field | Values |
+|---|---|
+| Reason | Client is offering payment outside; Client is misrepresenting their identity; Study looks like a scam or contains a suspicious link; Study contains contact information; Study seems illegal or unethical; Study is unclear or incomplete; This is ad, not a study; Other |
+| Description | Required, up to 500 characters |
+
+A reported study appears in the console under Studies > Reported. Nothing changes for the study itself until the team acts. The team can:
+
+- **Chat**, which opens one support ticket with the client about the study's reports.
+- **Mark Reports Resolved**, which needs a written statement and the signed-in team member's password, and resolves every open report on that study together.
 
 **Not designed:** reported, flagged and restricted people are not marked anywhere in the main participants list. No status column, no filter, no tag. Such a person can be acted on from the queue but cannot be found by searching the list.
 
@@ -438,22 +467,18 @@ A ticket carries: a number (FI-S562357), a subject, a status (Open / Closed), th
 | Object | Belongs to | Lifecycle |
 |---|---|---|
 | **Deposit** | Client, per study | Paid up front when a study is published |
-| **Invoice** | Client, per study | Pending → Paid (manually, or auto-debited on the due date) |
+| **Invoice** | Client, per study | Pending → Paid. The balance is due 7 days after the study is completed. A study re-published before its balance is paid has no due date until it is completed again |
 | **Earning** | Participant, per completed study | Credited to the wallet on completion |
-| **Payout** | Participant | Requested → Processing → Paid. $2 fee per withdrawal |
+| **Withdrawal** | Participant | `pending` when requested → `paid` when a team member releases it. The model also carries `approved`, `held` and `failed`; see D2. $2 fee per withdrawal |
 | **Redemption** | Participant | Points → cash into the wallet, at 100 points to $1, minimum 1,000 |
 | **Refund** | Client, per underfilled study | Raised automatically from the shortfall → confirmed by a team member → paid in 5 to 7 working days |
 
-**No approval exists for a participant payout.**
+**A withdrawal waits for the team.**
 
-Workflow step 46 says a payout waits on client approval. This was checked against every screen in all three applications:
-
-- The client's Pay tab is the client's own bill. It reads Payment Due, Deposit Paid and Total Cost, itemises the billing and lists settled transactions. There is no per-respondent row, no approve control and no payout list. Its only action is Pay Balance.
-- The console's Pay tab is the same bill, read only.
-- The console's Finance module lists payouts but offers no approve, hold, release, retry or status control.
-- The participant's wallet shows money arriving.
-
-So a participant's earning becomes withdrawable with no approval step anywhere. Either workflow step 46 is wrong, or an entire screen is missing. **This must be decided before build.** See D2.
+- The console's Finance > Payouts tab lists withdrawals, with a detail page for each and one action, **Release Payout**, which moves it from `pending` to `paid` and records when and by whom. Only a team member can release. Approve, Hold and Retry, and the `approved`, `held` and `failed` states, are in the model with no screen yet. See D2.
+- The participant's wallet shows a withdrawal as Processing while it is pending, and Completed once released. The "paid" notice is dated from the release.
+- The client's Pay tab is the client's own bill. It itemises the billing and lists settled transactions. There is no per-respondent row and no approve control. Its only payment action is Pay Bill.
+- The console's Pay tab is the same bill, read only. Nothing in it says a balance is auto-debited.
 
 ---
 
@@ -545,6 +570,7 @@ A profile picture and an intro video each carry their own consent, off by defaul
 | Withdrawal | Consent can be withdrawn at any time, and must stop being shown immediately |
 | Without consent | The client sees the participant's initial |
 | Points on withdrawal | Not taken back |
+| Where the control sits | On My Profile, the picture's consent switch sits under the picture and the video's under the video |
 
 ### 6.8 Restriction
 
@@ -570,6 +596,7 @@ A change to any value in this section is not retrospective. A study keeps the va
 | Recruitment fee | $25 base | Per completed participant |
 | Recruitment add-on | +$25 | For Video Call, In-Person or Diary study type, or for Roles targeting |
 | Recruitment add-on | +$20 | For Skills targeting |
+| Deposit | The signed policy states the incentives for the full sample | At submission. Open: the build takes a different amount; see D32 |
 | Withdrawal fee (participants) | $1.99 as drawn | **Conflicts with the $2 everywhere else** |
 
 **None of these fields has any validation drawn.** Every one is a free text box with no minimum, maximum, step or check. Nothing stops Gold being set below Silver. Add validation; see Section 9.
@@ -687,7 +714,7 @@ Every route below is a real screen. A route not in this list should not exist.
 | Route | Screen |
 |---|---|
 | `/profile` | Profile |
-| `/profile/edit` | My Profile, two tabs. Includes the profile picture and the intro video, each with its own consent control |
+| `/profile/edit` | My Profile, two tabs. Profile Details runs: Profile Picture, Full Name, Intro Video, Gender, Address, Area Type, then About Me (About Me, Languages Spoken, Nationality, Household Income, Ethnicity, Pets, home owner). The picture and the intro video each carry their own consent control |
 | `/profile/certificate` | Human Certificate |
 | `/profile/referrals` | Refer and Earn |
 | `/profile/settings` | Account Settings |
@@ -707,7 +734,7 @@ Every route below is a real screen. A route not in this list should not exist.
 
 These are components with `open` and `onClose`. **They do not change the URL.**
 
-Consent, Details info, Why Screener, Exit Screener, Locations, Reject Study, Reject Invitation, Cancel Study, Remove Bank Account, Logout, Match Score explainer, Filters, Sort menu, Education Level picker, Industry picker, Profession picker, ID type picker, tier upgrade, points earned, streak detail.
+Consent, Details info, Why Screener, Exit Screener, Locations, Reject Study, Reject Invitation, Cancel Study, Report Study (choose a reason, describe it, submitted), Remove Bank Account, Logout, Match Score explainer, Filters, Sort menu, Education Level picker, Industry picker, Profession picker, ID type picker, tier upgrade, points earned, streak detail.
 
 ---
 
@@ -806,7 +833,8 @@ This is the functional specification for the app. Build to it exactly.
 | Client name and rating | `/clients/:clientId/ratings` |
 | Get Support | `/support/contact` with the study prefilled in the subject |
 | View Directions | Opens a map |
-| How It Works | Expands and collapses |
+| How It Works | Expands and collapses. It starts collapsed, unless the participant has applied to the study |
+| Report | Opens Report Study: one of eight reasons, then a required description of up to 500 characters, then "Report has been submitted!". Nothing changes for the study until the team acts. See 5.7 |
 
 ### 9.4 The study state machine, as the participant sees it
 
@@ -899,6 +927,11 @@ This is the functional specification for the app. Build to it exactly.
 |---|---|
 | Complete Profile | `/profile/edit` |
 | Trust Score card | `/trust-score` |
+| Change Picture, or Upload Picture | Opens the file picker. A JPEG or PNG up to 2MB is kept at no more than 640 by 480 and saved at once |
+| Remove (picture) | Removes the picture at once. The points are not taken back |
+| Intro Video upload box | Opens the file picker for a video and saves it at once. The box reads "Upload Short Video", "Share about you, what you do, your interests, etc." and ".mp4 file \| 50 MB max." |
+| Remove Video | Removes the video at once. The points are not taken back |
+| Show my picture to clients, Show my video to clients | Save at once. Each is disabled, and says why on tap, until there is a picture or a video |
 | Learn More About Tiers | `/trust-score/tiers` |
 | Trust Score info icon | `/trust-score/rules` |
 | Human Certificate | `/profile/certificate` |
@@ -1044,7 +1077,7 @@ Only one dashboard state is drawn. An empty "no studies yet" state is **not desi
 
 | Route | Screen | Kind |
 |---|---|---|
-| `/studies` | Studies, Ongoing. Table view and card view via a toggle | page |
+| `/studies` | Studies, Ongoing. Card view by default, table view via the toggle (`?view=table`) | page |
 | `/studies/drafts` | Studies, Drafts | page |
 | `/studies/completed` | Studies, Completed | page |
 | `/studies/sessions` | Studies, Sessions | page |
@@ -1066,6 +1099,25 @@ Only one dashboard state is drawn. An empty "no studies yet" state is **not desi
 | `/studies/create/publish` | 5. Payment & Publish | Nothing |
 | `/studies/create/published` | Published | Nothing |
 
+**Starting a study.** Create Study opens a **New Study** dialog first. The client can write a brief and press **Generate and Fill**, which reads the brief and fills only what it names on About, Audience and Screener, then says what it filled and what it did not find. Or they choose "Fill from scratch instead" and start on About with nothing filled. There is no model behind Generate: it matches words and simple patterns.
+
+**The Audience step** sets who qualifies.
+
+| Group | Criteria |
+|---|---|
+| Set Target Audience | Number of target participants, Country, Gender, Level of Education, Age Range, Ethnicity, Area Type |
+| Work details | Work Function (required), Industry (required), Role, Skills, Experience, Household Income |
+| Set conditions to apply | The repeat rule (N/A, Prefer fresh people, or "Has never participated in any study with [company] (You) before"), and Profile Tiers |
+
+- **How criteria combine.** A participant must match every category the study sets, and any one option within each category. A category left empty is ignored. The step reads "Who qualifies for this study" over both groups.
+- **Ethnicity and Area Type** offer the same values a participant picks from on their profile: Asian, Black or African American, Hispanic or Latino, White, Mixed, Other; and Urban, Suburban, Rural. "Prefer not to say" is a profile choice, never a target, and matches no study that sets the criterion.
+- **Experience** (Fresher, 1-3, 3-5, 5-10, 10+ years) and **Household Income** ($50K or less, $50K - $100K, $100K - $500K, $500K - $1M, $1M+) match when the band a participant gave overlaps any band ticked. A participant who gave nothing, or "Prefer not to say", does not match a study that sets the criterion.
+- Each criterion picked from a list shows its picks as chips under the field.
+- **Profile Tiers** lists each tier with its Trust Score threshold and the share of verified, active participants at that tier or above, counted from the pool.
+- **Work details order.** On a new study: Work Function, Industry, Role, Experience, Household Income, Skills. When a study waiting on the team is edited, and in the console: Work Functions, Roles, Skills, Industries, Experience, Household Income.
+- **Generate with AI** (Fill with AI) reads a description the same way as the New Study dialog and fills only what it names.
+- **Check Participation Forecast** shows "Contact us to check matching participants availability" with Contact Us, which opens Ask Support. Tier Distribution, Average Score, Recommended Incentive and Estimated Time To Fill read "Coming soon". What the forecast should show is open; see D34.
+
 **Step 4 by type:**
 
 | Type | Settings card |
@@ -1083,13 +1135,13 @@ Each variant is drawn in **states, not separate screens**: the thing still to se
 
 **Panels over steps 4 and 5:** Set Address & Availability; Add an override (opened by "Add Override" on the Date Overrides card); Payment Breakdown (opened by "View Breakdown" on the Payment Summary card, and is the step-4 Costing Summary and Payment lifted into a panel).
 
-**Popovers in the create flow:** Country Location, Age, Education, Genders, Profile Tiers, and two Question menus.
+**Popovers in the create flow:** Country Location, Age, Ethnicity, Area Type, Education, Genders, Experience, Household Income, Profile Tiers, and two Question menus.
 
 **The two Audience drawings disagree with each other** on the field list (Country with flag chips versus Location, Skills versus Organization size, two conditions versus three, Trust Score present in only one), on the forecast, and on the top-bar button. They are built as two screens so each matches its own frame. **The numbered step is canonical.** See D15.
 
 ### 12.5 Manage a study: one flow
 
-Every Manage screen sits in a shared frame: the study header (240 × 182 thumbnail, type tag, status, title, duration and industry chips, and four figures: Completed, Qualified, Days Remaining, Progress) on a tinted card, then a bordered content card whose top is a six-tab strip.
+Every Manage screen sits in a shared frame: the study header (240 × 182 thumbnail, type tag, status, title, duration and industry chips, and four figures: Completed, Qualified, Days Remaining, Progress) on a tinted card, then a bordered content card whose top is a seven-tab strip: Overview, Manage Study, Matched, Recruited, Results, Revisions History, Pay.
 
 | Route | Tab or screen | Kind |
 |---|---|---|
@@ -1098,6 +1150,7 @@ Every Manage screen sits in a shared frame: the study header (240 × 182 thumbna
 | `/studies/:id/matched` | Matched (and the Invited segment) | page |
 | `/studies/:id/recruited` | Recruited | page |
 | `/studies/:id/results` | Results | page |
+| `/studies/:id/revisions` | Revisions History | page |
 | `/studies/:id/pay` | Pay while ongoing | page |
 | `/studies/:id/pay/due` | Pay, due as completed | page |
 | `/studies/:id/payment` | Bill Payment (a separate screen, not a tab) | page |
@@ -1107,6 +1160,8 @@ Every Manage screen sits in a shared frame: the study header (240 × 182 thumbna
 | none | Rate respondent | panel |
 | none | Download Sessions Results (group types) | panel |
 | none | Mark [individual] as No-show | modal |
+| none | Report Participant, and its confirmation | panel and modal |
+| none | Stop-complete Study?, Re-publish and Recruit, Pause Study Participation? | modals |
 
 **Overview and Manage Study are two jobs, not two views.** Overview is *how the study is running*: progress tiles, description, share link, active since, the client card. Manage Study is *what the study is*: the four Create steps read back as cards, each with an Edit that returns to that step.
 
@@ -1126,7 +1181,17 @@ Every Manage screen sits in a shared frame: the study header (240 × 182 thumbna
 
 **Rate (a panel)** asks for three things and no arithmetic: Expertise, Reliability and Communication at five stars each, plus an optional written review. The frame shows no weighting, no resulting score and nothing about the Trust Score. **But the signed policy closes client ratings at three states: poor, good or excellent: and the policy outranks Figma on ratings.** This is the one signed-off control in the whole build that was replaced rather than kept. See D16.
 
-**The Pay tab is a statement, not an approval.** It reads Payment Due, Deposit Paid and Total Cost, itemises the billing and lists the transactions already settled. Nothing on it approves a respondent's earnings. Its only action is Pay Balance, drawn unpayable while the study is recruiting and payable once it is marked completed, which opens Bill Payment: a card checkout against the invoice, with the deposit netted off.
+**The Pay tab is a statement, not an approval.** It reads Payment Due, Deposit Paid and Total Cost, itemises the billing and lists the transactions already settled; the deposit reads "Incentive Deposit Paid". Nothing on it approves a respondent's earnings. Its only payment action is **Pay Bill**, unpayable while the study is recruiting and payable once it is completed, which opens Bill Payment: a card checkout against the invoice, with the deposit netted off. The balance is due 7 days after completion.
+
+Once the study is stopped, the billing card shows two figures, for display only: **Estimated**, the quote at the required number of participants, and **Final**, what was delivered. Where the deposit is more than the final bill, the difference reads "Credited to your next study"; this appears only once the study is stopped. On a completed study whose balance is unpaid, the tab offers **Re-publish and Recruit** (see 5.1).
+
+**Revisions History** lists every round of changes to the study since it was first submitted, newest first: when, who made it (the client, or the team after a live edit), and field by field what changed, named by Create step ("Audience / Ethnicity: added Asian").
+
+**The study menu** in the header: Copy Study Link, Pause Study (Resume Study while paused), Stop-complete Study, which asks for confirmation, and Duplicate to Drafts. The client has no Edit on a live study.
+
+**Recruit more.** When a running study meets its target, a "Congrats!" banner offers Recruit more (see 5.1).
+
+**Reporting a participant.** A respondent's page carries a Report row, which opens Report Participant (see 5.7). After Qualify or Disqualify, the bar shows the decision with Undo.
 
 ### 12.6 Pool
 
@@ -1176,6 +1241,8 @@ Nothing replaces them. A client recruits from the pool directly, one person at a
 **Help and Support Tickets are one screen** with a 320px segmented toggle swapping the FAQ list for the tickets table.
 
 Help holds **nine FAQs** under a "Search your queries" field, the first drawn open, and a **Need Direct Help?** card whose Contact Support raises Ask Support. **There are no guides, articles, videos or phone routes anywhere; the only route to a person is that one form.**
+
+**Stuck? Need Help?** sits above the account card in the sidebar on every screen. It opens three items: FAQs Resources (Help), Create Support Ticket (Ask Support), and Book A Call With Us, which opens Ask Support with the subject "Book a call with the team". No call is booked by the platform; the team replies to the ticket.
 
 **A ticket carries** a subject, a one-line preview of the latest reply prefixed with who wrote it, an unread dot, a status of Open or Closed, Last Activity, Created On and a number. Inside, the thread opens with a Ticket Info card the client filled, then attachments, then replies.
 
@@ -1229,9 +1296,9 @@ The sidebar has two groups.
 | **Users** | Dashboard, Studies, Participants, Clients, Support |
 | **Platform** | Finance, Pricing & Rewards, Sub-Admin |
 
-Participants expands to **All Participants** and **Verifications**. Clients expands to **All Clients** and **Verifications**. The account card sits at the bottom of the sidebar: avatar, name, "Master Admin".
+Studies expands to **All Studies** and **Reported**. Participants expands to **All Participants** and **Verifications**. Clients expands to **All Clients** and **Verifications**. The account card sits at the bottom of the sidebar: avatar, name, "Master Admin".
 
-Badges appear on Dashboard and Support, showing counts of things waiting.
+Badges appear on Dashboard, Support and Studies > Reported, showing counts of things waiting. The Reported badge counts studies with open reports.
 
 **The nav lights by route, never copied from a frame.** Several frames light the wrong item (the Studies Ongoing frame and every Review frame light Dashboard; the client verification detail lights Participants). Those are design errors and are corrected in the build.
 
@@ -1278,6 +1345,8 @@ One screen, three tab states.
 
 Search: "Search studies". A filter dropdown and a sort dropdown, whose option lists are not drawn.
 
+**Reported Studies** (`/studies/reported`) has two segments, Pending and History. Columns: Study Name, Type, Client, Last Reported on, Study Created, Users Reported. A row opens the reported study (`/studies/reported/:id`): the study, every report on it (the participant, the reason, the description and the date), **Chat**, and **Mark Reports Resolved**. Resolving takes a written statement and the signed-in member's password and closes every open report on that study; the statement is kept with the resolved reports, which move to History. See 5.7.
+
 **No column anywhere shows who on the team owns or last touched a study.** No assignee, no "last touched by". For a console whose whole purpose is a team working through queues, this is a real gap. It recurs in every module; see D17.
 
 ### 14.3 Review a new study
@@ -1302,32 +1371,46 @@ One screen, six tabs, the Study tab switched on type, plus two overlays. This is
 
 **Nothing drawn shows** the study leaving the To Review list, moving to Ongoing, or the client being notified. Specify all three.
 
-**Content cut off in the design.** The Screener and Survey tabs hold nine question blocks and Diary three days, but the frames stop after the fourth question and the second day, and the clipped content cannot be read even in the file. Five further question types exist: a long text, a slider with Price / Value / Description, a drag-to-rank list, a file upload and a matrix: whose labels cannot be read. **Those five question types need designing or specifying before build.**
+**Content cut off in the design.** The Screener and Survey tabs hold nine question blocks and Diary three days, but the frames stop after the fourth question and the second day, and the clipped content cannot be read even in the file. Five further question types exist: a long text, a slider, a drag-to-rank list, a file upload and a matrix. Review shows them read only; how each is set up is in 14.4 (Edit Study).
 
 ### 14.4 Manage a study
 
-One screen for all six types, six tabs: Overview, Manage Study, Matched, Recruited, Results, Pay.
+One screen for all six types, seven tabs: Overview, Manage Study, Matched, Recruited, Results, Revisions History, Pay.
 
 Header: image, type tag, status, copy-link and options buttons, title, duration and industry tags, and four figures (Completed, Qualified, Days Remaining, Progress).
 
 | Tab | Holds |
 |---|---|
-| Overview | Four tiles (Progress with a ring, Completed, Qualified, Days Remaining), description, share link with Copy, Active Since, the About Client card with "Go To Profile" |
+| Overview | Four tiles (Progress with a ring, Completed, Qualified, Days Remaining), description, share link with Copy, Active Since, the About Client card with "Go To Profile". The pace of completions against the days left. When the target is met, a "Congrats!" banner naming the study's own required number |
 | Manage Study | Four read-only blocks: About, Audience, Screener, Study |
 | Matched | Cards of surfaced respondents, with Invite To Study and View Profile; an Invited segment |
 | Recruited | Three flavours by type, exactly as the client app |
 | Results | Tiles, a summary card with Download, completed respondents with Rate Now or Rated, and a "STUDY VERIFICATION CERTIFICATE / 21 of 21 completions verified human" card |
-| Pay | The client's bill, read only. The only control is Receipt |
+| Revisions History | Every round of changes to the study, each headed "Changes made by Client" or "Changes made by You" (the team), field by field |
+| Pay | The client's bill, read only. Invoice downloads a PDF. Nothing in it says a balance is auto-debited |
 
-**The options menu:** Copy Study Link, Pause Study, Duplicate to Drafts. The diary section also shows Stop-complete Study and Edit.
+**The options menu:** Copy Study Link, Pause Study (Resume Study while paused), Stop-complete Study, and Edit.
 
 **Pause Study** opens a 600px panel: "Pause Study Participation?", a Reason box, Cancel / Yes, Pause Study. **This is the only way to pause drawn anywhere.**
 
 **Paused** adds a red banner: "You have paused this study with stopping recruit new participants further." with "Mark as completed" and "Resume Study". The About Client card disappears and the tiles widen.
 
-**Everything that would let the team change a study is switched off**: an Edit button on each of the four Manage Study blocks, two "Set Criteria" links, a "Study Management Control / Manage yourself (Self-managed)" row, and a "Study Control / Self-managed (DIY)" block on Overview. See D7.
+**Edit Study** (`/studies/:id/edit`, `?step=about|audience|screener|study`) is how the team changes a live or paused study. Four steps in the title bar, About, Audience, Screener and Study, with Cancel and Publish. The Edit buttons on the Manage Study blocks, the "Set Criteria" links and the self-managed rows stay switched off; Edit in the options menu is the way in. The rules on what may change are in 5.1 and D7.
 
-**The completed study is a shorter screen**: a smaller header with status "Completed" and no figures, a two-item menu, and three tabs with no panel: Overview (success rate, completed, qualified, closed date), Results, and Payments (total paid, receipts). Manage Study, Matched, Recruited, pause and duplicate are all gone.
+| Step | Holds |
+|---|---|
+| About | The four type cards, with the study's own selected and none selectable ("The study type cannot be changed after published"), the group switches fixed. Duration slider, Study End Date, title, description, and the thumbnail (upload, change, remove; a JPEG or PNG up to 2MB). Beside it, "This is how participants see your study": the respondent app's study card drawn live from the form, with refresh and close; Preview brings it back |
+| Audience | Generate with AI (Fill with AI, which never changes the number of participants), every criterion as a dropdown with chips in the order of 12.4, the number of participants shown and not editable, and the Check Participation Forecast panel (see D34) |
+| Screener | Generate with AI: Generate adds questions from typed text, Regenerate All replaces them, both checked as Publish checks them. The question builder: each question's label, kind, text and settings; drag by the grip to reorder; delete with the bin. Beside it, the screener as a participant steps through it |
+| Study, survey and diary | Survey Settings: the question count and Edit Survey, which opens Create Survey across the whole step: "Auto-saved", Submit Survey, a box for context or questions with Upload File (a text or CSV file, one question a line) and Generate, then the builder |
+| Study, session types | The availability, addresses and sessions, shown and not editable |
+| Study, money | Incentive Payments, Costing Summary and Payment, from the study's own figures. See D33 |
+
+**The question builder** offers nine kinds. Single-select and Multi-select: options, each with its verdict (Correct, Incorrect, May Select, Must Select on a screener; Qualify, Disqualify on a survey), add and remove. Single-line, Number and Multi-line input: a note saying what the participant enters. Slider: Min Value, Max Value, Gap and a Show Gap switch. Ranking: numbered items. File Upload: File formats (PDF, PNG or JPG, CSV, Any file) and Max number of files. Mattrix: columns and rows, Single-select/row or Multi-select/row.
+
+**Publish** saves the changes, records them against the team in Revisions History, and opens "Your changes has been published! It will be updated and applicable to new upcoming participants." with "Done! View Details", which opens Revisions History. A change the store refuses says why, and nothing is saved. Cancel leaves without saving. The edit in progress is kept on the device until Publish or Cancel, so a reload loses nothing.
+
+**The completed study is a shorter screen**: a smaller header with status "Completed" and no figures, a two-item menu, and three tabs with no panel: Overview (success rate, completed, qualified, closed date), Results, and Payments (total paid, receipts). Manage Study, Matched, Recruited, pause and edit are all gone.
 
 ### 14.5 Participants
 
@@ -1360,7 +1443,7 @@ Header: photo, name, role, place, Cert. ID, profile completion, Profession Verif
 
 **What the team can do from here:** read Reviews, Invite To Study, Send E-mail, Deactivate Account, Reactivate Account. **That is all.** No restrict, no flag, no report, no note field. **No control changes a score, tier, certificate, balance, points or study status. No override of any kind is drawn.**
 
-**Deactivate** is three steps: a form ("User will receive the deactivation email with your given reason and won't be able to access until you activate it back.") requiring a Reason and the team member's password, a confirmation, then an outcome. Reactivate mirrors it exactly.
+**Deactivate** is three steps: a form ("User will receive the deactivation email with your given reason and won't be able to access until you activate it back.") requiring a Reason and the team member's password, a confirmation, then an outcome. Reactivate mirrors it exactly. Every password asked for in the console is checked against the signed-in team member's own.
 
 **The deactivated banner names no one:** not who deactivated the account, not whether it was a person or the system. There is no activity log of team actions anywhere on the profile.
 
@@ -1371,7 +1454,7 @@ Header: photo, name, role, place, Cert. ID, profile completion, Profession Verif
 | Queue | Columns |
 |---|---|
 | Onboarding | Name, Role, Date, Flagged For (Identity Verification or Profession Credential, both in one queue), Reason |
-| Reported | The same plus Reported By (System (Algo), or a person). Flagged For: AI/Bot Activity, Abusive Behaviour, Spam Apply, Wrong Match |
+| Reported | The same plus Reported By (System (Algo), a person, or a client). Flagged For: AI/Bot Activity, Abusive Behaviour, Spam Apply, Wrong Match, or a client's reason (see 5.7) |
 
 History carries Completed, Verification Remarks and a Result: Verified / Rejected for onboarding; Rejected / Restricted / Deactivated for reports.
 
@@ -1438,7 +1521,7 @@ The ticket screen and its states are in Section 5.8. Actions: reply with attachm
 
 A row opens a Transaction Details panel: who, how much, the date, a transaction id, the method, and a Download.
 
-**Payouts are listed and only listed.** No approve, hold, release, retry or status. See D2.
+**Payouts** (`/finance/payouts`) holds two lists. **Withdrawals** comes first, with columns Participant, Date, Reference ID, To Bank Account and Withdrawal Payout. A row opens the withdrawal (`/finance/payouts/:personId/:payoutId`): the participant, the amount, Date Requested, Reference ID, and the payout account (Bank Name, Account Number, Account Type), with **Release Payout**. It asks "Release [amount] Payout?" first, then reads "Payout Released!" and confirms "The transaction of [amount] has been initiated for withdrawal payout to [name]. Participant will receive the funds within 2-3 working days." Approve, Hold and Retry have no screen; see D2. Below it, the study payouts: finished studies with participants still to be paid, and Process Payouts.
 
 **Refunds** is its own screen: "Pending Refund Confirmations", with Date, Study, Client, Target, Shortfall, Billed, Refund and a Review button.
 
@@ -1555,7 +1638,7 @@ The certificate is issued here and nowhere else, carries one unique ID per perso
 |---|---|---|---|---|
 | 15 | Client | Client app | Starts Create Study. Five steps: About, Audience, Screener, Study setup, Payment and Publish | Study `draft` |
 | 16 | Client | Client app | About: title, type, description, duration, industry, thumbnail. **The type decides everything downstream**, including whether sessions exist at all |  |
-| 17 | Client | Client app | Audience: how many participants, and the criteria that decide who matches | |
+| 17 | Client | Client app | Audience: how many participants, and the criteria that decide who matches: country, gender, education, age, ethnicity, area type, work function, industry, role, skills, experience, household income, the repeat rule and profile tiers. Every category set must match, with any one option within it | |
 | 18 | Client | Client app | Screener: builds the questions applicants must answer. Marks correct answers where a question decides eligibility | |
 | 19 | Client | Client app | Study setup: availability, session slots, location or link, and diary settings where the type needs them | |
 | 20 | Client | Client app | Payment and Publish: sees the fees, pays the deposit, presses Publish | Study `in_review` |
@@ -1566,7 +1649,7 @@ The certificate is issued here and nowhere else, carries one unique ID per perso
 
 **Fees charged at step 20:** a $100 platform fee once per study, plus per-completed-participant fees of $10 moderation and $25 recruitment, with add-ons of $25 for Video Call, In-Person or Diary types or Roles targeting, and $20 for Skills targeting. Section 6.10 has the full table.
 
-**Not designed:** there is no way to edit a live study. See D7.
+**After approval**, the team can change a live study in the console's Edit Study; the client cannot. See 5.1 and D7. A completed study whose balance is unpaid can be re-published by the client and recruit again.
 
 ### 15.3 Stage D: people are found and screened
 
@@ -1612,17 +1695,17 @@ Steps 32 to 39 apply only to study types that have sessions. A Survey or Diary s
 | 46 | Participant | Respondent app | Rates the client back | |
 | 47 | System | none | The study reaches its target, or a person marks it complete | Study `completed` |
 
-**Not designed:** nothing approves a participant payout. Step 41 happens on its own. No screen in any of the three apps offers approve, hold, release or retry on a payout. See D2.
+**Withdrawals wait for the team.** A participant's withdrawal (step 52) is pending until a team member releases it in Finance > Payouts. Approve, hold and retry have no screen. See D2.
 
 ### 15.6 Stage G: money settles
 
 | # | Who | Where | What happens | State |
 |---|---|---|---|---|
 | 48 | System | none | Raises the balance invoice for the study | Invoice `due` |
-| 49 | Client | Client app | Pays it, **or** it is auto-debited on the due date | Invoice `paid` |
+| 49 | Client | Client app | Pays it with Pay Bill. The balance is due 7 days after the study is completed | Invoice `paid` |
 | 50 | System | none | **If the study underfilled**, raises a refund automatically from the shortfall | Refund `pending` |
 | 51 | Team | Console | Finance > Refunds. Confirms the refund. The client is told 5 to 7 working days | Refund `confirmed` |
-| 52 | Participant | Respondent app | Withdraws earnings to a bank account, less a $2 flat fee. Credited in 2 to 3 working days | |
+| 52 | Participant | Respondent app | Withdraws earnings to a bank account, less a $2 flat fee. The withdrawal waits until a team member releases it in Finance > Payouts, then is credited in 2 to 3 working days | Withdrawal `pending`, then `paid` |
 | 53 | Participant | Respondent app | **Or** redeems reward points. 100 points = $1, minimum 1,000 points | |
 
 **Payouts are manual at launch.** Steps 52 and 53 are instructions to the team, not an automated transfer.
@@ -1675,17 +1758,17 @@ Every disagreement found between the designs, the earlier workflow and the signe
 
 ### D2: Payout approval
 
-**A participant payout is approved by the team before money moves.** No payout is automatic.
+**A participant's withdrawal waits for the team before money moves.** No withdrawal is automatic.
 
-| Where | Console, Finance module |
+| Where | Console, Finance > Payouts, Withdrawals |
 |---|---|
-| What it lists | One row per participant per completed study, with the participant, the study, the amount, the completion date and the current state |
-| States | `pending` on completion, then `approved`, `held`, `paid`, or `failed` |
-| Actions | Approve, Hold with a written reason, Release a held payout, Retry a failed one |
+| What it lists | One row per withdrawal: the participant, the date, the reference, the bank account and the amount |
+| States | `pending` when requested, then `approved`, `held`, `paid`, or `failed` |
+| Actions | **Release Payout** moves a withdrawal from `pending` to `paid`, after a confirmation, and records when and by whom. Approve, Hold with a written reason, and Retry a failed one are part of the model and have no screen; they must be drawn |
 | Who | Any team member with Finance access. Every action is logged with their name |
-| The participant sees | "Payment approved" in their wallet, then the credit. A held payout shows as pending, with no reason exposed |
+| The participant sees | Processing while pending, then Completed. The "paid" notice is dated from the release. A held withdrawal shows as pending, with no reason exposed |
 
-**This screen is not in any design and must be drawn.** The workflow has always said a payout waits on approval. Nothing in the three apps does it.
+Study payouts, the incentives owed on a finished study, are processed in the same tab, per study.
 
 ### D3: Screening
 
@@ -1731,9 +1814,14 @@ A client or the team may also cancel a session. That costs the participant nothi
 
 ### D7: Editing a live study
 
-**A live study cannot be edited.** Pause, resume and mark complete are the only controls. This is how it is drawn and it is intended: an approved study is what participants applied to, and changing it underneath them invalidates the approval.
+**The team can change a live study; the client cannot.** The team edits a live or paused study in the console's Edit Study (14.4). The client's controls on a live study are pause, resume, mark complete and Recruit more.
 
-A client who needs a change pauses the study and raises a support ticket.
+| Can change | Title, description, duration, end date, thumbnail, the whole audience, the screener, and the survey or diary questions |
+|---|---|
+| Cannot change | The study type, and the availability, addresses and sessions people may already have booked. Participants applied to and booked those |
+| Open | Whether the team may change the incentive or the number of participants. See D33 |
+
+Every change is recorded in Revisions History against the team, and the store refuses any change outside these rules, saying why. A client who needs a change to a live study raises a support ticket, and the team makes it.
 
 ### D8: Client approval
 
@@ -1762,9 +1850,7 @@ In the console, the team sees the automatic answer in the ticket thread, marked 
 
 Focus Insite is the operator, not a client. Clients are the companies who commission research. Focus Insite may in future also commission research on its own platform, but it is not described as a client anywhere in these documents, because that reading causes confusion.
 
-**What appears on screen.** The three apps are branded **Focus Insite**, because they are Focus Insite's instance of the platform and that is what their participants and clients deal with. HumanLayer appears as the platform's own name in internal contexts, such as the console's title.
-
-The current designs mix the two inconsistently. Wherever a user-facing screen, email or certificate names the platform, it reads Focus Insite.
+**What appears on screen.** The respondent app and the client app carry the **HumanLayer** name: the respondent app throughout, and the client app in its sidebar wordmark. The console is titled **Admin Panel** and is used by Focus Insite's own team.
 
 ### D12: The certificate
 
@@ -1840,17 +1926,19 @@ Every field in that module is a free text box today with no checks. **Build thes
 
 ### D22: The deposit
 
-**One rule everywhere.** At submission the client pays the incentives for the full sample. Everything else, the platform fee, moderation and recruitment, is billed on delivery.
+**One rule everywhere.** A deposit is taken when the study is submitted, and everything it does not cover is billed on delivery. How much the deposit is, is open; see D32. Whatever it is, every money screen reads the same rule.
 
 Costing Summary, Payment, the Breakdown panel and Payment Summary all price from the fee table in Section 6.10 and from the study as actually built. No figure on any of them is fixed.
 
-**Editing a study that is waiting on the team retakes the deposit at the new figures**, replacing the old one. A live study cannot be edited at all, so this only ever applies before approval.
+**Editing a study that is waiting on the team retakes the deposit at the new figures**, replacing the old one. Whether a change the team makes to a live study takes any payment depends on D33.
 
 ### D23: Matching
 
 **The match runs once, when the team approves the study.** It selects the people in the pool who fit the audience that was set, and those people are the Matched list.
 
 People who join the platform afterwards are not added to that study's Matched list. A study built in the create flow has no one matched to it until it is approved.
+
+**How the audience is tested.** A person must match every category the study sets, and any one value within each: country, gender, education, age, ethnicity, area type, work function, industry, role, skills, experience and household income, then the profile tier and the repeat rule. A category left empty is ignored. Experience and household income match when the person's band overlaps a band the study ticked. "Prefer not to say", or nothing given, matches no study that sets that category.
 
 ### D24: AutoPay
 
@@ -1864,12 +1952,15 @@ This sits alongside D2, which is the team's approval of the payout itself.
 
 Work in progress is kept as it is typed, so a reload loses nothing. It only reaches the platform on Save Draft & Exit or Publish.
 
+The same holds for the team's Edit Study in the console: the edit is kept as it is typed, and only reaches the platform on Publish. Cancel discards it.
+
 ### D26: Uploads
 
 | Upload | Behaviour |
 |---|---|
 | Study thumbnail | A real image, JPEG or PNG, up to 2MB, kept at no more than 640 by 480 |
-| Screener questions by file | A real text or CSV file, one open question per line |
+| Screener questions by file | A real text or CSV file, one open question per line. The same for survey questions in the console's Create Survey |
+| Profile picture | The same rule as the thumbnail. One picture reader serves the thumbnail in both apps and the profile picture |
 | Identity documents | Real files, stored with restricted access. See 22.5 |
 
 No upload control may indicate that a file was taken when it was not.
@@ -1900,7 +1991,7 @@ The consent control sits with the thing it governs and says plainly what turning
 
 Where a consented picture or video appears: the client app's Pool cards and Pool profile panel, Respondent Profile Details, the Recruited and Results tabs, and anywhere else a participant is shown. The console does the same.
 
-**None of this is drawn and must be.**
+**The My Profile frame (979:74128) draws the picture and the intro video. It does not draw the consent controls**, which sit under each, and must be drawn.
 
 ### D29: Study descriptions on the respondent app
 
@@ -1947,6 +2038,37 @@ The client app today has one person per account, no way to add anyone, and no no
 **What to allow for now:** design the data model so that a study belongs to a person within a client account, even though every person on the account currently sees everything. Retro-fitting that later is far more expensive.
 
 BRD Section 9a has the full requirement.
+
+### D32: The deposit (open)
+
+**Not decided.**
+
+| | |
+|---|---|
+| What the build does today | Takes 25% of recruitment plus 25% of incentives, for the full sample, at submission (`depositParts` and `DEPOSIT_RULE` in `shared/platform.ts`). Every money card reads this one rule |
+| What the signed policy says | Section 8: "The incentives for the full sample, taken at submission. Everything else is billed on delivery" |
+| Who decides | Jim. Whichever way it goes, the policy may need re-signing |
+
+### D33: The team re-pricing a live study (open)
+
+**Not decided.**
+
+| | |
+|---|---|
+| What the build does today | In the console's Edit Study, Incentive Payments, Costing Summary and Payment are shown read only from the study's own figures. Payment shows the deposit already paid and "To Pay $0", with "Editing a live study changes no amount and takes no payment." The number of participants is shown and not editable. The store refuses an edit that changes the incentive or the number of participants |
+| What the designs draw | The Edit Study frames of 21 October 2026 (2325:214849, 2325:214318) draw the incentive slider and the number of participants as editable, and a Payment block with an amount to pay |
+| Who decides | Jim. If they become editable, what is charged or refunded, and when, needs deciding with it |
+
+### D34: The Audience forecast (open)
+
+**Not decided.**
+
+| | |
+|---|---|
+| What the build does today | Check Participation Forecast, on the client's Audience step and the console's Edit Study, shows "Contact us to check matching participants availability" with Contact Us (Ask Support in the client app, Support in the console). Tier Distribution, Average Score, Recommended Incentive and Estimated Time To Fill read "Coming soon". No figure is shown |
+| What the designs draw | The same, on the frames of 19 and 21 October 2026 |
+| What is missing | An agreed behaviour behind the panel: what each figure means, how it is worked out, and what Contact Us leads to |
+| Who decides | Not yet assigned |
 
 ---
 
@@ -2006,7 +2128,7 @@ Every one of these exists in the designs. Each needs an in-app notification; the
 | Rated by a client | No |
 | Tier changed | No |
 | Points earned | No |
-| Withdrawal processing, and paid | Yes |
+| Withdrawal processing, and paid. The paid notice is dated from the team's release | Yes |
 | Account restricted, with the reason and the period | Yes |
 | Account deactivated, with the reason | Yes |
 | Account reactivated, with the reason | Yes |
@@ -2031,7 +2153,7 @@ Every one of these exists in the designs. Each needs an in-app notification; the
 | Event |
 |---|
 | A verification needs a person |
-| A report was raised |
+| A report was raised, about a participant or about a study |
 | A study is waiting for review |
 | A refund is waiting for confirmation |
 | A ticket was not resolved automatically |
@@ -2076,6 +2198,40 @@ interface Study {
   availability?: { date: string; slots: string[] }[]
   sessions?: Session[]           // group types
   revisions: { note: string; at: string; by: string }[]
+  edits: StudyEdit[]             // every round of changes after first submission
+  firstSubmittedAt?: string
+  beyondTarget?: boolean         // Recruit more was chosen after the target was met
+}
+
+interface StudyEdit { at: string; by: 'client' | 'team'; byId?: string; changes: FieldChange[] }
+interface FieldChange { path: string[]; from?: string; to?: string; added?: string[]; removed?: string[] }
+
+interface AudienceCriteria {
+  participants: number
+  countries: string[]; gender: string[]; education: string[]; ageRanges: string[]
+  ethnicity: string[]; areaTypes: string[]
+  functions: string[]; industries: string[]; roles: string[]; skills: string[]
+  experience: string[]; income: string[]
+  condition: 'na' | 'fresh' | 'never'
+  tiers: string
+}
+// A person must match every category set, with any one value within it.
+// An empty category is ignored.
+
+type PayoutStatus = 'pending' | 'approved' | 'held' | 'paid' | 'failed'
+
+interface Payout {
+  id: string; at: string; amount: number; destination: string; txId: string
+  status: PayoutStatus
+  expectedBy?: string
+  releasedAt?: string; releasedBy?: string
+}
+
+interface StudyReport {
+  id: string; studyId: string; personId: string
+  reason: string; detail: string; at: string
+  ticketId?: string              // the chat the team opened with the client
+  resolution?: { id: string; at: string; by?: string; statement: string; ticketId?: string }
 }
 
 interface Participation {
@@ -2113,9 +2269,8 @@ type Question =
   | { id: string; kind: 'text';    prompt: string; placeholder?: string }
   | { id: string; kind: 'image';   prompt: string }
   | { id: string; kind: 'scale';   prompt: string; options: string[] }
-  // Five further types exist in the console designs but their labels
-  // cannot be read: long text, a priced slider, drag-to-rank, file
-  // upload, matrix. Specify before building.
+  // The builders author nine kinds (14.4). Each is asked as one of these
+  // five: see 22.11.
 ```
 
 **Screener answers carry a verdict** set by the client when the study is created: `'correct' | 'incorrect' | 'may_select' | 'must_select'`. The participant never sees it.
@@ -2142,6 +2297,7 @@ The build is not done until each of these runs end to end without a dead control
 12. Change a setting in Profile, see it stick
 13. Raise a support ticket, open the chat, send a message
 14. Sign out, sign back in
+15. Report a study, and see it reach the console's Reported Studies
 
 ### 20.2 Client app
 
@@ -2156,6 +2312,8 @@ The build is not done until each of these runs end to end without a dead control
 9. Pay an invoice from Payments and from a study's Pay tab
 11. Raise a support ticket and read the reply
 12. Change the password; attempt to deactivate with a live study and get refused
+13. Complete a study, then Re-publish and Recruit it before paying, and see it recruit again
+14. Report a participant from their page in a study
 
 ### 20.3 Internal console
 
@@ -2171,6 +2329,9 @@ The build is not done until each of these runs end to end without a dead control
 10. Change a value in Pricing and Rewards and see the confirmation
 11. Create a sub-admin, set module access, and view the activity log
 12. Every route renders; every control does something; no table shows a figure that disagrees with another screen
+13. Edit a live study: change the audience and the screener, publish, and see the change in Revisions History in the console and the client app
+14. Resolve a reported study: open the chat, then mark its reports resolved with a statement and password
+15. Release a withdrawal
 
 ### 20.4 Cross-app
 
@@ -2180,6 +2341,9 @@ The build is not done until each of these runs end to end without a dead control
 4. Qualifying in either place moves the participant in all three apps
 5. Completing a study credits the wallet, the points and the Trust Score, and the new score and tier appear on the participant's profile in the console
 6. A no-show marked in the client app shows as No Show in the participant's history and in the console
+7. A study reported in the respondent app appears in the console's Reported Studies
+8. A withdrawal released in the console shows as Completed in the participant's wallet
+9. A change the team makes to a live study reaches participants and the client's Revisions History
 
 ---
 
@@ -2414,7 +2578,7 @@ A tax form banner also appears, from the workflow's step 49.
 
 ### Lists that are sample data
 
-The education level list and the industry list are mostly invented. Seven rows of each come from the designs; the rest were added so the lists were usable. **Both need a real list before launch.**
+The education level list and the industry list are mostly invented. Seven rows of each come from the designs; the rest were added so the lists were usable. The industry list is one list, used by the client's Audience step and the console's Edit Study. **Both need a real list before launch.**
 
 ---
 
@@ -2437,6 +2601,9 @@ All three apps read and write through one shared data layer. That layer currentl
 | `shared/platform.ts` | Fees, limits, thresholds | Same |
 | `shared/lifecycle.ts` | State machines | Enforce these server side. The front end must not be the only thing stopping an illegal transition |
 | `shared/derive.ts` | Every computed figure | Compute the expensive ones server side. See Section 17 |
+| `shared/revisions.ts` | How a round of changes to a study is recorded, field by field | Keep the rule. Record changes server side when a study is saved |
+| `shared/fromPrompt.ts` | Generate and Fill with AI, and reading a question file | Front end only, until the AI features in 22.3 replace it |
+| `shared/picture.ts` | Checking and scaling a picture before it is saved | Front end. The server still checks type and size |
 | `shared/store.ts` | Reads and writes | **The file to replace.** Everything else stays |
 | `shared/seed.ts` | Demonstration data | Delete. It exists only so the prototype has something to show |
 
@@ -2450,8 +2617,8 @@ The table below lists what each object must support, and which app requires it.
 | Participant (as seen by others) | Read, filtered to what consent allows, search by criteria and by meaning | Client, console |
 | Client account | Create, read own, update own, add and remove cards, read invoices | Client |
 | Client (as seen by the team) | Read, verify, reject, deactivate, reactivate | Console |
-| Study | Create, update while draft or in review, read, publish, pause, resume, complete. **Never update once live** | Client |
-| Study (as seen by the team) | Read, approve, request changes with a note, pause, complete | Console |
+| Study | Create, update while draft or in review, read, publish, pause, resume, complete, recruit past target, re-publish a completed study whose balance is unpaid. **Never update once live** | Client |
+| Study (as seen by the team) | Read, approve, request changes with a note, pause, complete, update while live within the rules in D7, with each change recorded | Console |
 | Study (as seen by a participant) | Read published studies matching them, read one | Respondent |
 | Application | Create with screener answers, read own | Respondent |
 | Application (decisions) | Read, qualify, disqualify | Client, console |
@@ -2463,11 +2630,14 @@ The table below lists what each object must support, and which app requires it.
 | Trust Score and tier | Read own, recompute on every event in Section 6.1 | All three |
 | Reward points | Read own, earn on the events in Section 6.3, redeem | Respondent |
 | Wallet | Read own balance and history, withdraw, manage payout methods | Respondent |
-| Payout | Read, approve, hold with a reason, release, retry | Console |
+| Payout | Read, release. Approve, hold with a reason, and retry are in the model (D2) | Console |
 | Invoice | Read own, pay one, pay several | Client |
 | Invoice (as seen by the team) | Read, adjust | Console |
 | Refund | Raise automatically on an underfilled study, confirm | Console |
 | Report | Raise, read, reject, restrict, deactivate | Console |
+| Report (raised by a client) | Raise on a participant in one of their studies | Client |
+| Study report | Raise | Respondent |
+| Study report (as handled) | Read, open a chat with the client, resolve with a statement | Console |
 | Ticket | Create, read own, reply | Respondent, client |
 | Ticket (as handled) | Read, assign, reply, close, correct the automatic answer | Console |
 | Team member | Create by invitation, read, update access, set active or inactive | Console |

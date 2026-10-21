@@ -126,21 +126,21 @@ live site. Each prints a pass, YES or WORKING line per item and a total.
 | `scripts/landing-check.mjs` | The three landing pages: containment, header, where every button goes (36) |
 | `scripts/create-check.mjs` | A study of each of the six types created, reloaded, and read back in all three apps (5) |
 | `scripts/flow-check.mjs` | Survey and diary answers reaching the client and console; costing against the fee table; editing; reload safety (6) |
-| `scripts/final-check.mjs` | No editing a live study; fees; blank Create; pre-screener answers; Matched; thumbnails; AutoPay (7) |
+| `scripts/final-check.mjs` | No client edit on a live study, and the console's Edit; fees; blank Create; pre-screener answers; Matched; thumbnails; AutoPay (7) |
 | `scripts/connected-check.mjs` | Five cross-app connections in three tabs: study, application, approval, payout, support ticket (5) |
 | `scripts/media-check.mjs` | Profile picture and intro video, their points and their consent across all three apps; the client dashboard (6) |
-| `scripts/policy-check.mjs` | Policy copy, one figure per wait, real downloads, and no real face on any screen (6) |
+| `scripts/policy-check.mjs` | Policy copy, one figure per wait, real downloads, and no real face on any screen (6). Takes about 8 minutes and prints its progress |
 | `scripts/card-check.mjs` | Study descriptions on hover and press-and-hold; the landing screenshots against the current build (6) |
-| `client/scripts/healthcheck.mjs` | Every client route renders without an error (59). Run with `BASE_URL=http://localhost:5180/client` |
-| `internal/scripts/healthcheck.mjs` | Every console route renders without an error (167). Run with `BASE_URL=http://localhost:5180/internal` |
-| `client/scripts/containment.mjs` | Every client screen at 1440x900 and 1440x1200: nothing wider than the window (118) |
+| `client/scripts/healthcheck.mjs` | Every client route renders without an error (64). Run with `BASE_URL=http://localhost:5180/client` |
+| `internal/scripts/healthcheck.mjs` | Every console route renders without an error (179). Run with `BASE_URL=http://localhost:5180/internal` |
+| `client/scripts/containment.mjs` | Every client screen at 1440x900 and 1440x1200: nothing wider than the window (128) |
 
 **Other tools**
 
 | Command | What it does |
 |---|---|
 | `scripts/screener-check.mjs` | A client-built screener followed from Create to a respondent answering it |
-| `scripts/audit.mjs [routes\|clicks\|statuses]` | Respondent wiring audit: every route, every click, every study status |
+| `scripts/audit.mjs [routes\|clicks]` | Respondent wiring audit: every route and every click. Study statuses are covered by `scripts/demo.mjs` |
 | `client/scripts/clickaudit.mjs`, `internal/scripts/clickaudit.mjs` | Click every control on every route and list the ones that do nothing |
 | `scripts/shot.mjs`, `client/scripts/shot.mjs`, `internal/scripts/shot.mjs` | Screenshot a route (respondent at 375px, the others at 1440px); `--batch` for many |
 | `internal/scripts/diff.py` | How far a console render is from its Figma frame |
@@ -153,7 +153,7 @@ live site. Each prints a pass, YES or WORKING line per item and a total.
 
 | File | What it is |
 |---|---|
-| `PRD-Focus-Insite-Platform.md` (root and `docs/`) | The product requirements for all three apps, 13 October 2026: every screen, control, state and route; the platform workflow (Section 15); every policy value (Section 6); every decision taken (Section 16); the data shapes; acceptance tests; the technology stack (22.3); and how to build the back end (Section 23). Self-contained |
+| `PRD-Focus-Insite-Platform.md` (root and `docs/`) | The product requirements for all three apps, 21 October 2026: every screen, control, state and route; the platform workflow (Section 15); every policy value (Section 6); every decision taken (Section 16); the data shapes; acceptance tests; the technology stack (22.3); and how to build the back end (Section 23). Self-contained |
 | `BRD-Focus-Insite-Platform.md` (root and `docs/`) | The business requirements: why the product exists, who it serves, the business model and processes, rules, decisions, assumptions, risks, compliance and phasing |
 | `Trust-and-Rewards-Policy.html` (root and `docs/`) | The Trust and Rewards Policy of 13 October 2026. It governs scores, tiers, points, redemption, scheduling, ratings, consent, restriction and the certificate, and outranks every other source on those subjects. PRD Section 6 reproduces it |
 | `docs/Screens-Not-In-Figma.md` | Every screen and piece built without a Figma frame, and what it was modelled on |
@@ -203,7 +203,8 @@ list, with the order to build in, is PRD Section 23 and BRD Sections 10 and 11.
   our database, and the build must not follow the Figma frames that show a
   full card number to staff or keep a CVV (BRD Section 11).
 - Payouts are sent by hand through Tremendous in phase one (PRD Section 15).
-  Withdrawals in the app only record a request.
+  A withdrawal waits until a team member releases it in the console
+  (Finance > Payouts); the release records it, and no money moves.
 
 **Legal, to settle with counsel**
 
@@ -226,6 +227,9 @@ The policy of 13 October 2026 arrived after the build. Check every value in
 - A participant can still cancel a booked session inside 24 hours. The policy
   allows cancelling only more than 24 hours before the session, at −2; inside
   24 hours not attending is a no show at −4.
+- The deposit. The build takes 25% of recruitment plus 25% of incentives at
+  submission; the policy (section 8) says the incentives for the full sample.
+  Open, for Jim to decide (PRD D32).
 
 **Integrations not yet confirmed**
 

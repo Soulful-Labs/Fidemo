@@ -558,8 +558,9 @@ study or from defaults. Now the five steps edit one record, `StudyForm`
   Draft & Exit loses nothing, and saving a reopened draft saves over it.
 - **`summarise(state, form)`** writes the Publish, Manage and Review chips from
   what was built. Estimated Audience is a count of the verified, active people
-  on the platform who fit the audience (`audiencePeople`); the Audience step's
-  forecast, tier split and average score use the same people.
+  on the platform who fit the audience (`audiencePeople`). The Audience step's
+  forecast now reads "Coming soon" with Contact Us (19 Oct 2026); what it
+  should show is an open decision (PRD D34).
 - **Manage Study reads the form back** line by line under the Study chip
   (`studyDetails`, `tasksOutline`). No frame draws those lists.
 
@@ -593,9 +594,10 @@ Added the same day, in a second pass:
   for the Study Result tab here and in the console. The drawn sample answers
   (`DIARY_DAYS`) are no longer shown. The seed gives its finished surveys and
   diaries answers so the demo's Results are not blank.
-- **One deposit rule: `depositFor` in `shared/platform.ts`.** The incentives
-  for the full sample are taken at submission (workflow 33) and everything
-  else is billed on delivery. `quoteStudy` prices a study from the fee table;
+- **One deposit rule: `depositFor` in `shared/platform.ts`.** It is taken at
+  submission and everything else is billed on delivery. What it takes is in
+  "Client designs, 15 Oct 2026" below; whether that is the rule is an open
+  decision (PRD D32), because the signed policy says the full incentives. `quoteStudy` prices a study from the fee table;
   Costing Summary, Payment, the Payment Breakdown panel and the Payment
   Summary all read it. The frames' "$1,900 / $475" and the two "25% of cost"
   deposit rows are gone: the cards now list Moderation Cost and Platform Fee,
@@ -622,8 +624,8 @@ And a third pass, the same day:
 
 - **A live study has no Edit.** The Ongoing row menu's drawn "Edit" row and
   the study header menu's "Edit study" are gone for a study that can no
-  longer be changed (`canEditStudy`). The console's study menu lost its
-  do-nothing "Edit" too.
+  longer be changed (`canEditStudy`). The client still has no Edit on a live
+  study; since 21 Oct 2026 the team can change one in the console (PRD D7).
 - **The "3% merchant processing fee" sentence is gone** from Publish and Bill
   Payment. No fee table holds it and nothing charged it.
 - **Create Study always starts a new study** (`useNewStudy`). Whatever was in
@@ -1668,5 +1670,32 @@ preselected at Publish, no AutoPay, no 3% fee line, "Prefer fresh people").
   the Matched tab of every type.
 - **Left out on purpose:** No-match's Organization size, Trust Score and
   "not in the last 6 months"; Publish's Organization Size chip; the preview's
-  match score; Profile Tiers' "top 10%/25%".
+  match score. (Profile Tiers' share of participants is shown since 19 Oct,
+  counted from the pool.)
+
+## Client designs, 19 and 21 Oct 2026
+
+The PRD (12.3 to 12.8, 5.1, 5.7, D32 to D34) is the current description; this
+is where each lives in the code.
+
+- **Audience** (`screens/create/Audience.tsx`, `ListCriterion.tsx`): Experience
+  and Household Income (band overlap), Ethnicity and Area Type (the profile's
+  own lists, `shared/platform.ts`; "Prefer not to say" is never a target).
+  Every category set must match, any one value within it (`audiencePeople`).
+  Work details follow each frame's order: `CREATE_ORDER` on a new study,
+  `EDIT_ORDER` when a study in review is edited. Both groups read "Who
+  qualifies for this study". The forecast reads "Coming soon" (open, PRD D34).
+- **New Study dialog** (`NewStudyDialog.tsx`): a brief, Generate and Fill, or
+  "Fill from scratch instead". The reader is `shared/fromPrompt.ts`.
+- **Studies list** opens as cards; `?view=table` for the table.
+- **Study page**: a seventh tab, Revisions History (`/studies/:id/revisions`,
+  `shared/revisions.ts`); the header menu (Copy, Pause or Resume,
+  Stop-complete with a confirmation, Duplicate to Drafts); the Congrats banner
+  with Recruit more (`beyondTarget`); the Pay tab with Estimated and Final once
+  stopped, "Credited to your next study", Pay Bill, and Re-publish and Recruit
+  on a completed study whose balance is unpaid (`canReopen`).
+- **Respondent result**: Report Participant (five client reasons, 500
+  characters) and the decided bar with Undo.
+- **Shell**: the HumanLayer wordmark, and "Stuck? Need Help?" above the account
+  card (`app/StuckHelp.tsx`).
 

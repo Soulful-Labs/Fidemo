@@ -436,8 +436,9 @@ Built choices, not drawn: Resume Study clears the paused state; Mark as complete
 to Studies > Completed. Since the final sweep (13 Oct 2026) the menu is Copy Study
 Link, Pause Study and Stop-complete Study on every running study: Stop-complete moves
 the study to completed through the shared store, refusing with the store's reason
-where it cannot. Duplicate to Drafts is removed (the console does not create studies)
-and Edit is removed (no live study is editable anywhere).
+where it cannot. Duplicate to Drafts is removed (the console does not create studies).
+Edit was removed then, and came back on 21 Oct 2026 as Edit Study: see "Console
+designs, 19 and 21 Oct 2026" below. The menu shows Resume Study while paused.
 
 Shared changes: the study tab strip (`PanelTabs`) and `Pill` moved to
 `components/app`, the content column is `min-h-screen` so a panel can fill the window,
@@ -1094,7 +1095,8 @@ The "From" party is always "HumanLayer" (the respondent brand, not Focus Insite)
 
 **Payouts.** Listed, and only listed. A payout row opens Transaction Details (paid
 to, $350, date, transaction id, "Bank Withdrawal To **** 1263", Download). No
-approve, hold, release, retry or status. Nothing in the console approves a payout.
+approve, hold, release, retry or status. (Since 19 Oct 2026 the Payouts tab lists
+withdrawals with Release Payout: see "Console designs, 19 and 21 Oct 2026".)
 
 **Refunds** (`/finance/refunds`; detail `/finance/refunds/:id`, `?state=confirmed`):
 "Pending Refund Confirmations", 24 pending, $38,956; Date, Study (type and name),
@@ -1496,7 +1498,8 @@ thing to a spec inside the file.
 - **Edit Survey Study** `1932:109519` inside Manage - Survey: the whole sub-section,
   7 frames (About, Audience, Screener, Create/Created Survey, Published, Payment &
   Publish). The console editing a study like a client; the module brief marks
-  that as "(Discarded)". Not built.
+  that as "(Discarded)". Not built. The redrawn flow, section `2325:214085`, is
+  built (21 Oct 2026).
 - **Payment & Publish - New Study** `1982:106033`, loose on the canvas.
 - **Pay / Payment frames** in the Manage sections: `1932:96864` Pay while ongoing
   (Completed flow), `1952:78171` Payment and `1952:78343` Pay - Due (group video),
@@ -2133,3 +2136,32 @@ Every section and frame on page `1794:64316`, from `get_metadata`, with sizes.
   (`processPayouts`, team only, logged).
 - Review's Payment card reads "Payouts: By the team, when the study finishes"
   where it said "AutoPay: On".
+
+## Console designs, 19 and 21 Oct 2026
+
+The PRD (5.1, 5.7, 5.9, 13.1, 14.2, 14.4, 14.9, D2, D7, D32 to D34) is the
+current description; this is where each lives in the code.
+
+- **Reported Studies** (`screens/studies/reported/`, `/studies/reported`,
+  `/studies/reported/:id`; frames 2314:146859): Pending and History; a
+  study's reports, Chat (one ticket with the client), Mark Reports Resolved
+  (statement and the signed-in member's password). Studies has two children
+  in the sidebar, All Studies and Reported, with a badge.
+- **Edit Study** (`screens/studies/edit/`, `/studies/:id/edit?step=...`,
+  `/studies/:id/edit/done`; section 2325:214085): About with the participant
+  preview, Audience with Fill with AI and the forecast, Screener with Generate,
+  Regenerate All, every question kind and the screener preview, Study with
+  Create Survey ("Auto-saved", kept in `fi-console-edit-<id>`). The type,
+  booked availability, incentive and participant number are read only; the
+  last two are an open decision (PRD D33). Store: `editLiveStudy`,
+  `liveEditFault`. Diffs at 1440 against the 21 Oct frames: About 12.83% (the
+  preview photo), Audience 3.63%, Screener 4.93%, Create Survey 4.31%, Study
+  5.93%, Changes Published 2.68%.
+- **Manage**: Revisions History tab (Client / You), the Overview rebuilt, Pay
+  with an Invoice PDF and no auto-debit line.
+- **Finance > Payouts** (`screens/finance/Withdrawals.tsx`,
+  `WithdrawalDetail.tsx`): withdrawals first, Release Payout (pending to paid,
+  `releasePayout`); approve, hold and retry are in `PAYOUT_MOVES` with no
+  screen. Study payouts below, as before.
+- **Passwords**: every dialog that asks for one checks the signed-in member's
+  own (`checkPassword`).

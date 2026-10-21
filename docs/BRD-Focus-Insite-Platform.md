@@ -1,7 +1,7 @@
 # Business Requirements Document
 # Focus Insite / HumanLayer Platform
 
-**13 October 2026 · Soulful Labs**
+**21 October 2026 · Soulful Labs**
 
 **Companion document:** PRD, Focus Insite / HumanLayer Platform.
 
@@ -83,9 +83,9 @@ The paid-participation market is the mechanism: people give their time and opini
 
 | Area | Included |
 |---|---|
-| Respondent mobile app | Full journey: landing, sign-up, onboarding and ID upload, browsing and filtering studies, applying, screener, scheduling, attendance by PIN, survey and diary completion, rating, wallet, withdrawals, reward points and redemption, profile, Trust Score, certificate, referrals, settings, support |
+| Respondent mobile app | Full journey: landing, sign-up, onboarding and ID upload, browsing and filtering studies, applying, screener, scheduling, attendance by PIN, survey and diary completion, rating, reporting a study, wallet, withdrawals, reward points and redemption, profile, Trust Score, certificate, referrals, settings, support |
 | Client desktop app | Full journey: sign-up and organisation details, payment method, study creation in five steps across six study types, pool search, managing a live study, scheduled sessions, recruiting and qualifying, results, rating, invoices and payment including paying several at once, notifications, help, account |
-| Internal console | Dashboard queues, study review and approval, study management, participants and their profiles, identity and profession verification, reports and moderation, clients and business verification, support, finance and refunds, pricing and rewards, sub-admins |
+| Internal console | Dashboard queues, study review and approval, study management including changing a live study, participants and their profiles, identity and profession verification, reports and moderation on people and on studies, clients and business verification, support, finance, withdrawal release and refunds, pricing and rewards, sub-admins |
 | Six study types | Survey, Video Call 1:1, Group Video Call, In-Person 1:1, In-Person Group, Diary |
 | Trust and rewards | Trust Score, tiers, reward points, redemption, the certificate, as the signed policy defines them |
 
@@ -107,6 +107,9 @@ The paid-participation market is the mechanism: people give their time and opini
 |---|---|
 | Pricing plans | Decision D11 |
 | Any selfie-based verification | Legal |
+| How much the deposit is | Jim. PRD D32. The policy may need re-signing |
+| Whether the team may re-price a live study | Jim. PRD D33 |
+| What the Audience forecast shows | Not yet assigned. PRD D34 |
 
 ---
 
@@ -117,9 +120,9 @@ The paid-participation market is the mechanism: people give their time and opini
 | Flow | From | To | When |
 |---|---|---|---|
 | Deposit | Client | Platform | When a study is published |
-| Balance invoice | Client | Platform | On the due date, manually or by auto-debit |
+| Balance invoice | Client | Platform | By the client, due 7 days after the study is completed |
 | Incentive | Platform | Participant | When a participation is completed |
-| Payout | Platform | Participant | When a participant withdraws, less a $2 fee |
+| Payout | Platform | Participant | When a participant withdraws and the team releases it, less a $2 fee |
 | Redemption | Platform | Participant's wallet | When points are converted, at 100 points to $1, minimum 1,000 |
 | Refund | Platform | Client | When a study underfills, confirmed by the team, paid in 5 to 7 working days |
 
@@ -136,7 +139,7 @@ The paid-participation market is the mechanism: people give their time and opini
 
 The incentive itself is pass-through: the client pays it and the participant receives it. Revenue is the fees around it.
 
-**A worked example, the shape the designs draw.** A thirty-participant study at $100 incentive: platform fee $100, recruitment $500, incentives $2,500, moderation $250, giving a billed total of $3,350 against a $3,000 incentive deposit, leaving $350 to settle.
+**A worked example, the shape the designs draw.** A thirty-participant study at $100 incentive: platform fee $100, recruitment $500, incentives $2,500, moderation $250, giving a billed total of $3,350, settled against the deposit taken at submission. How much that deposit is, is open (PRD D32).
 
 > **Caution.** That example is taken from the designs, and the designs do not add up: the same study is drawn with totals of $3,350, $3,850, $12,960, $15,085 and $16,510 on five different screens, and a $3,000 deposit is captioned "$20 × 30 participants", which is $600. **No financial model should be built from the drawn figures.** Finance must restate the fee model and worked examples before build. See Decision D13.
 
@@ -146,7 +149,7 @@ The incentive itself is pass-through: the client pays it and the participant rec
 |---|---|
 | Incentives | Pass-through, but it is the platform's money between paying the participant and collecting from the client |
 | Identity and credential verification | Per check, including the manual checks that fail automation |
-| Payment processing | Card acceptance, plus a 3% merchant fee the designs mention for credit cards |
+| Payment processing | Card acceptance |
 | Payouts | Per bank transfer |
 | Team time | Verification, study review, moderation, support, refunds. **This is the cost B6 is about** |
 | Refunds | Underfilled studies return money that fees were calculated against |
@@ -178,11 +181,13 @@ The automatic check tries to resolve the VAT number and website. **Only failures
 
 ### P2: Set up the study
 
-The client creates a study in five steps: About (including the type), Audience, Screener, Study setup (the type-specific part), and Payment & Publish. They pay a deposit and publish.
+The client creates a study in five steps: About (including the type), Audience, Screener, Study setup (the type-specific part), and Payment & Publish. They can start from a written brief, which fills what it names. They pay a deposit and publish.
 
 **Every study then passes through team review**, in Studies > To Review. The reviewer reads six tabs and either approves it live or requests changes with a written note, which returns the study to the client's drafts with the note recorded in its revisions history.
 
-There is no reject, and no editing of a study by the team. **Once a study is live it cannot be edited by anyone.** See Decision D6.
+There is no reject. **Once a study is live, only the team can change it**, in the console, and never its type or the places and times people may have booked. Whether the team may change its incentive or participant number is open (PRD D33). A client who needs a change raises a ticket. See Decision D6.
+
+When a study meets its target the client can keep recruiting. A completed study whose balance is still unpaid can be re-published to recruit again; once the balance is paid it cannot.
 
 ### P3: Verify and onboard the participant
 
@@ -194,7 +199,7 @@ A verified participant's account becomes fully active, the certificate is issued
 
 ### P4: Source and recruit
 
-The platform surfaces matching participants from the pool against the study's audience criteria. The client invites them. Invited participants see the study in their app.
+The platform surfaces matching participants from the pool against the study's audience criteria: country, gender, education, age, ethnicity, area type, work function, industry, role, skills, experience, household income, profile tier and the repeat rule. A person must match every criterion the study sets, with any one value within each. The client invites them. Invited participants see the study in their app.
 
 Clients can also search the whole pool directly and invite people to a study. Micro-panels, a saved reusable list a client built, were drawn in an earlier version and have been removed.
 
@@ -212,15 +217,15 @@ Attendance for sessions is confirmed twice: the participant enters a six-digit P
 
 ### P7: Pay and deliver
 
-On completion the participant's wallet is credited with the incentive, 25 reward points are added, and the Trust Score rises by 1. The client collects results, rates each participant, and settles the balance invoice manually or by auto-debit.
+On completion the participant's wallet is credited with the incentive, 25 reward points are added, and the Trust Score rises by 1. The client collects results, rates each participant, and pays the balance invoice, which is due 7 days after the study is completed.
 
 If the study underfilled, a refund is raised automatically from the shortfall and a team member confirms it.
 
-**The hole:** nothing in any of the three apps approves a participant payout, although the workflow says one is required. See Decision D2.
+**Withdrawals wait for the team.** A participant's withdrawal stays pending until a team member releases it in the console. Approving, holding and retrying a withdrawal are not built yet. See Decision D2.
 
 ### P8: Support and moderate
 
-Tickets are answered automatically from FAQs and platform guides where possible; anything not covered reaches the console. Reports on participants arrive from the system or from people, and the team rejects the report, restricts the account or deactivates it.
+Tickets are answered automatically from FAQs and platform guides where possible; anything not covered reaches the console. A client can also ask for a call through a ticket. Reports on participants arrive from the system, from people on the team and from clients, and the team rejects the report, restricts the account or deactivates it. Participants report studies; the team talks to the client about it and resolves the reports with a written statement.
 
 ---
 
@@ -296,15 +301,15 @@ Each of these was a real disagreement between the designs, the earlier workflow 
 | # | Decision | Why |
 |---|---|---|
 | D1 | **Managed platform with a few self-serve pieces.** A client creates a study, searches the pool, invites people and runs the study. The team approves every study and every payout, and handles verification, moderation and support | Keeps the two controls that matter without staffing every study |
-| D2 | **The team approves every participant payout before money moves.** A payout screen is added to the console's Finance module | No approval exists anywhere today. Money cannot move unchecked |
+| D2 | **The team releases every participant withdrawal before money moves.** The console's Finance module lists withdrawals and releases them. Approve, hold and retry are to follow | Money cannot move unchecked |
 | D3 | **One screening stage.** A person presses Qualify or Disqualify. The one automatic part is an eligibility question in the first three positions with a marked correct answer | What the designs draw, and simpler to operate |
 | D4 | **Either the client or the team may qualify an applicant, and it is recorded against the person who did it** | The control exists in both apps. Accountability comes from the activity log |
 | D5 | **No selfie and no liveness check.** Document upload only, until the biometric legal review closes | Nothing biometric is built before the law is clear |
-| D6 | **A live study cannot be edited.** Pause, resume and complete only. A client needing a change pauses and raises a ticket | An approved study is what participants applied to |
+| D6 | **Only the team can change a live study**, and never its type or anything people may have booked. The client pauses, resumes, completes or recruits more, and raises a ticket for a change. Whether the team may change the incentive or participant number is open (PRD D33) | An approved study is what participants applied to, so what they booked must hold |
 | D7 | **No client approval queue.** Only a failed automatic business check reaches the team | Matches the designs, and avoids an unstaffed queue |
 | D8 | **The restriction ladder is ratified:** 15 days, 15 days, 30 days, then deactivation. The participant is told why and for how long | It was being built from one frame with no document behind it |
 | D9 | **The team asks for a better document through the verification screen itself,** not a support ticket | A rejection with a reason is already drawn. It carries the request |
-| D10 | **HumanLayer is the platform. Focus Insite is the company that operates it**, and already does this research manually today. The three apps are branded Focus Insite, as that is what their participants and clients deal with | The current designs mix the two names inconsistently |
+| D10 | **HumanLayer is the platform. Focus Insite is the company that operates it**, and already does this research manually today. The respondent app and the client app carry the HumanLayer name; the console is titled Admin Panel | The platform's name is what participants and clients see |
 | D11 | **No pricing plans at launch.** Clients pay per study | Nothing else in the product knows about plans |
 | D12 | **The certificate is issued on identity verification, one unique ID per person, claiming only what was verified.** The client certificate is separate and claims only business registration and billing | A public claim must be one the platform can evidence |
 | D13 | **The fee model is the table in PRD 6.7**, and the signed policy wins wherever a drawn figure disagrees | Five screens contradicted each other |
@@ -313,8 +318,8 @@ Each of these was a real disagreement between the designs, the earlier workflow 
 | D16 | **A new sub-admin is invited by email with a single-use link to set their own password.** An Inactive sub-admin cannot sign in, and keeps their access toggles for reactivation | No shared or default password at any point |
 | D17 | **The console requires two-factor authentication, a 12-hour session, sign-in history, and lockout after five failed attempts. There are always at least two master admins and the role can be handed over** | This console moves money and sets the reward economics |
 | D18 | **Micro-panels are removed.** A client searches the pool and invites people to one study, directly | They were drawn in an earlier version and switched off deliberately |
-| D19 | **The deposit is the incentives for the full sample, taken at submission.** Everything else is billed on delivery | One rule, used on every money screen, instead of figures that disagreed |
-| D20 | **Matching runs once, when the team approves the study.** People who join later are not added to that study | A client needs a settled list to recruit from |
+| D19 | **One deposit rule, used on every money screen.** It is taken at submission and everything else is billed on delivery. How much it is, is open (PRD D32) | Figures that disagreed between screens |
+| D20 | **Matching runs once, when the team approves the study.** People who join later are not added to that study. A person must match every criterion set, with any one value within each | A client needs a settled list to recruit from |
 | D21 | **A study with no end date runs 60 days** | What the create flow already states |
 | D22 | **A participant can add a profile picture (25 points) and an intro video (75 points), each with its own consent, off by default.** A client sees either only if its consent is on, and consent can be withdrawn at any time | Clients recruit better when they can see who they are recruiting. The participant decides |
 | D23 | **Neither the picture nor the video affects the Trust Score** | Reputation is earned by behaviour in studies, not by filling in a profile |
@@ -373,13 +378,13 @@ This build keeps one person per client account. The capability below is specifie
 | # | Risk | Impact | Likelihood | Mitigation |
 |---|---|---|---|---|
 | RK1 | Card data handled wrongly. The console currently draws full card numbers and CVVs | **Severe.** Card industry breach, fines, loss of processing | Certain if built as drawn | Fix the design now. Show last four digits only. Never store a CVV |
-| RK2 | Money moves with no approval, and the audit trail does not cover the actions that matter (D2, D4, D15) | Severe. Fraud, disputes that cannot be resolved | High | Settle D2. Extend the activity log to every decision in every module, including the master admin's |
+| RK2 | Money moves with too little control, and the audit trail does not cover the actions that matter (D2, D4, D15) | Severe. Fraud, disputes that cannot be resolved | Medium | Withdrawals already wait for the team's release. Build approve, hold and retry. Extend the activity log to every decision in every module, including the master admin's |
 | RK11 | One master admin account holds every permission, protected by a password alone, with no second holder (D17) | Severe. One compromised or lost account controls the platform's money and reward rules | Medium | Two-factor, a second master admin, and a succession path |
 | RK3 | Policy numbers built from the designs rather than the signed policy | High. Participants paid the wrong points, scores wrong, disputes | High if unchecked | Section 7 is authoritative. Fix the designs |
 | RK4 | Identity document storage breaches data protection law | Severe | Medium | Legal review of retention, access and deletion before launch |
 | RK5 | The team becomes the bottleneck as volume grows | High, kills B6 | Medium to high | Assignment, priority, reply-time targets, and the activity log |
 | RK6 | A restricted or deactivated participant has no idea why | Medium. Complaints, appeals, reputation | Certain as designed | Design the participant-facing screens |
-| RK7 | Clients cannot fix a mistake on a live study (D6) | Medium. Support load, frustration | High | Settle D6 |
+| RK7 | Clients cannot fix a mistake on a live study themselves (D6) | Medium. Support load, frustration | High | The team makes the change in the console on request |
 | RK8 | The certificate claims things the platform cannot evidence (D12) | High. A public false claim | Medium | Settle D12 before any certificate is issued |
 | RK9 | Fraud at scale: fake identities, automated survey answers, incentive farming | High | Medium | The reporting and restriction machinery exists; the detection behind it is not specified |
 | RK10 | Figures disagree between screens and a client sees it | Medium. Trust | High if not derived | Derive every figure from one source. PRD Section 17 |
