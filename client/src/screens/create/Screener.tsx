@@ -31,12 +31,15 @@ const GRIP = (
 )
 
 /** The 38px boxes every row of this step is built from. */
-function Box({ value, placeholder, onChange, className, muted }: {
+function Box({ value, placeholder, onChange, className, muted, large }: {
   value?: string; placeholder?: string; onChange?: (v: string) => void; className?: string; muted?: boolean
+  /** The diary form's preview line (1518:94904): 16px in the subtitle grey, 12 in. */
+  large?: boolean
 }) {
   return (
     <input value={value ?? ''} placeholder={placeholder} onChange={(e) => onChange?.(e.target.value)} readOnly={muted}
-      className={cn('h-[38px] w-full rounded-sm border-1 border-stroke-input px-4 text-text-regular text-text-title placeholder:text-text-body',
+      className={cn('h-[38px] w-full rounded-sm border-1 border-stroke-input text-text-title',
+        large ? 'px-3 text-body-regular placeholder:text-text-subtitle' : 'px-4 text-text-regular placeholder:text-text-body',
         muted ? 'bg-bg-1 italic placeholder:italic' : 'bg-bg', className)} />
   )
 }
@@ -45,7 +48,7 @@ function Box({ value, placeholder, onChange, className, muted }: {
  * A small select with the frame's own chevron, used for types and marks.
  * It opens its options when the caller gives it some.
  */
-function Pick({ value, tone, className, options, onPick }: {
+export function Pick({ value, tone, className, options, onPick }: {
   value: string; tone?: string; className?: string; options?: string[]; onPick?: (v: string) => void
 }) {
   const [open, setOpen] = useState(false)
@@ -181,12 +184,16 @@ function optionsFor(q: Question, kind: QuestionKind, marks: string[]) {
 }
 
 /** One question: its label, its answer type, and whatever that type needs. */
-export function QuestionBlock({ q, index, write, onDelete, marksFor = MARKS_FOR, markWidth = 'w-[110px]', plain }: {
+export function QuestionBlock({ q, index, write, onDelete, marksFor = MARKS_FOR, markWidth = 'w-[110px]', plain, labelClass, largePreview }: {
   q: Question; index: number; write: (next: Question) => void; onDelete: () => void
   /** The verdicts an option can carry: a screener's by default, a survey's Qualify and Disqualify. */
   marksFor?: (kind: QuestionKind) => string[]; markWidth?: string
   /** The survey and diary composers draw their questions without the rule between them. */
   plain?: boolean
+  /** The question's label pill, where a frame draws it differently (the diary's 32px Q1 on bgAlt-2). */
+  labelClass?: string
+  /** The diary form draws its preview line larger (1518:94904). */
+  largePreview?: boolean
 }) {
   const addOption = () => write({ ...q, options: [...q.options, { id: `o${Date.now()}${q.options.length}`, text: '', mark: marksFor(q.kind)[0] ?? '' }] })
   const removeOption = (id: string) => write({ ...q, options: q.options.filter((o) => o.id !== id) })
@@ -197,7 +204,7 @@ export function QuestionBlock({ q, index, write, onDelete, marksFor = MARKS_FOR,
       {GRIP}
       <div className="flex min-w-0 flex-1 flex-col gap-2.5">
         <div className="flex items-center gap-2.5">
-          <span className="flex h-[38px] items-center rounded-full bg-bg-1 px-4 text-text-regular text-text-title">{q.label}</span>
+          <span className={cn('flex items-center rounded-full text-text-regular text-text-title', labelClass ?? 'h-[38px] bg-bg-1 px-4')}>{q.label}</span>
           <span className="flex-1" />
           {q.kind === 'Mattrix' && (
             <Pick value={q.matrixKind ?? 'Single-select/row'} className="w-[164px]"
@@ -219,7 +226,7 @@ export function QuestionBlock({ q, index, write, onDelete, marksFor = MARKS_FOR,
             removable={q.kind === 'Multi-select'} />
         )}
 
-        {PREVIEW_LINE[q.kind] && <Box muted placeholder={PREVIEW_LINE[q.kind]} />}
+        {PREVIEW_LINE[q.kind] && <Box muted large={largePreview} placeholder={PREVIEW_LINE[q.kind]} />}
 
         {q.kind === 'Slider' && (
           <div className="flex items-end gap-3">
