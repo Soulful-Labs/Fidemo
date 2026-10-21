@@ -40,9 +40,9 @@ export default function Input({
   const count = typeof value === 'string' ? value.length : 0
 
   const shell = cn(
-    'flex items-center gap-2 rounded-md border-1 bg-transparent px-4 transition-colors',
+    'flex items-center gap-2 rounded-md border-1 bg-bg-1 px-4 transition-colors',
     multiline ? 'h-auto py-3 items-start' : 'h-input',
-    error ? 'border-state-danger' : 'border-stroke-3 focus-within:border-cta-primary',
+    error ? 'border-state-danger' : 'border-stroke-input focus-within:border-cta-primary',
   )
 
   const field =

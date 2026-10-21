@@ -23,8 +23,8 @@ export default function SelectField({ label, value, placeholder, onOpen, error, 
         onClick={onOpen}
         aria-label={label ?? placeholder}
         className={cn(
-          'flex h-input w-full items-center justify-between gap-2 rounded-md border-1 bg-transparent px-4 text-left',
-          error ? 'border-state-danger' : 'border-stroke-3',
+          'flex h-input w-full items-center justify-between gap-2 rounded-md border-1 bg-bg-1 px-4 text-left',
+          error ? 'border-state-danger' : 'border-stroke-input',
         )}
       >
         <span className={cn('truncate text-body-regular', value ? 'text-text-title' : 'text-text-disabled')}>

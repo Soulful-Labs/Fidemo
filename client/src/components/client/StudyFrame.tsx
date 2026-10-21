@@ -136,7 +136,7 @@ export function StudyTabs({ id, active, muted }: { id: string; active: StudyTab;
            about how it looks and the tabs stay navigable. */
         void muted
         const inner = cn('-mb-px flex h-10 items-center border-b-1 px-4 pb-1 text-body-regular transition-colors',
-          on ? 'border-cta-primary text-brand-primary'
+          on ? 'border-brand-primary text-brand-primary'
             : 'border-transparent text-text-body hover:text-text-title')
         /* The tab you are on is the current one, not a link back to itself. */
         return on

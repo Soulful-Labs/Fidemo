@@ -10,8 +10,8 @@ import { useToast } from '../../components/ui/Toast'
 /** The filled check the success dialogs are drawn with. */
 export function SuccessMark() {
   return (
-    <span className="mx-auto -order-1 mb-1 flex h-[160px] w-[160px] items-center justify-center rounded-full bg-[#fee2b5]">
-      <span className="flex h-[92px] w-[92px] items-center justify-center rounded-full border-b-4 border-yellow-700 bg-cta-primary text-bg-0">
+    <span className="mx-auto -order-1 mb-1 flex h-[160px] w-[160px] items-center justify-center rounded-full bg-yellow-100">
+      <span className="flex h-[92px] w-[92px] items-center justify-center rounded-full border-4 border-brand-primary bg-cta-primary text-bg-0">
         <Check className="h-12 w-12 [&>path]:stroke-[3]" />
       </span>
     </span>

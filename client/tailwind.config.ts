@@ -26,7 +26,7 @@ export default {
         cta: {
           primary: '#fca311', primaryText: '#15130f',
           secondary: '#fed592', secondaryText: '#513303',
-          tertiaryStroke: '#e1e1e1', tertiaryStrokeDisabled: '#e9e8e7',
+          tertiaryStroke: '#d0d0d0', tertiaryStrokeDisabled: '#e9e8e7',
         },
         yellow: { 20: '#f7f4f0', 30: '#fff7ea', 40: '#fff3e0', 100: '#fee2b5', 300: '#fdc160', 400: '#fdb541', 500: '#fca311', 700: '#b3740c' },
         // 100 is the unfilled part of a progress bar; `ok` the tick beside a verified item. Both sampled off the exports.
@@ -66,7 +66,7 @@ export default {
         'title-m': ['20px', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '500' }],
         // Measured off the frames: a 24px title sits in a 31px line box
         // (1777:96823, 1777:96835), not a 24px one.
-        'title-l': ['24px', { lineHeight: '31px', letterSpacing: '-0.02em', fontWeight: '600' }],
+        'title-l': ['24px', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '600' }],
         // Heading/Size 32, Semibold: a Figma variable on the client frames, used by the landing page's headlines.
         heading: ['32px', { lineHeight: '40px', letterSpacing: '-0.02em', fontWeight: '600' }],
         // LANDING PAGE ONLY. One size above Heading, for the marketing hero (screens/landing). Not a Figma
@@ -74,6 +74,8 @@ export default {
         display: ['48px', { lineHeight: '56px', letterSpacing: '-0.02em', fontWeight: '600' }],
       },
       // Desktop frame: 1440 wide, 240 nav, 72 top bar, 600 side panels, 460 modals.
+      // Figma Drop Shadow/300, on dropdown menus.
+      boxShadow: { menu: '0 4px 4px -1px #0c0c0d0d, 0 4px 4px -1px #0c0c0d1a' },
       maxWidth: { frame: '1440px', page: '1200px', panel: '600px', modal: '460px' },
       height: { topbar: '70px', btn: '40px', 'btn-sm': '32px', input: '48px', row: '52px' },
       width: { nav: '240px', panel: '600px', modal: '460px', input: '48px', btn: '40px' },

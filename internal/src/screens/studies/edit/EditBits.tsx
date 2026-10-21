@@ -61,7 +61,7 @@ export function MultiPick({ label, options, picked, onChange, prompt, count, all
           <ChevronDown className={cn('h-5 w-5 shrink-0 transition-transform duration-150', open && 'rotate-180')} />
         </button>
         {open && (
-          <div role="listbox" aria-multiselectable="true" className="absolute left-0 right-0 top-[calc(100%+4px)] z-20 flex max-h-72 flex-col gap-1 overflow-auto rounded-md border-1 border-stroke-input bg-bg-0 p-2">
+          <div role="listbox" aria-multiselectable="true" className="absolute left-0 right-0 top-[calc(100%+4px)] z-20 flex max-h-72 flex-col gap-1 overflow-auto rounded-md border-1 border-stroke-input bg-bg-0 p-2 shadow-menu">
             {(all ? [all, ...options.filter((o) => o !== all)] : options).map((o) => (
               <div key={o} role="option" aria-selected={picked.includes(o)} className="rounded-sm px-2 py-1.5 hover:bg-bg-1">
                 <Checkbox checked={picked.includes(o)} onChange={() => flip(o)} label={<span className="text-text-regular text-text-title">{o}</span>} />

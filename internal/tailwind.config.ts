@@ -34,7 +34,7 @@ export default {
         cta: {
           primary: '#fca311', primaryText: '#15130f',
           secondary: '#fed592', secondaryText: '#513303',
-          tertiaryStroke: '#e1e1e1',
+          tertiaryStroke: '#d0d0d0',
         },
         // Primary/yellow-*.
         yellow: {
@@ -92,6 +92,8 @@ export default {
         heading: ['32px', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '600' }],
       },
       // The shell, measured off the frames (CLAUDE.md, "The shell").
+      // Figma Drop Shadow/300, on dropdown menus.
+      boxShadow: { menu: '0 4px 4px -1px #0c0c0d0d, 0 4px 4px -1px #0c0c0d1a' },
       width: { nav: '230px', panel: '600px', modal: '460px' },
       height: { topbar: '70px' },
       maxWidth: { frame: '1440px', content: '1162px', panel: '600px', modal: '460px' },
