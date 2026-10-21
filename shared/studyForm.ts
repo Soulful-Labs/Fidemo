@@ -28,6 +28,8 @@ export interface FormQuestion {
   matrixKind?: string
   columns?: string[]
   rows?: string[]
+  /** A diary question's entry, 1 first (2354:155489, 21 Oct 2026). None means every entry. */
+  day?: number
 }
 
 /** "09:00 AM" to "05:30 PM". */
@@ -459,6 +461,7 @@ export function buildStudy(f: StudyForm, now: Date = new Date()): { ok: true; st
       if (minDays > totalDays) return no(`The minimum required (${f.minimumRequired}) is more than the study duration (${f.studyDuration})`)
       // Policy section 5: at least 4 of every 5 entries (diaryMinimumFor).
       if (minDays < diaryMinimumFor(totalDays)) return no(`The policy needs at least 4 of every 5 entries: for ${totalDays}, at least ${diaryMinimumFor(totalDays)} must be filled`)
+      { const fault = diaryDayFault(f); if (fault) return no(fault) }
       study.diary = { totalDays, minDays, unit: f.durationUnit, frequency: f.frequency }
     }
     return { ok: true, study, preScreener: screener.preScreener, screener: screener.screener }
@@ -542,7 +545,24 @@ const KIND_OF: Record<Question['kind'], AuthoredKind> = { single: 'Single-select
 function questionOf(q: Question, label: string, marks: string[]): FormQuestion {
   const kind = (q.authored as AuthoredKind | undefined) ?? KIND_OF[q.kind]
   const options = 'options' in q ? q.options.map((o) => ({ id: formId('o'), text: o, mark: q.marks?.[o] ?? (kind === 'Ranking' ? '' : marks[0] ?? '') })) : []
-  return { ...blankQuestion(label, kind, marks), text: q.prompt, ...(options.length ? { options } : {}) }
+  return { ...blankQuestion(label, kind, marks), text: q.prompt, ...(options.length ? { options } : {}), ...(q.day ? { day: q.day } : {}) }
+}
+
+/**
+ * A diary asks its questions entry by entry (2354:155489, 21 Oct 2026): each
+ * entry needs at least one question, and no question may sit on an entry the
+ * study does not have. A question with no entry is asked on every one.
+ */
+export function diaryDayFault(f: Pick<StudyForm, 'tasks' | 'studyDuration' | 'durationUnit'>): string | undefined {
+  const total = firstNumber(f.studyDuration)
+  const written = f.tasks.filter((q) => q.text.trim())
+  const { Unit } = diaryWords(f.durationUnit)
+  const beyond = written.find((q) => q.day && q.day > total)
+  if (beyond) return `${Unit} ${beyond.day} has questions, but the study runs ${f.studyDuration}`
+  for (let day = 1; day <= total; day++) {
+    if (!written.some((q) => !q.day || q.day === day)) return `${Unit} ${day} has no questions yet`
+  }
+  return undefined
 }
 
 /**

@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { averageScore, personById, profileCard, recruit, recruits, sessionSeats, studyCertificate } from '@shared/derive'
 import { monthDayYear, monthDayYearTime } from '@shared/format'
 import { DEMO_SESSION_CODE } from '@shared/platform'
+import { tasksForDay } from '@shared/questions'
 import type { Participation, PlatformState, Question, Study } from '@shared/types'
 import type { Tier } from '../components/app/TierTag'
 import { usePlatform } from '../platform'
@@ -88,7 +89,7 @@ export function respondent(state: PlatformState, study: Study, personId: string)
   ]
   /** A survey's answers, and a diary's for each day filled in, as the participant submitted them (shared/questions.ts). */
   const tasks: Answer[] = (study.tasks ?? []).map((q, i) => answerOf(q, i, 'Q', p.taskAnswers?.[q.id]))
-  const days = (p.diaryDays ?? []).map((day) => ({ day, answers: (study.tasks ?? []).map((q, i) => answerOf(q, i, 'Q', p.diaryAnswers?.[String(day)]?.[q.id])) }))
+  const days = (p.diaryDays ?? []).map((day) => ({ day, answers: tasksForDay(study.tasks, day).map((q, i) => answerOf(q, i, 'Q', p.diaryAnswers?.[String(day)]?.[q.id])) }))
   const activity: ActivityItem[] = p.events.map((e) => ({ text: e.label, when: monthDayYearTime(e.at) }))
   const booking = p.booking
   return {

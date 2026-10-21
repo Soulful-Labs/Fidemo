@@ -1,4 +1,5 @@
 import { diaryWords } from '@shared/platform'
+import { tasksForDay } from '@shared/questions'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import EmptyState from '../../../components/app/EmptyState'
@@ -31,7 +32,8 @@ export default function DiaryDay() {
 
   const { totalDays, completedDays } = study.diary
   const w = diaryWords(study.diary.unit)
-  const questions = study.tasks ?? []
+  // This entry's own questions, and any asked on every entry.
+  const questions = tasksForDay(study.tasks, day)
   const key = `${study.id}:day${day}`
   const current = answers[key] ?? {}
   const complete = questions.every((q) => isAnswered(q, current[q.id]))

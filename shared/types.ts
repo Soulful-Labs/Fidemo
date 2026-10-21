@@ -41,6 +41,8 @@ export interface QuestionMeta {
   /** Option text to the builder's verdict: Correct, Incorrect, May Select or Must Select. */
   marks?: Record<string, string>
   format?: 'number'
+  /** A diary question asked on this entry only (1 is the first). None means it is asked on every entry. */
+  day?: number
 }
 
 export type Question = QuestionMeta & (

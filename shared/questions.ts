@@ -25,6 +25,8 @@ export interface AuthoredQuestion {
   min?: string; max?: string; gap?: string
   /** Mattrix: one row is asked as its own question over the columns. */
   rows?: string[]; columns?: string[]
+  /** A diary question's entry, 1 first. None means every entry. */
+  day?: number
 }
 
 type Refusal = { ok: false; why: string }
@@ -129,7 +131,7 @@ export function buildTasks(authored: AuthoredQuestion[]): { ok: true; tasks: Que
   for (const [i, q] of authored.filter(filled).entries()) {
     const made = asked(q, `t${i + 1}`)
     if (typeof made === 'string') return { ok: false, why: `Study question ${i + 1} ${made}` }
-    tasks.push(...made)
+    tasks.push(...(q.day ? made.map((t) => ({ ...t, day: q.day })) : made))
   }
   return { ok: true, tasks }
 }
@@ -141,6 +143,15 @@ export function screenerOutline(study: { preScreener: PreScreenQuestion[]; scree
     ...study.preScreener.map((q) => ({ id: q.id, prompt: q.prompt, type: 'Single-select', options: q.options, eligibility: true })),
     ...study.screener.map((q) => ({ id: q.id, prompt: q.prompt, type: q.authored ?? TYPE[q.kind], options: 'options' in q ? q.options : undefined, eligibility: false })),
   ]
+}
+
+/**
+ * The questions a diary asks on one entry: those set for that entry, and
+ * those with no entry, which are asked on every one (every diary made before
+ * 21 Oct 2026, and a question the console adds).
+ */
+export function tasksForDay<Q extends { day?: number }>(tasks: Q[] | undefined, day: number): Q[] {
+  return (tasks ?? []).filter((q) => !q.day || q.day === day)
 }
 
 /** A survey's or diary's own questions in the order they are asked, named as the client built them. */
@@ -165,6 +176,6 @@ function answeredOf(q: { id: string; prompt: string; type: string }, v: Answers[
  */
 export function taskResults(study: { tasks?: Question[] }, p?: Pick<Participation, 'taskAnswers' | 'diaryAnswers' | 'diaryDays'>): { survey: Answered[]; days: { day: number; answers: Answered[] }[] } {
   const outline = tasksOutline(study)
-  const set = (a?: Answers) => outline.map((q) => answeredOf(q, a?.[q.id]))
-  return { survey: set(p?.taskAnswers), days: (p?.diaryDays ?? []).map((day) => ({ day, answers: set(p?.diaryAnswers?.[String(day)]) })) }
+  const set = (a?: Answers, day?: number) => outline.filter((q) => day === undefined || tasksForDay(study.tasks, day).some((t) => t.id === q.id)).map((q) => answeredOf(q, a?.[q.id]))
+  return { survey: set(p?.taskAnswers), days: (p?.diaryDays ?? []).map((day) => ({ day, answers: set(p?.diaryAnswers?.[String(day)], day) })) }
 }
