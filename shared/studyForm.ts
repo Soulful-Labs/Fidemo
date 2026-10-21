@@ -586,6 +586,8 @@ export const AUDIENCE_LISTS = {
   ageRanges: ['18–20', '21–29', '30–39', '40–54', '50–59', '60+'],
   ethnicity: TARGET_ETHNICITIES,
   areaTypes: AREA_TYPES,
+  /** The client's industries popover: its four drawn rows, then the industries profiles and onboarding use. */
+  industries: ['Lifestyle', 'Business', 'Healthcare', 'Finance', 'Pharma', 'IT', 'Fitness & Nutrition', 'Consultancy', 'Marketing', 'Media', 'Retail', 'Education', 'Travel', 'Consumer', 'Technology'],
   tiers: ['', 'Silver and above', 'Gold and above', 'Platinum only'],
 } as const
 

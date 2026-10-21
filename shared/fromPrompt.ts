@@ -237,3 +237,11 @@ export function surveyFromPrompt(text: string, label: (n: number) => string, sta
     return { ...q, text: m.text, options: m.options ? m.options.map((o, n) => ({ id: `${q.id}g${n}`, text: o, mark })) : q.options }
   })
 }
+
+/**
+ * The questions in an uploaded text or CSV file: one a line, a CSV line's
+ * first cell (quoted or not), blanks dropped, at most 50. Read on the device;
+ * nothing is sent anywhere.
+ */
+export const questionLines = (text: string): string[] =>
+  text.split(/\r?\n/).map((l) => (/^"((?:[^"]|"")*)"/.exec(l)?.[1]?.replace(/""/g, '"') ?? l.split(',')[0] ?? '').trim()).filter(Boolean).slice(0, 50)

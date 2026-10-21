@@ -58,6 +58,8 @@ export function diffForms(before: StudyForm, after: StudyForm): FieldChange[] {
     ...lists(['Audience', 'Genders'], before.gender, after.gender),
     ...lists(['Audience', 'Education'], before.education, after.education),
     ...lists(['Audience', 'Age'], before.ageRanges, after.ageRanges),
+    ...lists(['Audience', 'Ethnicity'], before.ethnicity ?? [], after.ethnicity ?? []),
+    ...lists(['Audience', 'Area Type'], before.areaTypes ?? [], after.areaTypes ?? []),
     ...lists(['Audience', 'Roles'], list(before.roles), list(after.roles)),
     ...lists(['Audience', 'Work Functions'], list(before.functions), list(after.functions)),
     ...lists(['Audience', 'Skills'], list(before.skills), list(after.skills)),

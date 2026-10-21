@@ -7,7 +7,7 @@
  * through store.ts and checks every legal move lands and every illegal one
  * is refused with a reason.
  */
-import { studyHistory } from '../shared/revisions'
+import { diffForms, studyHistory } from '../shared/revisions'
 import { withdrawals,
   billing, consoleDashboard, hasCertificate, payoutsToProcess, referralCode, counts, financeTotals, personFigures, pointsRows, poolPerson, recruit, refundsPending, respondentStudies, sharedPhoto, sharedVideo, trustInputs,
 } from '../shared/derive'
@@ -529,6 +529,8 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   check('categories combine: both set narrows to people matching each', of({ ethnicity: ['Asian'], areaTypes: ['Urban'] }).every((x) => x.profile.ethnicity === 'Asian' && x.profile.areaType === 'Urban'))
   check('ethnicity and area type show as pills', summarise(st(), { ...base, ethnicity: ['White'], areaTypes: ['Rural'] }, now).audience.some((a) => a.label === 'Ethnicity' && a.value === 'White') && summarise(st(), { ...base, ethnicity: ['White'], areaTypes: ['Rural'] }, now).audience.some((a) => a.label === 'Area Type'))
   const priced = (f: typeof base) => { const b = buildStudy({ ...f, title: 'Price check', description: 'A study priced twice', functions: 'Product', industries: 'Healthcare' }, now); return b.ok ? JSON.stringify(b.study.rates) : `refused: ${b.why}` }
+  const d = diffForms({ ...base, ethnicity: [] , areaTypes: [] }, { ...base, ethnicity: ['Asian'], areaTypes: ['Rural'] })
+  check('revisions record ethnicity and area type changes', d.some((c) => c.path.join('/') === 'Audience/Ethnicity') && d.some((c) => c.path.join('/') === 'Audience/Area Type'), JSON.stringify(d))
   check('neither changes the price', priced({ ...base, ethnicity: ['White'], areaTypes: ['Rural'] }) === priced(base) && !priced(base).startsWith('refused'), priced(base))
 }
 

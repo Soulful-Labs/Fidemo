@@ -9,7 +9,7 @@ import { blankQuestion, useDraft } from '../../mock/createStore'
 import type { Question, QuestionKind } from '../../mock/createStore'
 import { QuestionBlock } from './Screener'
 import PromptDialog from './PromptDialog'
-import { surveyFromPrompt } from '../../lib/fromPrompt'
+import { questionLines, surveyFromPrompt } from '../../lib/fromPrompt'
 
 const SPARKLE = (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
@@ -48,7 +48,7 @@ export default function SurveyComposer({
    */
   const upload = async (f: File | undefined) => {
     if (!f) return
-    const lines = (await f.text()).split(/\r?\n/).map((l) => (/^"((?:[^"]|"")*)"/.exec(l)?.[1]?.replace(/""/g, '"') ?? l.split(',')[0] ?? '').trim()).filter(Boolean).slice(0, 50)
+    const lines = questionLines(await f.text())
     if (lines.length === 0) { toast(`${f.name} has no questions to read`); return }
     const kept = questions.filter((q) => q.text.trim())
     write([...kept, ...lines.map((text, i) => ({ ...fresh(kept.length + i + 1, 'Multi-line input'), text }))])

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
+import { AUDIENCE_LISTS } from '@shared/studyForm'
 
 /**
  * A Create form section: the green glyph hangs in a 20px gutter and the copy
@@ -82,6 +83,6 @@ export const AUDIENCE_OPTIONS = {
   education: ['Some High School', 'High School Graduate', 'Some College, no degree', 'Associate Degree', "Graduate or Bachelor's", "Master's degree", 'Doctorate'],
   ageRanges: ['18–20', '21–29', '30–39', '40–54', '50–59', '60+'],
   /** Industries (popover drawn with search): its four rows, then the industries the platform's profiles and onboarding already use. */
-  industries: ['Lifestyle', 'Business', 'Healthcare', 'Finance', 'Pharma', 'IT', 'Fitness & Nutrition', 'Consultancy', 'Marketing', 'Media', 'Retail', 'Education', 'Travel', 'Consumer', 'Technology'],
+  industries: AUDIENCE_LISTS.industries,
   tiers: ['Any tier', 'Silver and above', 'Gold and above', 'Platinum only'],
 }
