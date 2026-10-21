@@ -90,3 +90,16 @@ export const VideoUserIcon = (p: P) => <svg {...base(p)}><rect x="3.500" y="4.50
 export const PlayIcon = (p: P) => <svg {...base(p)}><circle cx="12" cy="12" r="8.500" /><path d="m10.500 9 4.500 3-4.500 3V9Z" /></svg>
 export const UserIcon = (p: P) => <svg {...base(p)}><circle cx="12" cy="8.500" r="3.500" /><path d="M5.500 19.500c.800-3.200 3.200-5 6.500-5s5.700 1.800 6.500 5" /></svg>
 export const ListIcon = (p: P) => <svg {...base(p)}><path d="M9 7h10M9 12h10M9 17h10M5 7h.01M5 12h.01M5 17h.01" /></svg>
+
+/** Edit Study (2325:214085, 21 Oct 2026): Generate with AI, the preview's refresh, upload, edit, drag, the conditions filter, money. */
+export const SparkleIcon = (p: P) => (
+  <svg {...base(p)}><path d="m11 3.5 1.8 4.700 4.700 1.800-4.700 1.800L11 16.500l-1.800-4.700L4.500 10l4.700-1.800L11 3.500ZM18.500 14l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2Z" /></svg>
+)
+export const RefreshIcon = (p: P) => <svg {...base(p)}><path d="M20 12a8 8 0 1 1-2.300-5.600M20 4v4.500h-4.500" /></svg>
+export const UploadIcon = (p: P) => <svg {...base(p)}><path d="M12 15V4m0 0L8 8m4-4 4 4M4.500 15v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3" /></svg>
+export const PencilIcon = (p: P) => <svg {...base(p)}><path d="m14.500 5.500 4 4M4 20l1-4.500L15.500 5a2.100 2.100 0 0 1 3 3L8 18.500 4 20Z" /></svg>
+export const GripIcon = (p: P) => (
+  <svg {...base(p)} fill="currentColor" stroke="none"><circle cx="9" cy="6" r="1.300" /><circle cx="15" cy="6" r="1.300" /><circle cx="9" cy="12" r="1.300" /><circle cx="15" cy="12" r="1.300" /><circle cx="9" cy="18" r="1.300" /><circle cx="15" cy="18" r="1.300" /></svg>
+)
+export const FilterIcon = (p: P) => <svg {...base(p)}><path d="M4 5h16l-6 7.500V19l-4 1.500v-8L4 5Z" /></svg>
+export const CoinIcon = (p: P) => <svg {...base(p)}><circle cx="12" cy="12" r="8.500" /><path d="M14.500 9.500c-.4-.9-1.400-1.500-2.500-1.500-1.500 0-2.500.8-2.500 2s1 1.700 2.500 2 2.500.8 2.500 2-1 2-2.500 2c-1.200 0-2.200-.6-2.600-1.500M12 6.500V8m0 8v1.500" /></svg>
