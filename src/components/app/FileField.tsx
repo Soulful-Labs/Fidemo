@@ -12,7 +12,9 @@ export interface FileFieldProps {
   description?: string
   accept?: string
   fileName?: string
-  onPick: (fileName: string) => void
+  onPick?: (fileName: string) => void
+  /** The chosen file itself, for a field that keeps it (My Profile's intro video). */
+  onFile?: (file: File) => void
   /** Label above the field, e.g. "Intro Video (optional)". */
   fieldLabel?: string
 }
@@ -23,7 +25,7 @@ export interface FileFieldProps {
  * the chosen file name; nothing uploads because there is no backend.
  */
 export default function FileField({
-  label, hint, description, accept, fileName, onPick, fieldLabel,
+  label, hint, description, accept, fileName, onPick, onFile, fieldLabel,
 }: FileFieldProps) {
   const input = useRef<HTMLInputElement>(null)
   const chosen = Boolean(fileName)
@@ -61,7 +63,8 @@ export default function FileField({
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0]
-          if (file) onPick(file.name)
+          if (file) { onPick?.(file.name); onFile?.(file) }
+          e.target.value = ''
         }}
       />
     </div>
