@@ -7,6 +7,20 @@
  */
 import type { StudyRates, StudyType } from './types'
 
+// --- Profile and audience lists ---------------------------------------------
+
+/**
+ * What a participant picks on their profile and a client targets on the
+ * Audience step (21 Oct 2026: one list for both, so a study can only ask for
+ * a value someone can give). "Prefer not to say" is a choice on the profile
+ * and never a target: it matches no study that sets the criterion.
+ */
+export const AREA_TYPES = ['Urban', 'Suburban', 'Rural']
+export const ETHNICITIES = ['Asian', 'Black or African American', 'Hispanic or Latino', 'White', 'Mixed', 'Other', 'Prefer not to say']
+export const TARGET_ETHNICITIES = ETHNICITIES.filter((e) => e !== 'Prefer not to say')
+/** Household income as a participant gives it; the Audience step's ranges are matched against these by overlap. */
+export const PROFILE_INCOMES = ['Under $25,000', '$25,000 - $50,000', '$50,000 - $100,000', '$100,000 - $150,000', 'Over $150,000', 'Prefer not to say']
+
 // --- Fees -------------------------------------------------------------------
 
 /**

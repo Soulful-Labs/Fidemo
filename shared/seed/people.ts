@@ -1,4 +1,5 @@
 import { avatarFor } from '../avatar'
+import { AREA_TYPES, ETHNICITIES, PROFILE_INCOMES } from '../platform'
 import { RATING_DELTA, TRUST } from '../rules'
 import type { Check, Person, ProfileDetails, Stars } from '../types'
 
@@ -165,7 +166,8 @@ function fromRow([id, name, role, industry, location, gender, studies, score, ve
     joinedAt: clock.at(-(120 + ((n * 23) % 400)), 9, 0), lastActiveAt: clock.at(-((n * 5) % 60), 8 + (n % 10), (n * 7) % 60),
     status: 'active', location,
     profile: {
-      ...EMPTY_PROFILE, gender, address: location, areaType: 'Urban', languages: [language ?? 'English'], nationality: 'American',
+      ...EMPTY_PROFILE, gender, address: location, areaType: AREA_TYPES[n % AREA_TYPES.length]!, languages: [language ?? 'English'], nationality: 'American',
+      ethnicity: ETHNICITIES[(n * 3) % ETHNICITIES.length]!, income: PROFILE_INCOMES[(n * 2) % (PROFILE_INCOMES.length - 1)]!,
       occupation: role, industry, experience: `${4 + (n % 14)} years`, education: 'Bachelors Degree',
       dob: `${String(1 + (n % 27)).padStart(2, '0')} / ${String(1 + (n % 12)).padStart(2, '0')} / ${1975 + (n % 22)}`, idType: 'Passport',
       licenseId: verified ? String(98765012340000 + n) : '', ...workOf(industry, n),

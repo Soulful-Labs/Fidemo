@@ -1,5 +1,5 @@
 import { ageFrom, tierOf } from './derive'
-import { diaryMinimumFor, diaryWords, priceStudy, targets } from './platform'
+import { AREA_TYPES, TARGET_ETHNICITIES, diaryMinimumFor, diaryWords, priceStudy, targets } from './platform'
 import { buildScreener, buildTasks } from './questions'
 import type { AuthoredKind } from './questions'
 import type { Location, Person, PlatformState, PreScreenQuestion, Question, RepeatRule, Session, Study, StudySetup, StudyType, Tier } from './types'
@@ -78,6 +78,10 @@ export interface StudyForm {
   experience?: string[]
   /** Household income the study accepts (19 Oct 2026). Empty means any. */
   income?: string[]
+  /** Ethnicities the study accepts (21 Oct 2026). Empty means any. */
+  ethnicity?: string[]
+  /** Area types the study accepts (21 Oct 2026). Empty means any. */
+  areaTypes?: string[]
   // 3. Screener
   questions: FormQuestion[]
   // 4. Study
@@ -141,7 +145,7 @@ export function blankForm(): StudyForm {
     gender: ['All Genders'], education: ["Graduate or Bachelor's"],
     ageRanges: ['18–20', '21–29'],
     roles: '', functions: '', skills: '', industries: '',
-    condition: 'na', tiers: '', experience: [], income: [],
+    condition: 'na', tiers: '', experience: [], income: [], ethnicity: [], areaTypes: [],
     questions: [
       blankQuestion('Pre-screener - Q1', 'Single-select'), blankQuestion('Pre-screener - Q2', 'Multi-select'),
       blankQuestion('Pre-screener - Q3', 'Single-line input'), blankQuestion('Q4', 'Number input'),
@@ -311,6 +315,8 @@ export function audiencePeople(state: PlatformState, f: StudyForm, now: Date = n
     { const wanted = gendersOf(f); if (wanted.length && !wanted.includes(p.profile.gender)) return false }
     if (edu.length && !edu.some((w) => p.profile.education.toLowerCase().includes(w))) return false
     if (f.ageRanges.length) { const age = ageFrom(p.profile.dob, now); if (age === undefined || !f.ageRanges.some((r) => inRange(age, r))) return false }
+    if (f.ethnicity?.length && !f.ethnicity.includes(p.profile.ethnicity)) return false
+    if (f.areaTypes?.length && !f.areaTypes.includes(p.profile.areaType)) return false
     if (roles.length && !roles.some((r) => p.profile.occupation.toLowerCase().includes(r))) return false
     if (industries.length && !industries.some((r) => p.profile.industry.toLowerCase().includes(r))) return false
     if (functions.length && !has(p.profile.workFunctions ?? [], functions)) return false
@@ -338,6 +344,7 @@ export function audiencePills(f: StudyForm): StudySetup['audience'] {
     { value: f.participants.trim() || '0', icon: 'people' },
     ...(f.countries.length ? [{ value: f.countries.join(', '), icon: 'pin' }] : []),
     ...pill('Gender', gendersOf(f).join(', ') || 'All Genders'), ...pill('Education', educationOf(f).join(', ')), ...pill('Age', f.ageRanges.join(', ')),
+    ...pill('Ethnicity', (f.ethnicity ?? []).join(', ')), ...pill('Area Type', (f.areaTypes ?? []).join(', ')),
     ...pill('Work Functions', list(f.functions).join(', ')), ...pill('Roles', list(f.roles).join(', ')),
     ...pill('Industry', list(f.industries).join(', ')), ...pill('Skills', list(f.skills).join(', ')),
     ...pill('Experience', (f.experience ?? []).join(', ')), ...pill('Household Income', (f.income ?? []).join(', ')),
@@ -577,6 +584,8 @@ export const AUDIENCE_LISTS = {
   gender: ['All Genders', 'Male', 'Female', 'Other'],
   education: ['Some High School', 'High School Graduate', 'Some College, no degree', 'Associate Degree', "Graduate or Bachelor's", "Master's degree", 'Doctorate'],
   ageRanges: ['18–20', '21–29', '30–39', '40–54', '50–59', '60+'],
+  ethnicity: TARGET_ETHNICITIES,
+  areaTypes: AREA_TYPES,
   tiers: ['', 'Silver and above', 'Gold and above', 'Platinum only'],
 } as const
 

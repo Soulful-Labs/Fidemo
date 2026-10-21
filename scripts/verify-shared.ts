@@ -17,7 +17,7 @@ import { POINTS, REDEEM, TIERS, TRUST, starsForRating, starsFromDimensions, trus
 import { DEMO_CLIENT_ID, DEMO_PERSON_ID, MASTER_ADMIN_ID, buildSeed } from '../shared/seed'
 import { buildScreener, screenerOutline, taskResults } from '../shared/questions'
 import type { AuthoredQuestion } from '../shared/questions'
-import { audiencePeople, blankForm, blankQuestion, buildStudy, estimateAudience, formFromStudy, formId, studyDetails, summarise } from '../shared/studyForm'
+import { AUDIENCE_LISTS, audiencePeople, blankForm, blankQuestion, buildStudy, estimateAudience, formFromStudy, formId, studyDetails, summarise } from '../shared/studyForm'
 import type { FormQuestion, StudyForm } from '../shared/studyForm'
 import { createPlatform, sessionStart } from '../shared/store'
 import type { Actor } from '../shared/store'
@@ -513,6 +513,23 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   const men = of(['Male']), women = of(['Female']), both = of(['Male', 'Female']), all = of(['All Genders'])
   check('gender: several genders are accepted together, and All Genders is everyone', both === men + women && men > 0 && women > 0 && all >= both, `${men} + ${women} = ${both}; all ${all}`)
   check('gender: a form saved with one gender reads as a list', formFromStudy({ ...st().studies[0]!, form: { ...base, gender: 'Female' as unknown as string[] } }).gender.join() === 'Female')
+}
+
+// ------------------------------------------------ ethnicity and area type (21 Oct 2026)
+{
+  p.reset(); clock = now.getTime()
+  const base = formOf({ countries: [], gender: ['All Genders'], ageRanges: [], functions: '', industries: '', education: [] })
+  const of = (patch: Partial<typeof base>) => audiencePeople(st(), { ...base, ...patch }, now)
+  const all = of({}).length
+  const asian = of({ ethnicity: ['Asian'] }), white = of({ ethnicity: ['White'] }), either = of({ ethnicity: ['Asian', 'White'] })
+  check('ethnicity: any one ticked matches, and only people who gave it', either.length === asian.length + white.length && asian.length > 0 && white.length > 0 && asian.every((x) => x.profile.ethnicity === 'Asian'), `${asian.length} + ${white.length} = ${either.length}`)
+  check('ethnicity: "Prefer not to say" is not a target and matches nothing set', !AUDIENCE_LISTS.ethnicity.includes('Prefer not to say') && of({ ethnicity: [...AUDIENCE_LISTS.ethnicity] }).every((x) => x.profile.ethnicity !== 'Prefer not to say'))
+  const urban = of({ areaTypes: ['Urban'] }).length, rural = of({ areaTypes: ['Rural'] }).length
+  check('area type: matches the profile, and a category left empty is ignored', urban > 0 && rural > 0 && of({ areaTypes: ['Urban', 'Rural'] }).length === urban + rural && of({ areaTypes: [] }).length === all, `${urban} urban, ${rural} rural of ${all}`)
+  check('categories combine: both set narrows to people matching each', of({ ethnicity: ['Asian'], areaTypes: ['Urban'] }).every((x) => x.profile.ethnicity === 'Asian' && x.profile.areaType === 'Urban'))
+  check('ethnicity and area type show as pills', summarise(st(), { ...base, ethnicity: ['White'], areaTypes: ['Rural'] }, now).audience.some((a) => a.label === 'Ethnicity' && a.value === 'White') && summarise(st(), { ...base, ethnicity: ['White'], areaTypes: ['Rural'] }, now).audience.some((a) => a.label === 'Area Type'))
+  const priced = (f: typeof base) => { const b = buildStudy({ ...f, title: 'Price check', description: 'A study priced twice', functions: 'Product', industries: 'Healthcare' }, now); return b.ok ? JSON.stringify(b.study.rates) : `refused: ${b.why}` }
+  check('neither changes the price', priced({ ...base, ethnicity: ['White'], areaTypes: ['Rural'] }) === priced(base) && !priced(base).startsWith('refused'), priced(base))
 }
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nall checks passed')
