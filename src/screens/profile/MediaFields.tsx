@@ -55,7 +55,7 @@ export function VideoField() {
   const [busy, setBusy] = useState(false)
   const url = useVideoUrl(user.video?.id)
   const pick = async (file: File) => {
-    if (file.type !== 'video/mp4') { toast('Choose an .mp4 video'); return }
+    if (!file.type.startsWith('video/')) { toast('Choose a video file'); return }
     setBusy(true)
     const id = `vid-${Date.now().toString(36)}`
     const kept = await saveVideo(id, file)
@@ -68,7 +68,7 @@ export function VideoField() {
   return (
     <div className="flex flex-col gap-3">
       <FileField fieldLabel="Intro Video" label={busy ? 'Saving video...' : user.video ? 'Change Video' : 'Upload Short Video'} fileName={busy ? undefined : user.video?.name}
-        description="Share about you, what you do, your interests, etc." hint=".mp4 file | 50 MB max." accept="video/mp4" onFile={(f) => void pick(f)} />
+        description="Share about you, what you do, your interests, etc." hint=".mp4 file | 50 MB max." accept="video/*" inputLabel="Choose an intro video" onFile={(f) => void pick(f)} />
       {user.video && url && <video src={url} controls playsInline className="max-h-56 w-full rounded-md bg-bg-0" aria-label="Your intro video" />}
       {user.video && <Button variant="ghost" size="md" className="self-start" onClick={remove}>Remove Video</Button>}
       <Toggle label="Show my video to clients" checked={Boolean(user.videoConsent)} disabled={!user.video}

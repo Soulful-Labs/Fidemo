@@ -17,6 +17,8 @@ export interface FileFieldProps {
   onFile?: (file: File) => void
   /** Label above the field, e.g. "Intro Video (optional)". */
   fieldLabel?: string
+  /** The hidden file input's own name, for assistive tech. */
+  inputLabel?: string
 }
 
 /**
@@ -25,7 +27,7 @@ export interface FileFieldProps {
  * the chosen file name; nothing uploads because there is no backend.
  */
 export default function FileField({
-  label, hint, description, accept, fileName, onPick, onFile, fieldLabel,
+  label, hint, description, accept, fileName, onPick, onFile, fieldLabel, inputLabel,
 }: FileFieldProps) {
   const input = useRef<HTMLInputElement>(null)
   const chosen = Boolean(fileName)
@@ -60,6 +62,7 @@ export default function FileField({
         ref={input}
         type="file"
         accept={accept}
+        aria-label={inputLabel}
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0]
