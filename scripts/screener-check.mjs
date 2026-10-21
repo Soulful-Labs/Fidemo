@@ -159,7 +159,7 @@ say(2, 'Submit it, reload the page, open the study: all 3 are there, right types
 await I.go(`/internal/studies/review/${id}?tab=screener`)
 const inConsole = await I.ev(read(true))
 say(3, 'As peter@focusinsite.com in the console, open that study for review: the same 3 questions appear', judge(inConsole), `${await I.path()}: ${show(inConsole)}`)
-await I.click('Approve to Publish', 800)
+await I.click('Approve to Publish', 400); await I.click('Approve and Publish', 800)
 
 // 4. the respondent reaches the screener and is asked those questions
 await R.go(`/studies/${id}`)

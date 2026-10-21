@@ -5,7 +5,7 @@ import PanelTabs from '../../../components/app/PanelTabs'
 import StudyTypeTag from '../../../components/app/StudyTypeTag'
 import Button from '../../../components/ui/Button'
 import { AudienceIcon, CalendarIcon, CardIcon, ClipboardIcon, HistoryIcon, InfoIcon, ReceiptIcon, ScreenerIcon, UsersIcon } from '../../../components/ui/icons'
-import { SuccessModal } from '../../../components/ui/Overlay'
+import { Modal, SuccessModal } from '../../../components/ui/Overlay'
 import { ReviewContext, useReviewData } from '../../../mock/review'
 import { billing } from '@shared/derive'
 import { monthDayYearTime, money } from '@shared/format'
@@ -38,8 +38,9 @@ type Tab = (typeof TABS)[number]['key']
  * the 360 client card. The panel fills the window and grows with its content.
  *
  * The two actions live in the title bar: Request Changes opens the 600 panel,
- * Approve to Publish the "published live" dialog. Everything in the tabs is
- * read only.
+ * Approve to Publish asks first ("Publish live for participants?",
+ * 2369:72188) and then shows the "published live" dialog. Everything in the
+ * tabs is read only.
  */
 export default function ReviewStudy() {
   const { id } = useParams()
@@ -52,8 +53,8 @@ export default function ReviewStudy() {
   const type = study.type
   const [why, setWhy] = useState('')
   /** Workflow 7: the team takes the study live, or sends it back (shared/store.ts). */
-  const approve = () => { const r = platform().moveStudy(study.id, 'recruiting', TEAM); if (r.ok) setOverlay('published'); else setWhy(r.why) }
-  const [overlay, setOverlay] = useState<'changes' | 'published' | null>(null)
+  const approve = () => { const r = platform().moveStudy(study.id, 'recruiting', TEAM); if (r.ok) setOverlay('published'); else { setOverlay(null); setWhy(r.why) } }
+  const [overlay, setOverlay] = useState<'changes' | 'confirm' | 'published' | null>(null)
 
   return (
     <ReviewContext.Provider value={view}>
@@ -61,7 +62,7 @@ export default function ReviewStudy() {
       crumbs={[{ label: 'Studies', to: '/studies' }, { label: 'Review', to: '/studies' }, { label: study.title }]}
       right={<>
         <Button variant="secondary" size="md" className="px-3" onClick={() => setOverlay('changes')}>Request Changes</Button>
-        <Button variant="success" size="md" className="px-3" onClick={approve}>Approve to Publish</Button>
+        <Button variant="success" size="md" className="px-3" onClick={() => setOverlay('confirm')}>Approve to Publish</Button>
       </>}>
       <header className="flex gap-4 rounded-lg bg-bgAlt-1 p-4">
         <img src={study.thumbnail} alt="" className="h-[62px] w-[83px] rounded-sm object-cover" />
@@ -93,6 +94,10 @@ export default function ReviewStudy() {
       </div>
 
       <RequestChanges open={overlay === 'changes'} onClose={() => setOverlay(null)} onSend={(text) => { const r = platform().requestChanges(study.id, text, TEAM); setOverlay(null); if (r.ok) setTab('revisions'); else setWhy(r.why) }} />
+      <Modal open={overlay === 'confirm'} onClose={() => setOverlay(null)} title="Publish live for participants?"
+        footer={<><Button variant="tertiary" onClick={() => setOverlay(null)}>Cancel</Button><Button onClick={approve}>Approve and Publish</Button></>}>
+        The study will be published live on the participants app for them to apply for it.
+      </Modal>
       <SuccessModal tone="green" open={overlay === 'published'} onClose={() => setOverlay(null)}
         title="This study has been published live!" body="It is live on the platform and showing to targeted participants."
         action="Done! View Details" onAction={() => navigate(`/studies/${id}`)} />

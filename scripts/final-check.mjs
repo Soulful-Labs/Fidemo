@@ -239,7 +239,7 @@ if (/3%|processing fee/i.test(await C.ev('document.body.innerText'))) g2.push('B
 say(2, 'The fee shown on Publish is the fee taken', g2, `Publish: total $${total}, upfront $${upfront}, no processing fee mentioned; the store took ${stored.payments.join()} and holds rates that come to $${fromRates}`)
 
 // The team takes it live, which is when the platform matches people to it.
-await I.go(`/internal/studies/review/${S.id}`); await I.click('Approve to Publish', 900)
+await I.go(`/internal/studies/review/${S.id}`); await I.click('Approve to Publish', 400); await I.click('Approve and Publish', 900)
 
 // ---- 5. Matched is the people who fit the audience
 const g5 = []

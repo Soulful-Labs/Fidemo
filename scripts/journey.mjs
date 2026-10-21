@@ -164,7 +164,7 @@ await step(3, 'The console approves it, and the client app sees it go live (no r
   const before = await C.has(TITLE)
   await I.click(TITLE, 900)
   expect((await I.path()).includes('/studies/review/'), 'the row did not open the review: ' + await I.path())
-  await I.click('Approve to Publish', 600)
+  await I.click('Approve to Publish', 400); await I.click('Approve and Publish', 600)
   expect((await study()).state === 'recruiting', 'state is ' + (await study()).state)
   await sleep(600)
   const clientState = await C.ev(`[...document.querySelectorAll('tr, [role=row], article, a')].find((r) => r.innerText.includes(${JSON.stringify(TITLE)}))?.innerText.replace(/\\s+/g, ' ').slice(0, 160) ?? ''`)

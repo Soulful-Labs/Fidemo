@@ -334,7 +334,7 @@ g6.push(...(await lacks(I, [`Study End Date${shortDate(end)}`])).map((x) => 'dia
 say(6, 'The console shows the missing fields', g6, 'end date, buffer, minimum notice, every address, weekly hours as hours, and the diary frequency as chosen')
 
 // The team takes the survey and the diary live.
-for (const s of [SURVEY, DIARY]) { await I.go(`/internal/studies/review/${s.id}`); await I.click('Approve to Publish', 800) }
+for (const s of [SURVEY, DIARY]) { await I.go(`/internal/studies/review/${s.id}`); await I.click('Approve to Publish', 400); await I.click('Approve and Publish', 800) }
 await C.go(`/client/studies/${SURVEY.id}/manage`); await sleep(500)
 const liveEdit = await C.ev(`__all('button').filter((b) => b.textContent.trim() === 'Edit').length`)
 if (liveEdit !== 0) g4.push(`a live study still shows ${liveEdit} Edit buttons`)

@@ -288,7 +288,7 @@ for (const s of STUDIES.filter((x) => x.id)) {
   const want = [s.title, s.description, ...durationShown(s.duration), s.participants, ...AUDIENCE_SHOWN, ...promptsOf(s.screener), `$${s.incentive}`, ...s.console, s.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })]
   const squashed = text.replace(/\s+/g, '')
   note(3, s.key, want.filter((x) => !squashed.includes(x.replace(/\s+/g, ''))))
-  await I.click('Approve to Publish', 800)
+  await I.click('Approve to Publish', 400); await I.click('Approve and Publish', 800)
 }
 
 console.log('\n4. A respondent sees the same')

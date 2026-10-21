@@ -198,7 +198,7 @@ const alive = async () => (await R.alive()) && (await C.alive()) && (await I.ali
     if (early) g.push('respondent: listed before the team approved it')
     await I.click(S.title, 1000)
     if (!(await I.path()).includes('/studies/review/')) g.push('console: the row did not open the review, went to ' + await I.path())
-    await I.click('Approve to Publish', 1000)
+    await I.click('Approve to Publish', 400); await I.click('Approve and Publish', 1000)
     S.afterApproval = (await study())?.state
     const listed = await R.waitFor(S.title, 6000)
     if (!listed) g.push('respondent: not in Explore after approval')
