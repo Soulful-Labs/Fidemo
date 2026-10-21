@@ -39,7 +39,9 @@ export default {
         // Primary/yellow-*.
         yellow: {
           30: '#fff7ea', 40: '#fff3e0', 50: '#ffeed1', 100: '#fee2b5', 200: '#fed592',
-          300: '#fdc160', 400: '#fdb541', 500: '#fca311', 700: '#b3740c', 800: '#8b5a09',
+          300: '#fdc160', 400: '#fdb541', 500: '#fca311', 600: '#e5940f', 700: '#b3740c', 800: '#8b5a09',
+          // The chosen row of a dropdown menu (2367:68669, 2368:68734), as in the client.
+          alpha20: '#fca31133',
         },
         // Secondary/green-* and Alpha/green-alpha/green-15.
         green: { 100: '#c3e9d9', 200: '#a7dfc6', alpha15: '#3fb98426' },

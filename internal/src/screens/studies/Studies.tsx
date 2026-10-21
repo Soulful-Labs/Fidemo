@@ -4,7 +4,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import StudyTypeTag from '../../components/app/StudyTypeTag'
 import Button from '../../components/ui/Button'
-import { SearchInput, Select } from '../../components/ui/Input'
+import { SearchInput } from '../../components/ui/Input'
+import { DropdownChecks, DropdownSelect } from '../../components/ui/Dropdown'
 import { ChevronRight } from '../../components/ui/icons'
 import Table from '../../components/ui/Table'
 import type { Column } from '../../components/ui/Table'
@@ -20,8 +21,20 @@ const TABS = [
   { key: 'completed', label: 'Completed' },
 ]
 
-/** The sort each frame shows selected. The menus' other options are not drawn. */
-const SORT: Record<Tab, string> = { review: 'Sort: Recent First', ongoing: 'Sort: More applications', completed: 'Sort: Recent First' }
+/** The type filter (2367:68669): its rows and the study types they stand for. */
+const TYPES: [string, StudyRow['kind']][] = [
+  ['Survey', 'survey'], ['Video Call', 'video_call'], ['Group Video Call', 'group_video_call'],
+  ['In-Person', 'in_person'], ['Group In-Person', 'in_person_group'], ['Diary Study', 'diary'],
+]
+/** The sort menu (2368:68734 to 2368:68743), the same on all three tabs. */
+const SORTS: Record<string, (a: StudyRow, b: StudyRow) => number> = {
+  Recent: (a, b) => b.at.localeCompare(a.at),
+  Earliest: (a, b) => a.at.localeCompare(b.at),
+  'Highest Participants': (a, b) => b.people - a.people,
+  'Lowest Participants': (a, b) => a.people - b.people,
+  'Highest Cost': (a, b) => b.cost - a.cost,
+  'Lowest Cost': (a, b) => a.cost - b.cost,
+}
 
 const name = (r: StudyRow) => (
   <span className="-ml-1 flex items-center gap-3">
@@ -53,10 +66,15 @@ export default function Studies() {
   const [params, setParams] = useSearchParams()
   const tab = (TABS.some((t) => t.key === params.get('tab')) ? params.get('tab') : 'review') as Tab
   const [query, setQuery] = useState('')
-  const [filter, setFilter] = useState('All Studies')
+  const [types, setTypes] = useState<string[]>(['All'])
+  const [sort, setSort] = useState('Recent')
   const { rows, count } = useStudyRows(tab)
-  /** Search narrows the visible list by study name. */
-  const shown = rows.filter((r) => !query.trim() || r.name.toLowerCase().includes(query.trim().toLowerCase()))
+  /** Search narrows the list by study name, the filter by type; the sort orders what is left. */
+  const kinds = types.includes('All') ? undefined : new Set(TYPES.filter(([label]) => types.includes(label)).map(([, k]) => k))
+  const shown = rows
+    .filter((r) => !query.trim() || r.name.toLowerCase().includes(query.trim().toLowerCase()))
+    .filter((r) => !kinds || kinds.has(r.kind))
+    .sort(SORTS[sort])
 
   const open = (r: StudyRow) => navigate(tab === 'review' ? `/studies/review/${r.id}` : tab === 'completed' ? `/studies/${r.id}?state=completed` : `/studies/${r.id}`)
 
@@ -93,8 +111,9 @@ export default function Studies() {
         <SegmentedTabs className="w-[380px]" segmentClassName="flex-1" value={tab} onChange={(k) => setParams(k === 'review' ? {} : { tab: k }, { replace: true })} items={TABS} />
         <div className="ml-auto flex items-center gap-3">
           <SearchInput className="w-[334px]" placeholder="Search studies" value={query} onChange={(e) => setQuery(e.target.value)} />
-          <Select className="w-40" value={filter} onChange={setFilter} options={['All Studies']} />
-          <Select className="w-60" value={SORT[tab]} options={[SORT[tab]]} />
+          <DropdownChecks className="w-40" label="Study types" all="All" options={TYPES.map(([label]) => label)} picked={types} onChange={setTypes}
+            text={types.includes('All') ? 'All Studies' : types.length === 1 ? types[0] : `${types.length} study types`} />
+          <DropdownSelect className="w-60" label="Sort" prefix="Sort: " value={sort} options={Object.keys(SORTS)} onChange={setSort} />
         </div>
       </div>
 
