@@ -159,7 +159,7 @@ for (const [w, h] of SIZES) {
   const fit = await T.ev(`({ doc: document.documentElement.scrollHeight, view: innerHeight, card: document.querySelector('main > div > div').getBoundingClientRect().bottom })`)
   ok(`${at}: one screen, no scrolling`, fit.doc <= fit.view && fit.card <= fit.view, `card ends at ${Math.round(fit.card)} of ${h}`)
   const words = await T.ev(`({ buttons: [...document.querySelectorAll('button')].map((b) => b.textContent), links: document.querySelectorAll('a').length })`)
-  ok(`${at}: only Log In and Sign Up, nothing else to click`, words.buttons.join() === 'Log In,Sign Up' && words.links === 0, JSON.stringify(words))
+  ok(`${at}: only Log In, nothing else to click (no sign-up since 22 Oct 2026)`, words.buttons.join() === 'Log In' && words.links === 0, JSON.stringify(words))
 }
 
 // ------------------------------------------------------------------ where the buttons go
@@ -188,7 +188,7 @@ for (const [w, h] of SIZES) {
   const I = await tab('console', 1440, 900, false)
   await I.open('/internal/', 'localStorage.clear()')
   await I.click('Log In', 500); ok('console: Log In reaches sign in', await I.path() === '/internal/signin', await I.path())
-  await I.open('/internal/'); await I.click('Sign Up', 500); ok('console: Sign Up reaches sign up', await I.path() === '/internal/signup', await I.path())
+  await I.open('/internal/'); ok('console: no Sign Up on the entrance (accounts are made by a master admin)', !(await I.has('Sign Up')), 'Sign Up is on the entrance')
   await I.open('/internal/signin')
   await I.ev(`(() => { const [e, p] = document.querySelectorAll('input'); __type(e, 'peter@focusinsite.com'); __type(p, 'demo1234'); return true })()`); await I.click('Login', 900)
   await I.open('/internal/')

@@ -3,7 +3,6 @@ import type { RouteObject } from 'react-router-dom'
 import { Navigate } from 'react-router-dom'
 import type { ComponentType } from 'react'
 import Guard, { SignedOut } from './app/Guard'
-import SignUp, { VerifyCode } from './screens/auth/SignUp'
 import KitchenSink from './screens/kitchen-sink/KitchenSink'
 import Entrance from './screens/auth/Entrance'
 import SignIn from './screens/auth/SignIn'
@@ -39,7 +38,7 @@ import RespondentPage from './screens/studies/respondent/RespondentPage'
 import SessionPage from './screens/studies/respondent/SessionPage'
 
 /**
- * The route map. Sign in, sign up and password reset are for someone
+ * The route map. Sign in and password reset are for someone
  * signed out; every other route is behind the guard (app/Guard.tsx), which
  * also holds a sub-admin to the modules they have been given.
  */
@@ -52,8 +51,6 @@ const routes: RouteObject[] = [
   /** The entrance: shown to a signed-out visitor only; anyone signed in goes to where they land. */
   { path: '/', element: outside(Entrance) },
   { path: '/signin', element: outside(SignIn) },
-  { path: '/signup', element: outside(SignUp) },
-  { path: '/signup/verify', element: outside(VerifyCode) },
   { path: '/reset-password', element: outside(ResetPassword) },
   { path: '/check-email', element: outside(CheckEmail) },
   { path: '/set-password', element: outside(SetNewPassword) },

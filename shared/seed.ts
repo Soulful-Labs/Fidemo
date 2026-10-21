@@ -816,12 +816,3 @@ export function buildSeed(now: Date = new Date()): PlatformState {
 
   return state
 }
-
-/**
- * A platform with nothing in it but the person who just created it: no
- * studies, people, clients, tickets, payments or other team members. What a
- * new master admin signs up into (console sign-up).
- */
-export function buildEmpty(owner: TeamMember, now: Date = new Date()): PlatformState {
-  return { version: SEED_VERSION, seededAt: now.toISOString(), people: [], clients: [], studies: [], reports: [], tickets: [], team: [owner], activity: [], pending: [], teamNotices: [] }
-}

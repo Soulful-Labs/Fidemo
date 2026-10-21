@@ -1,4 +1,4 @@
-// The console's sign in, sign up, access and activity log, driven in a real
+// The console's sign in, access and activity log, driven in a real
 // browser on the one origin. Prints WORKING / BROKEN per check.
 //
 //   npm run build:all && node scripts/serve-all.mjs
@@ -168,62 +168,14 @@ await step('The access toggles decide it: the master admin gives her Finance, an
   return 'sidebar: ' + n.join(', ')
 })
 
-await step('Sign up refuses a weak password, a mismatch and a taken email', async () => {
-  await logout(); await T.go(B + '/signup')
-  await fill([['Enter your name', 'Nia Okafor'], ['Enter work email address', PETER], ['Enter a password', 'weak'], ['Re-enter the password', 'other']])
-  await T.click('Sign Up', 500)
-  expect(await T.has('A team account already uses that email address') && await T.has('The two passwords do not match') && await T.path() === B + '/signup', 'not refused')
-})
-await step('Sign up, then the six-digit code: a wrong code is refused, 123456 is accepted', async () => {
-  await fill([['Enter work email address', 'nia@newteam.io'], ['Enter a password', 'Fresh#Start1'], ['Re-enter the password', 'Fresh#Start1']])
-  await T.click('Sign Up', 600)
-  expect(await T.path() === B + '/signup/verify', 'landed on ' + await T.path())
-  expect(await T.has('no email is sent'), 'the no-email line is missing')
-  await fill([['000000', '000000']]); await T.click('Verify and Continue', 500)
-  expect(await T.has('That code is not right'), 'wrong code accepted')
-  await fill([['000000', '123456']]); await T.click('Verify and Continue', 900)
-  expect(await T.path() === B + '/dashboard', 'landed on ' + await T.path())
-})
-await step('The new master admin console is completely empty', async () => {
-  const s = await st()
-  const n = { studies: s.studies.length, people: s.people.length, clients: s.clients.length, tickets: s.tickets.length, reports: s.reports.length, activity: s.activity.length, team: s.team.length }
-  expect(n.studies + n.people + n.clients + n.tickets + n.reports + n.activity === 0 && n.team === 1 && s.team[0].master, JSON.stringify(n))
-  expect(await T.has('Nia Okafor') && (await nav()).length === 8, 'card or sidebar wrong')
-  return JSON.stringify(n)
-})
-const EMPTY = [
-  ['/dashboard', 'Nothing is waiting here.'],
-  ['/studies', 'Studies that clients submit for review will appear here.'], ['/studies?tab=ongoing', 'Studies you approve will appear here while they run.'], ['/studies?tab=completed', 'Studies will appear here once they are completed.'],
-  ['/participants', 'Participants will appear here once they sign up.'], ['/participants?tab=deactivated', 'Participants whose accounts are deactivated will appear here.'],
-  ['/participants/verifications', 'Identity and profession checks that need a person will appear here.'], ['/participants/verifications', 'Verifications you have decided will appear here.'],
-  ['/participants/verifications?tab=reported', 'Participants reported by a client or by the system will appear here.'], ['/participants/verifications?tab=reported', 'Reports you have decided will appear here.'],
-  ['/clients', 'Clients will appear here once they sign up.'], ['/clients?tab=deactivated', 'Clients whose accounts are deactivated will appear here.'],
-  ['/clients/verifications', 'Business checks that need a person will appear here.'], ['/clients/verifications?tab=history', 'Business verifications you have decided will appear here.'],
-  ['/support', 'New tickets from participants and clients will appear here.'], ['/support?tab=ongoing', 'Tickets you have replied to will appear here.'], ['/support?tab=closed', 'Resolved tickets will appear here.'],
-  ['/finance', 'Payments, earnings, payouts and refunds will appear here as they happen.'], ['/finance/refunds', 'Refunds for underfilled studies will appear here to be confirmed.'],
-  ['/sub-admin', 'Sub-admins you add will appear here.'], ['/sub-admin', 'Actions taken in the console will appear here.'],
-]
-await step(`Every list in the empty console says what will appear there, and every figure is zero (${EMPTY.length} checked)`, async () => {
-  const wrong = []
-  for (const [route, text] of EMPTY) {
-    await T.go(B + route)
-    if (!(await T.has(text))) wrong.push(`${route}: missing "${text}"`)
-    const nums = await T.ev(`[...document.querySelectorAll('main *')].filter((e) => !e.children.length && e.tagName !== 'BUTTON' && e.offsetParent !== null).map((e) => e.textContent.trim()).filter((t) => /^\\$?[\\d,]{1,9}%?$/.test(t) && !/^\\$?0%?$/.test(t))`)
-    if (nums.length) wrong.push(`${route}: figures not zero: ${nums.slice(0, 6).join(' ')}`)
-  }
-  expect(wrong.length === 0, wrong.join('\n          '))
-})
-await step('The new admin\'s own actions are logged under their name', async () => {
-  await T.go(B + '/sub-admin/new')
-  await fill([['Full name of sub-admin', 'Sam Rivera'], ['Enter email address', 'sam@newteam.io'], ['Enter the designation of sub-admin', 'Support Lead']])
-  await T.click('Create', 700)
-  const l = await lastLog(); expect(l.includes('Sam Rivera') && l.endsWith('Nia Okafor'), l)
-  await T.go(B + '/sub-admin'); expect(await T.has('Nia Okafor') && await T.has('Sam Rivera'), 'not on the Sub-Admin page')
-  return l
-})
-await step('The new account signs out and back in, and its console is still its own', async () => {
-  await logout(); await login('nia@newteam.io', 'Fresh#Start1')
-  const s = await st(); expect(await T.path() === B + '/dashboard' && s.studies.length === 0 && s.team.length === 2, `at ${await T.path()}, studies ${s.studies.length}, team ${s.team.length}`)
+// There is no sign-up (22 Oct 2026): a master admin makes every team account, on Sub-Admin.
+await step('No one can sign up: no Sign Up on the entrance or on sign in, and /signup is not a page', async () => {
+  await logout(); await T.go(B + '/'); const entrance = await T.has('Sign Up')
+  await T.go(B + '/signin'); const signin = (await T.has('Sign Up')) || (await T.has('New to the team'))
+  await T.go(B + '/signup'); const form = (await T.has('Sign Up')) || (await T.has('Re-enter the password'))
+  expect(!entrance && !signin && !form, `entrance ${entrance}, sign in ${signin}, /signup shows a form ${form} at ${await T.path()}`)
+  await login(PETER, PW)
+  return `/signup lands on ${await T.path()}`
 })
 await step('Signing in with the demo master admin puts the demo data back', async () => {
   await logout()

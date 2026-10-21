@@ -8,7 +8,8 @@ import AuthLayout from './AuthLayout'
  * marketing page: nobody is being sold anything. One screen, no scrolling at
  * 1440 x 900, on the sign-in screens' own layout and card (AuthLayout): the
  * mark and the console's name as the sidebar writes them, one line saying
- * what this is, Log In, a quieter Sign Up, and who it is for. Nothing else.
+ * what this is, Log In, and who it is for. Nothing else: there is no
+ * sign-up (22 Oct 2026); a master admin makes every team account.
  */
 export default function Entrance() {
   const navigate = useNavigate()
@@ -24,7 +25,6 @@ export default function Entrance() {
       </div>
       <div className="flex flex-col gap-3 pt-8">
         <Button fullWidth onClick={() => navigate('/signin')}>Log In</Button>
-        <Button variant="tertiary" fullWidth onClick={() => navigate('/signup')}>Sign Up</Button>
       </div>
       <p className="pt-6 text-center text-text-regular text-text-body">Access is for Focus Insite team members only.</p>
     </AuthLayout>

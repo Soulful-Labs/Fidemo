@@ -14,8 +14,9 @@ import AuthLayout, { AuthHeader } from './AuthLayout'
  * The email and password are checked against the team the platform holds
  * (shared/store.ts signInTeam); a wrong one is refused under its own field.
  * Signing in starts the session and goes to where the person was headed, or
- * to where they land. Under Login, and not in the frame: the way to Sign Up,
- * and the demo logins, as the other two apps show theirs.
+ * to where they land. Under Login, and not in the frame: the demo logins, as
+ * the other two apps show theirs. There is no sign-up (22 Oct 2026): a team
+ * account is made only by a master admin, on Sub-Admin.
  */
 export default function SignIn() {
   const navigate = useNavigate()
@@ -49,9 +50,6 @@ export default function SignIn() {
           </div>
         </div>
         <Button type="submit" fullWidth className="mt-12">Login</Button>
-        <Link to="/signup" className="mt-3 flex h-12 items-center justify-center rounded-md border-1 border-cta-tertiaryStroke text-body-regular text-text-title">
-          New to the team?&nbsp;<span className="text-body-medium">Sign Up</span>
-        </Link>
         <div className="mt-6 flex flex-col gap-1 rounded-md bg-bg-1 px-4 py-3 text-text-regular leading-5 text-text-subtitle">
           <p className="text-text-body">Demo build. These are demo accounts; signing in as the master admin puts the demo data back.</p>
           <button type="button" className="text-left hover:text-text-title" onClick={() => demo(DEMO_ADMIN_EMAIL)}>Master admin: <span className="text-text-title">{DEMO_ADMIN_EMAIL}</span> / <span className="text-text-title">{DEMO_TEAM_PASSWORD}</span></button>

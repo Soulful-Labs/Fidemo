@@ -20,7 +20,7 @@ import { MAX_RUN_DAYS, audienceFault, buildStudy, fitsStudy, formFromStudy, live
 import { buildScreener, buildTasks } from './questions'
 import type { StudyForm } from './studyForm'
 import { editOf } from './revisions'
-import { DEMO_TEAM_PASSWORD, MASTER_ADMIN_ID, SEED_VERSION, buildEmpty, buildSeed } from './seed'
+import { DEMO_TEAM_PASSWORD, MASTER_ADMIN_ID, SEED_VERSION, buildSeed } from './seed'
 import type {
   Answers, AppNotification, Booking, Check, Client, ClientReview, Module, ParticipantRating, Participation, ParticipationState,
   PayoutMethod, Person, PlatformState, RatingState, RepeatRule, Report, Result, SavedCard, Study, StudyState,
@@ -1300,21 +1300,6 @@ export function createPlatform(options: Options = {}) {
     teamEmailFree: (email: string): boolean => {
       const key = email.trim().toLowerCase()
       return ![...(read() ?? state).team, ...buildSeed(clock()).team].some((t) => t.email.toLowerCase() === key)
-    },
-
-    /**
-     * Console sign-up: a new master admin, on a platform with nothing in it
-     * (seed.ts, buildEmpty). It replaces the shared state for all three apps;
-     * signing in with a demo login puts the demo state back.
-     */
-    signUpTeam: (m: { name: string; email: string; password: string }): Result<{ id: string }> => {
-      if (!m.name.trim() || !m.email.trim() || !m.password) return no('A name, a work email and a password are required')
-      if (!api.teamEmailFree(m.email)) return no('A team account already uses that email address')
-      const id = uid('tm')
-      const owner: TeamMember = { id, name: m.name.trim(), email: m.email.trim(), role: 'Master Admin', master: true, active: true, password: m.password,
-        access: ['Dashboard', 'Studies', 'Participants', 'Clients', 'Support', 'Finance', 'Pricing & Rewards', 'Sub-Admin'] }
-      state = buildEmpty(owner, clock()); write(state); emit()
-      return yes({ id })
     },
 
     /** My Account, Edit Profile: a team member's own name and email. */

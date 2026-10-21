@@ -52,11 +52,6 @@ export function signIn(email: string, password: string) {
   if (res.ok) { left = false; writeEmail(email.trim()) }
   return res
 }
-export function signUp(m: { name: string; email: string; password: string }) {
-  const res = platform().signUpTeam(m)
-  if (res.ok) writeEmail(m.email.trim())
-  return res
-}
 /** Set by a deliberate sign out, so the guard does not remember the page they left as somewhere to return to. */
 let left = false
 export const leftOnPurpose = () => left

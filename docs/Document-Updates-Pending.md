@@ -78,3 +78,24 @@ Drawn one way, built another, on purpose:
   The 15 Oct 2026 decisions (a Pricing step, no AutoPay) are kept.
 - The frame draws DAY 3 to DAY 5 without the card edge, and DAY 4's preview
   line upright; every day is built as a card with the italic line.
+
+## Pending, 22 October 2026: the designer's round (console, and some of all three apps)
+
+Figma is the authority for this round. Each item below names the frame it was
+built from, or says that none draws it.
+
+### 1. No console sign-up (Sign In `1849:112091`)
+
+There is no self sign-up. A master admin makes every team account, on
+Sub-Admin. Removed: "New to the team? Sign Up" on Sign In, the Sign Up button
+on the entrance, `/signup` and `/signup/verify`, and the store's
+`signUpTeam` (with `buildEmpty`, the empty platform it signed into).
+
+| Document | Section | It says | The build now |
+|---|---|---|---|
+| internal/CLAUDE.md | "Sign in and sign up" | Sign up, code 123456, a new master admin of an empty platform | No sign-up. "Must change before production" item 1 (open sign-up is wrong) is resolved |
+| PRD | wherever console sign-up is described | Open sign-up for the demo | No sign-up |
+
+Checks: console-auth's five sign-up steps are one step, "No one can sign
+up" (17 steps, was 22); landing-check expects only Log In on the entrance;
+`signup` is out of the console's route list (178 routes, was 179).
