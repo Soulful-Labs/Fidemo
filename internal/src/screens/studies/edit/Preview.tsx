@@ -27,7 +27,7 @@ export function PreviewPanel({ onClose, children }: { onClose: () => void; child
         <IconButton label="Hide the preview" onClick={onClose}><CloseIcon className="h-5 w-5" /></IconButton>
       </div>
       <div className="overflow-hidden rounded-lg border-1 border-stroke-input bg-bg-0">
-        <p className="border-b-1 border-stroke-input px-4 py-4 text-title-s text-text-title">Human Layer</p>
+        <p className="border-b-1 border-stroke-input px-4 py-4 text-title-s text-text-title">HumanLayer</p>
         {children(key)}
       </div>
     </aside>

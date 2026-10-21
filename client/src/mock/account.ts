@@ -30,7 +30,7 @@ export const PROFILE_FIELDS = {
  */
 export const CERTIFICATE = {
   banner: 'You are a verified business!',
-  title: 'Human Layer Buyer Certificate',
+  title: 'HumanLayer Buyer Certificate',
   idLabel: 'Cert. ID:',
   verifiedLabel: 'Verified',
   registration: 'Business registration verified',

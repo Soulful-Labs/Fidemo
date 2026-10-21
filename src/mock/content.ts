@@ -5,7 +5,7 @@ import { WAITS } from '@shared/platform'
 /** FAQ list from PRD 12.2, used by Help and Support. Answers are prototype copy. */
 export const FAQS: { q: string; a: string }[] = [
   { q: 'What is status of incentive payment?', a: 'Open the study from My Studies > History. Its banner shows In Process until the Focus Insite team processes the payout, after the study finishes, then Paid with the date.' },
-  { q: 'How Focus Insite works (How can I earn money)', a: 'Apply to studies that match your profile, pass the short eligibility check and screener, take part when invited, and the reward is credited to your wallet once the client approves the payout.' },
+  { q: 'How HumanLayer works (How can I earn money)', a: 'Apply to studies that match your profile, pass the short eligibility check and screener, take part when invited, and the reward is credited to your wallet once the client approves the payout.' },
   { q: 'What are the eligibility criteria for participation?', a: 'Anyone can browse. To apply you need a verified government ID and a completed profile. Premium studies also need a verified professional credential.' },
   { q: 'When will I receive updates about my earnings?', a: "You can track the updates of the participated studies in the 'Applied' or 'Invited' tab of studies menu" },
   { q: 'How can I track my payment status?', a: 'Wallet > Payouts lists every withdrawal with a Processing or Completed status and the expected date.' },

@@ -10,6 +10,6 @@ export const SUMMARIES = {
 export const CERTIFICATE = {
   label: 'STUDY VERIFICATION CERTIFICATE',
   /** It claims the identity check only, counted above it: no duplicate check exists, so none is claimed (decision F). */
-  body: "A sealed, signed record of how many respondents in this study passed the identity check. Share the check link so your own stakeholders can confirm it independently — no need to trust Focus Insite's word for it.",
+  body: "A sealed, signed record of how many respondents in this study passed the identity check. Share the check link so your own stakeholders can confirm it independently — no need to trust HumanLayer's word for it.",
   cta: 'Download',
 }

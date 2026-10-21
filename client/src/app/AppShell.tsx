@@ -28,7 +28,7 @@ export interface Crumb { label: string; to?: string }
 export function SideNav() {
   const { account } = useSession()
   const initials = (account?.name ?? '')
-    .split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join('') || 'FI'
+    .split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join('') || 'HL'
   const { pathname } = useLocation()
   return (
     <nav className="sticky top-0 flex h-screen max-h-[960px] w-nav shrink-0 flex-col border-r-1 border-stroke-warm bg-yellow-20">

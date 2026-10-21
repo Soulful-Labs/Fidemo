@@ -53,7 +53,7 @@ export function results(state: PlatformState, study: Study) {
   const cert = studyCertificate(state, study)
   const certificate = {
     eyebrow: 'STUDY VERIFICATION CERTIFICATE', title: `${cert.verified} of ${cert.total} completions verified human`,
-    body: 'A sealed, signed proof that every respondent in this study passed identity and duplicate checks. Share the check link so your own stakeholders can confirm it independently — no need to trust Focus Insite’s word for it.',
+    body: 'A sealed, signed proof that every respondent in this study passed identity and duplicate checks. Share the check link so your own stakeholders can confirm it independently — no need to trust HumanLayer’s word for it.',
     foot: [`CERT ID · ${cert.id}`, `Issued ${monthDayYear(cert.issuedAt)}`],
   }
   const downloads = sessions.map((x, i) => ({ name: `Session ${i + 1}`, when: `${monthDayYear(x.date)}, ${x.slot}`, detail: [`${x.people.length} participant${x.people.length === 1 ? '' : 's'}`, 'Recordings + Transcript'] }))

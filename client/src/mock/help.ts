@@ -25,7 +25,7 @@
 export const FAQS = [
   {
     q: "Why can't I see a respondent's name, email, or phone number?",
-    a: "Every respondent profile is masked, everywhere in the product — Pool, Recruiting, Respondents, even Marketplace data you've purchased outright. This isn't a display setting; it's what keeps respondents interacting only through Focus Insite rather than going around the platform, and it's true even after you've paid for a study.",
+    a: "Every respondent profile is masked, everywhere in the product — Pool, Recruiting, Respondents, even Marketplace data you've purchased outright. This isn't a display setting; it's what keeps respondents interacting only through HumanLayer rather than going around the platform, and it's true even after you've paid for a study.",
   },
   {
     q: "What is the Certificate on my Settings page, and how does it differ from the certificate found on a study's Results tab?",

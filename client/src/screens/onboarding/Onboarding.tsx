@@ -377,7 +377,7 @@ export function Welcome() {
         <span className="mx-auto flex h-[160px] w-[160px] items-center justify-center rounded-full bg-bg-0 text-brand-secondary">
           <CheckCircle className="h-[84px] w-[84px]" />
         </span>
-        <h1 className="pt-6 text-[32px] font-semibold leading-[42px] tracking-[-0.02em] text-text-title">Welcome To Focus Insite!</h1>
+        <h1 className="pt-6 text-[32px] font-semibold leading-[42px] tracking-[-0.02em] text-text-title">Welcome To HumanLayer!</h1>
         <p className="pt-3 text-body-regular leading-[22px] text-text-subtitle">
           You are now verified and ready to start<br />your research studies now!
         </p>

@@ -68,7 +68,7 @@ export default function Landing() {
       {/* 1. Sticky at every scroll position: nothing on the page is allowed to cover or move it. */}
       <header className="sticky top-0 z-40 border-b-1 border-stroke-input bg-yellow-20">
         <div className="mx-auto flex h-topbar w-[1120px] items-center justify-between">
-          <Link to="/" className="text-title-l text-text-title" aria-label="Focus Insite, home">Focus Insite</Link>
+          <Link to="/" className="text-title-l text-text-title" aria-label="HumanLayer, home">HumanLayer</Link>
           <nav className="flex items-center gap-3" aria-label="Account">
             <Button variant="tertiary" onClick={logIn}>Log In</Button>
             <Button onClick={signUp}>Sign Up</Button>
@@ -93,7 +93,7 @@ export default function Landing() {
         {/* 3. The product itself, straight after the hero. */}
         <section className="scroll-mt-[70px] px-6 pb-16">
           <div className="mx-auto w-[1120px]">
-            <Shot src="/img/landing/dashboard.png" alt="The Focus Insite client dashboard: ongoing studies, recommended respondents and study figures" className="shadow-[0_8px_32px_0_rgb(32_30_25/0.08)]" />
+            <Shot src="/img/landing/dashboard.png" alt="The HumanLayer client dashboard: ongoing studies, recommended respondents and study figures" className="shadow-[0_8px_32px_0_rgb(32_30_25/0.08)]" />
             <p className="pt-3 text-center text-text-regular text-text-body">The client dashboard, shown with demo data.</p>
           </div>
         </section>
@@ -163,7 +163,7 @@ export default function Landing() {
       {/* 8. Footer: only links that go somewhere. */}
       <footer className="border-t-1 border-stroke-input bg-yellow-20 px-6">
         <div className="mx-auto flex h-20 w-[1120px] items-center justify-between text-text-regular text-text-subtitle">
-          <p><span className="text-text-large text-text-title">Focus Insite</span> <span className="pl-2">Research with verified participants.</span></p>
+          <p><span className="text-text-large text-text-title">HumanLayer</span> <span className="pl-2">Research with verified participants.</span></p>
           <nav className="flex items-center gap-6" aria-label="Footer">
             <Link to="/signin" className="hover:text-text-title">Log In</Link>
             <Link to="/signup" className="hover:text-text-title">Sign Up</Link>

@@ -48,7 +48,7 @@ export function PreviewPanel({ onClose, onRefresh, children }: { onClose: () => 
       </div>
       <div className="p-4">
         <div className="overflow-hidden rounded-lg bg-bg-0">
-          <p className="border-b-1 border-stroke-1 px-4 py-4 text-title-s text-text-title">Human Layer</p>
+          <p className="border-b-1 border-stroke-1 px-4 py-4 text-title-s text-text-title">HumanLayer</p>
           {children}
         </div>
       </div>
