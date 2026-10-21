@@ -2,17 +2,18 @@ import Button from '../../components/ui/Button'
 import { PoolIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { useDraft } from '../../mock/createStore'
-import CreateShell from './CreateShell'
+import CreateShell, { useEditing } from './CreateShell'
+import ListCriterion from './ListCriterion'
 import { Chip, Field, Section, TextBox } from './CreateBits'
 import { useToast } from '../../components/ui/Toast'
 import Picker from '../../components/ui/Picker'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PromptDialog from './PromptDialog'
 import { audienceFromPrompt } from '../../lib/fromPrompt'
 import { AUDIENCE_OPTIONS } from './CreateBits'
 import { tierOf } from '@shared/derive'
-import { EXPERIENCE_RANGES, INCOME_RANGES, audienceFault, educationOf, gendersOf } from '@shared/studyForm'
+import { AUDIENCE_LISTS, EXPERIENCE_RANGES, INCOME_RANGES, audienceFault, educationOf, gendersOf } from '@shared/studyForm'
 import { TIERS } from '@shared/rules'
 import CheckPicker from '../../components/ui/CheckPicker'
 import { GoldMark, PlatinumMark, SilverMark } from '../../components/ui/icons'
@@ -35,6 +36,10 @@ const FUNNEL = (
     <path d="M4 5h16l-6 7v6l-4 2v-8L4 5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
   </svg>
 )
+
+type WorkField = 'functions' | 'industries' | 'roles' | 'experience' | 'income' | 'skills'
+const CREATE_ORDER: WorkField[] = ['functions', 'industries', 'roles', 'experience', 'income', 'skills']
+const EDIT_ORDER: WorkField[] = ['functions', 'roles', 'skills', 'industries', 'experience', 'income']
 
 const FLAG: Record<string, React.ReactNode> = {
   'United States of America': (
@@ -126,6 +131,56 @@ export default function Audience() {
   const noFunction = tried && !draft.functions.trim()
   const noIndustry = tried && !draft.industries.trim()
   const check = () => { setTried(true); return audienceFault(draft) }
+  const editing = useEditing()
+  /** The Work details fields, keyed so each frame's order can be followed: Create (1518:91112) and Edit (1645:133969) draw them differently. */
+  const work: Record<WorkField, React.ReactNode> = {
+    functions: (
+      <label className="flex flex-col gap-0.5">
+        <span className="text-text-regular text-text-subtitle">{need('Work Function', true)}</span>
+        <TextBox value={draft.functions} placeholder="e.g. Product, Engineering, Marketing" onChange={(v) => set('functions', v)}
+          className={noFunction ? 'border-red-600' : undefined} />
+        <Help text="The area of work, not the job title. A product manager's work function is Product." error={noFunction ? 'Enter a work function, for example Product' : undefined} />
+      </label>
+    ),
+    // Industries (15 Oct 2026): the drawn list, with its search, opens under the field. Typing still works.
+    industries: (
+      <div className="flex flex-col gap-0.5">
+        <span className="text-text-regular text-text-subtitle">{need('Industry', true)}</span>
+        <CheckPicker label="Industries" search="Search your industry..." value={draft.industries}
+          options={AUDIENCE_OPTIONS.industries.map((i) => ({ value: i }))} picked={industries}
+          onChange={(next) => set('industries', next.join(', '))}
+          field={(open) => (
+            <span onFocus={open} onClick={open}>
+              <TextBox value={draft.industries} placeholder="e.g. Healthcare, Finance" onChange={(v) => set('industries', v)}
+                className={noIndustry ? 'border-red-600' : undefined} />
+            </span>
+          )} />
+        {noIndustry && <Help text="" error="Enter an industry, for example Healthcare" />}
+      </div>
+    ),
+    roles: (
+      <label className="flex flex-col gap-0.5">
+        <span className="text-text-regular text-text-subtitle">{need('Role', false)}</span>
+        <TextBox value={draft.roles} placeholder="e.g. Product Manager" onChange={(v) => set('roles', v)} />
+        <Help text="The job title. A product manager's role is Product Manager." />
+      </label>
+    ),
+    // Experience and Household Income (19 Oct 2026): the drawn ranges; a participant matches when their own band overlaps.
+    experience: (
+    <ListCriterion label="Experience" options={Object.keys(EXPERIENCE_RANGES)} picked={draft.experience ?? []} one="range" many="ranges" verb="added"
+      prompt="Select experience range" onChange={(next) => set('experience', next)} />
+  ),
+  income: (
+    <ListCriterion label="Household Income" options={Object.keys(INCOME_RANGES)} picked={draft.income ?? []} one="range" many="ranges" verb="added"
+      prompt="Select income range" onChange={(next) => set('income', next)} />
+  ),
+  skills: (
+      <label className="flex flex-col gap-0.5">
+        <span className="text-text-regular text-text-subtitle">{need('Skills', false)}</span>
+        <TextBox value={draft.skills} placeholder="e.g. SQL, Figma" onChange={(v) => set('skills', v)} />
+      </label>
+    ),
+  }
 
   return (
     <CreateShell step="audience" check={check}>
@@ -197,51 +252,17 @@ export default function Audience() {
                     ))}
                   </div>
                 </div>
+                {/* Ethnicity and Area Type (21 Oct 2026): the lists a participant picks from on their profile, so a study only asks for what someone can give. */}
+                <ListCriterion label="Ethnicity" options={AUDIENCE_LISTS.ethnicity} picked={draft.ethnicity ?? []} one="ethnicity" many="ethnicities"
+                  prompt="Select ethnicity..." onChange={(next) => set('ethnicity', next)} />
+                <ListCriterion label="Area Type" options={AUDIENCE_LISTS.areaTypes} picked={draft.areaTypes ?? []} one="type" many="types"
+                  prompt="Select area type..." onChange={(next) => set('areaTypes', next)} />
               </div>
             </Section>
 
             <Section icon={TIE} title="Work details" sub="Who qualifies for this study" headPad="pb-[15px]">
               <div className="flex flex-col gap-3.5">
-                <label className="flex flex-col gap-0.5">
-                  <span className="text-text-regular text-text-subtitle">{need('Work Function', true)}</span>
-                  <TextBox value={draft.functions} placeholder="e.g. Product, Engineering, Marketing" onChange={(v) => set('functions', v)}
-                    className={noFunction ? 'border-red-600' : undefined} />
-                  <Help text="The area of work, not the job title. A product manager's work function is Product." error={noFunction ? 'Enter a work function, for example Product' : undefined} />
-                </label>
-                {/* Industries (15 Oct 2026): the drawn list, with its search, opens under the field. Typing still works. */}
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-text-regular text-text-subtitle">{need('Industry', true)}</span>
-                  <CheckPicker label="Industries" search="Search your industry..." value={draft.industries}
-                    options={AUDIENCE_OPTIONS.industries.map((i) => ({ value: i }))} picked={industries}
-                    onChange={(next) => set('industries', next.join(', '))}
-                    field={(open) => (
-                      <span onFocus={open} onClick={open}>
-                        <TextBox value={draft.industries} placeholder="e.g. Healthcare, Finance" onChange={(v) => set('industries', v)}
-                          className={noIndustry ? 'border-red-600' : undefined} />
-                      </span>
-                    )} />
-                  {noIndustry && <Help text="" error="Enter an industry, for example Healthcare" />}
-                </div>
-                <label className="flex flex-col gap-0.5">
-                  <span className="text-text-regular text-text-subtitle">{need('Role', false)}</span>
-                  <TextBox value={draft.roles} placeholder="e.g. Product Manager" onChange={(v) => set('roles', v)} />
-                  <Help text="The job title. A product manager's role is Product Manager." />
-                </label>
-                {/* Experience and Household Income (19 Oct 2026): the drawn ranges; a participant matches when their own band overlaps. */}
-                <Field label="Experience">
-                  <CheckPicker label="Experience" all="All" picked={draft.experience ?? []} options={Object.keys(EXPERIENCE_RANGES).map((v) => ({ value: v }))}
-                    value={(draft.experience ?? []).length ? `${(draft.experience ?? []).length} ranges added  •  Select experience range` : 'Select experience range'}
-                    onChange={(next) => set('experience', next)} />
-                </Field>
-                <Field label="Household Income">
-                  <CheckPicker label="Household Income" all="All" picked={draft.income ?? []} options={Object.keys(INCOME_RANGES).map((v) => ({ value: v }))}
-                    value={(draft.income ?? []).length ? `${(draft.income ?? []).length} ranges added  •  Select income range` : 'Select income range'}
-                    onChange={(next) => set('income', next)} />
-                </Field>
-                <label className="flex flex-col gap-0.5">
-                  <span className="text-text-regular text-text-subtitle">{need('Skills', false)}</span>
-                  <TextBox value={draft.skills} placeholder="e.g. SQL, Figma" onChange={(v) => set('skills', v)} />
-                </label>
+                {(editing ? EDIT_ORDER : CREATE_ORDER).map((k) => <Fragment key={k}>{work[k]}</Fragment>)}
                 <p className="text-text-regular text-text-body">Separate several with commas.</p>
               </div>
             </Section>
