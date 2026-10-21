@@ -98,7 +98,7 @@ export default function ReportedStudy() {
           )}
           {history && view.resolved.length === 0 && <p className="text-text-regular text-text-subtitle">No reports on this study have been resolved yet.</p>}
         </div>
-        <ReportRail study={study} tab={history ? 'study' : 'client'} />
+        <ReportRail study={study} />
       </div>
       <ResolveDialogs open={resolving} onClose={() => setResolving(false)} studyId={id} title={study.title} />
     </AppShell>

@@ -18,7 +18,7 @@ const columns: Column<WithdrawalRow>[] = [
   { key: 'ref', header: 'Reference ID', width: 130, render: (r) => r.payout.txId },
   { key: 'to', header: 'To Bank Account', width: '1fr', render: (r) => toAccount(r) },
   { key: 'amt', header: 'Withdrawal Payout', width: 160, sortable: true, render: (r) => money(r.payout.amount) },
-  { key: 'x', header: '', width: 84, render: () => <span className="flex items-center justify-end gap-1 text-text-medium text-brand-primary">Review<ChevronRight className="h-4 w-4" /></span> },
+  { key: 'x', header: '', width: 104, render: () => <span className="flex items-center justify-end gap-1 text-text-medium text-brand-primary">Review<ChevronRight className="h-4 w-4" /></span> },
 ]
 
 /**

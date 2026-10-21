@@ -62,7 +62,7 @@ export default function WithdrawalDetail() {
         </div>
         {released
           ? <span className="flex h-7 shrink-0 items-center rounded-full bg-green-100 px-3 text-text-regular text-state-success">Payout Released!</span>
-          : <Button size="md" className="shrink-0 px-4" onClick={() => setAsking(true)}>Release Payout</Button>}
+          : <Button size="lg" className="shrink-0 px-4" onClick={() => setAsking(true)}>Release Payout</Button>}
       </div>
 
       <h2 className="pt-2 text-title-s leading-[25px] text-text-title">Payment Overview</h2>
