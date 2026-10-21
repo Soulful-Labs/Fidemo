@@ -45,3 +45,32 @@ Each app's browser tab now has a favicon, the HumanLayer H with its green dot
 - **The certificate ID prefix stays `FI-`** (`FI-XXXX-XXXX` for a participant,
   `FI-C-XXXX-XXXX` for a business). The signed Trust and Rewards policy sets
   it, so changing it to match the HumanLayer name needs the policy re-signed.
+
+## Pending, 21 October 2026: the client's diary form (1518:94904)
+
+The Create flow's diary form is built to `1518:94904`, and the Study step to
+`1518:94742`. The PRD and BRD still describe the earlier layout:
+
+| Document | Section | It says | The build now |
+|---|---|---|---|
+| PRD | 12.4 (the Study step table) | "Diary Study Settings → duration unit, frequency, minimum required, then the form" | The four settings (Duration Unit, Frequency, Study Duration, Minimum Required) are inside the diary form, in a "Diary Study Setup" card above the questions. The Study step's card only opens the form, or reads it back ("8 questions, 7 days logs") with Update Diary Questionnaire |
+| PRD | 12.4 | A diary's questions are one form asked on every entry | One card per entry (DAY 1 to DAY 5 for a five-day diary; WEEK or HOUR for those units), each with its own questions and its own Add Question. The number of cards is the Study Duration |
+| PRD | 19 (data shapes), `tasks?: Question[]` | Survey and diary questions | Unchanged, plus `day?: number` on each question: the entry it is asked on. None means every entry (every diary made before this change, and a question the console adds in Edit Study) |
+| PRD | 14.4 and the respondent diary screens | Every diary day asks the same questions | Each day asks its own questions (`tasksForDay` in `shared/questions.ts`); the client's and the console's results show each day's answers against that day's questions |
+
+Rules the build adds, not in a signed document:
+- Every entry must have at least one question, and a diary cannot be made
+  shorter while a dropped entry still holds a written question
+  (`diaryDayFault` in `shared/studyForm.ts`). Each is refused with the reason.
+- Upload File and Generate add their questions to the first entry.
+- A diary draft from before this change opens with its questions copied onto
+  every entry, so nothing it asked is lost.
+
+Drawn one way, built another, on purpose:
+- Each question keeps the one-click bin (15 Oct 2026 decision) where the
+  frame draws a three-dot menu; the menu's items cannot be read from Figma.
+- `1518:94742` still draws Incentive Payments, AutoPay, Costing Summary and
+  Payment on the Study step, a four-step stepper and "Proceed to Publish".
+  The 15 Oct 2026 decisions (a Pricing step, no AutoPay) are kept.
+- The frame draws DAY 3 to DAY 5 without the card edge, and DAY 4's preview
+  line upright; every day is built as a card with the italic line.
