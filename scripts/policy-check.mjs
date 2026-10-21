@@ -2,6 +2,11 @@
 // faces, in three real tabs on one origin. Six questions, YES or NO.
 //
 //   BASE_URL=https://fidemo-lyart.vercel.app node --experimental-websocket scripts/policy-check.mjs
+//
+// Slow by design: check 6 opens every screen of all three apps (about 290),
+// so a full run takes 8 to 12 minutes. It prints its progress as it goes. If
+// nothing finishes within WATCHDOG_MIN minutes (default 30) it stops and says
+// so, rather than sitting there looking like a hang.
 import { resolve } from 'node:path'
 import { spawn } from 'node:child_process'
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs'
@@ -28,6 +33,10 @@ ws.onmessage = (e) => {
 }
 const send = (method, params = {}, sessionId) => new Promise((resolve, reject) => { const id = ++seq; pending.set(id, { resolve, reject }); ws.send(JSON.stringify({ id, method, params, sessionId })) })
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+const WATCHDOG_MIN = Number(process.env.WATCHDOG_MIN ?? 30)
+const started = Date.now()
+const elapsed = () => `${Math.round((Date.now() - started) / 1000)}s`
+setTimeout(() => { console.log(`\nSTOPPED: no result after ${WATCHDOG_MIN} minutes, so something is stuck (last progress line above).`); try { proc.kill() } catch {} process.exit(1) }, WATCHDOG_MIN * 60000).unref()
 
 const HELPERS = `
   window.__vis = (el) => el && el.offsetParent !== null;
@@ -339,8 +348,11 @@ void by
   const ALLOWED = /\/img\/(canva\.jpg|card\.jpg|goals\.jpg|learn-video\.jpg|payment\.jpg|[a-z0-9-]+\.svg|landing\/[a-z]+\.png|manage\/st-(goal|pay|travel|social)(-thumb)?\.png|studies\/(digital-payments|goal-tracking|social-media|travel-preferences)(-40)?\.png|participants\/(passport|study1|study3)\.png|review\/(header-thumb|thumbnail)\.png|support\/shot\.png)$/
   const seen = new Map()
   const routes = (app) => readFileSync(join(ROOT, app, 'scripts', 'routes.txt'), 'utf8').split('\n').map((l) => l.trim()).filter(Boolean)
+  const total = routes('client').length + routes('internal').length + RESP.length + 3
+  let done = 0
   const walk = async (t, prefix, list) => {
     for (const r of list) {
+      if (++done % 25 === 0 || done === total) console.log(`       6. reading screens: ${done} of ${total} (${elapsed()})`)
       await t.go(prefix + '/' + r.replace(/^\/+/, '')); await sleep(350)
       const imgs = await t.ev(`(async () => { await new Promise((r) => setTimeout(r, 150)); const out = []; for (const el of document.querySelectorAll('img, image, video[poster]')) { const s = el.currentSrc || el.getAttribute('src') || el.getAttribute('href') || el.getAttribute('poster') || ''; out.push({ s, ok: el.tagName !== 'IMG' || (el.complete && (el.naturalWidth > 0 || /[.]svg($|[?])/.test(s))) }) } for (const el of document.querySelectorAll('*')) { const b = getComputedStyle(el).backgroundImage; const m = b && b.match(/url\\("?([^")]+)"?\\)/); if (m) out.push({ s: m[1], ok: true }) } return out })()`)
       for (const { s, ok } of imgs) {
@@ -360,7 +372,7 @@ void by
   say(6, 'No real face appears anywhere in any of the three apps', [...new Set(g)], `${routes('client').length + routes('internal').length + RESP.length + 3} screens read; every person is a drawn figure (data:image/svg) or an initial; the only photographs left are of things, each checked by eye: ${rasters.map((k) => k.replace('/img/', '').replace(/^\/(client|internal)/, '')).filter((v, i, a) => a.indexOf(v) === i).join(', ')}`)
 }
 
-console.log(`\n${[1, 2, 3, 4, 5, 6].filter((n) => results[n]).length} of 6 yes`)
+console.log(`\n${[1, 2, 3, 4, 5, 6].filter((n) => results[n]).length} of 6 yes  (${elapsed()})`)
 if (errors.length) console.log('\npage errors:\n  ' + [...new Set(errors)].slice(0, 8).join('\n  '))
 ws.close(); proc.kill()
 process.exit(0)
