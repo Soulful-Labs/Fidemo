@@ -102,7 +102,7 @@ export default {
         bg:     { 0:'#0c0800', 1:'#15130f', 2:'#201e19' },
         bgAlt:  { 0:'#020805', 2:'#202623' },
         stroke: { 1:'#101512', 2:'#202623', 3:'#282d2b' },
-        text:   { title:'#fafafa', subtitle:'#e1e1e1', body:'#b9b9b9', disabled:'#5e5d5b' },
+        text:   { title:'#fafafa', subtitle:'#d0d0d0', body:'#9e9e9e', disabled:'#5e5d5b' },
         cta:    { primary:'#fca311', primaryText:'#15130f', secondary:'#513303',
                   secondaryText:'#fca311', tertiaryStroke:'#4b4946', tertiaryStrokeDisabled:'#2d2b28' },
         tier:   { gold:'#e4b300', platinum:'#9139f6', silver:'#b9b9b9' },
@@ -134,6 +134,8 @@ export default {
   plugins: [],
 } satisfies Config
 ```
+
+**Text greys moved with Figma (21 Oct 2026).** `text.subtitle` was `#e1e1e1` and `text.body` `#b9b9b9` when this brief was written; Figma's Text/subtitle and Text/body are now `#d0d0d0` and `#9e9e9e`, and the build follows Figma.
 
 **Two background palettes, do not mix within a screen.**
 Warm (`bg.*`) for auth, onboarding, dashboard, studies, profile.

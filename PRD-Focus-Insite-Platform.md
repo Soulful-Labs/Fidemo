@@ -163,7 +163,7 @@ Each app has its own token set. **Do not share tokens between apps.** They were 
 brand.primary   #fca311    brand.secondary  #3fb984
 bg.0 #0c0800    bg.1 #15130f    bg.2 #201e19
 bgAlt.0 #020805 bgAlt.2 #202623
-text.title #fafafa  text.subtitle #e1e1e1  text.body #b9b9b9  text.disabled #5e5d5b
+text.title #fafafa  text.subtitle #d0d0d0  text.body #9e9e9e  text.disabled #5e5d5b
 tier.gold #e4b300  tier.platinum #9139f6  tier.silver #b9b9b9
 state.success #00cc66  state.danger #e33a38  state.dangerBg #3a1a17
 radius: none 2, sm 8, md 12, lg 16, xl 24, full 100
