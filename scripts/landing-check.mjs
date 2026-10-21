@@ -98,6 +98,8 @@ const CONTAIN = `(() => {
     if ((el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1) && (s.overflowX !== 'visible' || s.overflowY !== 'visible')) out.clipped.push(name(el))
     if (s.wordBreak === 'break-all' || s.overflowWrap === 'anywhere') out.sliced.push('breaks anywhere: ' + name(el))
     canvas.font = s.fontWeight + ' ' + s.fontSize + ' ' + s.fontFamily
+    // Measure as drawn: the type styles carry a negative letter spacing that a bare measureText leaves out.
+    canvas.letterSpacing = s.letterSpacing === 'normal' ? '0px' : s.letterSpacing
     const inner = el.clientWidth - parseFloat(s.paddingLeft) - parseFloat(s.paddingRight)
     for (const w of el.textContent.split(/\\s+/)) if (w && s.display !== 'inline' && canvas.measureText(w).width > inner + 2) { out.sliced.push('word wider than its box: "' + w + '" in ' + name(el)); break }
   }
