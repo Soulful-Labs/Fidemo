@@ -21,12 +21,18 @@ export const Tile = ({ label, value, rest, children }: { label: string; value: s
   </div>
 )
 
-/** The 45px progress ring: a yellow-100 track with a brand-primary arc for two thirds. */
+/**
+ * The progress ring (2325:219889, 22 Oct 2026): a 114px disc on bgAlt-0 with
+ * a stroke-1 edge, standing out of its 87px panel, and in it a 90px ring with
+ * an 11px stroke, a stroke-2 track and a brand-secondary arc for the progress.
+ */
 const Ring = ({ pct }: { pct: number }) => (
-  <svg viewBox="0 0 45 45" className="mx-1 h-[45px] w-[45px] -rotate-90" aria-hidden="true">
-    <circle cx="22.5" cy="22.5" r="18.5" fill="none" strokeWidth="6" className="stroke-yellow-100" />
-    <circle cx="22.5" cy="22.5" r="18.5" fill="none" strokeWidth="6" strokeLinecap="round" pathLength="100" strokeDasharray={`${pct} 100`} className={pct > 0 ? "stroke-yellow-500" : "hidden"} />
-  </svg>
+  <span className="flex h-[114px] w-[114px] shrink-0 items-center justify-center rounded-full border-1 border-stroke-1 bg-bgAlt-0">
+    <svg viewBox="0 0 90 90" className="h-[90px] w-[90px] -rotate-90" role="img" aria-label={`${pct}% progress`}>
+      <circle cx="45" cy="45" r="39.5" fill="none" strokeWidth="11" className="stroke-stroke-2" />
+      <circle cx="45" cy="45" r="39.5" fill="none" strokeWidth="11" strokeLinecap="round" pathLength="100" strokeDasharray={`${pct} 100`} className={pct > 0 ? 'stroke-brand-secondary' : 'hidden'} />
+    </svg>
+  </span>
 )
 
 /** About Client (304 wide on bg-1): who owns the study, four facts, and a way to their profile. */
@@ -108,7 +114,10 @@ export default function OverviewTab({ study, paused }: { study: ManagedStudy; pa
             <div className="flex h-[126px] items-center justify-center pt-6" aria-hidden="true">
               {steps.map(([label, n], i) => (
                 <span key={label} className="flex items-center">
-                  <span className={cn('flex w-[110px] items-center justify-center text-[40px] font-semibold text-bg-0', BLOCK[i], i === 0 && 'rounded-l-sm', i === 2 && 'rounded-r-sm')}>{n}</span>
+                  <span className={cn('flex w-[110px] items-center justify-center', BLOCK[i], i === 0 && 'rounded-l-sm', i === 2 && 'rounded-r-sm')}>
+                    {/* White fading into the block below it, as 2325:219853 draws the numbers. */}
+                    <span className="bg-gradient-to-b from-bg-0 from-50% to-bg-0/40 bg-clip-text text-[40px] font-semibold text-transparent">{n}</span>
+                  </span>
                   {/* The connecting shape to the next, shorter block (1932:106948): yellow-300, then yellow-500. */}
                   {i < 2 && (
                     <svg width={i === 0 ? 31 : 16} height={126 - i * 32} viewBox={`0 0 ${i === 0 ? 31 : 16} ${126 - i * 32}`} preserveAspectRatio="none">
@@ -134,8 +143,8 @@ export default function OverviewTab({ study, paused }: { study: ManagedStudy; pa
         <div className="flex flex-col gap-6">
           <section className="flex flex-col rounded-lg border-1 border-stroke-1 px-4 pb-2 pt-4">
             <h2 className="text-title-s text-text-subtitle">Participation Forecast</h2>
-            <div className="mt-6 flex h-[87px] items-center justify-between gap-4 rounded-md bg-bgAlt-2 px-4">
-              <span className="flex flex-col gap-1"><span className="text-title-m text-text-title">{pct}%</span><span className="text-body-regular text-text-subtitle">Progress</span></span>
+            <div className="mt-6 flex h-[87px] items-center gap-6 rounded-md bg-bgAlt-2 px-4">
+              <span className="flex w-[74px] shrink-0 flex-col gap-1"><span className="text-title-m text-text-title">{pct}%</span><span className="text-body-regular text-text-subtitle">Progress</span></span>
               <Ring pct={pct} />
               <span className="flex flex-col gap-1">
                 <span className={cn('text-title-m', !pace ? 'text-text-subtitle' : pace.state === 'behind' ? 'text-brand-primary' : 'text-brand-secondary')}>
