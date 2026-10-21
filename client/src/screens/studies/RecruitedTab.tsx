@@ -153,7 +153,7 @@ export default function RecruitedTab() {
                                     /* Step 39: the link is always a Focus Insite one, issued
                                        by the team. There is no room to open here, so the
                                        session opens in a new tab as it would. */
-                                    const w = window.open(`https://meet.focusinsite.com/${s.id}/${r.id}`, '_blank', 'noopener')
+                                    const w = window.open(`https://meet.humanlayer.app/${s.id}/${r.id}`, '_blank', 'noopener')
                                     toast(w ? 'Opening the session' : 'Allow pop-ups to join the session')
                                   }}>Join Now</Button>
                               )}

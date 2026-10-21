@@ -59,7 +59,7 @@ export const durationLabel = (mins: number): string => {
 }
 
 export const shareLink = (study: Study): string =>
-  `https://focusinsite.com/study/${study.linkCode}/${study.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}/`
+  `https://humanlayer.app/study/${study.linkCode}/${study.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}/`
 
 // ----------------------------------------------------- a person's participations
 

@@ -330,7 +330,7 @@ function RowMenu({
   const nav = useNavigate()
   const { duplicateStudy } = useStudies()
   const copy = async () => {
-    const ok = await copyText(`https://focusinsite.com/study/${row.id}`)
+    const ok = await copyText(`https://humanlayer.app/study/${row.id}`)
     toast(ok ? 'Link copied' : 'Could not reach the clipboard')
     onClose()
   }

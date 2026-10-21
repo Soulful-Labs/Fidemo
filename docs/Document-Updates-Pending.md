@@ -25,6 +25,23 @@ the operating company. The PRD and BRD still say otherwise in these places:
 Spelling everywhere: **HumanLayer**, one word, capital H and L, as the logo
 spells it. Three places that read "Human Layer" now read "HumanLayer".
 
-Still open, waiting on a decision: the lines that name Focus Insite as the team
-or the company (the console entrance, "the Focus Insite team" in payout and
-cancellation copy, the client terms agreement) and the focusinsite.com links.
+Kept as Focus Insite on purpose (decided 21 October 2026): the client's terms
+agreement ("I agree to Focus Insite's Terms of use and Privacy policy"; the
+contract is with the company, wording to be confirmed with legal), and every
+line about "the Focus Insite team", including the console entrance heading and
+its access line. Those are about the company and its people.
+
+Links: the study share link is now `https://humanlayer.app/study/...` and the
+session link `https://meet.humanlayer.app/...`, matching the respondent app's
+`humanlayer.app` links. These are demo links.
+
+Each app's browser tab now has a favicon, the HumanLayer H with its green dot
+(`favicon.svg` in each app's `public/`).
+
+### Open items
+
+- **The real domain is still to be decided.** `humanlayer.app` is a demo
+  domain used by all three apps' links; no live domain has been chosen.
+- **The certificate ID prefix stays `FI-`** (`FI-XXXX-XXXX` for a participant,
+  `FI-C-XXXX-XXXX` for a business). The signed Trust and Rewards policy sets
+  it, so changing it to match the HumanLayer name needs the policy re-signed.
