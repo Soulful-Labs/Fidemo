@@ -39,7 +39,8 @@ export default function EditStudy() {
   const state = usePlatform()
   const study = studyById(state, id)!
   const [form, setForm] = useState<StudyForm>(() => kept(id) ?? formFromStudy(study))
-  const [preview, setPreview] = useState(true)
+  /** Collapsed until opened with Preview, as in the client app. */
+  const [preview, setPreview] = useState(false)
   const [composing, setComposing] = useState(false)
   useEffect(() => keep(id, form), [id, form])
   const set: SetForm = (k, v) => setForm((f) => ({ ...f, [k]: v }))
