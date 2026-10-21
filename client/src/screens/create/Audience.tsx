@@ -10,6 +10,7 @@ import Picker from '../../components/ui/Picker'
 import { Fragment, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PromptDialog from './PromptDialog'
+import ForecastCard from '../../components/client/ForecastCard'
 import { audienceFromPrompt } from '../../lib/fromPrompt'
 import { AUDIENCE_OPTIONS } from './CreateBits'
 import { tierOf } from '@shared/derive'
@@ -299,28 +300,7 @@ export default function Audience() {
           </div>
         </div>
 
-        {/* Check Participation Forecast (19 Oct 2026): availability is checked with the team; the figures are drawn as coming soon. */}
-        <aside className="sticky top-[88px] w-[488px] shrink-0 rounded-lg border-1 border-stroke-input bg-bg-0">
-          <h2 className="border-b-1 border-stroke-input px-4 py-4 text-body-medium text-text-subtitle">Check Participation Forecast</h2>
-          <div className="flex flex-col gap-4 p-4">
-            <div className="flex flex-col items-start gap-3 rounded-md bg-bg-1 p-4">
-              <span className="text-text-medium text-text-title">Contact us to check matching participants availability</span>
-              <Button size="sm" onClick={() => navigate('/help?panel=ask')}>Contact Us</Button>
-            </div>
-            <div className="flex h-12 items-center justify-between rounded-md border-1 border-stroke-input px-4">
-              <span className="text-text-regular uppercase text-text-body">Tier Distribution</span>
-              <span className="text-body-medium uppercase text-text-body">Coming soon</span>
-            </div>
-            <dl className="flex flex-col">
-              {['Average Score', 'Recommended Incentive', 'Estimated Time To Fill'].map((k) => (
-                <div key={k} className="flex items-center justify-between border-b-1 border-stroke-input py-2 last:border-b-0">
-                  <dt className="text-text-regular text-text-subtitle">{k}</dt>
-                  <dd className="text-text-regular uppercase text-text-body">Coming soon</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </aside>
+        <ForecastCard className="sticky top-[88px]" onContact={() => navigate('/help?panel=ask')} />
       </div>
       <PromptDialog open={asking} onClose={() => setAsking(false)} onGenerate={generate} action="Fill Audience"
         lead="Describe your study: who you want to hear from (their job, industry, age, where they live) and what it is about." />
