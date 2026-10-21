@@ -111,12 +111,13 @@ export function useDashboard() {
     const GROUPS: Record<TabKey, ActionGroup[]> = {
       all: [payouts, identity, business, screeners, tickets, noShows, refunds, flagged],
       onboarding: [identity, business],
-      studies: [payouts, screeners, refunds],
+      studies: [screeners, refunds],
       support: [
         { key: 'tickets-participants', title: 'Participants', count: String(participantsTickets.length), viewAll: '/support', rows: participantsTickets.slice(0, FIRST).map(ticketRow) },
         { key: 'tickets-clients', title: 'Client', count: String(clientTickets.length), viewAll: '/support', rows: clientTickets.slice(0, FIRST).map(ticketRow) },
       ],
-      manage: [noShows, flagged],
+      // Payouts sit under Manage (22 Oct 2026): processing them is the team's own work, not a study's.
+      manage: [noShows, flagged, payouts],
     }
     const KPIS: Kpi[] = [
       { value: count(d.tiles.screenersToReview), label: 'Screeners To Review' },

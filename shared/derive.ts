@@ -1062,9 +1062,9 @@ export function consoleDashboard(state: PlatformState) {
     },
     tabs: {
       onboarding: checks.length + business.length,
-      studies: screeners.length + refunds.length + payouts.length,
+      studies: screeners.length + refunds.length,
       support: fresh.length,
-      manage: noShows.length + reports.length,
+      manage: noShows.length + reports.length + payouts.length,
       all: checks.length + business.length + screeners.length + refunds.length + payouts.length + fresh.length + noShows.length + reports.length,
     },
   }
