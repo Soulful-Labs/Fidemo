@@ -14,7 +14,8 @@ import { photoFor } from '../../../mock/participants'
 import { TEAM, say, usePlatform } from '../../../platform'
 import ReportRail from './ReportRail'
 import ResolveDialogs from './ResolveDialogs'
-import PersonLink from '../../../components/app/PersonLink'
+import RespondentProfile from '../manage/RespondentProfile'
+import { InviteToStudy } from '../../participants/panels'
 
 const when = (iso: string) => `${dayMonthYear(iso)}  •  ${clockTime(iso)}`
 
@@ -28,12 +29,19 @@ const Summary = ({ round, className = '' }: { round: ReportRound; className?: st
 
 function Reports({ reports }: { reports: StudyReport[] }) {
   const state = usePlatform()
+  /** A reporter's name opens their profile in a pop-up (22 Oct 2026), on Pending and History alike. */
+  const [viewing, setViewing] = useState<string | undefined>()
+  const [inviting, setInviting] = useState<string | undefined>()
   return (
+    <>
+    <RespondentProfile personId={viewing} invited={false} onClose={() => setViewing(undefined)} onInvite={() => { setInviting(viewing); setViewing(undefined) }} />
+    <InviteToStudy open={!!inviting} personId={inviting} onClose={() => setInviting(undefined)} />
     <Table rowHeight={52} rows={reports} rowKey={(r) => r.id} columns={[
-      { key: 'name', header: 'Name', width: 200, render: (r) => { const p = personById(state, r.personId); return <span className="flex items-center gap-2">{p && <Avatar src={photoFor(p)} name={p.name} size={24} />}{p ? <PersonLink id={p.id}>{p.name}</PersonLink> : ''}</span> } },
+      { key: 'name', header: 'Name', width: 200, render: (r) => { const p = personById(state, r.personId); return <span className="flex items-center gap-2">{p && <Avatar src={photoFor(p)} name={p.name} size={24} />}{p ? <button type="button" onClick={(e) => { e.stopPropagation(); setViewing(p.id) }} className="text-left hover:text-brand-primary hover:underline">{p.name}</button> : ''}</span> } },
       { key: 'reason', header: 'Reason', width: '1fr', render: (r) => <span className="block truncate" title={r.detail}>{r.reason}</span> },
       { key: 'at', header: 'Reported On', width: 220, render: (r) => when(r.at) },
     ]} />
+    </>
   )
 }
 
@@ -87,9 +95,10 @@ export default function ReportedStudy() {
                       <span className="pt-2 text-text-regular text-text-subtitle">Resolved Date</span>
                       <span className="text-text-regular text-text-title">{when(r.resolution.at)}</span>
                     </div>
-                    {r.resolution.ticketId && (
-                      <Button variant="tertiary" size="md" className="shrink-0" leftIcon={<SupportIcon className="h-4 w-4" />} onClick={() => nav(`/support/${r.resolution.ticketId}`)}>View Support Ticket</Button>
-                    )}
+                    <Button variant="tertiary" size="md" className="shrink-0" leftIcon={<SupportIcon className="h-4 w-4" />} onClick={() => {
+                      const res = platform().reportRoundTicket(id, r.resolution.id, TEAM)
+                      if (say(res) && res.ok) nav(`/support/${res.id}`)
+                    }}>View Support Ticket</Button>
                   </div>
                   <Summary round={r} />
                   <div className="px-4 pb-4"><Reports reports={r.reports} /></div>

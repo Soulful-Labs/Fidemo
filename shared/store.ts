@@ -1110,6 +1110,29 @@ export function createPlatform(options: Options = {}) {
     }),
 
     /**
+     * View Support Ticket on a resolved round (2314:147851, 22 Oct 2026): the ticket the team
+     * talked to the client on. A round resolved without one gets one now, kept against the round.
+     */
+    reportRoundTicket: (studyId: string, resolutionId: string, actor: Actor) => move<{ id: string }>((s) => {
+      const study = s.studies.find((x) => x.id === studyId)
+      if (!study) return no('No such study')
+      const round = (s.studyReports ?? []).filter((r) => r.studyId === studyId && r.resolution?.id === resolutionId)
+      if (!round.length) return no('No such resolved reports')
+      const known = round.map((r) => r.resolution!.ticketId ?? r.ticketId).find((t) => t && s.tickets.some((x) => x.id === t))
+      if (known) return yes({ id: known })
+      const id = `FI-S${Math.floor(100000 + Math.random() * 899999)}`
+      const r0 = round[0]!.resolution!
+      s.tickets.unshift({
+        id, owner: { kind: 'client', id: study.clientId }, createdByTeam: true, subject: `Reports on ${study.title}`, studyTitle: study.title,
+        message: `Participants reported ${study.title} (${round.length}). Resolved: ${r0.statement}`, topic: 'general', status: 'open',
+        createdAt: iso(), lastActivityAt: iso(), messages: [],
+      })
+      round.forEach((r) => { r.resolution!.ticketId = id })
+      log(s, actor, `Opened the support ticket for resolved reports on ${study.title}`, 'Studies / Reported / View Support Ticket')
+      return yes({ id })
+    }),
+
+    /**
      * Mark Reports Resolved (2314:147678): every open report on the study is
      * closed with one statement, confirmed with the team member's password.
      */
