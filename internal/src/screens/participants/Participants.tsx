@@ -8,9 +8,11 @@ import { ListIcon } from '../../components/ui/icons'
 import Table, { Pagination } from '../../components/ui/Table'
 import type { Column } from '../../components/ui/Table'
 import { SegmentedTabs } from '../../components/ui/Tabs'
-import { FILTERS, useParticipants } from '../../mock/participants'
+import { ADVANCED, FILTERS, useParticipants } from '../../mock/participants'
 import type { Participant } from '../../mock/participants'
 import { AdvancedFilters } from './panels'
+import { inPeriod } from '../../mock/clients'
+import { tierFromMenu } from '@shared/lifecycle'
 
 const columns = (last: string): Column<Participant>[] => [
   { key: 'name', header: 'Name', width: 200, sortable: true, render: (r) => <span className="flex items-center gap-2"><img src={r.photo} alt="" className="h-6 w-6 rounded-full object-cover" />{r.name}</span> },
@@ -38,11 +40,24 @@ export default function Participants() {
   const [query, setQuery] = useState('')
   const [filters, setFilters] = useState({ lastActive: FILTERS.lastActive[0]!, profession: FILTERS.profession[0]!, gender: FILTERS.gender[0]!, tier: FILTERS.tier[0]! })
   const [advanced, setAdvanced] = useState(false)
-  const pick = (k: keyof typeof filters) => (v: string) => setFilters((f) => ({ ...f, [k]: v }))
+  const pick = (k: keyof typeof filters) => (v: string) => { setFilters((f) => ({ ...f, [k]: v })); setPage(1) }
   const { rows, count } = useParticipants(tab)
   const [page, setPage] = useState(1)
   /** Search narrows by name or role; the table pages at ten. */
-  const found = rows.filter((r) => !query.trim() || `${r.name} ${r.role}`.toLowerCase().includes(query.trim().toLowerCase()))
+  /**
+   * Every control narrows the list (22 Oct 2026): search, Last Active, Profession verified, Gender, Tier and,
+   * once saved, Advanced Filters (any chosen value within a field, every field with a choice).
+   */
+  const [adv, setAdv] = useState<string[][]>(ADVANCED.map((f) => f.chips))
+  const tierWanted = tierFromMenu(filters.tier)
+  const gender = filters.gender.replace('Gender: ', '')
+  const found = rows.filter((r) => (!query.trim() || `${r.name} ${r.role}`.toLowerCase().includes(query.trim().toLowerCase()))
+    && inPeriod(r.at, filters.lastActive)
+    && (filters.profession !== 'Profession Verified' || r.professionVerified)
+    && (gender === 'All' || (gender === 'Other' ? r.gender !== 'Male' && r.gender !== 'Female' : r.gender === gender))
+    && (!tierWanted || r.tier.toLowerCase() === tierWanted)
+    && (!adv[0]!.length || adv[0]!.includes(r.role)) && (!adv[1]!.length || adv[1]!.includes(r.industry))
+    && (!adv[2]!.length || adv[2]!.includes(r.location)) && (!adv[3]!.length || r.languages.some((l) => adv[3]!.includes(l))))
   const pages = Math.max(1, Math.ceil(found.length / 10))
   const shown = found.slice((Math.min(page, pages) - 1) * 10, Math.min(page, pages) * 10)
 
@@ -52,17 +67,17 @@ export default function Participants() {
         items={[{ key: 'active', label: 'Active' }, { key: 'deactivated', label: 'Deactivated' }]} />
       <p className="pt-4 text-body-regular leading-[22px] text-text-body">{count}</p>
       <div className="flex items-center gap-2 pt-4">
-        <SearchInput size="sm" className="mr-2 w-[370px]" placeholder="Search participants by name or role..." value={query} onChange={(e) => setQuery(e.target.value)} />
+        <SearchInput size="sm" className="mr-2 w-[320px]" placeholder="Search participants by name or role..." value={query} onChange={(e) => setQuery(e.target.value)} />
         <Button variant="tertiary" size="md" data-adv="" className="w-[150px] rounded-sm px-0" leftIcon={<ListIcon className="h-4 w-4" />} onClick={() => setAdvanced(true)}>Advanced Filters</Button>
         <Select size="sm" className="w-[150px]" value={filters.lastActive} onChange={pick('lastActive')} options={FILTERS.lastActive} />
         <Select size="sm" className="w-[164px]" value={filters.profession} onChange={pick('profession')} options={FILTERS.profession} />
         <Select size="sm" className="w-[140px]" value={filters.gender} onChange={pick('gender')} options={FILTERS.gender} />
-        <Select size="sm" className="w-[140px]" value={filters.tier} onChange={pick('tier')} options={FILTERS.tier} />
+        <Select size="sm" className="w-[190px]" value={filters.tier} onChange={pick('tier')} options={FILTERS.tier} />
       </div>
-      <Table empty={tab === 'deactivated' ? 'Participants whose accounts are deactivated will appear here.' : 'Participants will appear here once they sign up.'} className="mt-3" rowHeight={52} rows={shown} rowKey={(r) => r.id} onRowClick={(r) => navigate(`/participants/${r.id}`)}
+      <Table empty={rows.length && !found.length ? 'No participant matches these filters.' : tab === 'deactivated' ? 'Participants whose accounts are deactivated will appear here.' : 'Participants will appear here once they sign up.'} className="mt-3" rowHeight={52} rows={shown} rowKey={(r) => r.id} onRowClick={(r) => navigate(`/participants/${r.id}`)}
         columns={columns(tab === 'active' ? 'Last Active' : 'Deactivated')} />
       <div className="pt-3"><Pagination page={Math.min(page, pages)} pages={pages} onChange={setPage} /></div>
-      <AdvancedFilters open={advanced} onClose={() => setAdvanced(false)} />
+      <AdvancedFilters open={advanced} onClose={() => setAdvanced(false)} applied={adv} onSave={(c) => { setAdv(c); setPage(1) }} />
     </AppShell>
   )
 }

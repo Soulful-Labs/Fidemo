@@ -16,8 +16,11 @@ import { usePlatform } from '../../platform'
  * Location and Language, each a 38px dropdown with the chosen values as
  * removable chips under it; Cancel / Save.
  */
-export function AdvancedFilters({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [chips, setChips] = useState(ADVANCED.map((f) => f.chips))
+export function AdvancedFilters({ open, onClose, applied, onSave }: { open: boolean; onClose: () => void
+  /** What the list is filtered by now; Save hands back the new choice, Cancel leaves it (22 Oct 2026). */
+  applied: string[][]; onSave: (chips: string[][]) => void }) {
+  const [chips, setChips] = useState(applied)
+  const cancel = () => { setChips(applied); onClose() }
   /** Each list offers what the platform's participants hold (22 Oct 2026; the menus are not drawn): picking one adds its chip. */
   const people = usePlatform().people
   const uniq = (xs: string[]) => [...new Set(xs.filter(Boolean))].sort()
@@ -26,8 +29,8 @@ export function AdvancedFilters({ open, onClose }: { open: boolean; onClose: () 
     uniq(people.map((p) => p.location)), uniq(people.flatMap((p) => p.profile.languages)),
   ]
   return (
-    <SidePanel open={open} onClose={onClose} title="Advanced Filters"
-      footer={<><Button variant="tertiary" onClick={onClose}>Cancel</Button><Button onClick={onClose}>Save</Button></>}>
+    <SidePanel open={open} onClose={cancel} title="Advanced Filters"
+      footer={<><Button variant="tertiary" onClick={cancel}>Cancel</Button><Button onClick={() => { onSave(chips); onClose() }}>Save</Button></>}>
       <div className="flex flex-col gap-4 pb-2">
         {ADVANCED.map((f, i) => (
           <div key={f.label}>

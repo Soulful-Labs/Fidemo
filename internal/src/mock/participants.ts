@@ -8,13 +8,18 @@ import type { Person, PlatformState } from '@shared/types'
 import type { StudyType } from '../components/app/StudyTypeTag'
 import type { Tier } from '../components/app/TierTag'
 import { consoleType, studyPictures, usePlatform } from '../platform'
+import { TIER_MENU } from '@shared/lifecycle'
 
 /**
  * All Participants (Active 1992:101341, Deactivated 2003:134529), read from
  * the shared platform: every person, their score and tier from the policy,
  * active or deactivated as the platform holds them.
  */
-export interface Participant { id: string; photo: string; name: string; role: string; industry: string; score: string; tier: Tier; gender: string; location: string; date: string }
+export interface Participant {
+  id: string; photo: string; name: string; role: string; industry: string; score: string; tier: Tier; gender: string; location: string; date: string
+  /** What the list's filters read (22 Oct 2026): the date shown, whether the profession is verified, and the languages. */
+  at: string; professionVerified: boolean; languages: string[]
+}
 
 const TIER_NAME: Record<'silver' | 'gold' | 'platinum', Tier> = { silver: 'Silver', gold: 'Gold', platinum: 'Platinum' }
 
@@ -32,6 +37,8 @@ export const participantRow = (state: PlatformState, p: Person): Participant => 
   id: p.id, photo: photoFor(p), name: p.name, role: p.profile.occupation, industry: p.profile.industry,
   score: String(trustScoreOf(state, p.id)), tier: tierName(state, p.id), gender: p.profile.gender, location: p.location,
   date: dayOrToday(p.status === 'deactivated' ? p.statusNote?.at : p.lastActiveAt),
+  at: (p.status === 'deactivated' ? p.statusNote?.at : p.lastActiveAt) ?? '',
+  professionVerified: p.profession.state === 'verified', languages: p.profile.languages,
 })
 
 export function useParticipants(tab: 'active' | 'deactivated') {
@@ -50,15 +57,15 @@ export const FILTERS = {
   lastActive: ['Last Active: All', 'Today', 'Last 7 days', 'This Month', 'Last 30 days', 'Last 3 months'],
   profession: ['Profession verified', 'All', 'Profession Verified'],
   gender: ['Gender: All', 'Male', 'Female', 'Other'],
-  tier: ['Tier: All', 'Platinum (90+ score)', 'Gold (70 to 90 score)', 'Silver (up to 70 score)'],
+  tier: ['Tier: All', ...TIER_MENU.filter((m) => m.tier).map((m) => m.label)],
 }
 
 /** Advanced Filters (2003:133781): four fields, each with the values drawn as chips. */
 export const ADVANCED = [
-  { label: 'Roles', placeholder: 'Select roles', chips: ['Physician'] },
-  { label: 'Domain', placeholder: 'Select domains', chips: ['Healthcare', 'Pharma', 'Fitness & Nutrition'] },
-  { label: 'Location', placeholder: 'Select city, country', chips: ['New York, US'] },
-  { label: 'Language', placeholder: 'Select languages', chips: ['English'] },
+  { label: 'Roles', placeholder: 'Select roles', chips: [] as string[] },
+  { label: 'Domain', placeholder: 'Select domains', chips: [] as string[] },
+  { label: 'Location', placeholder: 'Select city, country', chips: [] as string[] },
+  { label: 'Language', placeholder: 'Select languages', chips: [] as string[] },
 ]
 
 /**
