@@ -47,17 +47,19 @@ export function SideNav() {
            * Studies (the Ongoing, Drafts and Completed list, every study page
            * and the Create flow) and Sessions. The parent is a heading, not a
            * selected row; the selected sub-item has the pill and the dot.
+           * Elsewhere in the app the sub-items fold away and Studies is an
+           * ordinary row (Pool 1645:161430, Payments 1663:103326, Help 1663:104191).
            */
           if (to === '/studies') {
             const sessions = pathname.startsWith('/studies/sessions')
             const sub = [{ to: '/studies', label: 'My Studies', on: on && !sessions }, { to: '/studies/sessions', label: 'Sessions', on: sessions }]
             return (
               <li key={to}>
-                <NavLink to={to} className="flex h-[46px] items-center gap-2 rounded-md px-4 text-body-regular text-text-title transition-colors hover:bg-bg-0/60">
+                <NavLink to={to} className={cn('flex h-[46px] items-center gap-2 rounded-md px-4 text-body-regular transition-colors hover:bg-bg-0/60', on ? 'text-text-title' : 'text-text-subtitle hover:text-text-title')}>
                   <Icon className="h-5 w-5" />
                   {label}
                 </NavLink>
-                <ul className="relative ml-[28px] flex flex-col gap-1 pt-0.5">
+                {on && <ul className="relative ml-[28px] flex flex-col gap-1 pt-0.5">
                   <span aria-hidden="true" className="absolute bottom-[18px] left-0 top-0 w-px bg-stroke-warm" />
                   {sub.map((x) => (
                     <li key={x.to} className="relative flex items-center">
@@ -69,7 +71,7 @@ export function SideNav() {
                       </NavLink>
                     </li>
                   ))}
-                </ul>
+                </ul>}
               </li>
             )
           }

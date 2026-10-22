@@ -55,7 +55,7 @@ export default function NotificationsPanel({
 }: { open: boolean; onClose: () => void; rows: NotificationRow[]; onMarkAllRead: () => void; onAction: (n: NotificationRow) => void }) {
   const unread = rows.filter((n) => n.unread).length
   return (
-    <SidePanel open={open} onClose={onClose} bodyClassName=""
+    <SidePanel open={open} onClose={onClose} bodyClassName="" className="m-2 max-h-[calc(100%-16px)] rounded-xl" /* 1518:71845: a card floating 8px in from the top right, every corner rounded */
       title={
         <span className="flex items-center gap-2">
           <span className="text-title-m text-text-title">Notifications</span>

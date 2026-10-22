@@ -54,7 +54,7 @@ export function PayAllPanel({ open, onClose, invoices, onPaid }: {
             From
             {card ? (
               <span className="inline-flex h-8 items-center gap-3 rounded-full bg-bgAlt-2 px-3 text-body-regular text-text-title">
-                <CardMark brand={card.brand} /><span className="text-text-title">&bull;</span>**** {card.last4}
+                <CardMark brand={card.brand} /><span className="text-text-title">&bull;</span>•••• {card.last4}
               </span>
             ) : <span className="text-text-subtitle">no card on file</span>}
           </span>
@@ -91,7 +91,8 @@ export function PaidAllModal({ open, onClose, paid }: { open: boolean; onClose: 
   const total = paid.reduce((n, i) => n + i.amount, 0)
   return (
     <Modal open={open} onClose={onClose} title={`${money(total)} paid successfully!`}
-      body={<>Your payment has been done and {paid.length === 1 ? 'the due invoice has' : `all ${paid.length} due invoices have`} been cleared.</>}
+      // The frame's words (2118:136635), its typos kept, with the count from what was paid.
+      body={<>Your payment has been done and and all {paid.length} due invoice{paid.length === 1 ? '' : 's'} has been cleared with marking billed studies as completed.</>}
       footer={<Button fullWidth onClick={onClose}>Done</Button>}>
       <span className="mx-auto -order-1 mb-1 flex h-40 w-40 items-center justify-center rounded-full bg-yellow-100">
         <span className="flex h-[90px] w-[90px] items-center justify-center rounded-full border-4 border-brand-primary bg-cta-primary text-bg-0">

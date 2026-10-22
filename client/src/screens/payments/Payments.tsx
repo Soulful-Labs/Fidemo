@@ -14,7 +14,6 @@ import { useToast } from '../../components/ui/Toast'
 import { PaidAllModal, PayAllPanel, dueOn } from './PayAll'
 import type { Invoice } from '@shared/derive'
 import type { ClientStudy } from '../../platform'
-import { compactMoney } from '../../lib/insight'
 import { useWorkspace } from '../../mock/workspace'
 import type { SavedCard } from '../../mock/workspace'
 
@@ -28,7 +27,7 @@ function CardTile({ c, onRemove, onDefault, onEdit }: { c: SavedCard; onRemove: 
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-bg-0"><CardMark brand={c.brand} /></span>
         <span className="flex flex-col gap-0.5 pl-2">
           <span className="text-body-regular text-text-title">
-            {c.brand} <span className="px-1.5">&bull;</span> **** {c.last4}
+            {c.brand} <span className="px-1.5">&bull;</span> •••• {c.last4}
           </span>
           <span className="text-text-regular text-text-subtitle">{c.expires}</span>
         </span>
@@ -73,7 +72,7 @@ function SpendChart({ data }: { data: { label: string; total: number }[] }) {
     <div className="relative mt-[22px] h-[212px] pl-[42px]" role="img" aria-label={`Spend by month: ${data.map((d) => `${d.label} ${money(d.total)}`).join(', ')}`}>
       {[4, 3, 2, 1, 0].map((n) => (
         <span key={n} className="absolute left-0 right-0 flex items-center" style={{ top: (1 - n / 4) * H - 8 }}>
-          <span className="w-[34px] text-right text-label text-text-subtitle">{n === 0 ? '0' : compactMoney(step * n)}</span>
+          <span className="w-[34px] text-right text-label text-text-subtitle">{n === 0 ? '0' : step * n >= 1000 ? `$${(step * n) / 1000}K` : `$${step * n}`}</span>
           <span className={cn('ml-2 flex-1 border-t-1', n === 0 ? 'border-stroke-input' : 'border-dashed border-stroke-input')} />
         </span>
       ))}
@@ -173,7 +172,7 @@ export default function Payments() {
                 : `${pending.length} ${pending.length === 1 ? 'invoice is' : 'invoices are'} pending, ${money(owed)} in all. ${days > 0 ? `The first falls due in ${days} day${days === 1 ? '' : 's'}.` : 'The first is already due.'}`}
             </p>
             <p className="pt-[11px] text-body-regular text-text-subtitle">
-              {pending.length === 0 ? 'An invoice is raised when a study is completed.' : 'Each invoice is the balance on a completed study. They can be paid one at a time, or together.'}
+              {pending.length === 0 ? 'An invoice is raised when a study stops recruiting.' : 'Each invoice is the balance on a study that has stopped recruiting. They can be paid one at a time, or together.'}
             </p>
             {pending.length > 0 && (
               <span className="pt-[15px]">
@@ -190,7 +189,7 @@ export default function Payments() {
           <div className="flex flex-col gap-0.5">
             <h2 className="text-title-s text-text-title">Invoices</h2>
             <p className="text-text-regular text-text-subtitle">
-              {pending.length} pending invoice{pending.length === 1 ? '' : 's'}, due a week after the study is completed
+              {pending.length} pending invoice{pending.length === 1 ? '' : 's'}, due a week after the study stops recruiting
             </p>
           </div>
           <Tabs variant="segmented" className="w-[220px]" value={done ? 'completed' : 'pending'}

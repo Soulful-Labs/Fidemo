@@ -205,7 +205,7 @@ export default function Publish() {
                     </span>
                     <CardMark brand={c.brand} />
                     <span className="flex flex-1 flex-col">
-                      <span className="text-text-regular text-text-title">{c.brand} &bull; **** {c.last4}</span>
+                      <span className="text-text-regular text-text-title">{c.brand} &bull; •••• {c.last4}</span>
                       <span className="text-text-regular text-text-subtitle">{c.expires}{c.isDefault ? ' · Default' : ''}</span>
                     </span>
                   </button>

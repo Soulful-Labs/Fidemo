@@ -68,7 +68,7 @@ function ticketRow(state: PlatformState, t: PlatformTicket): TicketRecord {
     id: t.id, subject: t.subject, message: t.message, number: t.id,
     last: `${who}: ${last.text.slice(0, 90)}${last.text.length > 90 ? '…' : ''}`,
     unread: t.status === 'open' && last.from !== 'user', status: t.status === 'open' ? 'Open' : 'Closed',
-    activity: dayOrToday(t.lastActivityAt), created: monthDayYear(t.createdAt), day: new Date(t.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'long' }),
+    activity: dayOrToday(t.lastActivityAt), created: monthDayYear(t.createdAt), /* "Aug 16, Sunday", as the thread is headed (1663:104436). */ day: `${new Date(t.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${new Date(t.createdAt).toLocaleDateString('en-US', { weekday: 'long' })}`,
     messages: t.messages.map((m) => ({
       id: m.id, from: m.from === 'user' ? 'client' as const : 'support' as const, auto: m.from === 'auto' || undefined,
       lines: [m.text], at: clockTime(m.at), attachment: m.attachment,

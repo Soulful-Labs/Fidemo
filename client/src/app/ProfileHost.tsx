@@ -30,6 +30,7 @@ export function ProfileHost({ children }: { children: ReactNode }) {
   const state = usePlatform()
   const [who, setWho] = useState<string | null>(null)
   const [page, setPage] = useState<Page>('profile')
+  const [sentStudy, setSentStudy] = useState('')
   const open = useCallback((personId: string, start: 'profile' | 'reviews' = 'profile') => { setWho(personId); setPage(start) }, [])
   const r = useMemo(() => (who ? respondentFor(state, who) : null), [state, who])
   const close = () => setWho(null)
@@ -40,8 +41,8 @@ export function ProfileHost({ children }: { children: ReactNode }) {
         onReviews={() => setPage('reviews')} onInvite={() => setPage('invite')} />
       <ReviewsPanel open={!!r && page === 'reviews'} respondent={r} onClose={close}
         onBack={() => setPage('profile')} onInvite={() => setPage('invite')} />
-      <InvitePanel open={!!r && page === 'invite'} name={r?.name.split(' ')[0]} personId={r?.id} onClose={close} onSent={() => setPage('sent')} />
-      <SentModal open={!!r && page === 'sent'} name={r?.name} onClose={close} />
+      <InvitePanel open={!!r && page === 'invite'} name={r?.name.split(' ')[0]} personId={r?.id} onClose={close} onSent={(t) => { setSentStudy(t); setPage('sent') }} />
+      <SentModal open={!!r && page === 'sent'} name={r?.name.split(' ')[0]} study={sentStudy} onClose={close} />
     </Open.Provider>
   )
 }

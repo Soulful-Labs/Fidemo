@@ -51,17 +51,21 @@ function Picked({ label, placeholder, options, chips, onChange }: {
       <Select value={placeholder} h="h-[38px]" className="rounded-md text-text-regular text-text-body"
         onClick={() => setOpen((o) => !o)} />
       {open && (
-        <div className="absolute left-0 right-0 top-[72px] z-20 max-h-56 overflow-y-auto rounded-sm border-1 border-stroke-input bg-bg-0 shadow-lg">
-          {left.length === 0 && (
-            <p className="px-3 py-2 text-text-regular text-text-body">Everything here is already chosen.</p>
-          )}
-          {left.map((o) => (
-            <button key={o} type="button" onClick={() => { onChange([...chips, o]); setOpen(false) }}
-              className="flex w-full items-center px-3 py-2 text-left text-text-regular text-text-title hover:bg-bg-1">
-              {o}
-            </button>
-          ))}
-        </div>
+        <>
+          <button type="button" aria-label="Close" onClick={() => setOpen(false)} className="fixed inset-0 z-20 cursor-default" />
+          {/* The same menu as every other client dropdown (22 Oct 2026): rounded, the menu shadow, 38px rows. */}
+          <div className="absolute left-0 right-0 top-[72px] z-30 flex max-h-[215px] flex-col gap-0.5 overflow-y-auto rounded-lg bg-bg-0 p-[11px] shadow-menu">
+            {left.length === 0 && (
+              <p className="px-3 py-2 text-text-regular text-text-body">Everything here is already chosen.</p>
+            )}
+            {left.map((o) => (
+              <button key={o} type="button" onClick={() => { onChange([...chips, o]); setOpen(false) }}
+                className="flex h-[38px] w-full shrink-0 items-center rounded-md px-3 text-left text-body-regular text-text-title hover:bg-bg-1">
+                {o}
+              </button>
+            ))}
+          </div>
+        </>
       )}
       <span className={cn('flex flex-wrap gap-x-2 gap-y-1', chips.length > 0 && 'pt-2')}>
         {chips.map((c) => (

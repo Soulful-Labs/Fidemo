@@ -98,7 +98,7 @@ export function ReviewsPanel({ open, onClose, onBack, onInvite, respondent }: {
 }
 
 /** Invite To Study (1645:163182): pick which live study the invitation is for. */
-export function InvitePanel({ open, onClose, name = 'Roma', personId, onSent }: { open: boolean; onClose: () => void; name?: string; personId?: string; onSent?: () => void }) {
+export function InvitePanel({ open, onClose, name = 'Roma', personId, onSent }: { open: boolean; onClose: () => void; name?: string; personId?: string; onSent?: (studyTitle: string) => void }) {
   const { studies, moveRespondent } = useStudies()
   const toast = useToast()
   /** The client's own live studies: the only ones an invitation can be for. */
@@ -108,11 +108,11 @@ export function InvitePanel({ open, onClose, name = 'Roma', personId, onSent }: 
   const study = picked || INVITE_STUDIES[0]?.id || ''
   /** Workflow 26, 27: the invitation is a real move on the shared platform, refused with a reason if it cannot be sent. */
   const send = () => {
-    if (personId && study) {
-      const res = moveRespondent(study, personId, 'invited')
-      if (!res.ok) { toast(res.why); return }
-    }
-    ;(onSent ?? onClose)()
+    // Nothing is said to be sent unless it was (22 Oct 2026): no live study, no invitation.
+    if (!personId || !study) { toast('You have no live study to invite them to'); return }
+    const res = moveRespondent(study, personId, 'invited')
+    if (!res.ok) { toast(res.why); return }
+    if (onSent) onSent(INVITE_STUDIES.find((x) => x.id === study)?.title ?? ''); else onClose()
   }
   return (
     <SidePanel open={open} onClose={onClose} title={`Invite ${name} To Study`} headerClassName="h-14"
@@ -142,8 +142,8 @@ export function InvitePanel({ open, onClose, name = 'Roma', personId, onSent }: 
             </span>
           </span>
           {s.id === study && (
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cta-primary text-cta-primaryText">
-              <Check className="h-4 w-4" />
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cta-primary text-bg-0">
+              <Check className="h-5 w-5" />
             </span>
           )}
         </button>

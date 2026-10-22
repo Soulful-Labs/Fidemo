@@ -49,7 +49,6 @@ export function useBill(studyId?: string) {
         amount: money(due),
         due: dueBy ? `Due on ${monthDayYear(dueBy)}` : '',
         dueBy: dueBy ? dayMonthYear(dueBy) : '',
-        autoDebit: 'If not paid manually, will be auto-debited from',
         paidTitle: `Paid ${money(balance?.amount ?? 0)} successfully!`,
         paidAt: monthDayYearTime(balance?.at),
         net: { label: 'Net Total Paid', amount: money(balance?.amount ?? due) },

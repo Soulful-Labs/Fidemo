@@ -42,6 +42,7 @@ export default function Pool() {
   const chips = poolChips(f)
   /** The four 600px panels the pool cards open. */
   const [panel, setPanel] = useState(params.get('panel') ?? '')
+  const [sentStudy, setSentStudy] = useState('')
   const clear = () => { setF({ ...POOL_DEFAULT_FILTERS }); setQuery('') }
 
   return (
@@ -130,12 +131,13 @@ export default function Pool() {
 
       </div>
 
-      <RespondentPanel open={panel === 'profile'} respondent={viewing ?? POOL_PEOPLE[0]!}
+      {/* The Pool's panel is titled "Profile of Ferry L." (1645:162885); elsewhere it carries the name alone. */}
+      <RespondentPanel open={panel === 'profile'} respondent={viewing ?? POOL_PEOPLE[0]!} title={`Profile of ${(viewing ?? POOL_PEOPLE[0]!).name}`}
         onClose={() => setPanel('')} onReviews={() => setPanel('reviews')}
         onInvite={() => setPanel('invite')} />
       <ReviewsPanel open={panel === 'reviews'} respondent={viewing ?? null} onClose={() => setPanel('')} onBack={() => setPanel('profile')} onInvite={() => setPanel('invite')} />
-      <InvitePanel open={panel === 'invite'} name={viewing?.name.split(' ')[0]} personId={viewing?.id} onClose={() => setPanel('')} onSent={() => setPanel('sent')} />
-      <SentModal open={panel === 'sent'} name={viewing?.name} onClose={() => setPanel('')} />
+      <InvitePanel open={panel === 'invite'} name={viewing?.name.split(' ')[0]} personId={viewing?.id} onClose={() => setPanel('')} onSent={(t) => { setSentStudy(t); setPanel('sent') }} />
+      <SentModal open={panel === 'sent'} name={viewing?.name.split(' ')[0]} study={sentStudy} onClose={() => setPanel('')} />
     </AppShell>
   )
 }

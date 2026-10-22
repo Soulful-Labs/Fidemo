@@ -167,7 +167,7 @@ export default function Account() {
                       <span className="flex items-center gap-3">
                         <CardMark brand={card.brand} />
                         <span className="flex flex-col">
-                          <span className="text-body-regular text-text-title">{card.brand} <span className="px-1">&bull;</span> **** {card.last4}</span>
+                          <span className="text-body-regular text-text-title">{card.brand} <span className="px-1">&bull;</span> •••• {card.last4}</span>
                           <span className="text-text-regular text-text-subtitle">{card.expires}{card.isDefault ? ' · Default, used when you publish' : ''}</span>
                         </span>
                       </span>

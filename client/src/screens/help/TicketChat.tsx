@@ -66,7 +66,7 @@ export default function TicketChat() {
               <span className="text-title-s leading-[25px] text-text-title">{record?.subject ?? t.subject}</span>
             </span>
             <span className="flex items-center gap-4">
-              <span className="text-body-regular text-text-subtitle">{record?.number ?? t.number}</span>
+              <span className="text-body-regular text-text-subtitle">#{record?.number ?? t.number}</span>
               <Tag tone="grey" className={cn('h-7 px-2.5',
                 solved ? 'bg-green-50 text-brand-secondary' : 'bg-yellow-30 text-brand-primary')}>
                 {solved ? 'Closed' : 'Open'}

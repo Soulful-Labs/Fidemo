@@ -74,12 +74,8 @@ export function InvoiceDetailsPanel({
           <>
             <p className="text-title-s leading-[22px] text-text-title">{INVOICE.amount}</p>
             <p className="text-text-regular text-brand-primary">{INVOICE.due}</p>
-            <p className="flex flex-wrap items-center gap-2 text-text-regular text-text-title">
-              {INVOICE.autoDebit}
-              <span className="inline-flex h-8 items-center gap-2 rounded-full bg-bg-1 px-3 text-text-regular text-text-subtitle">
-                <CardMark brand={card?.brand} />{card?.brand ?? 'Card'} <span className="text-text-body">&bull;</span> •••• {card?.last4 ?? ''}
-              </span>
-            </p>
+            {/* The frame's "If not paid manually, will be auto-debited from [card]" is not shown: nothing is
+                debited without the client paying (decided 15 Oct 2026). */}
           </>
         )}
       </div>
@@ -155,8 +151,7 @@ export function MakePaymentPanel({
         <span className="flex flex-col gap-2">
           <span className="text-text-regular text-text-title">{MAKE_PAYMENT.from}</span>
           <span className="inline-flex h-8 items-center gap-3 rounded-full bg-bgAlt-1 px-3 text-text-regular text-text-subtitle">
-            <CardMark brand={card?.brand} />{card?.brand ?? 'Card'} <span className="text-text-body">&bull;</span>
-            <span className="pl-4">{card?.last4 ?? ''}</span>
+            <CardMark brand={card?.brand} />{card?.brand ?? 'Card'} <span className="text-text-body">&bull;</span> •••• {card?.last4 ?? ''}
           </span>
         </span>
         <Button variant="tertiary" size="row" onClick={() => {
@@ -253,7 +248,7 @@ export function EditCardPanel({ open, onClose, last4 }: { open: boolean; onClose
       }>
       {card && (
         <p className="col-span-2 flex items-center gap-2 text-body-regular text-text-title">
-          <CardMark brand={card.brand} />{card.brand} <span className="text-text-body">&bull;</span> **** {card.last4}
+          <CardMark brand={card.brand} />{card.brand} <span className="text-text-body">&bull;</span> •••• {card.last4}
           <span className="text-text-regular text-text-subtitle">{card.expires}</span>
         </p>
       )}

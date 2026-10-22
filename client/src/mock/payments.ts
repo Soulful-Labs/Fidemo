@@ -11,6 +11,6 @@ export const ADD_CARD = {
 }
 
 export const removeCardCopy = (brand: string, last4: string) => ({
-  title: `Remove **** ${last4} Card?`,
+  title: `Remove •••• ${last4} Card?`,
   body: `Are you sure you want to remove save payment method of ${brand === 'Mastercard' ? 'Master card' : brand} ending with ${last4}?`,
 })

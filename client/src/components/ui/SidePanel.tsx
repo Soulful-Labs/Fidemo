@@ -7,7 +7,9 @@ import { Close } from './icons'
  * The 600px panel that slides in from the right: Notifications (1518:71845),
  * Respondent Profile Details (1704:141690), Invoice Details, Ask Support and
  * Invite To Study. The frames give it a 56px title bar with the close button
- * on the right, a scrolling body and an optional footer.
+ * on the right, a scrolling body and an optional footer. It is as tall as
+ * what it holds and opens top right with rounded left corners, as every
+ * panel frame draws it (22 Oct 2026); a long one scrolls inside the screen.
  */
 export default function SidePanel({
   open, onClose, title, subtitle, headerAction, footer, children, className, bodyClassName, headerClassName,
@@ -27,7 +29,7 @@ export default function SidePanel({
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-text-title/20" role="presentation" onClick={onClose}>
       <aside role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}
-        className={cn('flex h-full w-panel flex-col bg-bg-0 shadow-xl', className)}>
+        className={cn('flex max-h-full w-panel flex-col self-start overflow-hidden rounded-l-xl bg-bg-0 shadow-xl', className)}>
         <header className={cn('flex h-14 shrink-0 items-center justify-between gap-4 border-b-1 border-stroke-1 px-4', headerClassName)}>
           <div className="flex min-w-0 flex-col">
             {typeof title === 'string' ? <h2 className="text-title-m text-text-title">{title}</h2> : title}

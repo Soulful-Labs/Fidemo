@@ -47,12 +47,12 @@ export const NOTIFICATIONS: NotificationRow[] = [
   {
     id: 'n5', icon: 'completion', title: 'New study completion!',
     body: 'A participant has completed the Mental Health Awareness study!',
-    ago: '1 hour ago', action: 'View Results',
+    ago: '1 hour ago', action: 'View Result',
   },
   {
     id: 'n6', icon: 'target', title: 'Study target fulfilled!',
     body: 'The target number of participants has been reached for your Market Trends Analysis study!',
-    ago: '2 hours ago', action: 'View Results',
+    ago: '2 hours ago', action: 'View All Results',
   },
   {
     id: 'n7', icon: 'invoice', title: 'Invoice due!',

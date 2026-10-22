@@ -51,7 +51,7 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
   const navigate = useNavigate()
   const openProfile = useOpenProfile()
   const [inviting, setInviting] = useState<Respondent | null>(null)
-  const [sent, setSent] = useState(false)
+  const [sent, setSent] = useState<{ name?: string; study: string } | null>(null)
   const [insightAt, setInsightAt] = useState(0)
   /** Recommended Respondents: one row, three cards at least and more on wider screens (22 Oct 2026). */
   const recRow = useRef<HTMLDivElement>(null)
@@ -180,8 +180,8 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
       </div>
 
       <InvitePanel open={inviting !== null} name={inviting?.name.split(' ')[0]} personId={inviting?.id} onClose={() => setInviting(null)}
-        onSent={() => { setInviting(null); setSent(true) }} />
-      <SentModal open={sent} onClose={() => setSent(false)} />
+        onSent={(study) => { setSent({ name: inviting?.name.split(' ')[0], study }); setInviting(null) }} />
+      <SentModal open={sent !== null} name={sent?.name} study={sent?.study} onClose={() => setSent(null)} />
     </AppShell>
   )
 }
