@@ -16,6 +16,8 @@ import { POINTS, canRedeem, starsForRating, starsFromDimensions } from './rules'
 import { monthDayYear } from './format'
 import { sessionStartOf as sessionStart } from './derive'
 import { clientDeactivationRefusal } from './derive'
+import { applyCurrentSettings, settingsAt, settingsFault } from './settings'
+import type { SettingsGroup, SettingsValues } from './types'
 import { EMPTY_PROFILE } from './seed/people'
 import { MAX_RUN_DAYS, audienceFault, buildStudy, fitsStudy, formFromStudy, liveEditFault, studyTypeOf, summarise } from './studyForm'
 import { buildScreener, buildTasks } from './questions'
@@ -75,7 +77,9 @@ export function createPlatform(options: Options = {}) {
   const write = (s: PlatformState) => { try { storage?.setItem(STORAGE_KEY, JSON.stringify(s)) } catch { /* private mode: the demo still runs in memory */ } }
 
   let state: PlatformState = read() ?? (() => { const fresh = buildSeed(clock()); write(fresh); return fresh })()
-  const emit = () => listeners.forEach((l) => l())
+  // The values a master admin changed (shared/settings.ts) are the ones every screen and new quote reads.
+  applyCurrentSettings(state)
+  const emit = () => { applyCurrentSettings(state); listeners.forEach((l) => l()) }
 
   /** Another tab changed the platform: take its state and tell this tab's screens. */
   if (typeof window !== 'undefined') {
@@ -1108,6 +1112,24 @@ export function createPlatform(options: Options = {}) {
       open.forEach((r) => { r.ticketId = id })
       log(s, actor, `Opened a chat with the client about reports on ${study.title}`, 'Studies / Reported / Chat With Client')
       return yes({ id })
+    }),
+
+    /**
+     * Pricing & Rewards (22 Oct 2026, policy v2 section 10): a master admin saves one group of values. The
+     * change is recorded with who and when, applies from now on, and moves nothing already earned or agreed.
+     */
+    changeSettings: <G extends SettingsGroup>(group: G, after: SettingsValues[G], actor: Actor) => move((s) => {
+      if (actor.kind !== 'team') return no('Only the team can change these values')
+      const member = s.team.find((t) => t.id === actor.id)
+      if (!member?.master) return no('Only a master admin can change these values')
+      const why = settingsFault(group, after)
+      if (why) return no(why)
+      const before = settingsAt(s, group)
+      if (JSON.stringify(before) === JSON.stringify(after)) return no('Nothing has changed')
+      s.settingsLog = [...(s.settingsLog ?? []), { id: uid('set'), group, at: iso(), by: actor.id, before, after: JSON.parse(JSON.stringify(after)) }]
+      const name = { fees: 'client fees', trust: 'Trust Score values', tiers: 'tier thresholds', points: 'reward points' }[group]
+      log(s, actor, `Changed the ${name}`, `Pricing & Rewards / ${group === 'fees' ? 'Fees' : 'Gamification'} / Save Changes`)
+      return yes()
     }),
 
     /**

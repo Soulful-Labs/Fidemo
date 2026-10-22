@@ -97,6 +97,12 @@ export interface TrustInputs {
   lateShows: number
   cancelledSessions: number
   frauds: number
+  /**
+   * Each event's value as it was when it happened (22 Oct 2026, policy v2 section 10): a value a master admin
+   * changes later never moves a score already earned. Absent, the current values are used for every event.
+   * `studies` holds this year's completions in the order they happened; `stars` is parallel to `stars` above.
+   */
+  values?: { onboarding: number; cap: number; studies: number[]; stars: number[]; noShows: number[]; lateShows: number[]; cancelled: number[]; frauds: number[] }
 }
 
 /**
@@ -105,6 +111,12 @@ export interface TrustInputs {
  * less the four deductions, kept within 50 and 100.
  */
 export function trustScore(i: TrustInputs): number {
+  const v = i.values
+  if (v) {
+    const total = (xs: number[]) => xs.reduce((n, x) => n + x, 0)
+    const rated = Math.min(TRUST.RATINGS_MAX, Math.max(-TRUST.RATINGS_MAX, total(v.stars.slice(-TRUST.RATINGS_WINDOW))))
+    return clampTrust(v.onboarding + total(v.studies.slice(0, v.cap)) + rated + total(v.noShows) + total(v.lateShows) + total(v.cancelled) + total(v.frauds))
+  }
   const studies = Math.min(TRUST.STUDY_COMPLETION_CAP_PER_YEAR, i.completedThisYear) * TRUST.STUDY_COMPLETION
   const raw = i.stars.slice(-TRUST.RATINGS_WINDOW).reduce((n, s) => n + trustForStars(s), 0)
   const ratings = Math.min(TRUST.RATINGS_MAX, Math.max(-TRUST.RATINGS_MAX, raw))

@@ -5,7 +5,7 @@
  * Rewards screen. Kept apart from rules.ts so that file stays the policy and
  * nothing else.
  */
-import type { StudyRates, StudyType } from './types'
+import type { AddOnParameter, FeeAddOn, StudyRates, StudyType } from './types'
 
 // --- Profile and audience lists ---------------------------------------------
 
@@ -65,12 +65,23 @@ export const targets = (field?: string): boolean => (field ?? '').split(',').som
  */
 export const priceStudy = (type: StudyType, incentivePer: number, targeting: Targeting = {}): StudyRates => ({
   platformFee: FEES.PLATFORM,
-  recruitingPer: FEES.RECRUITMENT_BASE
-    + (FEES.ADDON_TYPES.includes(type) || targeting.roles ? FEES.RECRUITMENT_TYPE_ADDON : 0)
-    + (targeting.skills ? FEES.RECRUITMENT_SKILLS_ADDON : 0),
+  recruitingPer: FEES.RECRUITMENT_BASE + FEE_ADDONS.filter((a) => addOnApplies(a, type, targeting)).reduce((n, a) => n + a.amount, 0),
   incentivePer,
   moderationPer: FEES.MODERATION,
 })
+
+/**
+ * The recruitment add-ons in force (22 Oct 2026: a master admin edits them in the console; shared/settings.ts
+ * keeps this list current). The policy's two to start: +$25 for Video Call, In-Person or Diary, or Roles;
+ * +$20 for Skills. Each is charged once per completed participant when the study matches any of its parameters.
+ */
+export const FEE_ADDONS: FeeAddOn[] = [
+  { id: 'ao-type', amount: 25, on: ['video_call', 'in_person', 'diary', 'roles'] },
+  { id: 'ao-skills', amount: 20, on: ['skills'] },
+]
+const TYPE_PARAM: Record<StudyType, AddOnParameter> = { survey: 'survey', video_call: 'video_call', group_video_call: 'video_call', in_person: 'in_person', in_person_group: 'in_person', diary: 'diary' }
+export const addOnApplies = (a: FeeAddOn, type: StudyType, targeting: Targeting = {}): boolean =>
+  a.on.includes(TYPE_PARAM[type]) || (a.on.includes('roles') && !!targeting.roles) || (a.on.includes('skills') && !!targeting.skills)
 
 /** The share of each cost taken up front: 25% (client designs, Survey_Study Setup, 15 Oct 2026). */
 export const DEPOSIT_SHARE = 0.25

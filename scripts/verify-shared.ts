@@ -9,6 +9,7 @@
  */
 import { diffForms, studyHistory } from '../shared/revisions'
 import { clientDeactivationBlockers, clientDeactivationRefusal } from '../shared/derive'
+import { settingsAt } from '../shared/settings'
 import { withdrawals,
   billing, consoleDashboard, hasCertificate, payoutsToProcess, referralCode, counts, financeTotals, personFigures, pointsRows, poolPerson, recruit, refundsPending, respondentStudies, sharedPhoto, sharedVideo, trustInputs,
 } from '../shared/derive'
@@ -571,6 +572,39 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   }
   const free = st().clients.find((c) => !clientDeactivationRefusal(st(), c.id) && c.status !== 'deactivated')
   if (free) check('deactivate client: allowed with nothing running or owed', p.setClientStatus(free.id, 'deactivated', 'Testing', team).ok && p.setClientStatus(free.id, 'active', 'Back', team).ok)
+}
+
+// Pricing & Rewards saves (22 Oct 2026, policy v2 section 10): master admin only; a change applies from now on
+// and moves nothing already earned or agreed.
+{
+  const sub: Actor = { kind: 'team', id: 'tm-maya' }
+  const trust0 = settingsAt(st(), 'trust')
+  check('settings: a sub-admin cannot change them', !p.changeSettings('trust', { ...trust0, noShow: -6 }, sub).ok)
+  check('settings: a deduction cannot add to the score', !p.changeSettings('trust', { ...trust0, noShow: 3 }, team).ok)
+  const people = st().people.slice(0, 25).map((x) => x.id)
+  const scores = () => people.map((id) => personFigures(st(), id).trustScore).join(',')
+  const pts = () => people.map((id) => personFigures(st(), id).points).join(',')
+  const before = { scores: scores(), points: pts(), rates: JSON.stringify(st().studies.map((x) => x.rates)) }
+  check('settings: a master admin can change the Trust Score values', p.changeSettings('trust', { ...trust0, noShow: -6, star5: 5, onboarding: 55 }, team).ok && settingsAt(st(), 'trust').noShow === -6)
+  check('settings: no existing score moves', scores() === before.scores, `${before.scores} -> ${scores()}`)
+  const points0 = settingsAt(st(), 'points')
+  check('settings: points change, no balance moves', p.changeSettings('points', { ...points0, studyCompletion: 40 }, team).ok && pts() === before.points)
+  const fees0 = settingsAt(st(), 'fees')
+  const quote = () => quoteStudy('survey', 10, 100).platformFee
+  check('settings: fees change, every agreed price stays', p.changeSettings('fees', { ...fees0, platform: 150, addOns: fees0.addOns.filter((a) => a.id !== 'ao-skills') }, team).ok
+    && JSON.stringify(st().studies.map((x) => x.rates)) === before.rates)
+  check('settings: a new quote uses the new fees', quote() === 150, String(quote()))
+  check('settings: every change is recorded with who and when', (st().settingsLog ?? []).filter((c) => c.by === MASTER_ADMIN_ID).length === 3 && st().activity.some((a) => /Changed the client fees/.test(a.what)))
+  // A no-show after the change is valued at the new figure.
+  {
+    const victim = st().studies.flatMap((x) => x.participations.filter((q) => q.state === 'scheduled').map((q) => ({ study: x.id, person: q.personId })))[0]
+    if (victim) {
+      const was = personFigures(st(), victim.person).trustScore
+      const r = p.markNoShow(victim.study, victim.person, team)
+      check('settings: a no-show after the change costs the new value', !r.ok || personFigures(st(), victim.person).trustScore === Math.max(TRUST.MIN, was - 6), `${was} -> ${personFigures(st(), victim.person).trustScore}`)
+    }
+  }
+  p.changeSettings('trust', trust0, team); p.changeSettings('points', points0, team); p.changeSettings('fees', fees0, team)
 }
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nall checks passed')

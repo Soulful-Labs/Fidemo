@@ -555,7 +555,30 @@ export interface PlatformState {
   teamNotices: TeamNotice[]
   /** Reports respondents make about a study (19 Oct 2026); the console's Reported Studies. Absent on older states. */
   studyReports?: StudyReport[]
+  /**
+   * Every change a master admin made to the values in Pricing & Rewards (22 Oct 2026), oldest first.
+   * A value applies from the moment it was changed; what happened before keeps the value then in force.
+   * Absent on older states: the policy's values hold.
+   */
+  settingsLog?: SettingsChange[]
 }
+
+/** What a recruitment add-on can be charged for: a study type (each covers its group form) or targeting. */
+export type AddOnParameter = 'survey' | 'video_call' | 'in_person' | 'diary' | 'roles' | 'skills'
+/** A recruitment add-on: charged once per completed participant when a study matches any of its parameters. */
+export interface FeeAddOn { id: string; amount: number; on: AddOnParameter[] }
+export interface FeeSettings { platform: number; moderation: number; recruitmentBase: number; addOns: FeeAddOn[] }
+export interface TrustSettings {
+  onboarding: number; studyCompletion: number; studyCap: number
+  star5: number; star4: number; star3: number; star2: number; star1: number
+  noShow: number; lateShowUp: number; cancelledSession: number; fraud: number
+}
+export interface TierSettings { silver: number; gold: number; platinum: number }
+export interface PointsSettings { referral: number; beingReferred: number; studyCompletion: number; fullProfile: number; streak: number; profilePicture: number; introVideo: number }
+export interface SettingsValues { fees: FeeSettings; trust: TrustSettings; tiers: TierSettings; points: PointsSettings }
+export type SettingsGroup = keyof SettingsValues
+/** One saved change: the whole group as it was and as it became, who saved it and when. */
+export interface SettingsChange { id: string; group: SettingsGroup; at: string; by: string; before: SettingsValues[SettingsGroup]; after: SettingsValues[SettingsGroup] }
 
 export interface Refusal { ok: false; why: string }
 export type Result<T = object> = ({ ok: true } & T) | Refusal

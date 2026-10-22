@@ -14,8 +14,9 @@ import {
 } from './lifecycle'
 import type { ClientTag, RespondentStatus } from './lifecycle'
 import { isStopped, payoutState } from './lifecycle'
-import { CERTIFICATE, POINTS, TRUST, pointsToUsd, tierFor, trustForStars, trustScore } from './rules'
+import { CERTIFICATE, TRUST, pointsToUsd, tierFor, trustForStars, trustScore } from './rules'
 import type { TrustInputs } from './rules'
+import { pointsAt, starValueAt, trustAt } from './settings'
 import type {
   AppNotification, Booking, Client, Participation, Payout, PayoutMethod, ParticipationState, Person, PlatformState, PreScreenQuestion,
   PayoutStatus, Question, RatingState, RepeatRule, Report, ReportResolution, Study, StudyReport, StudyPayment, StudyType, TeamMember, TeamNotice, Ticket, Tier,
@@ -77,12 +78,29 @@ export const isPaid = (p: Participation): boolean => p.state === 'completed' && 
 // ---------------------------------------------------------------- Trust Score
 
 /** What rules.trustScore needs, read off the person's prior record and their participations. */
+/** When a participation's event happened: the event's own entry, else payment, completion or the study's end. */
+const eventAt = (e: Entry, label: string) => e.p.events.find((t) => t.label === label)?.at ?? e.p.paidAt ?? e.p.completedAt ?? e.study.endsAt
+
 export function trustInputs(state: PlatformState, personId: string, now: Date = new Date()): TrustInputs {
   const person = personById(state, personId)
   const entries = entriesOf(state, personId)
   const paid = entries.filter((e) => isPaid(e.p))
   const rated = entries.filter((e) => e.p.rating).sort((a, b) => a.p.rating!.at.localeCompare(b.p.rating!.at))
+  // Policy v2 section 10: each event counts at the value in force when it happened, so an edit moves no score.
+  const start = trustAt(state, person?.joinedAt)
+  const thisYear = paid.filter((e) => sameYear(e.p.paidAt!, now)).sort((a, b) => a.p.paidAt!.localeCompare(b.p.paidAt!))
+  const values = {
+    onboarding: start.onboarding,
+    cap: trustAt(state).studyCap,
+    studies: [...Array.from({ length: person?.prior.completedThisYear ?? 0 }, () => start.studyCompletion), ...thisYear.map((e) => trustAt(state, e.p.paidAt).studyCompletion)],
+    stars: [...(person?.prior.stars ?? []).map((x) => starValueAt(state, x, person?.joinedAt)), ...rated.map((e) => starValueAt(state, e.p.rating!.stars, e.p.rating!.at))],
+    noShows: entries.filter((e) => e.p.state === 'no_show').map((e) => trustAt(state, eventAt(e, 'No Show')).noShow),
+    lateShows: paid.filter((e) => e.p.lateShow).map((e) => trustAt(state, eventAt(e, 'Late show up')).lateShowUp),
+    cancelled: (person?.trustEvents ?? []).filter((e) => e.kind === 'cancelled_session').map((e) => trustAt(state, e.at).cancelledSession),
+    frauds: (person?.trustEvents ?? []).filter((e) => e.kind === 'fraud').map((e) => trustAt(state, e.at).fraud),
+  }
   return {
+    values,
     completedThisYear: (person?.prior.completedThisYear ?? 0) + paid.filter((e) => sameYear(e.p.paidAt!, now)).length,
     stars: [...(person?.prior.stars ?? []), ...rated.map((e) => e.p.rating!.stars)],
     noShows: entries.filter((e) => e.p.state === 'no_show').length,
@@ -111,22 +129,24 @@ export function trustHistory(state: PlatformState, personId: string, now: Date =
   const counted = new Set(paid.filter((e) => sameYear(e.p.paidAt!, now)).slice(-room || paid.length + 1).map((e) => e.study.id))
   const rated = entries.filter((e) => e.p.rating).sort((a, b) => b.p.rating!.at.localeCompare(a.p.rating!.at))
   const inWindow = new Set(rated.slice(0, TRUST.RATINGS_WINDOW).map((e) => e.study.id))
-  const when = (e: Entry, label: string) => e.p.events.find((t) => t.label === label)?.at ?? e.p.paidAt ?? e.p.completedAt ?? e.study.endsAt
-  const priorRatings = sum(person.prior.stars.slice(-Math.max(0, TRUST.RATINGS_WINDOW - rated.length) || person.prior.stars.length + 1), trustForStars)
+  const when = eventAt
+  // Each line at the value in force when it happened (policy v2 section 10).
+  const start = trustAt(state, person.joinedAt)
+  const priorRatings = sum(person.prior.stars.slice(-Math.max(0, TRUST.RATINGS_WINDOW - rated.length) || person.prior.stars.length + 1), (x) => starValueAt(state, x, person.joinedAt))
   const out: TrustHistoryEntry[] = [
-    { label: 'Onboarding', detail: 'Fixed starting score', delta: TRUST.ONBOARDING, at: person.joinedAt },
+    { label: 'Onboarding', detail: 'Fixed starting score', delta: start.onboarding, at: person.joinedAt },
     ...(person.prior.completedThisYear || person.prior.stars.length ? [{
       label: 'Earlier record', detail: `${person.prior.completedThisYear} studies and ${person.prior.stars.length} ratings before this year's list`,
-      delta: Math.min(TRUST.STUDY_COMPLETION_CAP_PER_YEAR, person.prior.completedThisYear) * TRUST.STUDY_COMPLETION + (rated.length >= TRUST.RATINGS_WINDOW ? 0 : priorRatings),
+      delta: Math.min(TRUST.STUDY_COMPLETION_CAP_PER_YEAR, person.prior.completedThisYear) * start.studyCompletion + (rated.length >= TRUST.RATINGS_WINDOW ? 0 : priorRatings),
       at: person.joinedAt,
     }] : []),
-    ...paid.map((e) => ({ label: 'Study completed', detail: e.study.title, studyId: e.study.id, at: e.p.paidAt!, delta: room > 0 && counted.has(e.study.id) ? TRUST.STUDY_COMPLETION : 0 })),
-    ...rated.map((e) => ({ label: `${e.p.rating!.stars}-star client rating`, detail: e.study.title, studyId: e.study.id, at: e.p.rating!.at, delta: inWindow.has(e.study.id) ? trustForStars(e.p.rating!.stars) : 0 })),
-    ...entries.filter((e) => e.p.state === 'no_show').map((e) => ({ label: 'No show', detail: e.study.title, studyId: e.study.id, at: when(e, 'No Show'), delta: TRUST.NO_SHOW })),
-    ...paid.filter((e) => e.p.lateShow).map((e) => ({ label: 'Late show up', detail: e.study.title, studyId: e.study.id, at: when(e, 'Late show up'), delta: TRUST.LATE_SHOW_UP })),
+    ...paid.map((e) => ({ label: 'Study completed', detail: e.study.title, studyId: e.study.id, at: e.p.paidAt!, delta: room > 0 && counted.has(e.study.id) ? trustAt(state, e.p.paidAt).studyCompletion : 0 })),
+    ...rated.map((e) => ({ label: `${e.p.rating!.stars}-star client rating`, detail: e.study.title, studyId: e.study.id, at: e.p.rating!.at, delta: inWindow.has(e.study.id) ? starValueAt(state, e.p.rating!.stars, e.p.rating!.at) : 0 })),
+    ...entries.filter((e) => e.p.state === 'no_show').map((e) => ({ label: 'No show', detail: e.study.title, studyId: e.study.id, at: when(e, 'No Show'), delta: trustAt(state, when(e, 'No Show')).noShow })),
+    ...paid.filter((e) => e.p.lateShow).map((e) => ({ label: 'Late show up', detail: e.study.title, studyId: e.study.id, at: when(e, 'Late show up'), delta: trustAt(state, when(e, 'Late show up')).lateShowUp })),
     ...person.trustEvents.map((e) => ({
       label: e.kind === 'fraud' ? 'Fraud' : 'Cancelled session', detail: e.detail, studyId: e.studyId, at: e.at,
-      delta: e.kind === 'fraud' ? TRUST.FRAUD : TRUST.CANCELLED_SESSION,
+      delta: e.kind === 'fraud' ? trustAt(state, e.at).fraud : trustAt(state, e.at).cancelledSession,
     })),
   ]
   return out.sort((a, b) => b.at.localeCompare(a.at))
@@ -194,15 +214,18 @@ export function pointsRows(state: PlatformState, personId: string): PointsRow[] 
   const person = personById(state, personId)
   if (!person) return []
   const entries = entriesOf(state, personId)
+  // Policy v2 section 10: points are counted at the value in force when they were earned, so an edit moves no balance.
+  const KEY = { BEING_REFERRED: 'beingReferred', FULL_PROFILE: 'fullProfile', PROFILE_PICTURE: 'profilePicture', INTRO_VIDEO: 'introVideo', STUDY_COMPLETION: 'studyCompletion', REFERRAL: 'referral', STREAK: 'streak' } as const
+  const pv = (at: string, k: keyof typeof KEY): number => pointsAt(state, at)[KEY[k]]
   const rows: PointsRow[] = [
-    ...(person.sourceCode ? [{ id: 'pt-referred', kind: 'bonus' as const, label: 'Bonus', detail: 'Joined by referral', at: new Date(new Date(person.joinedAt).getTime() + 5 * 60_000).toISOString(), amount: POINTS.BEING_REFERRED }] : []),
-    ...(person.fullProfileAt ? [{ id: 'pt-profile', kind: 'bonus' as const, label: 'Bonus', detail: 'Full profile completion', at: person.fullProfileAt, amount: POINTS.FULL_PROFILE }] : []),
-    ...(person.pictureAddedAt ? [{ id: 'pt-picture', kind: 'bonus' as const, label: 'Bonus', detail: 'Profile picture added', at: person.pictureAddedAt, amount: POINTS.PROFILE_PICTURE }] : []),
-    ...(person.videoAddedAt ? [{ id: 'pt-video', kind: 'bonus' as const, label: 'Bonus', detail: 'Intro video added', at: person.videoAddedAt, amount: POINTS.INTRO_VIDEO }] : []),
-    ...entries.filter((e) => isPaid(e.p)).map((e) => ({ id: `pt-${e.study.id}`, kind: 'study' as const, label: 'Study', detail: e.study.title, at: e.p.paidAt!, amount: POINTS.STUDY_COMPLETION })),
+    ...(person.sourceCode ? [{ id: 'pt-referred', kind: 'bonus' as const, label: 'Bonus', detail: 'Joined by referral', at: new Date(new Date(person.joinedAt).getTime() + 5 * 60_000).toISOString(), amount: pv(new Date(new Date(person.joinedAt).getTime() + 5 * 60_000).toISOString(), 'BEING_REFERRED') }] : []),
+    ...(person.fullProfileAt ? [{ id: 'pt-profile', kind: 'bonus' as const, label: 'Bonus', detail: 'Full profile completion', at: person.fullProfileAt, amount: pv(person.fullProfileAt, 'FULL_PROFILE') }] : []),
+    ...(person.pictureAddedAt ? [{ id: 'pt-picture', kind: 'bonus' as const, label: 'Bonus', detail: 'Profile picture added', at: person.pictureAddedAt, amount: pv(person.pictureAddedAt, 'PROFILE_PICTURE') }] : []),
+    ...(person.videoAddedAt ? [{ id: 'pt-video', kind: 'bonus' as const, label: 'Bonus', detail: 'Intro video added', at: person.videoAddedAt, amount: pv(person.videoAddedAt, 'INTRO_VIDEO') }] : []),
+    ...entries.filter((e) => isPaid(e.p)).map((e) => ({ id: `pt-${e.study.id}`, kind: 'study' as const, label: 'Study', detail: e.study.title, at: e.p.paidAt!, amount: pv(e.p.paidAt!, 'STUDY_COMPLETION') })),
     // Policy section 3: "someone you referred joins". Paid on joining, whether or not they have completed a study yet.
-    ...person.referrals.map((r) => ({ id: `pt-${r.id}`, kind: 'referral' as const, label: 'Referral', detail: r.name, at: r.at, amount: POINTS.REFERRAL })),
-    ...streakMonths(entries).map((s) => ({ id: `pt-streak-${s.month}`, kind: 'streak' as const, label: 'Streak', detail: s.month, at: s.at, amount: POINTS.STREAK })),
+    ...person.referrals.map((r) => ({ id: `pt-${r.id}`, kind: 'referral' as const, label: 'Referral', detail: r.name, at: r.at, amount: pv(r.at, 'REFERRAL') })),
+    ...streakMonths(entries).map((s) => ({ id: `pt-streak-${s.month}`, kind: 'streak' as const, label: 'Streak', detail: s.month, at: s.at, amount: pv(s.at, 'STREAK') })),
   ]
   return rows.sort((a, b) => b.at.localeCompare(a.at))
 }
