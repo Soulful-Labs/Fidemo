@@ -190,7 +190,8 @@ export default function Audience() {
 
   return (
     <CreateShell step="audience" check={check}>
-      <div className="flex items-start gap-12 rounded-lg bg-bg-0 p-6">
+      {/* On wide screens the content and the forecast card sit side by side, centred together (22 Oct 2026). */}
+      <div className="flex items-start gap-12 rounded-lg bg-bg-0 p-6 min-[1600px]:justify-center">
         <div className="flex w-[600px] shrink-0 flex-col">
           <div className="flex flex-col gap-3 rounded-lg border-1 border-stroke-2 bg-bgAlt-1 px-5 py-3.5">
             <div className="flex items-center justify-between gap-4">

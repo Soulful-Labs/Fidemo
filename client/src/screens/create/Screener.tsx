@@ -322,7 +322,7 @@ export default function Screener() {
 
   return (
     <CreateShell step="screener">
-      <div className="flex items-start gap-12 rounded-lg bg-bg-0 p-6">
+      <div className={cn('flex items-start gap-12 rounded-lg bg-bg-0 p-6', preview && 'min-[1600px]:justify-center')}>
         <div className="flex w-[600px] shrink-0 flex-col">
           <div className="flex items-start gap-2 pb-4">
             <span className="w-5 shrink-0 text-brand-secondary">{LIST}</span>

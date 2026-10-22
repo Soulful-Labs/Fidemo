@@ -89,7 +89,7 @@ export default function About() {
 
   return (
     <CreateShell step="about">
-      <div className={cn('relative min-h-[1242px] rounded-lg bg-bg-0 px-6 pt-[9px]', preview && 'flex items-start gap-12 py-6')}>
+      <div className={cn('relative min-h-[1242px] rounded-lg bg-bg-0 px-6 pt-[9px]', preview && 'flex items-start gap-12 py-6 min-[1600px]:justify-center')}>
         {!preview && <span className="absolute right-6 top-6"><PreviewButton onClick={() => setPreview(true)} /></span>}
         <div className={cn('flex w-[600px] flex-col', !preview && 'mx-auto')}>
           <Section icon={<TaskIcon className="h-5 w-5" />} title="Select Study Type" sub={editing ? 'The study type cannot be changed after published' : 'Choose the study type suitable to your research needs'}>
