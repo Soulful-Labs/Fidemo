@@ -84,7 +84,7 @@ export default function SessionPage() {
         </div>
         {people.map((p) => (
           <div role="row" key={p.id} className={cn('grid grid-cols-[160px_280px_1fr_auto] items-center border-t-1 border-stroke-1 pl-4 pr-3', done ? 'h-[70px]' : 'h-[52px]')}>
-            <span>{p.name}</span><span>{p.role}</span>
+            <span><button type="button" onClick={() => setProfile(p.id)} className="text-left hover:text-brand-primary hover:underline">{p.name}</button></span><span>{p.role}</span>
             <span className="flex items-center gap-2">{p.score}<TierTag tier={p.tier} /></span>
             {done && <span className="flex items-center gap-3">{actions(p)}</span>}
             {!done && p.state === 'scheduled' && <Button variant="tertiary" size="md" className="px-3" onClick={() => setCancelling(p)}>Cancel Session</Button>}
@@ -122,7 +122,7 @@ export default function SessionPage() {
           {people.map((p, i) => (
             <article key={p.id} className="overflow-hidden rounded-lg border-1 border-stroke-1">
               <header className="flex h-[72px] items-center gap-3 bg-bg-1 px-4 text-text-regular text-text-title">
-                <div className="flex-1"><p className="text-body-medium leading-[22px]">{p.name}</p><p className="leading-5">{p.role}</p></div>
+                <div className="flex-1"><p className="text-body-medium leading-[22px]"><button type="button" onClick={() => setProfile(p.id)} className="text-left hover:text-brand-primary hover:underline">{p.name}</button></p><p className="leading-5">{p.role}</p></div>
                 <span className="flex items-center gap-2 pr-2">{p.score}<TierTag tier={p.tier} /></span>
                 <Button variant="tertiary" size="md" className="px-3" leftIcon={<UserIcon className="h-4 w-4" />} onClick={() => setProfile(p.id)}>View Profile</Button>
                 <Button variant="secondary" size="md" className="px-3" rightIcon={openRow === i ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />} onClick={() => setOpenRow(openRow === i ? -1 : i)}>View Activity</Button>

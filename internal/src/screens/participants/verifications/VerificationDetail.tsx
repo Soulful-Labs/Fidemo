@@ -20,6 +20,7 @@ import { AccountFlow } from '../profile/accountDialogs'
 import type { AccountStep } from '../profile/accountDialogs'
 import DecisionFlow from './dialogs'
 import type { Decision, Step } from './dialogs'
+import PersonLink from '../../../components/app/PersonLink'
 
 const Bad = ({ children }: { children: string }) => <span className="inline-flex h-7 items-center gap-1 self-start rounded-full bg-red-50 px-2.5 text-text-regular text-state-danger"><CloseIcon className="h-4 w-4" />{children}</span>
 const Good = ({ children }: { children: string }) => <span className="inline-flex h-7 items-center gap-1 self-start rounded-full bg-state-successBg px-2.5 text-text-regular text-state-success"><VerifiedIcon className="h-4 w-4" />{children}</span>
@@ -113,7 +114,7 @@ export default function VerificationDetail() {
       <header className="flex gap-4 rounded-lg bg-bgAlt-1 p-4">
         <img src={who.photo} alt="" className="h-[87px] w-[87px] rounded-sm object-cover" />
         <div className="min-w-0 flex-1">
-          <h1 className="text-title-s leading-[25px] text-text-title">{who.name}</h1>
+          <h1 className="text-title-s leading-[25px] text-text-title"><PersonLink id={person.id}>{who.name}</PersonLink></h1>
           <p className="flex items-center gap-2 pt-1 text-text-regular leading-[22px] text-text-subtitle"><span className="text-body-regular">{who.role}</span><span aria-hidden="true">•</span>{who.place}<span aria-hidden="true">•</span>Cert. ID: HL-R-9F2A-3K7P</p>
           <div className="flex gap-3 pt-2">
             <span className="flex h-7 items-center rounded-full bg-yellow-50 px-2.5 text-text-regular text-brand-primary">{PERSON.completion}</span>

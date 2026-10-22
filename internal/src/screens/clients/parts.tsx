@@ -1,4 +1,5 @@
 import { copyText } from '../../components/app/Notice'
+import PersonLink from '../../components/app/PersonLink'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import Button, { IconButton } from '../../components/ui/Button'
@@ -49,7 +50,7 @@ export function ClientAbout({ id }: { id?: string }) {
             <h3 className="text-body-medium leading-[22px] text-text-title">{r.study}</h3>
             <p className="flex items-center gap-2 pt-1.5 text-text-body"><Stars value={r.stars} size="h-6 w-6" /><span className="text-text-medium text-text-title">{r.score}</span><span>•&nbsp; {r.date}</span></p>
             {r.text && <p className="pt-1 text-text-subtitle">{r.text}</p>}
-            <p className="flex items-center gap-1 pt-1.5 text-text-subtitle"><span>To participant:</span><span className="text-text-medium text-text-title">{r.to}</span>
+            <p className="flex items-center gap-1 pt-1.5 text-text-subtitle"><span>To participant:</span>{r.toId ? <PersonLink id={r.toId} className="text-text-medium text-text-title">{r.to}</PersonLink> : <span className="text-text-medium text-text-title">{r.to}</span>}
               <Stars value={r.back} size="h-5 w-5" /><span className="text-text-medium">{r.backScore}</span><span className="min-w-0 flex-1 truncate text-text-body">{r.reply}</span></p>
           </article>
         ))}

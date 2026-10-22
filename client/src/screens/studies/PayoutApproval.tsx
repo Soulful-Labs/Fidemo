@@ -4,6 +4,7 @@ import Pagination from '../../components/client/Pagination'
 import { pageLabels, paginate, payoutList } from '@shared/derive'
 import type { ClientStudy as Study } from '../../platform'
 import { useStudies } from '../../platform'
+import { PersonName } from '../../app/ProfileHost'
 
 /**
  * Respondent Payouts, on the Pay tab. **No Figma frame draws it.**
@@ -53,7 +54,7 @@ export default function PayoutApproval({ study }: { study: Study }) {
               const paid = Boolean(r.person.participation.paidAt)
               return (
                 <tr key={r.person.id} className="border-b-1 border-stroke-input last:border-b-0">
-                  <td className="h-row px-[18px] text-text-regular text-text-title">{r.person.name}</td>
+                  <td className="h-row px-[18px] text-text-regular text-text-title"><PersonName id={r.person.id}>{r.person.name}</PersonName></td>
                   <td className="h-row px-[18px] text-text-regular text-text-title">{r.person.role}</td>
                   <td className="h-row px-[18px]">
                     <span className={`inline-flex items-center gap-1.5 text-text-regular ${paid ? 'text-brand-secondary' : r.codeConfirmed ? 'text-text-subtitle' : 'text-[#d97706]'}`}>

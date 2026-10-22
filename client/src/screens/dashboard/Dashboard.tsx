@@ -8,7 +8,7 @@ import StatTile from '../../components/client/StatTile'
 import Button from '../../components/ui/Button'
 import { ChevronRight, Clock, DollarCircle, ShieldIcon, UsersIcon } from '../../components/ui/icons'
 import { DASHBOARD_STUDY_IDS } from '../../mock/dashboard'
-import RespondentPanel from './RespondentPanel'
+import { useOpenProfile } from '../../app/ProfileHost'
 import { AttentionPanel, NeedRow, StepArrow, StudyCarousel } from './DashboardParts'
 import { InvitePanel } from '../pool/PoolPanels'
 import { SentModal } from '../pool/PoolModals'
@@ -48,7 +48,7 @@ const greeting = (now: Date = new Date()) => (now.getHours() < 12 ? 'Good Mornin
 export default function Dashboard({ empty = false }: { empty?: boolean }) {
   const newStudy = useNewStudy()
   const navigate = useNavigate()
-  const [profile, setProfile] = useState<Respondent | null>(null)
+  const openProfile = useOpenProfile()
   const [inviting, setInviting] = useState<Respondent | null>(null)
   const [sent, setSent] = useState(false)
   const [insightAt, setInsightAt] = useState(0)
@@ -173,14 +173,12 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
             <div className="flex rounded-lg border-1 border-stroke-1 bg-bg-1"><Blank line="Recommendations appear once your first study is live." cta="Browse the pool" onClick={() => navigate('/pool')} /></div>
           ) : (
             <div className="grid grid-cols-3 gap-3">
-              {recommended.map((r) => <RespondentCard key={r.id} respondent={r} onView={() => setProfile(r)} onInvite={() => setInviting(r)} />)}
+              {recommended.map((r) => <RespondentCard key={r.id} respondent={r} onView={() => openProfile(r.id)} onInvite={() => setInviting(r)} />)}
             </div>
           )}
         </section>
       </div>
 
-      <RespondentPanel open={profile !== null} onClose={() => setProfile(null)} respondent={profile}
-        onInvite={() => { setInviting(profile); setProfile(null) }} />
       <InvitePanel open={inviting !== null} name={inviting?.name.split(' ')[0]} personId={inviting?.id} onClose={() => setInviting(null)}
         onSent={() => { setInviting(null); setSent(true) }} />
       <SentModal open={sent} onClose={() => setSent(false)} />

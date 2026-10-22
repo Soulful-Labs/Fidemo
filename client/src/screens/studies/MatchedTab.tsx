@@ -5,8 +5,7 @@ import Button from '../../components/ui/Button'
 import Select from '../../components/ui/Select'
 import Tabs from '../../components/ui/Tabs'
 import RespondentCard from '../../components/client/RespondentCard'
-import type { Respondent } from '../../components/client/RespondentCard'
-import RespondentPanel from '../dashboard/RespondentPanel'
+import { useOpenProfile } from '../../app/ProfileHost'
 import { StudyFrame } from '../../components/client/StudyFrame'
 import { SentModal } from '../pool/PoolModals'
 import { ChevronRight, PoolIcon } from '../../components/ui/icons'
@@ -40,8 +39,8 @@ export default function MatchedTab() {
     .filter((r) => tier === 'All' || r.tier === tier.toLowerCase())
     .sort((a, b) => b.score - a.score)
   const people = matched.slice(0, shown)
-  /** Respondent Profile Details (1627:98130) is the Dashboard's panel, reused. */
-  const [profile, setProfile] = useState<Respondent | null>(null)
+  /** Respondent Profile Details (1627:98130), with its Reviews page: the one profile host every name opens. */
+  const openProfile = useOpenProfile()
   /** Who was just invited, for the Sent dialog. */
   const [sent, setSent] = useState<string | null>(null)
   /** Invite From Pool (15 Oct 2026): the whole pool, inside this tab, for every study type. */
@@ -56,7 +55,7 @@ export default function MatchedTab() {
       <StudyFrame study={s} active="matched" minH="min-h-[1307px]" bodyMinH="min-h-[1057px]">
         {fromPool ? (
           <InviteFromPool study={s} onBack={() => setFromPool(false)} onInvite={(p) => invite(p.id, p.name)}
-            onView={(p) => setProfile(p as unknown as Respondent)} />
+            onView={(p) => openProfile(p.id)} />
         ) : (
         <div className="flex flex-col px-4 pt-4">
           <div className="flex items-start justify-between gap-4">
@@ -92,7 +91,7 @@ export default function MatchedTab() {
                 state === 'matched' ? (
                   <>
                     <Button variant="secondary" size="none" className="h-11 flex-1" onClick={() => invite(r.id, r.name)}>Invite To Study</Button>
-                    <Button variant="tertiary" size="none" className="h-11 flex-1" onClick={() => setProfile(r)}
+                    <Button variant="tertiary" size="none" className="h-11 flex-1" onClick={() => openProfile(r.id)}
                       rightIcon={<ChevronRight className="h-4 w-4" />}>View Profile</Button>
                   </>
                 ) : (
@@ -110,7 +109,6 @@ export default function MatchedTab() {
         </div>
         )}
       </StudyFrame>
-      <RespondentPanel open={!!profile} respondent={profile} onClose={() => setProfile(null)} />
       <SentModal open={sent !== null} name={sent ?? undefined} study={s.title} onClose={() => setSent(null)} />
     </AppShell>
   )

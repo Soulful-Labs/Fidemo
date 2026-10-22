@@ -60,25 +60,3 @@ export const POOL_DEFAULT_FILTERS = {
 
 export type PoolFilters = typeof POOL_DEFAULT_FILTERS
 
-/** Reviews (1645:163046): what the client wrote, and what the respondent wrote back. */
-export const REVIEWS = [
-  {
-    study: 'Digital patient consulting experience analysis', stars: 4, rating: '4.0', at: 'April 10, 2026',
-    body: 'It was great working with Luke. He was clear about the requirements, responsive throughout the project, and very easy to communicate with. The collaboration went smoothly, and I’d be happy to work with him again on future projects. Thanks!',
-    client: 'Google Labs', clientStars: 5, clientRating: '5.0', clientBody: 'The collaboration went smoothly, and I’d…',
-  },
-  {
-    study: 'Mobile app design review', stars: 5, rating: '5', at: 'April 10, 2026',
-    body: 'Working with Sarah was a pleasure. She brought innovative ideas to the table and was open to feedback, making the design process very collaborative. I’m looking forward to our next project together!',
-    client: 'Tech Innovations', clientStars: 4.5, clientRating: '4.5', clientBody: 'Her creativity and willingness to ada…',
-  },
-  {
-    study: 'E-commerce website optimization', stars: 5, rating: '5', at: 'April 10, 2026',
-    body: 'John was fantastic to work with. He understood the project goals from the start and delivered exceptional results that exceeded our expectations. I’d definitely recommend him to others!',
-    client: 'Retail Solutions', clientStars: 5, clientRating: '5.0', clientBody: 'His expertise in user experience mad…',
-  },
-  {
-    study: 'Social media marketing campaign', stars: 5, rating: '5', at: 'April 10, 2026',
-    body: 'Collaborating with Mia was delightful. She was proactive in her approach, and her insights into market trends helped shape a successful campaign. I look forward to partnering with her again!',
-  },
-]

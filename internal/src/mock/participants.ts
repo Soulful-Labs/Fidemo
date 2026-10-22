@@ -1,7 +1,7 @@
 import { sharedPhoto } from '@shared/derive'
 import { initialFor } from '@shared/avatar'
 import { useMemo } from 'react'
-import { clientById, personById, shortName, tierOf, trustScoreOf } from '@shared/derive'
+import { participantReviews, personById, shortName, tierOf, trustScoreOf } from '@shared/derive'
 import { isLive } from '@shared/lifecycle'
 import { count, dayOrToday } from '@shared/format'
 import type { Person, PlatformState } from '@shared/types'
@@ -69,15 +69,11 @@ export function useParticipantReviews(personId?: string) {
   const state = usePlatform()
   return useMemo(() => {
     const person = personId ? personById(state, personId) : undefined
-    const rows = state.studies.flatMap((s) => s.participations.filter((p) => p.personId === personId && p.rating).map((p) => {
-      const back = p.clientReview ? Math.round((p.clientReview.reliability + p.clientReview.communication) / 2) : 0
-      return {
-        study: s.title, stars: p.rating!.stars, score: p.rating!.stars.toFixed(1), at: p.rating!.at,
-        date: new Date(p.rating!.at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-        text: p.rating!.comment ?? '', client: clientById(state, s.clientId)?.company ?? '',
-        back, backScore: back ? back.toFixed(1) : '', reply: p.clientReview?.comment ?? '',
-      }
-    })).sort((a, b) => b.at.localeCompare(a.at))
+    const rows = (personId ? participantReviews(state, personId) : []).map((r) => ({
+      study: r.study, stars: r.stars, score: r.stars.toFixed(1), at: r.at,
+      date: new Date(r.at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+      text: r.comment, client: r.client, back: r.back, backScore: r.back ? r.back.toFixed(1) : '', reply: r.reply,
+    }))
     return { name: person?.name ?? '', rows }
   }, [state, personId])
 }

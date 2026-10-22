@@ -14,6 +14,7 @@ import { photoFor } from '../../../mock/participants'
 import { TEAM, say, usePlatform } from '../../../platform'
 import ReportRail from './ReportRail'
 import ResolveDialogs from './ResolveDialogs'
+import PersonLink from '../../../components/app/PersonLink'
 
 const when = (iso: string) => `${dayMonthYear(iso)}  •  ${clockTime(iso)}`
 
@@ -29,7 +30,7 @@ function Reports({ reports }: { reports: StudyReport[] }) {
   const state = usePlatform()
   return (
     <Table rowHeight={52} rows={reports} rowKey={(r) => r.id} columns={[
-      { key: 'name', header: 'Name', width: 200, render: (r) => { const p = personById(state, r.personId); return <span className="flex items-center gap-2">{p && <Avatar src={photoFor(p)} name={p.name} size={24} />}{p?.name ?? ''}</span> } },
+      { key: 'name', header: 'Name', width: 200, render: (r) => { const p = personById(state, r.personId); return <span className="flex items-center gap-2">{p && <Avatar src={photoFor(p)} name={p.name} size={24} />}{p ? <PersonLink id={p.id}>{p.name}</PersonLink> : ''}</span> } },
       { key: 'reason', header: 'Reason', width: '1fr', render: (r) => <span className="block truncate" title={r.detail}>{r.reason}</span> },
       { key: 'at', header: 'Reported On', width: 220, render: (r) => when(r.at) },
     ]} />

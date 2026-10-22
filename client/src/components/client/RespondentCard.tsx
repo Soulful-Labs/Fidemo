@@ -5,6 +5,7 @@ import TierChip from './TierChip'
 import { ChevronRight, TrustMark, VerifiedMark } from '../ui/icons'
 import { cn } from '../../lib/cn'
 import type { Tier } from '../../lib/studyTypes'
+import { PersonName } from '../../app/ProfileHost'
 
 export interface Respondent {
   id: string
@@ -67,7 +68,7 @@ export default function RespondentCard({
             <button type="button" onClick={onView}
               className="truncate text-left text-text-regular text-text-subtitle hover:underline">{respondent.name}</button>
           ) : (
-            <span className="truncate text-text-regular text-text-subtitle">{respondent.name}</span>
+            <PersonName id={respondent.id} className="truncate text-text-regular text-text-subtitle">{respondent.name}</PersonName>
           )}
           <span className="truncate text-body-medium text-text-title">{respondent.role}</span>
         </div>

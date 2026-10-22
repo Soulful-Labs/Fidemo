@@ -57,7 +57,7 @@ export function useClientView(id?: string) {
       rating: { score: rating.rating.toFixed(1), of: `of ${count(rating.reviewCount)} reviews` },
       REVIEWS: clientReviews(state, c.id).map((r) => ({
         study: r.study, stars: r.stars, score: r.stars.toFixed(1), date: new Date(r.at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-        text: r.comment ?? '', to: r.participant.name, back: r.participant.stars, backScore: r.participant.stars.toFixed(1), reply: r.participant.comment ?? '',
+        text: r.comment ?? '', to: r.participant.name, toId: r.participant.id, back: r.participant.stars, backScore: r.participant.stars.toFixed(1), reply: r.participant.comment ?? '',
       })),
       ONGOING: studies.filter((s) => s.state !== 'completed' && s.state !== 'cancelled').map(studyRow),
       COMPLETED: studies.filter((s) => s.state === 'completed' || s.state === 'cancelled').map(studyRow),

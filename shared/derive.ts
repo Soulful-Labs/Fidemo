@@ -397,7 +397,8 @@ export function profileCard(state: PlatformState, personId: string, now: Date = 
 export interface ClientReviewRow {
   id: string; study: string; stars: number; at: string; comment?: string
   /** The client's rating of that participant, shown under the review. */
-  participant: { name: string; stars: number; comment?: string }
+  /** `id` is absent on the earlier reviews on record, which name the participant without linking a profile. */
+  participant: { id?: string; name: string; stars: number; comment?: string }
 }
 
 /** Every review of a client: the earlier ones on record, then the ones participants left on the client's studies. */
@@ -406,7 +407,7 @@ export function clientReviews(state: PlatformState, clientId: string): ClientRev
   const seeded = state.studies.filter((s) => s.clientId === clientId).flatMap((s) => s.participations.filter((p) => p.clientReview).map((p): ClientReviewRow => ({
     id: `${s.id}-${p.personId}`, study: s.title,
     stars: Math.round((p.clientReview!.reliability + p.clientReview!.communication) / 2), at: p.clientReview!.at, comment: p.clientReview!.comment,
-    participant: { name: shortName(personById(state, p.personId)?.name ?? ''), stars: p.rating?.stars ?? 0, comment: p.rating?.comment },
+    participant: { id: p.personId, name: shortName(personById(state, p.personId)?.name ?? ''), stars: p.rating?.stars ?? 0, comment: p.rating?.comment },
   })))
   return [...seeded, ...(client?.earlierReviews ?? [])].sort((a, b) => b.at.localeCompare(a.at))
 }
@@ -1173,4 +1174,25 @@ export function withdrawals(state: PlatformState, which: 'pending' | 'released' 
     return { person, payout, state: payoutState(payout.status), method }
   })).filter((r) => which === 'all' || (which === 'pending' ? r.state === 'pending' : r.state !== 'pending'))
     .sort((a, b) => a.payout.at.localeCompare(b.payout.at))
+}
+
+/** One client review of a participant, with what the participant wrote back about that client. */
+export interface ParticipantReview {
+  studyId: string; study: string; stars: number; at: string; comment: string
+  client: string; back: number; reply: string
+}
+
+/**
+ * Reviews (22 Oct 2026, console 2383:135816, client 1645:163046): every rating
+ * a client gave this participant, newest first, each with the participant's
+ * own review of that client beside it. The console and the client read the
+ * same rows.
+ */
+export function participantReviews(state: PlatformState, personId: string): ParticipantReview[] {
+  return state.studies.flatMap((s) => s.participations.filter((p) => p.personId === personId && p.rating).map((p) => ({
+    studyId: s.id, study: s.title, stars: p.rating!.stars, at: p.rating!.at, comment: p.rating!.comment ?? '',
+    client: clientById(state, s.clientId)?.company ?? '',
+    back: p.clientReview ? Math.round((p.clientReview.reliability + p.clientReview.communication) / 2) : 0,
+    reply: p.clientReview?.comment ?? '',
+  }))).sort((a, b) => b.at.localeCompare(a.at))
 }

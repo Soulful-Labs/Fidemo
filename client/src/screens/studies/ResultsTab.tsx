@@ -17,6 +17,7 @@ import { usePlatform, useStudy } from '../../platform'
 import { monthDayYear } from '@shared/format'
 import { averageScore, counts, pageLabels, paginate, recruits, studyCertificate } from '@shared/derive'
 import { useState } from 'react'
+import { PersonName } from '../../app/ProfileHost'
 
 /** The sealed stamp the certificate card is drawn with. */
 function Seal() {
@@ -112,7 +113,7 @@ export default function ResultsTab() {
                   )}
                   {shown.rows.map((r) => (
                     <tr key={r.id} className="border-b-1 border-stroke-input last:border-b-0">
-                      <td className="h-[70px] px-[18px] text-text-regular text-text-title"><span className="flex items-center gap-2"><Avatar name={r.name} photo={r.photo} size={28} />{r.name}</span></td>
+                      <td className="h-[70px] px-[18px] text-text-regular text-text-title"><span className="flex items-center gap-2"><Avatar name={r.name} photo={r.photo} size={28} /><PersonName id={r.id}>{r.name}</PersonName></span></td>
                       <td className="h-[70px] px-[18px] text-text-regular text-text-title">{r.role}</td>
                       <td className="h-[70px] px-[18px] text-text-regular text-text-title">{monthDayYear(r.participation.completedAt)}</td>
                       <td className="h-[70px] px-[18px]"><ScoreCell score={r.score} tier={r.tier} /></td>

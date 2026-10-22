@@ -5,22 +5,26 @@ import StudyTypeTag from '../../components/client/StudyTypeTag'
 import { Avatar } from '../../components/client/RespondentCard'
 import { Check, ChevronLeft, DiaryBookIcon, Star, StarFilled } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
-import { REVIEWS } from '../../mock/pool'
-import { useStudies } from '../../platform'
+import type { Respondent } from '../../components/client/RespondentCard'
+import { participantReviews } from '@shared/derive'
+import { usePlatform, useProfile, useStudies } from '../../platform'
 import { isLive } from '@shared/lifecycle'
 import { useToast } from '../../components/ui/Toast'
 
 /** The person a Pool panel is about, under its title bar. */
-function Person({ tight }: { tight?: boolean }) {
+function Person({ respondent }: { respondent: Respondent }) {
+  const d = useProfile(respondent.id)
   return (
-    <div className={cn('flex items-center gap-3 px-4', tight ? 'py-3' : 'py-4')}>
-      <Avatar name="Ferry L." size={tight ? 40 : 64} />
+    <div className="flex items-center gap-3 px-4 py-4">
+      <Avatar name={respondent.name} photo={respondent.photo} size={64} />
       <span className="flex flex-col">
-        <span className="text-text-regular text-text-subtitle">Ferry L.</span>
-        <span className="text-title-s leading-[22px] text-text-title">Physiology Therapist, Orthopedic</span>
-        <span className="pt-1 text-text-regular text-text-subtitle">
-          New York, USA <span className="px-1 text-text-body">&bull;</span> Cert. ID: HL-R-9F2A-3K7P
-        </span>
+        <span className="text-text-regular text-text-subtitle">{respondent.name}</span>
+        <span className="text-title-s leading-[22px] text-text-title">{respondent.role}</span>
+        {d && (
+          <span className="pt-1 text-text-regular text-text-subtitle">
+            {d.location} <span className="px-1 text-text-body">&bull;</span> {d.cert}
+          </span>
+        )}
       </span>
     </div>
   )
@@ -43,41 +47,47 @@ function Stars({ n, size = 'h-5 w-5' }: { n: number; size?: string }) {
  * reached from its "Reviews ›" link. Each entry is a study, what the client
  * wrote about the respondent, and what the respondent wrote back.
  */
-export function ReviewsPanel({ open, onClose, onBack, onInvite }: {
+export function ReviewsPanel({ open, onClose, onBack, onInvite, respondent }: {
   open: boolean; onClose: () => void; onBack?: () => void; onInvite?: () => void
+  /** Whose reviews (22 Oct 2026): the rows are the platform's ratings of this person, no longer a drawn sample. */
+  respondent: Respondent | null
 }) {
   const toast = useToast()
+  const state = usePlatform()
+  if (!respondent) return null
+  const rows = participantReviews(state, respondent.id)
   return (
-    <SidePanel open={open} onClose={onClose} title="Profile of Ferry L." headerClassName="h-14"
+    <SidePanel open={open} onClose={onClose} title={`Profile of ${respondent.name}.`} headerClassName="h-14"
       bodyClassName="flex flex-col p-0"
       footer={
         <div className="flex gap-3 [&_button]:h-12 [&_button]:flex-1 [&_button]:text-body-medium">
           <Button onClick={() => (onInvite ? onInvite() : toast('Open their profile to invite them to a study'))}>Invite To Study</Button>
         </div>
       }>
-      <Person />
+      <Person respondent={respondent} />
       <div className="mx-4 flex flex-col rounded-lg border-1 border-stroke-input">
         <button type="button" onClick={onBack}
           className="flex items-center gap-4 border-b-1 border-stroke-1 px-4 py-4 text-title-s leading-[22px] text-text-title">
           <ChevronLeft className="h-5 w-5 text-text-subtitle" />Reviews
         </button>
-        {REVIEWS.map((r) => (
-          <div key={r.study} className="flex flex-col gap-2 border-b-1 border-stroke-1 px-4 py-4 last:border-b-0">
+        {rows.length === 0 && <p className="px-4 py-4 text-text-regular text-text-subtitle">No client has rated them yet.</p>}
+        {rows.map((r) => (
+          <div key={r.studyId} className="flex flex-col gap-2 border-b-1 border-stroke-1 px-4 py-4 last:border-b-0">
             <p className="text-body-medium text-text-title">{r.study}</p>
             <p className="flex items-center gap-2">
               <Stars n={r.stars} />
-              <span className="text-body-medium text-text-title">{r.rating}</span>
+              <span className="text-body-medium text-text-title">{r.stars.toFixed(1)}</span>
               <span className="text-text-body">&bull;</span>
-              <span className="text-text-regular text-text-subtitle">{r.at}</span>
+              <span className="text-text-regular text-text-subtitle">{new Date(r.at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
             </p>
-            <p className="text-text-regular leading-5 text-text-subtitle">{r.body}</p>
-            {r.client && (
+            {r.comment && <p className="text-text-regular leading-5 text-text-subtitle">{r.comment}</p>}
+            {r.client && r.back > 0 && (
               <p className="flex items-center gap-2 truncate pt-1">
                 <span className="shrink-0 text-text-regular text-text-subtitle">To client:</span>
                 <span className="shrink-0 text-body-medium text-text-title">{r.client}</span>
-                <Stars n={r.clientStars ?? 0} size="h-4 w-4" />
-                <span className="shrink-0 text-body-medium text-text-title">{r.clientRating}</span>
-                <span className="truncate text-text-regular text-text-body">{r.clientBody}</span>
+                <Stars n={r.back} size="h-4 w-4" />
+                <span className="shrink-0 text-body-medium text-text-title">{r.back.toFixed(1)}</span>
+                {r.reply && <span className="truncate text-text-regular text-text-body">{r.reply}</span>}
               </p>
             )}
           </div>

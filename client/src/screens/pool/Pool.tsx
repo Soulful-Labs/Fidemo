@@ -133,7 +133,7 @@ export default function Pool() {
       <RespondentPanel open={panel === 'profile'} respondent={viewing ?? POOL_PEOPLE[0]!}
         onClose={() => setPanel('')} onReviews={() => setPanel('reviews')}
         onInvite={() => setPanel('invite')} />
-      <ReviewsPanel open={panel === 'reviews'} onClose={() => setPanel('')} onBack={() => setPanel('profile')} onInvite={() => setPanel('invite')} />
+      <ReviewsPanel open={panel === 'reviews'} respondent={viewing ?? null} onClose={() => setPanel('')} onBack={() => setPanel('profile')} onInvite={() => setPanel('invite')} />
       <InvitePanel open={panel === 'invite'} name={viewing?.name.split(' ')[0]} personId={viewing?.id} onClose={() => setPanel('')} onSent={() => setPanel('sent')} />
       <SentModal open={panel === 'sent'} name={viewing?.name} onClose={() => setPanel('')} />
     </AppShell>

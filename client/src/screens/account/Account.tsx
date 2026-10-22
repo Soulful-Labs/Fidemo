@@ -16,6 +16,7 @@ import { useToast } from '../../components/ui/Toast'
 import { useSession } from '../../mock/session'
 import { useWorkspace } from '../../mock/workspace'
 import { AddCardPanel, CardMark, EditCardPanel } from '../payments/PaymentPanels'
+import { PersonName } from '../../app/ProfileHost'
 
 const NAV = [
   { key: 'profile', label: 'Profile' },
@@ -83,7 +84,7 @@ export default function Account() {
   const allReviews = clientReviews(world, client?.id ?? '').map((r) => ({
     study: r.study, stars: r.stars, rating: r.stars.toFixed(1),
     at: new Date(r.at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }), body: r.comment,
-    to: r.participant.name, toStars: r.participant.stars, toRating: r.participant.stars.toFixed(1), toBody: r.participant.comment,
+    to: r.participant.name, toId: r.participant.id, toStars: r.participant.stars, toRating: r.participant.stars.toFixed(1), toBody: r.participant.comment,
   }))
   const [reviewPage, setReviewPage] = useState(1)
   /** pageLabels counts pages, not rows, so it takes paginate's own total. */
@@ -206,7 +207,7 @@ export default function Account() {
                     {r.body && <p className="text-text-regular leading-5 text-text-subtitle">{r.body}</p>}
                     <p className="flex items-center gap-2 truncate">
                       <span className="shrink-0 text-text-regular text-text-subtitle">To participant:</span>
-                      <span className="shrink-0 text-body-medium text-text-title">{r.to}</span>
+                      {r.toId ? <PersonName id={r.toId} className="shrink-0 text-body-medium text-text-title">{r.to}</PersonName> : <span className="shrink-0 text-body-medium text-text-title">{r.to}</span>}
                       <Stars n={r.toStars} />
                       <span className="shrink-0 text-body-medium text-text-title">{r.toRating}</span>
                       {r.toBody && <span className="truncate text-text-regular text-text-body">{r.toBody}</span>}

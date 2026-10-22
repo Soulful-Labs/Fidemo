@@ -83,9 +83,13 @@ export function useProfile(personId?: string) {
       PAYOUTS: payoutRows(p).map((r) => ({ key: r.id, day: monthDayYear(r.at), time: clockTime(r.at), to: `To ${p.payoutMethods.find((m) => m.accountNumber.replace(/\s/g, '').endsWith(r.destination.replace(/\D/g, '')))?.bankName ?? 'Bank'}... ${r.destination}`, id: r.txId, amount: money(r.amount), status: r.status === 'processing' ? 'Processing' : 'Completed',
         /** For Payout Details: the payout itself, not the frame's sample. */
         bank: r.destination.slice(-4), when: monthDayYearTime(r.at), fee: money(r.fee), net: money(r.net), expected: r.status === 'processing' ? monthDayYear(r.expectedBy ?? withdrawalExpectedBy(r.at)) : '' })),
-      POINTS: pointsRows(state, p.id).map((r) => ({ key: r.id, kind: r.label, what: r.detail, points: `+${r.amount}` })),
+      POINTS: pointsRows(state, p.id).map((r) => ({ key: r.id, kind: r.label, what: r.detail, points: `+${r.amount}`,
+        /** A referral's particulars is the friend; once they joined, their name opens their profile. */
+        personId: state.people.find((x) => x.email === p.referrals.find((f) => `pt-${f.id}` === r.id)?.email)?.id })),
       REDEEMS: redeemRows(p).map((r) => ({ key: r.id, what: `${r.points} points redeemed`, points: `-${r.points}` })),
-      REFERRALS: p.referrals.map((r) => ({ key: r.id, photo: avatarFor(r.id), name: r.name, email: r.email, joined: monthDayYear(r.at), status: r.status === 'joined' ? 'Joined' : 'Completed' })),
+      REFERRALS: p.referrals.map((r) => ({ key: r.id, photo: avatarFor(r.id), name: r.name,
+        /** The friend's own record, once they joined with that email; their name then opens their profile. */
+        personId: state.people.find((x) => x.email === r.email)?.id, email: r.email, joined: monthDayYear(r.at), status: r.status === 'joined' ? 'Joined' : 'Completed' })),
       figures: f,
     }
   }, [state, personId])

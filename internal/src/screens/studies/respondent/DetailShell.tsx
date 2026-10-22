@@ -1,4 +1,7 @@
+import { useState } from 'react'
 import type { ReactNode } from 'react'
+import PersonLink from '../../../components/app/PersonLink'
+import { ReviewsPanel } from '../../participants/panels'
 import AppShell from '../../../app/AppShell'
 import PanelTabs from '../../../components/app/PanelTabs'
 import type { PanelTab } from '../../../components/app/PanelTabs'
@@ -6,7 +9,7 @@ import Pill from '../../../components/app/Pill'
 import StudyTypeTag from '../../../components/app/StudyTypeTag'
 import TierTag from '../../../components/app/TierTag'
 import Button from '../../../components/ui/Button'
-import { ClipboardIcon, ClockIcon, HistoryIcon, InfoIcon, ScreenerIcon, StarIcon, VerifiedIcon } from '../../../components/ui/icons'
+import { ChevronRight, ClipboardIcon, ClockIcon, HistoryIcon, InfoIcon, ScreenerIcon, StarIcon, VerifiedIcon } from '../../../components/ui/icons'
 import { cn } from '../../../lib/cn'
 import type { ManagedStudy } from '../../../mock/manage'
 import type { RespondentView } from '../../../mock/results'
@@ -26,10 +29,13 @@ const Rule = () => <hr className="-mx-3 border-0 border-t-1 border-stroke-1" />
  * About, Verified and Metrics. Once they have finished, a "Rate ... for this
  * study" block sits on top.
  */
-export function RespondentCard({ name, card: R, onRate }: { name: string; card: RespondentView['card']; onRate?: () => void }) {
+export function RespondentCard({ name, personId, card: R, onRate }: { name: string; personId?: string; card: RespondentView['card']; onRate?: () => void }) {
   const first = name.split(' ')[0]
+  /** Reviews beside Trust Score (2383:135816, 22 Oct 2026) opens what clients wrote about them. */
+  const [reviews, setReviews] = useState(false)
   return (
     <aside className="flex w-[304px] shrink-0 flex-col gap-3 self-start rounded-lg border-1 border-stroke-1 p-3 text-text-regular leading-5">
+      {personId && <ReviewsPanel open={reviews} personId={personId} onClose={() => setReviews(false)} />}
       {onRate && (
         <div className="rounded-md bg-bgAlt-2 px-4 pb-4 pt-3.5">
           <p className="flex items-center gap-1 text-text-medium text-text-title"><StarIcon className="h-5 w-5 text-brand-secondary" />Rate {name} for this study</p>
@@ -38,13 +44,19 @@ export function RespondentCard({ name, card: R, onRate }: { name: string; card: 
         </div>
       )}
       <div>
-        <p className="flex items-center gap-2 text-body-medium leading-[22px] text-text-title"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-bg-3 text-label text-text-subtitle">{name.slice(0, 1)}</span>{name}</p>
+        <p className="flex items-center gap-2 text-body-medium leading-[22px] text-text-title"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-bg-3 text-label text-text-subtitle">{name.slice(0, 1)}</span>{personId ? <PersonLink id={personId}>{name}</PersonLink> : name}</p>
         <p className="pt-2.5 text-title-s leading-[25px] text-text-title">{R.role}</p>
         {R.facts.map((f) => <p key={f} className="pt-2 text-text-title first-of-type:pt-0">{f}</p>)}
       </div>
       <Rule />
       <div>
-        <p className="text-text-subtitle">Trust Score</p>
+        <p className="flex items-center justify-between text-text-subtitle">Trust Score
+          {personId && (
+            <button type="button" onClick={() => setReviews(true)} className="inline-flex h-7 items-center gap-1 text-text-regular text-text-subtitle hover:text-brand-primary">
+              Reviews <ChevronRight className="h-4 w-4" />
+            </button>
+          )}
+        </p>
         <p className="flex items-center gap-3 pt-2 text-title-l leading-[31px] text-text-title">{R.trust}<TierTag tier={R.tier} size={32} /></p>
         <p className="pb-2 pt-3 text-text-subtitle">Performance Ratings</p>
         <div className="flex flex-col gap-3">

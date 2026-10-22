@@ -13,6 +13,7 @@ import { cn } from '../../lib/cn'
 import { useProfile } from '../../mock/profile'
 import { photoFor } from '../../mock/participants'
 import { TEAM, say, usePlatform } from '../../platform'
+import PersonLink from '../../components/app/PersonLink'
 
 const Tile = ({ label, value, green }: { label: string; value: string; green?: boolean }) => (
   <div className={cn('flex h-[91px] flex-1 flex-col justify-center rounded-md border-1 border-stroke-1 px-3', green && 'bg-bgAlt-1')}>
@@ -45,7 +46,7 @@ export default function WithdrawalDetail() {
       <header className="flex items-start gap-4 rounded-lg border-1 border-stroke-1 p-4">
         <Avatar src={photoFor(row.person)} name={row.person.name} size={64} />
         <div className="flex flex-1 flex-col gap-1">
-          <p className="text-title-s text-text-title">{row.person.name}</p>
+          <PersonLink id={row.person.id} className="text-title-s text-text-title">{row.person.name}</PersonLink>
           <p className="text-text-regular text-text-subtitle">{[PERSON.role, PERSON.place, PERSON.cert].filter(Boolean).join('  •  ')}</p>
           <p className="text-text-regular text-text-body">{PERSON.lastActive}</p>
         </div>

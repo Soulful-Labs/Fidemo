@@ -8,6 +8,7 @@ import ToastHost from './components/ui/Toast'
 import { PlatformClock } from './platform'
 import { SessionProvider } from './mock/session'
 import { WorkspaceProvider } from './mock/workspace'
+import { ProfileHost } from './app/ProfileHost'
 
 function Routed() {
   return useRoutes(routes)
@@ -21,7 +22,9 @@ createRoot(document.getElementById('root')!).render(
           <CreateProvider>
             <PlatformClock />
             <ToastHost>
-              <Routed />
+              <ProfileHost>
+                <Routed />
+              </ProfileHost>
             </ToastHost>
           </CreateProvider>
         </WorkspaceProvider>

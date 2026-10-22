@@ -61,7 +61,7 @@ export default function RespondentPage() {
 
   return (
     <DetailShell closed={closed} close={stage === 'applied'} study={study} tabs={keys.map((k) => DETAIL_TABS[k])} tab={tab} onTab={(k) => setParams({ tab: k, ...(closed && { from: 'completed' }) }, { replace: true })} bar={bar}
-      aside={<RespondentCard name={r.name} card={r.card} onRate={completed && !r.rating ? () => setRating(true) : undefined} />}>
+      aside={<RespondentCard name={r.name} personId={r.id} card={r.card} onRate={completed && !r.rating ? () => setRating(true) : undefined} />}>
       {tab === 'screener' && <Answers answers={r.answers} />}
 
       {tab === 'result' && study.type === 'diary' && (

@@ -7,6 +7,7 @@ import { Star, VerifiedMark, Info } from '../ui/icons'
 import { RATE_PROMPT } from '../../mock/respondent'
 import { personById } from '@shared/derive'
 import { usePlatform, useProfile } from '../../platform'
+import { PersonName } from '../../app/ProfileHost'
 
 /** A section of the rail, under the hairline that separates it from the one above. */
 function Block({ title, children }: { title?: string; children: React.ReactNode }) {
@@ -76,7 +77,7 @@ export default function RespondentRail({ rate, onRate, person, onReport }: {
           {photo
             ? <img src={photo} alt="" className="h-6 w-6 rounded-full object-cover" />
             : <span className="flex h-6 w-6 items-center justify-center rounded-full bg-bg-2 text-label text-text-subtitle">{r.name[0]}</span>}
-          <span className="text-body-medium text-text-title">{r.name}</span>
+          {person ? <PersonName id={person.id} className="text-body-medium text-text-title">{r.name}</PersonName> : <span className="text-body-medium text-text-title">{r.name}</span>}
         </p>
         <p className="text-title-s leading-[26px] text-text-title">{r.role}</p>
         <p className="text-text-regular text-text-title">{r.experience}</p>

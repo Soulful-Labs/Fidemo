@@ -8,6 +8,7 @@ import { cn } from '../../../lib/cn'
 import { PERIODS, SORTS } from '../../../mock/profile'
 import type { ProfileView } from '../../../mock/profile'
 import { EarningsFilters, PayoutDetails, PointsFilters, TransactionDetails } from './walletDialogs'
+import PersonLink from '../../../components/app/PersonLink'
 
 export type WalletSub = 'earnings' | 'payouts' | 'points' | 'referrals'
 export const WALLET_SUBS = [{ key: 'earnings', label: 'Earnings' }, { key: 'payouts', label: 'Payouts' }, { key: 'points', label: 'Reward Points' }, { key: 'referrals', label: 'Referrals' }]
@@ -83,7 +84,7 @@ export default function WalletTab({ sub, onSub, view }: { sub: WalletSub; onSub:
           <H>Points History</H>
           <div className="flex gap-3 pb-3"><SearchInput size="sm" placeholder="Search transaction..." /><Period w="w-60" /><Sort /><FilterButton onClick={() => setDialog('pointFilter')} /></div>
           <Table empty="Reward points will appear here as they are earned." rowHeight={52} rows={POINTS} rowKey={(r) => r.key} columns={[
-            { key: 'what', header: 'Particulars', width: '1fr', render: (r) => <span className="-ml-1 flex gap-2"><span className="text-text-medium">{r.kind}</span><span aria-hidden="true">•</span>{r.what}</span> },
+            { key: 'what', header: 'Particulars', width: '1fr', render: (r) => <span className="-ml-1 flex gap-2"><span className="text-text-medium">{r.kind}</span><span aria-hidden="true">•</span>{r.personId ? <PersonLink id={r.personId}>{r.what}</PersonLink> : r.what}</span> },
             { key: 'when', header: 'Date - Time', width: 260, sortable: true, render: () => <When day="Jul 22, 2026" time="11:00 PM" /> },
             { key: 'points', header: 'Points', width: 200, sortable: true, render: (r) => <span className="text-body-regular text-state-success">{r.points}</span> },
           ]} />
@@ -107,7 +108,7 @@ export default function WalletTab({ sub, onSub, view }: { sub: WalletSub; onSub:
           </div>
           <h3 className="pb-3 pt-6 text-title-s leading-[25px] text-text-title">8 Referrals</h3>
           <Table empty="People this participant refers will appear here." rowHeight={52} rows={REFERRALS} rowKey={(r) => r.key} columns={[
-            { key: 'name', header: 'Name', width: 380, sortable: true, render: (r) => <span className="flex items-center gap-2"><img src={r.photo} alt="" className="h-6 w-6 rounded-full object-cover" />{r.name}</span> },
+            { key: 'name', header: 'Name', width: 380, sortable: true, render: (r) => <span className="flex items-center gap-2"><img src={r.photo} alt="" className="h-6 w-6 rounded-full object-cover" />{r.personId ? <PersonLink id={r.personId}>{r.name}</PersonLink> : r.name}</span> },
             { key: 'email', header: 'Email', width: 380, render: (r) => r.email }, { key: 'joined', header: 'Joined', width: 200, render: (r) => r.joined },
             { key: 'status', header: 'Status', width: '1fr', render: (r) => <Pill good={r.status === 'Completed'}>{r.status}</Pill> },
           ]} />
