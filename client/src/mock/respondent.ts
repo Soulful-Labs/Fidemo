@@ -85,6 +85,8 @@ export const DIARY_DAYS: { label: string; answers: QA[] }[] = [
 
 export const VERIFICATION_PIN = {
   title: 'Verification PIN',
+  /** A group session (1627:105750): one PIN for everyone booked into it. */
+  groupBody: 'Share this PIN number with all participants for their joining verification. This same PIN number applies for all the participants.',
   activityBody: 'This PIN number is to be shared with John M. for their completion verification',
   sessionBody: 'Share this PIN number with John M. for their completion verification',
 }

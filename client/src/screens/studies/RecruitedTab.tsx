@@ -1,6 +1,7 @@
 import { Avatar } from '../../components/client/RespondentCard'
 import { useState } from 'react'
-import { useParams, useSearchParams, Link } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom'
+import { sessionPath } from './sessionLink'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import Tabs from '../../components/ui/Tabs'
@@ -30,6 +31,7 @@ import { TIER_MENU, tierFromMenu } from '@shared/lifecycle'
  */
 export default function RecruitedTab() {
   const toast = useToast()
+  const navigate = useNavigate()
   const { id } = useParams()
   const [params] = useSearchParams()
   const s = useStudy(id)
@@ -110,7 +112,7 @@ export default function RecruitedTab() {
                   </div>
                   <div className="flex flex-col items-end justify-between gap-6">
                     <Button variant="secondary" size="none" className="h-[38px] px-4"
-                      onClick={() => { setState('applications'); toast(`${g.people.length} booked into this session`) }}
+                      onClick={() => { if (s.type === 'group_video_call') navigate(sessionPath(s, g.key)); else { setState('applications'); toast(`${g.people.length} booked into this session`) } }}
                       rightIcon={<ChevronRight className="h-4 w-4" />}>View Participants</Button>
                     <span className="flex -space-x-1.5">
                       {g.people.slice(0, 6).map((r) => (

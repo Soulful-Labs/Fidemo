@@ -9,6 +9,7 @@ import StudyOverview from './screens/studies/StudyOverview'
 import ManageStudy from './screens/studies/ManageStudy'
 import MatchedTab from './screens/studies/MatchedTab'
 import RecruitedTab from './screens/studies/RecruitedTab'
+import SessionPage from './screens/studies/SessionPage'
 import ResultsTab from './screens/studies/ResultsTab'
 import RevisionsTab from './screens/studies/RevisionsTab'
 import PayTab from './screens/studies/PayTab'
@@ -92,6 +93,7 @@ const routes: ScreenRoute[] = [
   { path: '/studies/:id/manage', label: 'Manage Study', node: '1627:96085', section: 'Manage', kind: 'page', element: guard(createElement(ManageStudy)) },
   { path: '/studies/:id/matched', label: 'Matched Respondents', node: '1627:96237 (matched), 1627:96329 (invited)', section: 'Manage', kind: 'page', element: guard(createElement(MatchedTab)) },
   { path: '/studies/:id/recruited', label: 'Recruited Respondents', node: '1627:96535, 1627:101612 (session), 1627:104269 (group)', section: 'Manage', kind: 'page', element: guard(createElement(RecruitedTab)) },
+  { path: '/studies/:id/sessions/:sid', label: 'Group session', node: '1627:105750 (before), 1627:106074 (after), 1627:106405 (activity)', section: 'Manage', kind: 'page', element: guard(createElement(SessionPage)) },
   { path: '/studies/:id/results', label: 'Results', node: '1627:96628', section: 'Manage', kind: 'page', element: guard(createElement(ResultsTab)) },
   { path: '/studies/:id/revisions', label: 'Revisions History', node: '2322:211934', section: 'Manage', kind: 'page', element: guard(createElement(RevisionsTab)) },
   { path: '/studies/:id/pay', label: 'Pay', node: '1627:96779 (ongoing), 1627:97128 (due)', section: 'Manage', kind: 'page', element: guard(createElement(PayTab)) },

@@ -3,6 +3,7 @@ import { isLive } from '@shared/lifecycle'
 import type { PlatformState } from '@shared/types'
 import type { ClientStudy } from '../platform'
 import type { StudyType } from './studyTypes'
+import { sessionPath } from '../screens/studies/sessionLink'
 
 /**
  * What the client app can honestly say about how things are going, worked out
@@ -25,7 +26,7 @@ export function upcomingSessions(state: PlatformState, studies: ClientStudy[], n
       sessionSeats(s).forEach((x, i) => rows.push({
         key: `${s.id}-${x.id}`, at: sessionStartOf({ date: x.date, slot: x.slot }), type: s.type, study: s.title,
         title: `Session ${i + 1} with ${x.taken} participant${x.taken === 1 ? '' : 's'}`,
-        details: `/studies/${s.id}/recruited`, start: `/studies/${s.id}/recruited`,
+        details: sessionPath(s, x.id), start: sessionPath(s, x.id),
       }))
     } else {
       for (const r of recruits(state, s)) {

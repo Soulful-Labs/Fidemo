@@ -104,7 +104,7 @@ export function DayBar({ label }: { label: string }) {
 }
 
 /** The verification PIN, wide on the Activity tab and boxed beside the session. */
-export function PinCard({ variant, pin, name, onShared }: {
+export function PinCard({ variant, pin, name, onShared, text }: {
   variant: 'activity' | 'session'
   /**
    * The code on this participation. The frame prints one PIN for its seeded
@@ -115,13 +115,15 @@ export function PinCard({ variant, pin, name, onShared }: {
   name?: string
   /** The client has used the code, which is their half of step 42. */
   onShared?: (code: string) => void
+  /** A group session's own wording: one PIN for everyone in it. */
+  text?: string
 }) {
   const wide = variant === 'activity'
   const toast = useToast()
   /** The code on this participation, from the platform. There is none until a session is booked. */
   const code = pin ?? '——'
   const first = name?.split(' ')[0]
-  const body = (wide ? VERIFICATION_PIN.activityBody : VERIFICATION_PIN.sessionBody)
+  const body = text ?? (wide ? VERIFICATION_PIN.activityBody : VERIFICATION_PIN.sessionBody)
     .replace('John M.', first ? `${first}.` : 'John M.')
 
   /** The frame draws a copy glyph, so it copies, and records that it was used. */

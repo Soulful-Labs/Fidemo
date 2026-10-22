@@ -9,12 +9,14 @@ import Pagination from '../../components/client/Pagination'
 import { ScoreCell, Th } from '../../components/client/RespondentTable'
 import { StudyFrame } from '../../components/client/StudyFrame'
 import { OverviewTile } from './StudyOverview'
-import { ChevronRight, Download, Star } from '../../components/ui/icons'
+import { ChevronRight, Download, LinkIcon, Star } from '../../components/ui/icons'
+import { copyText } from '../../lib/copy'
+import { sessionPath } from './sessionLink'
 import { CERTIFICATE, SUMMARIES } from '../../mock/results'
 import { useToast } from '../../components/ui/Toast'
 import { usePlatform, useStudy } from '../../platform'
 import { monthDayYear } from '@shared/format'
-import { averageScore, counts, pageLabels, paginate, recruits, studyCertificate } from '@shared/derive'
+import { averageScore, counts, pageLabels, paginate, recruits, sessionSeats, studyCertificate } from '@shared/derive'
 import { useState } from 'react'
 import { PersonName } from '../../app/ProfileHost'
 import Picker from '../../components/ui/Picker'
@@ -55,22 +57,35 @@ export default function ResultsTab() {
   const [page, setPage] = useState(1)
   const c = counts(s)
   const cert = studyCertificate(world, s)
+  /**
+   * A group video call's results are grouped by session (1627:104407): each session's row with its date and
+   * View Result, then its participants. Everyone else is one list.
+   */
+  const grouped = s.type === 'group_video_call'
+  const sessions = grouped ? sessionSeats(s) : []
+  const sessionOf = (personId: string) => sessions.findIndex((x) => x.people.includes(personId))
   /** Step 50: everyone who finished, which is the results the client receives. */
   const rows = recruits(world, s, 'results')
     .filter((r) => r.state !== 'no_show')
     .filter((r) => tier === 'All' || r.tier === tier.toLowerCase())
+    .map((r, i) => ({ r, i, at: sessionOf(r.id) }))
+    .sort((a, b) => (grouped ? (a.at < 0 ? 999 : a.at) - (b.at < 0 ? 999 : b.at) : 0) || a.i - b.i)
+    .map((x) => x.r)
   const shown = paginate(rows, page)
   const stats = [
     { label: 'Completed', value: String(c.completed), suffix: `/${s.required} required` },
     { label: 'Avg. Trust Score', value: String(averageScore(world, s)) },
-    { label: 'Rated By You', value: String(c.rated), suffix: `/${c.completed} completed` },
+    // The group video call's Results draws two figures, without Rated By You (1627:104407).
+    ...(grouped ? [] : [{ label: 'Rated By You', value: String(c.rated), suffix: `/${c.completed} completed` }]),
   ]
+  /** The link a certificate is checked at, on the same demo domain as the apps' other links. */
+  const certLink = `https://humanlayer.app/certificate/${cert.id}`
 
   return (
     <AppShell hideCreate crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
       <StudyFrame study={s} active="results" minH="min-h-[1481px]" bodyMinH="min-h-[1231px]">
         <div className="flex flex-col px-4 pt-4">
-          <div className="grid grid-cols-[213px_213px_213px_1fr] gap-3">
+          <div className={grouped ? 'grid grid-cols-[1fr_1fr_1fr] gap-3' : 'grid grid-cols-[213px_213px_213px_1fr] gap-3'}>
             {stats.map((t) => <OverviewTile key={t.label} {...t} />)}
             <div className="flex items-center justify-between gap-4 rounded-md bg-bgAlt-1 px-4 py-4">
               <div className="flex flex-col gap-1">
@@ -100,7 +115,8 @@ export default function ResultsTab() {
                 <thead>
                   <tr className="border-b-1 border-stroke-input bg-bg-1">
                     <Th label="Name" className="w-[16.1%]" />
-                    <Th label="Role" className="w-[32.2%]" />
+                    <Th label="Role" className={grouped ? 'w-[19.7%]' : 'w-[32.2%]'} />
+                    {grouped && <Th label="Session" className="w-[12.5%]" />}
                     <Th label="Date" className="w-[16%]" />
                     <Th label="Score" sortable className="w-[16.1%]" />
                     <Th label="" className="w-[19.6%]" />
@@ -108,17 +124,35 @@ export default function ResultsTab() {
                 </thead>
                 <tbody>
                   {shown.rows.length === 0 && (
-                    <tr><td colSpan={5} className="h-[70px] px-[18px] text-center text-text-regular text-text-subtitle">
+                    <tr><td colSpan={grouped ? 6 : 5} className="h-[70px] px-[18px] text-center text-text-regular text-text-subtitle">
                       Nobody has completed this study yet.
                     </td></tr>
                   )}
-                  {shown.rows.map((r) => (
-                    <tr key={r.id} className="border-b-1 border-stroke-input last:border-b-0">
+                  {shown.rows.map((r, i) => {
+                    const at = sessionOf(r.id)
+                    const x = sessions[at]
+                    const head = grouped && x && (i === 0 || sessionOf(shown.rows[i - 1]!.id) !== at)
+                    return [
+                    head && (
+                      <tr key={`s-${x.id}`} className="border-b-1 border-stroke-input bg-bg-1">
+                        <td colSpan={6} className="h-[52px] px-[18px]">
+                          <span className="flex items-center justify-between gap-4">
+                            <span className="text-text-regular text-text-title">S{at + 1} &bull; {monthDayYear(x.date)}, {x.slot}</span>
+                            <Button variant="secondary" size="none" className="h-[38px] px-4" rightIcon={<ChevronRight className="h-4 w-4" />}
+                              onClick={() => nav(sessionPath(s, x.id, 'results'))}>View Result</Button>
+                          </span>
+                        </td>
+                      </tr>
+                    ),
+                    /* Every row opens that participant's result (22 Oct 2026); the name and the rating button keep their own clicks. */
+                    <tr key={r.id} onClick={() => nav(`/studies/${s.id}/respondent/${r.id}/result`)}
+                      className="cursor-pointer border-b-1 border-stroke-input last:border-b-0 hover:bg-bg-1">
                       <td className="h-[70px] px-[18px] text-text-regular text-text-title"><span className="flex items-center gap-2"><Avatar name={r.name} photo={r.photo} size={28} /><PersonName id={r.id}>{r.name}</PersonName></span></td>
                       <td className="h-[70px] px-[18px] text-text-regular text-text-title">{r.role}</td>
+                      {grouped && <td className="h-[70px] px-[18px] text-text-regular text-text-title">{at >= 0 && x ? <>S{at + 1} &bull; {x.slot}</> : ''}</td>}
                       <td className="h-[70px] px-[18px] text-text-regular text-text-title">{monthDayYear(r.participation.completedAt)}</td>
                       <td className="h-[70px] px-[18px]"><ScoreCell score={r.score} tier={r.tier} /></td>
-                      <td className="h-[70px] px-[18px]">
+                      <td className="h-[70px] px-[18px]" onClick={(e) => e.stopPropagation()}>
                         {r.state === 'rated'
                           ? <Button variant="tertiary" size="none" className="h-[38px] px-4" onClick={() => toast('Already rated')}>Rated</Button>
                           : (
@@ -128,8 +162,9 @@ export default function ResultsTab() {
                             </Button>
                           )}
                       </td>
-                    </tr>
-                  ))}
+                    </tr>,
+                    ]
+                  })}
                 </tbody>
               </table>
             </div>
@@ -150,9 +185,19 @@ export default function ResultsTab() {
                 <p className="text-text-regular text-text-subtitle">CERT ID · {cert.id} · Issued {monthDayYear(cert.issuedAt)}</p>
               </div>
             </div>
-            <Button variant="secondary" size="none" className="h-12 px-4" onClick={() => toast(`Saved ${save(fileName(`certificate ${cert.id}`, 'pdf'), pdf('Human Certificate', [`Cert ID ${cert.id}`, `Issued ${monthDayYear(cert.issuedAt)}`, `Study: ${s.title}`, '', `${cert.verified} of ${cert.total} completions verified human`, CERTIFICATE.body]))}`)} leftIcon={<Download className="h-4 w-4" />}>
-              {CERTIFICATE.cta}
-            </Button>
+            {/* Download and share, two icon buttons (1627:104407, and every type's Results). */}
+            <span className="flex shrink-0 items-center gap-2">
+              <button type="button" aria-label="Download the certificate" title="Download"
+                onClick={() => toast(`Saved ${save(fileName(`certificate ${cert.id}`, 'pdf'), pdf('Human Certificate', [`Cert ID ${cert.id}`, `Issued ${monthDayYear(cert.issuedAt)}`, `Study: ${s.title}`, '', `${cert.verified} of ${cert.total} completions verified human`, CERTIFICATE.body, '', `Check it at ${certLink}`]))}`)}
+                className="flex h-9 w-9 items-center justify-center rounded-md border-1 border-cta-tertiaryStroke bg-bg-0 text-text-title hover:border-stroke-3">
+                <Download className="h-4 w-4" />
+              </button>
+              <button type="button" aria-label="Copy the certificate check link" title="Copy check link"
+                onClick={async () => toast((await copyText(certLink)) ? 'Check link copied' : 'Could not reach the clipboard')}
+                className="flex h-9 w-9 items-center justify-center rounded-md bg-cta-secondary text-text-title hover:bg-yellow-300">
+                <LinkIcon className="h-4 w-4" />
+              </button>
+            </span>
           </div>
         </div>
       </StudyFrame>

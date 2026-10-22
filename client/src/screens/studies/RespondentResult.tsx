@@ -24,7 +24,7 @@ import { recruit, recruits } from '@shared/derive'
 type Tab = 'screener' | 'result' | 'activity'
 
 /** The study, in the compact strip above a respondent's result. */
-function StudyStrip({ s }: { s: Study }) {
+export function StudyStrip({ s }: { s: Study }) {
   return (
     <div className="flex h-[102px] items-center gap-4 rounded-lg bg-bgAlt-1 p-4">
       {s.image ? <img src={s.image} alt="" className="h-[70px] w-[92px] shrink-0 rounded-md object-cover" /> : <span className="h-[70px] w-[92px] shrink-0 rounded-md bg-bg-2" />}

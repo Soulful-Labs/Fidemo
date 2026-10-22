@@ -12,7 +12,6 @@ import { STOPPED_LINE, canRepublish, isStopped } from '@shared/lifecycle'
 import { monthDayYear, clockTime } from '@shared/format'
 import BillingCard from '../../components/client/BillingCard'
 import { useStudyActions } from '../../components/client/StudyActions'
-import PayoutApproval from './PayoutApproval'
 
 /** A figure in Payment Overview. */
 function Figure({ label, value }: { label: string; value: string }) {
@@ -108,7 +107,6 @@ export default function PayTab() {
             </div>
           </div>
         </div>
-        <div className="px-4 pb-4"><PayoutApproval study={s} /></div>
       </StudyFrame>
       {dialogs}
     </AppShell>
