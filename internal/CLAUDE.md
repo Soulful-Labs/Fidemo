@@ -1328,7 +1328,7 @@ Logout 3.36%, updated 4.62%. Nothing is cut off by its frame.
 
 ---
 
-## Sign in and sign up
+## Sign in
 
 The console is served at `/internal` on the shared origin and is behind a real
 sign-in (`src/session.ts`, `src/app/Guard.tsx`, `shared/store.ts` signInTeam).
@@ -1348,24 +1348,23 @@ sign-in (`src/session.ts`, `src/app/Guard.tsx`, `shared/store.ts` signInTeam).
   be shown). Robert Mayfield is the seed's inactive account.
 - **The activity log** records each action against whoever is signed in
   (`TEAM` in `src/platform.tsx` reads the session at the moment of the action).
-- **Sign up** (`/signup`, then `/signup/verify`, code 123456, no email sent) is
-  not drawn in Figma; it is Sign In's card with four fields and the password
-  rule Change Password already draws. The new person becomes the master admin
-  of a completely empty platform (`shared/seed.ts` buildEmpty).
+- **There is no sign-up** (22 Oct 2026, Sign In `1849:112091`). A master admin
+  makes every team account on Sub-Admin. Sign In has no sign-up link, the
+  entrance has no Sign Up button, and `/signup` is not a route.
 
 ### The entrance (`/`, served at `/internal`)
 
 Not drawn in Figma and not a marketing page. `src/screens/auth/Entrance.tsx` is
-one screen on the sign-in layout (`AuthLayout`): the mark and "Admin Panel", one
-line saying what the console is, **Log In** (primary), a quieter **Sign Up**,
-and "Access is for Focus Insite team members only." Nothing else, by brief. A
+one screen on the sign-in layout (`AuthLayout`): the HumanLayer lock-up,
+"HumanLayer team console", one line saying what the console is, **Log In**, and
+"Access is for HumanLayer team members only." Nothing else, by brief. A
 signed-out visitor sees it; anyone signed in goes to where they land.
 
 ### Must change before production
 
-1. **Open sign-up is wrong for an internal console.** It is built for the demo
-   only. It must become invite-only: an existing admin invites a team member,
-   who sets their own password from the invitation.
+1. **Team accounts need an invitation.** There is no sign-up; a master admin
+   makes each account. It must become invite-only: the admin invites a team
+   member, who sets their own password from the invitation.
 2. **That invitation is the answer to an open question in the designs.** The
    Sub-Admin frames create a sub-admin with no password, no invitation and no
    word on how they first sign in (turn 16). In this build a sub-admin made on
@@ -1373,9 +1372,8 @@ signed-out visitor sees it; anyone signed in goes to where they land.
    placeholder for the invitation, not a decision.
 3. **Passwords are plain text in browser storage**, checked in the browser.
    There is no backend; nothing here is real authentication.
-4. **One platform per browser.** Signing up replaces the shared state for all
-   three apps with an empty one; signing in as the demo master admin replaces
-   it again with the demo data. A new account does not survive that reset.
+4. **One platform per browser.** Signing in as the demo master admin replaces
+   the shared state for all three apps with the demo data.
 
 ### Empty states
 
