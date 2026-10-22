@@ -86,7 +86,7 @@ const FORMS = `
   window.__ph = (ph, v, n = 0, root = document) => { const el = __all('input, textarea', root).filter((e) => e.placeholder === ph)[n]; if (!el) throw new Error('no field: ' + ph + ' #' + n); return __type(el, v) };
   window.__al = (label, n = 0) => { const el = __all('[aria-label="' + label + '"]')[n]; if (!el) throw new Error('no control labelled: ' + label + ' #' + n); return el };
   window.__btn = (text, n = 0) => { const el = __all('button').filter((b) => b.textContent.trim().replace(/\\s+/g, ' ').startsWith(text))[n]; if (!el) throw new Error('no button: ' + text + ' #' + n); return el };
-  window.__exact = (text) => { const el = __all('button').filter((b) => b.textContent.trim() === text).pop(); if (!el) throw new Error('no option: ' + text); return el };
+  window.__exact = (text) => { const el = __all('button').filter((b) => b.textContent.trim() === text).pop() ?? __all('button').filter((b) => [...b.querySelectorAll('span')].some((x) => x.textContent.trim() === text)).pop(); if (!el) throw new Error('no option: ' + text); return el };
   window.__choose = async (opener, ...options) => { opener.click(); await __wait(); for (const o of options) { __exact(o).click(); await __wait() } const close = __all('button[aria-label=Close]')[0]; if (close) { close.click(); await __wait() } };
   window.__time = async (label, t, n = 0) => { __al(label, n).click(); await __wait(); const o = __all('[role=option]').find((x) => x.textContent.trim() === t); if (!o) throw new Error('no time: ' + t); o.click(); await __wait() };
 `
@@ -156,7 +156,7 @@ const STUDIES = [
   },
   {
     key: 'video 1:1', card: 'Video Call', duration: 45, participants: '8', incentive: 150, screener: THREE, opener: 'Set Timing Availability', submit: 'Continue',
-    setup: `await __choose(__btn('15 minutes'), '10 minutes'); await __choose(__btn('10 Minutes'), '1 Hour'); ${hours('09:00 AM', '05:00 PM')}
+    setup: `await __choose(__btn('15 minutes'), '10 minutes'); __type(__al('Minimum notice'), '1'); await __wait(); await __choose(__btn('Minutes'), 'Hours'); ${hours('09:00 AM', '05:00 PM')}
       __al('Add hours to Tuesday').click(); await __wait(); await __time('Tuesday from', '06:00 PM', 1); await __time('Tuesday to', '08:00 PM', 1);
       __click('Add Override'); await __wait(300); __type(__al('Override from'), ${JSON.stringify(ymd(off))}); __type(__al('Override to'), ${JSON.stringify(ymd(off))}); __al('Mark Unavailable For Full Day').click(); await __wait(); __click('Save override'); await __wait(300);`,
     typeLabel: 'Video Call', summary: 'available 5 days/week, custom timings, 1 day overrides',
@@ -174,7 +174,7 @@ const STUDIES = [
   },
   {
     key: 'in-person 1:1', card: 'In-Person', duration: 30, participants: '6', incentive: 200, screener: THREE, opener: 'Set Address & Availability', submit: 'Continue',
-    setup: `${address('12 Main St', 'Austin, Texas', '73301')} ${address('4 Dock Road', 'Houston, Texas', '77002')} await __choose(__btn('10 Minutes'), '1 Day'); ${hours('10:00 AM', '04:00 PM')}`,
+    setup: `${address('12 Main St', 'Austin, Texas', '73301')} ${address('4 Dock Road', 'Houston, Texas', '77002')} __type(__al('Minimum notice'), '1'); await __wait(); await __choose(__btn('Minutes'), 'Days'); ${hours('10:00 AM', '04:00 PM')}`,
     typeLabel: 'In-Person', summary: '2 addresses, available 5 days/week, custom timings',
     client: ['12 Main St, Austin, Texas, 73301', '4 Dock Road, Houston, Texas, 77002', '15 minutes', '1 Day', '10:00 AM to 04:00 PM'],
     console: ['12 Main St, Austin, Texas, 73301', '4 Dock Road, Houston, Texas, 77002', '10:00 AM', '04:00 PM', '1 Day'],
@@ -411,7 +411,7 @@ console.log('\n5. Save a draft, leave, come back: nothing was lost')
     await C.go('/client/studies/create/pricing'); await need('Pricing', [`$${s.incentive}`]); await C.go('/client/studies/create/study'); await C.ev(FORMS)
     await C.click('Update Address & Availability', 500)
     await need('Availability', ['12 Main St, Austin, Texas, 73301', '4 Dock Road, Houston, Texas, 77002'])
-    const times = await C.ev(`({ from: __al('Monday from').innerText.trim(), to: __al('Friday to').innerText.trim(), sat: __al('Saturday').getAttribute('aria-checked'), notice: Boolean(__all('button').find((b) => b.textContent.trim() === '1 Day')) })`)
+    const times = await C.ev(`({ from: __al('Monday from').innerText.trim(), to: __al('Friday to').innerText.trim(), sat: __al('Saturday').getAttribute('aria-checked'), notice: __al('Minimum notice').value === '1' && Boolean(__all('button').find((b) => b.textContent.trim() === 'Days')) })`)
     if (times.from !== '10:00 AM' || times.to !== '04:00 PM') gaps.push(`Availability: hours read ${times.from} to ${times.to}`)
     if (times.sat !== 'false') gaps.push('Availability: Saturday is switched on')
     if (!times.notice) gaps.push('Availability: the minimum notice')

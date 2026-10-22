@@ -87,7 +87,7 @@ const FORMS = `
   window.__ph = (ph, v, n = 0, root = document) => { const el = __all('input, textarea', root).filter((e) => e.placeholder === ph)[n]; if (!el) throw new Error('no field: ' + ph + ' #' + n); return __type(el, v) };
   window.__al = (label, n = 0) => { const el = __all('[aria-label="' + label + '"]')[n]; if (!el) throw new Error('no control labelled: ' + label + ' #' + n); return el };
   window.__btn = (text, n = 0) => { const el = __all('button').filter((b) => b.textContent.trim().replace(/\\s+/g, ' ').startsWith(text))[n]; if (!el) throw new Error('no button: ' + text + ' #' + n); return el };
-  window.__exact = (text) => { const el = __all('button').filter((b) => b.textContent.trim() === text).pop(); if (!el) throw new Error('no option: ' + text); return el };
+  window.__exact = (text) => { const el = __all('button').filter((b) => b.textContent.trim() === text).pop() ?? __all('button').filter((b) => [...b.querySelectorAll('span')].some((x) => x.textContent.trim() === text)).pop(); if (!el) throw new Error('no option: ' + text); return el };
   window.__choose = async (opener, ...options) => { opener.click(); await __wait(); for (const o of options) { __exact(o).click(); await __wait() } const close = __all('button[aria-label=Close]')[0]; if (close) { close.click(); await __wait() } };
   window.__time = async (label, t, n = 0) => { __al(label, n).click(); await __wait(); const o = __all('[role=option]').find((x) => x.textContent.trim() === t); if (!o) throw new Error('no time: ' + t); o.click(); await __wait() };
 `
@@ -286,7 +286,7 @@ DIARY.id = await idOf(DIARY)
 await about(PLACE)
 await C.click('Continue'); await C.ev(FORMS)
 await C.click('Set Address & Availability', 500)
-await C.ev(`(async () => { ${address('12 Main St', 'Austin, Texas', '73301')} ${address('4 Dock Road', 'Houston, Texas', '77002')} await __choose(__btn('15 minutes'), '10 minutes'); await __choose(__btn('10 Minutes'), '1 Hour'); ${hours('09:00 AM', '05:00 PM')}
+await C.ev(`(async () => { ${address('12 Main St', 'Austin, Texas', '73301')} ${address('4 Dock Road', 'Houston, Texas', '77002')} await __choose(__btn('15 minutes'), '10 minutes'); __type(__al('Minimum notice'), '1'); await __wait(); await __choose(__btn('Minutes'), 'Hours'); ${hours('09:00 AM', '05:00 PM')}
   __al('Add hours to Tuesday').click(); await __wait(); await __time('Tuesday from', '06:00 PM', 1); await __time('Tuesday to', '08:00 PM', 1); return true })()`)
 // Since 22 Oct 2026 the composer has no Submit: Continue submits the availability and moves to Pricing.
 await sleep(200); await C.click('Continue', 900); await C.ev(FORMS);

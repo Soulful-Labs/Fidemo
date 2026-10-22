@@ -89,6 +89,8 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
 
   const noticeNumber = (draft.notice.match(/\d+/) ?? ['10'])[0]
   const noticeUnit = /day/i.test(draft.notice) ? 'Days' : /hour/i.test(draft.notice) ? 'Hours' : 'Minutes'
+  /** "1 Hour", "30 Minutes": the unit is singular for one. */
+  const noticeOf = (n: string, unit: string) => `${n} ${n === '1' ? unit.replace(/s$/, '') : unit}`
   /** Submit keeps what was set only if it can be offered; otherwise it says what to fix and stays open. */
   const submit = () => {
     const fault = availabilityFault({ ...form(), availabilitySet: true })
@@ -119,9 +121,9 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
           <label className="flex flex-col gap-1">
             <span className="text-text-regular text-text-subtitle">Minimum notice duration</span>
             <span className="flex h-[38px] items-center rounded-md border-1 border-stroke-input bg-bg pl-3">
-              <input aria-label="Minimum notice" inputMode="numeric" value={noticeNumber} onChange={(e) => set('notice', `${e.target.value.replace(/[^\d]/g, '')} ${noticeUnit}`)}
+              <input aria-label="Minimum notice" inputMode="numeric" value={noticeNumber} onChange={(e) => set('notice', noticeOf(e.target.value.replace(/[^\d]/g, ''), noticeUnit))}
                 className="min-w-0 flex-1 bg-transparent text-text-regular text-text-title outline-none" />
-              <Picker value={noticeUnit} h="h-[36px]" className="w-[120px] border-0 bg-transparent text-text-regular" options={['Minutes', 'Hours', 'Days']} onPick={(u) => set('notice', `${noticeNumber} ${u}`)} />
+              <Picker value={noticeUnit} h="h-[36px]" className="w-[120px] border-0 bg-transparent text-text-regular" options={['Minutes', 'Hours', 'Days']} onPick={(u) => set('notice', noticeOf(noticeNumber, u))} />
             </span>
           </label>
           <span className="text-text-regular text-text-subtitle">

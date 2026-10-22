@@ -153,7 +153,7 @@ for (const [w, h] of SIZES) {
   const T = await tab('console', w, h, false)
   await T.open('/internal/', 'localStorage.clear()')
   const at = `console ${w}x${h}`
-  ok(`${at}: signed out, /internal shows the entrance`, await T.has('Focus Insite team console') && await T.path() === '/internal/')
+  ok(`${at}: signed out, /internal shows the entrance`, await T.has('HumanLayer team console') && await T.path() === '/internal/')
   const c = await T.ev(CONTAIN)
   ok(`${at}: nothing outside the frame, sliced, clipped or overlapping`, !summary(c), summary(c))
   const fit = await T.ev(`({ doc: document.documentElement.scrollHeight, view: innerHeight, card: document.querySelector('main > div > div').getBoundingClientRect().bottom })`)
@@ -192,7 +192,7 @@ for (const [w, h] of SIZES) {
   await I.open('/internal/signin')
   await I.ev(`(() => { const [e, p] = document.querySelectorAll('input'); __type(e, 'peter@focusinsite.com'); __type(p, 'demo1234'); return true })()`); await I.click('Login', 900)
   await I.open('/internal/')
-  ok('console: signed in as peter@focusinsite.com, /internal does NOT show the entrance', await I.path() === '/internal/dashboard' && !(await I.has('Focus Insite team console')), await I.path())
+  ok('console: signed in as peter@focusinsite.com, /internal does NOT show the entrance', await I.path() === '/internal/dashboard' && !(await I.has('HumanLayer team console')), await I.path())
 
   const R = await tab('respondent', 375, 812, true)
   await R.open('/', 'localStorage.clear()')
