@@ -11,14 +11,14 @@ import NoShowModal from './NoShowModal'
 /**
  * The participants of a group session: Name, Role and Score (1627:105750).
  * Once the session has run (1627:106074) each row carries its attendance, as
- * every attendance control does since 22 Oct 2026: nothing recorded, Mark
- * No-show and Mark Completed; completed, Mark No-show and a green read-back;
- * a no-show, Mark Completed and a red read-back. Once paid, only the read-back.
+ * the client's frames draw it: nothing recorded, Mark No-show and Mark
+ * Completed; completed, a green read-back; a no-show, Undo beside a red one.
+ * A completion marked by the client, not yet paid, also has Undo (1769:86063).
  */
 export default function SessionPeople({ study, people, anyone, done }: {
   study: { id: string }; people: Recruit[]; anyone: boolean; done: boolean
 }) {
-  const { moveRespondent, enterCode } = useStudies()
+  const { moveRespondent, enterCode, undoAttendance } = useStudies()
   const toast = useToast()
   const [noShow, setNoShow] = useState<Recruit | null>(null)
 
@@ -35,11 +35,17 @@ export default function SessionPeople({ study, people, anyone, done }: {
   const CompleteButton = ({ r }: { r: Recruit }) => (
     <Button variant="secondary" size="none" className="h-[38px] px-3" leftIcon={<CheckCircle className="h-4 w-4" />} onClick={() => complete(r)}>Mark Completed</Button>
   )
+  const UndoButton = ({ r }: { r: Recruit }) => (
+    <Button variant="tertiary" size="none" className="h-[38px] px-4" onClick={() => {
+      const res = undoAttendance(study.id, r.id)
+      toast(res.ok ? `${r.name}: undone` : res.why)
+    }}>Undo</Button>
+  )
   const actions = (r: Recruit) => {
     if (r.state === 'completed' || r.state === 'rated') {
       return (
         <>
-          {!r.participation.paidAt && <NoShowButton r={r} />}
+          {!r.participation.paidAt && !r.participation.code?.byParticipant && <UndoButton r={r} />}
           <span className="flex h-[38px] items-center gap-1.5 rounded-md bg-green-50 px-3 text-text-regular text-brand-secondary">
             <CheckCircle className="h-4 w-4" />{r.participation.code?.byParticipant ? 'Marked completed by participant' : 'Marked completed'}
           </span>
@@ -49,7 +55,7 @@ export default function SessionPeople({ study, people, anyone, done }: {
     if (r.state === 'no_show') {
       return (
         <>
-          <CompleteButton r={r} />
+          <UndoButton r={r} />
           <span className="flex h-[38px] items-center gap-1.5 rounded-md bg-red-50 px-3 text-text-regular text-red-600"><Close className="h-4 w-4" />Marked as No-show</span>
         </>
       )

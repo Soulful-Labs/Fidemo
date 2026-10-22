@@ -112,7 +112,7 @@ export default function RecruitedTab() {
                   </div>
                   <div className="flex flex-col items-end justify-between gap-6">
                     <Button variant="secondary" size="none" className="h-[38px] px-4"
-                      onClick={() => { if (s.type === 'group_video_call') navigate(sessionPath(s, g.key)); else { setState('applications'); toast(`${g.people.length} booked into this session`) } }}
+                      onClick={() => { if (s.type === 'group_video_call' || s.type === 'in_person_group') navigate(sessionPath(s, g.key)); else { setState('applications'); toast(`${g.people.length} booked into this session`) } }}
                       rightIcon={<ChevronRight className="h-4 w-4" />}>View Participants</Button>
                     <span className="flex -space-x-1.5">
                       {g.people.slice(0, 6).map((r) => (

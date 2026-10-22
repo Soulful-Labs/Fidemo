@@ -23,6 +23,8 @@ studies/st-fitness/recruited
 studies/st-fitness/sessions/s1
 studies/st-fitness/sessions/s2
 studies/st-fitness/sessions/s1?tab=activity
+studies/st-travel/sessions/s1
+studies/st-travel/sessions/s2?session=booked
 studies/st-pay/results
 studies/st-social/revisions
 studies/st-pay/respondent/ferry-l?state=recruited

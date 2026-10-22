@@ -1,4 +1,11 @@
 /** Results tab: the copy of its two cards. Every figure and every row is derived (shared/derive.ts). */
+/** In person (1627:101705, 1627:107896): the notes written during the interviews, as one file. It was "Get all the Notes results archive". */
+export const NOTES_SUMMARIES = {
+  title: 'Notes Summaries',
+  body: 'Every interview note, as one file',
+  cta: 'Download',
+}
+
 export const SUMMARIES = {
   title: 'Results Summaries',
   /** It was "Get AI Summaries of all the results". No summaries are written; the file is every completed answer. */

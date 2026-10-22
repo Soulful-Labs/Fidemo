@@ -1,5 +1,7 @@
+import { useEffect, useRef, useState } from 'react'
 import Button from '../../components/ui/Button'
-import { Calendar, CheckCircle, Clock, Copy, Eye, MapPin } from '../../components/ui/icons'
+import { Calendar, CheckCircle, Clock, Copy, Download, Eye, MapPin, VideoIcon } from '../../components/ui/icons'
+import { fileName, save, text as textFile } from '@shared/files'
 import { cn } from '../../lib/cn'
 import { copyText } from '../../lib/copy'
 import type { Answer, QA } from '../../mock/respondent'
@@ -148,40 +150,67 @@ export function PinCard({ variant, pin, name, onShared, text }: {
   )
 }
 
+/** "0:25:16": how long the session has been running. */
+function useElapsed(since?: Date, on = true): string {
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    if (!on) return
+    const t = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(t)
+  }, [on])
+  const secs = Math.max(0, Math.floor((now - (since?.getTime() ?? now)) / 1000))
+  return `${Math.floor(secs / 3600)}:${String(Math.floor((secs % 3600) / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`
+}
+
 /** The booked session, in the three states the frames draw it in. */
-export function SessionCard({ state, session, onStart, onFinish }: {
+export function SessionCard({ state, session, onStart, onFinish, since, cta, onCta, aside }: {
   state: 'booked' | 'running' | 'done'
   onStart?: () => void
   onFinish?: () => void
-  /** The booking on this participation: who, when and where. */
+  /** When the session began, for the running clock (it was the frame's fixed "0:25:16"). */
+  since?: Date
+  /** The booked card's button: Start Interview in person, Join Now on a video call (1627:100096). */
+  cta?: string
+  onCta?: () => void
+  /** Beside the title, a group session's seats (1627:105750). */
+  aside?: React.ReactNode
+  /** The booking: who, when and where. */
   session?: { title: string; date: string; time: string; address?: string }
 }) {
   const toast = useToast()
+  const elapsed = useElapsed(since, state === 'running')
   /** Once it is over the frame greys the slot out and leaves a Completed chip. */
   const meta = state === 'done' ? 'text-text-subtitle' : 'text-text-title'
   const glyph = state === 'done' ? 'text-text-body' : 'text-brand-primary'
   return (
     <div className={cn('flex justify-between gap-4 rounded-lg bg-yellow-30 p-4', state === 'booked' && 'flex-col')}>
       <div className="flex flex-col gap-2">
-        <p className="text-body-large text-text-title">{session?.title ?? ''}</p>
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-body-large text-text-title">{session?.title ?? ''}</p>
+          {aside}
+        </div>
         <p className={cn('flex h-5 items-center gap-2 text-text-regular', meta)}>
           <Calendar className={cn('h-4 w-4', glyph)} />{session?.date ?? ''}
         </p>
         <p className={cn('flex h-5 items-center gap-2 text-text-regular', meta)}>
           <Clock className={cn('h-4 w-4', glyph)} />{session?.time ?? ''}
         </p>
-        {state !== 'booked' && session?.address && (
-          <p className={cn('flex h-5 items-center gap-2 text-text-regular', meta)}>
-            <MapPin className={cn('h-4 w-4', glyph)} />{session.address}
+        {/* The address shows in every state (1627:102694 draws it on the booked card too). */}
+        {session?.address && (
+          <p className={cn('flex items-start gap-2 text-text-regular', meta)}>
+            <MapPin className={cn('mt-0.5 h-4 w-4 shrink-0', glyph)} />{session.address}
           </p>
         )}
-        {state === 'booked' && <Button size="none" className="mt-2 h-12 w-full" onClick={() => { onStart?.(); toast('Interview started') }}>{SESSION.cta}</Button>}
+        {state === 'booked' && (
+          <Button size="none" className="mt-2 h-12 w-full" leftIcon={onCta ? <VideoIcon className="h-4 w-4" /> : undefined}
+            onClick={() => { if (onCta) onCta(); else { onStart?.(); toast('Interview started') } }}>{cta ?? SESSION.cta}</Button>
+        )}
       </div>
       {state === 'running' && (
         <div className="flex flex-col items-end gap-3">
           <Button size="none" className="h-12 w-[110px]" onClick={() => { onFinish?.(); toast('Interview finished') }}>Finish</Button>
-          <span className="flex h-12 items-center gap-2 rounded-sm border-1 border-stroke-input bg-bg-0 px-4 text-title-s text-text-title">
-            <Clock className="h-5 w-5 text-text-subtitle" />{SESSION.running}
+          <span className="flex h-12 items-center gap-2 rounded-sm border-1 border-stroke-input bg-bg-0 px-4 text-title-s tabular-nums text-text-title">
+            <Clock className="h-5 w-5 text-text-subtitle" />{elapsed}
           </span>
         </div>
       )}
@@ -192,27 +221,98 @@ export function SessionCard({ state, session, onStart, onFinish }: {
   )
 }
 
-/** The notes the client types during a session. */
-export function NotesCard({ className }: { download?: boolean; className?: string }) {
-  const marks = ['B', 'I', 'U', 'S', 'H1', 'H2', 'H3', 'H4']
+/**
+ * Video Result (1627:100279, 1627:106074): the recording and transcript of a video session. The platform holds
+ * no recordings until a video provider is connected, so both buttons say so rather than opening nothing.
+ */
+export function VideoResult({ title, who, when, length }: { title: string; who: string; when: string; length: string }) {
+  const toast = useToast()
+  const notYet = () => toast('The recording and transcript appear here once the video provider is connected')
+  return (
+    <div className="flex flex-col gap-2 rounded-lg bg-yellow-30 p-4">
+      <p className="text-body-large text-text-title">Video Result</p>
+      <div className="flex gap-4">
+        <div className="flex h-[104px] w-[140px] shrink-0 flex-col items-center justify-center rounded-md border-1 border-stroke-1 bg-bg-0">
+          <VideoIcon className="h-6 w-6 text-brand-primary" />
+          <span className="pt-2 text-text-medium text-text-title">{who}</span>
+          <span className="text-label text-text-subtitle">You</span>
+        </div>
+        <div className="flex flex-col gap-2 pt-1">
+          <p className="text-body-regular text-text-title">{title}</p>
+          <p className="flex items-center gap-3 text-text-regular text-text-subtitle">
+            <span className="flex items-center gap-1"><Clock className="h-4 w-4 text-brand-secondary" />{length}</span>
+            <span className="flex items-center gap-1"><Calendar className="h-4 w-4 text-brand-secondary" />{when}</span>
+          </p>
+          <span className="flex gap-3 pt-1">
+            <Button variant="secondary" size="none" className="h-[38px] px-3" onClick={notYet}>View Video Recording</Button>
+            <Button variant="tertiary" size="none" className="h-[38px] px-3" onClick={notYet}>Transcript</Button>
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** The formatting row (1627:102694). Each mark wraps the selected words, or starts the line, in plain text. */
+const MARKS: { label: string; wrap?: [string, string]; line?: string }[] = [
+  { label: 'B', wrap: ['**', '**'] }, { label: 'I', wrap: ['_', '_'] }, { label: 'U', wrap: ['<u>', '</u>'] }, { label: 'S', wrap: ['~~', '~~'] },
+  { label: 'H1', line: '# ' }, { label: 'H2', line: '## ' }, { label: 'H3', line: '### ' }, { label: 'H4', line: '#### ' },
+  { label: '☰', line: '• ' }, { label: '◯', line: '○ ' },
+]
+
+/**
+ * The interview notes, as typed (22 Oct 2026). They were the frame's sample text and saved nothing while
+ * the card said "Auto-saved"; now they are kept on the booking or the group session (shared/store.ts
+ * setSessionNotes), saved as they are typed, and the download gives them as a text file.
+ */
+export function NotesCard({ className, value, onSave, file }: {
+  download?: boolean; className?: string
+  value: string; onSave: (text: string) => void
+  /** The download's name; no download when there is nothing to name it after. */
+  file?: string
+}) {
+  const toast = useToast()
+  const [text, setText] = useState(value)
+  const box = useRef<HTMLTextAreaElement>(null)
+  useEffect(() => { setText(value) }, [value])
+  useEffect(() => {
+    if (text === value) return
+    const t = window.setTimeout(() => onSave(text), 400)
+    return () => window.clearTimeout(t)
+  }, [text, value, onSave])
+  const mark = (m: (typeof MARKS)[number]) => {
+    const el = box.current
+    if (!el) return
+    const { selectionStart: a, selectionEnd: b } = el
+    let next = text
+    if (m.wrap) next = text.slice(0, a) + m.wrap[0] + text.slice(a, b) + m.wrap[1] + text.slice(b)
+    else { const start = text.lastIndexOf('\n', a - 1) + 1; next = text.slice(0, start) + m.line + text.slice(start) }
+    setText(next)
+    requestAnimationFrame(() => el.focus())
+  }
   return (
     <div className={cn('flex flex-col rounded-lg border-1 border-stroke-input', className)}>
       <div className="flex h-12 items-center justify-between gap-3 rounded-t-lg bg-bg-1 px-4">
         <span className="text-text-large text-text-title">
-          {NOTES.title} <span className="text-text-regular text-text-subtitle">&bull; {NOTES.saved}</span>
+          {NOTES.title} <span className="text-text-regular text-text-subtitle">&bull; {text === value ? NOTES.saved : 'Saving...'}</span>
         </span>
-        {/* A download button sat here. The notes are the frame's sample text, not anything the client typed, so there is no file to give. */}
+        {file && (
+          <button type="button" aria-label="Download notes" title="Download notes"
+            onClick={() => toast(text.trim() ? `Saved ${save(fileName(`${file} notes`, 'txt'), textFile(text))}` : 'There are no notes to download yet')}
+            className="flex h-7 w-7 items-center justify-center rounded-sm border-1 border-cta-tertiaryStroke bg-bg-0 text-text-title">
+            <Download className="h-4 w-4" />
+          </button>
+        )}
       </div>
       <div className="flex h-12 items-center gap-6 border-b-1 border-stroke-1 px-4 text-text-subtitle">
-        {marks.map((m) => <span key={m} className="text-body-regular">{m}</span>)}
-        <span className="text-body-regular">&#9776;</span>
-        <span className="text-body-regular">&#9711;</span>
+        {MARKS.map((m) => (
+          <button key={m.label} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => mark(m)}
+            aria-label={`Format: ${m.label}`} className="text-body-regular hover:text-text-title">{m.label}</button>
+        ))}
       </div>
-      <div className="flex flex-col gap-2 px-4 py-4">
-        <p className="text-body-medium text-text-title">{NOTES.heading}</p>
-        <p className="text-text-regular text-text-title">{NOTES.body}</p>
-        <p className="flex gap-2 pl-2 text-text-regular text-text-title"><span>&bull;</span>{NOTES.bullet}</p>
-      </div>
+      <textarea ref={box} value={text} onChange={(e) => setText(e.target.value)} aria-label="Interview notes"
+        placeholder={`${NOTES.heading}\n${NOTES.body}\n• ${NOTES.bullet}`}
+        className="min-h-[180px] flex-1 resize-none bg-transparent px-4 py-4 text-text-regular text-text-title outline-none placeholder:text-text-body" />
     </div>
   )
 }

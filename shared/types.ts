@@ -108,6 +108,8 @@ export interface Participation {
   booking?: Booking
   /** Sessions the client or the team cancelled for them (22 Oct 2026): when, the slot, who, and the reason given. */
   cancellations?: { at: string; date: string; slot: string; by: 'client' | 'team'; reason: string }[]
+  /** The interview notes the client or the team writes on a one-to-one session (22 Oct 2026). */
+  notes?: string
   /** Workflow 42: a code at the end of every session, entered by both sides. */
   code?: { value: string; byParticipant: boolean; byClient: boolean }
   /** Diary studies: the days filled in. */
@@ -131,7 +133,11 @@ export interface Participation {
   events: { label: string; at: string }[]
 }
 
-export interface Session { id: string; date: string; slot: string; seats: number; locationId?: string }
+export interface Session {
+  id: string; date: string; slot: string; seats: number; locationId?: string
+  /** The interview notes written on a group session (22 Oct 2026). */
+  notes?: string
+}
 
 export interface StudyRates { platformFee: number; recruitingPer: number; incentivePer: number; moderationPer: number }
 

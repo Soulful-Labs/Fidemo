@@ -743,6 +743,26 @@ export function createPlatform(options: Options = {}) {
       return yes()
     }),
 
+    /**
+     * Interview notes (22 Oct 2026): on a one-to-one booking, or on a group session when `sessionId` is given.
+     * Kept as typed; nothing about a score or a payment reads them.
+     */
+    setSessionNotes: (studyId: string, target: { personId?: string; sessionId?: string }, text: string) => move((s) => {
+      const study = s.studies.find((x) => x.id === studyId)
+      if (!study) return no('No such study')
+      if (target.sessionId) {
+        const session = study.sessions?.find((x) => x.id === target.sessionId)
+        if (!session) return no('No such session')
+        session.notes = text
+        return yes()
+      }
+      const p = study.participations.find((x) => x.personId === target.personId)
+      if (!p) return no('Not on this study')
+      if (!p.booking) return no('Notes are kept on a booked session')
+      p.notes = text
+      return yes()
+    }),
+
     /** The undo of Mark Completed, until the payout has been approved. */
     uncomplete: (studyId: string, personId: string, actor: Actor = SYSTEM) => move((s) => {
       const hit = find(s, studyId, personId)

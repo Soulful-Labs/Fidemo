@@ -1,6 +1,6 @@
 import { resultsOf } from '../../mock/respondent'
 import type { QA } from '../../mock/respondent'
-import { csv, fileName, pdf, save } from '@shared/files'
+import { csv, fileName, pdf, save, text as textFile } from '@shared/files'
 import { Avatar } from '../../components/client/RespondentCard'
 import { useNavigate, useParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
@@ -12,7 +12,7 @@ import { OverviewTile } from './StudyOverview'
 import { ChevronRight, Download, LinkIcon, Star } from '../../components/ui/icons'
 import { copyText } from '../../lib/copy'
 import { sessionPath } from './sessionLink'
-import { CERTIFICATE, SUMMARIES } from '../../mock/results'
+import { CERTIFICATE, NOTES_SUMMARIES, SUMMARIES } from '../../mock/results'
 import { useToast } from '../../components/ui/Toast'
 import { usePlatform, useStudy } from '../../platform'
 import { monthDayYear } from '@shared/format'
@@ -58,10 +58,13 @@ export default function ResultsTab() {
   const c = counts(s)
   const cert = studyCertificate(world, s)
   /**
-   * A group video call's results are grouped by session (1627:104407): each session's row with its date and
-   * View Result, then its participants. Everyone else is one list.
+   * A group study's results are grouped by session (1627:104407 video, 1627:107896 in person): each
+   * session's row with its date and View Result, then its participants. Everyone else is one list.
    */
-  const grouped = s.type === 'group_video_call'
+  const grouped = s.type === 'group_video_call' || s.type === 'in_person_group'
+  /** In person, the results are the interview notes (1627:101705, 1627:107896): Notes Summaries. */
+  const inPerson = s.type === 'in_person' || s.type === 'in_person_group'
+  const summary = inPerson ? NOTES_SUMMARIES : SUMMARIES
   const sessions = grouped ? sessionSeats(s) : []
   const sessionOf = (personId: string) => sessions.findIndex((x) => x.people.includes(personId))
   /** Step 50: everyone who finished, which is the results the client receives. */
@@ -72,12 +75,28 @@ export default function ResultsTab() {
     .sort((a, b) => (grouped ? (a.at < 0 ? 999 : a.at) - (b.at < 0 ? 999 : b.at) : 0) || a.i - b.i)
     .map((x) => x.r)
   const shown = paginate(rows, page)
-  const stats = [
-    { label: 'Completed', value: String(c.completed), suffix: `/${s.required} required` },
-    { label: 'Avg. Trust Score', value: String(averageScore(world, s)) },
-    // The group video call's Results draws two figures, without Rated By You (1627:104407).
-    ...(grouped ? [] : [{ label: 'Rated By You', value: String(c.rated), suffix: `/${c.completed} completed` }]),
-  ]
+  /** In-person one-to-one (1627:101705): the sessions sat against the sessions booked, then the participants. */
+  const booked = s.participations.filter((p) => p.booking && ['scheduled', 'completed', 'no_show'].includes(p.state))
+  const sat = booked.filter((p) => p.state === 'completed')
+  const stats = s.type === 'in_person'
+    ? [
+        { label: 'Sessions Completed', value: String(sat.length), suffix: `/${booked.length}` },
+        { label: 'Participants Completed', value: String(c.completed), suffix: `/${s.required} required` },
+        { label: 'Avg. Trust Score', value: String(averageScore(world, s)) },
+      ]
+    : [
+        { label: 'Completed', value: String(c.completed), suffix: `/${s.required} required` },
+        { label: 'Avg. Trust Score', value: String(averageScore(world, s)) },
+        // The group studies' Results draw two figures, without Rated By You (1627:104407, 1627:107896).
+        ...(grouped ? [] : [{ label: 'Rated By You', value: String(c.rated), suffix: `/${c.completed} completed` }]),
+      ]
+  /** Notes Summaries gives every note written, one session or interview after another. */
+  const notesFile = () => {
+    const parts = s.type === 'in_person_group'
+      ? sessionSeats(s).filter((x) => x.notes?.trim()).map((x) => `${monthDayYear(x.date)}, ${x.slot}\n${x.notes}`)
+      : recruits(world, s).filter((r) => r.participation.notes?.trim()).map((r) => `${r.name}, ${monthDayYear(r.participation.booking?.date)}\n${r.participation.notes}`)
+    toast(parts.length ? `Saved ${save(fileName(`${s.title} notes`, 'txt'), textFile(parts.join('\n\n')))}` : 'No notes have been written on this study yet')
+  }
   /** The link a certificate is checked at, on the same demo domain as the apps' other links. */
   const certLink = `https://humanlayer.app/certificate/${cert.id}`
 
@@ -85,20 +104,21 @@ export default function ResultsTab() {
     <AppShell hideCreate crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
       <StudyFrame study={s} active="results" minH="min-h-[1481px]" bodyMinH="min-h-[1231px]">
         <div className="flex flex-col px-4 pt-4">
-          <div className={grouped ? 'grid grid-cols-[1fr_1fr_1fr] gap-3' : 'grid grid-cols-[213px_213px_213px_1fr] gap-3'}>
+          <div className={stats.length === 2 ? 'grid grid-cols-[1fr_1fr_1fr] gap-3' : 'grid grid-cols-[213px_213px_213px_1fr] gap-3'}>
             {stats.map((t) => <OverviewTile key={t.label} {...t} />)}
             <div className="flex items-center justify-between gap-4 rounded-md bg-bgAlt-1 px-4 py-4">
               <div className="flex flex-col gap-1">
                 {/* 1643:130046: a 22px box, so 16px text, not the 18 it was drawn with. */}
-                <p className="text-body-medium text-text-title">{SUMMARIES.title}</p>
-                <p className="text-text-regular text-text-subtitle">{SUMMARIES.body}</p>
+                <p className="text-body-medium text-text-title">{summary.title}</p>
+                <p className="text-text-regular text-text-subtitle">{summary.body}</p>
               </div>
               <Button variant="secondary" size="none" className="h-12 px-6" onClick={() => {
+                if (inPerson) { notesFile(); return }
                 const lines = rows.flatMap((r) => resultsOf(s, r.participation).flatMap((sec) => sec.answers.map((qa) => [r.name, r.role, sec.label ?? '', qa.prompt, answerText(qa.answer)])))
                 toast(lines.length ? `Saved ${save(fileName(`${s.title} results`, 'csv'), csv(['Respondent', 'Role', 'Entry', 'Question', 'Answer'], lines))}` : 'No completed responses to download yet')
               }}
                 leftIcon={<Download className="h-4 w-4" />} rightIcon={<ChevronRight className="h-4 w-4" />}>
-                {SUMMARIES.cta}
+                {summary.cta}
               </Button>
             </div>
           </div>

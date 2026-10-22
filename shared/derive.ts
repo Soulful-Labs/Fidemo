@@ -691,7 +691,7 @@ export function averageScore(state: PlatformState, study: Study): number {
 }
 
 /** The seats taken in each session of a group study. */
-export function sessionSeats(study: Study): { id: string; date: string; slot: string; seats: number; taken: number; locationId?: string; people: string[] }[] {
+export function sessionSeats(study: Study): { id: string; date: string; slot: string; seats: number; taken: number; locationId?: string; notes?: string; people: string[] }[] {
   return (study.sessions ?? []).map((s) => {
     const people = study.participations.filter((p) => p.booking?.sessionId === s.id && (p.state === 'scheduled' || p.state === 'completed' || p.state === 'no_show')).map((p) => p.personId)
     return { ...s, taken: people.length, people }

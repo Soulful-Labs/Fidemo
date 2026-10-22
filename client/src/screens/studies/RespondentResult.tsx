@@ -8,11 +8,12 @@ import RatePanel from './RatePanel'
 import ReportParticipant from '../../components/client/ReportParticipant'
 import { STUDY_TYPE } from '../../lib/studyTypes'
 import NoShowModal from './NoShowModal'
-import { ActivityList, DayBar, NotesCard, PinCard, QARow, SessionCard } from './respondentBits'
+import { ActivityList, DayBar, NotesCard, PinCard, QARow, SessionCard, VideoResult } from './respondentBits'
+import { VERIFICATION_PIN } from '../../mock/respondent'
 import { CheckCircle, Clock, Close, DiaryBookIcon, NoteIcon, SurveyIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { answersOf, resultsOf } from '../../mock/respondent'
-import { clockTime, longDay, monthDayYearTime } from '@shared/format'
+import { clockTime, longDay, monthDayYear, monthDayYearTime } from '@shared/format'
 import { sessionStart } from '@shared/store'
 import { DECISION_UNDO_MS } from '@shared/platform'
 import { useToast } from '../../components/ui/Toast'
@@ -55,7 +56,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
   const nav = useNavigate()
   const [params, setParams] = useSearchParams()
   const s = useStudy(id)
-  const { moveRespondent, enterCode, reportParticipant, state: world } = useStudies()
+  const { moveRespondent, enterCode, reportParticipant, undoAttendance, setNotes, state: world } = useStudies()
   const [reporting, setReporting] = useState(false)
   const [rate, setRate] = useState(params.get('rate') === '1' || params.get('rate') === 'rated')
   const [noShow, setNoShow] = useState<'one' | 'all' | null>((params.get('noshow') as 'one' | 'all') ?? null)
@@ -65,6 +66,13 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
   const state = person?.state
 
   const session = s.type !== 'survey' && s.type !== 'diary'
+  /**
+   * A group participant's own page has only Screener and Activity (1627:105446, 1769:90865; in person
+   * 1627:108935, 1777:95895): their result and attendance are on the session page.
+   */
+  const group = s.type === 'group_video_call' || s.type === 'in_person_group'
+  const video = s.type === 'video_call'
+  const view: Tab = group && tab === 'result' ? 'activity' : tab
   /** The recruited state is judged on the screener alone; the completed one has a result. */
   const done = params.get('state') === 'recruited' ? false
     : params.get('state') === 'completed' || state === 'completed' || state === 'rated' || state === 'no_show'
@@ -82,7 +90,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
   const running = slot !== 'booked'
   const phase = (to: 'running' | 'finished') => setParams((p) => { p.set('session', to); return p }, { replace: true })
   /** A session study is only rated once its slot has been sat. */
-  const rated = session ? running : done
+  const rated = group ? false : session ? running : done
   const crumbTab = done ? 'Results' : 'Recruited'
   const decidedAt = person?.participation.decidedAt
   const undoable = !!decidedAt && Date.now() - new Date(decidedAt).getTime() <= DECISION_UNDO_MS
@@ -97,7 +105,11 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
     const res = enterCode(s.id, person.id, code)
     if (!res.ok && res.why) toast(res.why)
   }
-  const pinProps = { pin: person?.participation.code?.value, name: person?.name, onShared: shared }
+  const pinProps = { pin: person?.participation.code?.value, name: person?.name, onShared: shared, ...(group && { text: VERIFICATION_PIN.groupBody }) }
+  const joinCall = () => {
+    const w = window.open(`https://meet.humanlayer.app/${s.id}/${person?.id ?? ''}`, '_blank', 'noopener')
+    toast(w ? 'Opening the session' : 'Allow pop-ups to join the session')
+  }
 
   /** The booking on this participation: who, when and where. */
   const booking = person?.participation.booking
@@ -114,7 +126,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
     { key: 'screener', label: 'Screener', icon: <SurveyIcon className="h-4 w-4" /> },
-    ...(done ? [{ key: 'result' as Tab, label: 'Study Result', icon: <NoteIcon className="h-4 w-4" /> }] : []),
+    ...(done && !group ? [{ key: 'result' as Tab, label: 'Study Result', icon: <NoteIcon className="h-4 w-4" /> }] : []),
     { key: 'activity', label: 'Activity', icon: <Clock className="h-4 w-4" /> },
   ]
 
@@ -143,42 +155,56 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                 {tabs.map((t) => (
                   <button key={t.key} type="button" onClick={() => nav(to(t.key))}
                     className={cn('flex h-11 items-center gap-2 border-b-1 text-body-regular',
-                      t.key === tab ? 'border-cta-primary text-brand-primary' : 'border-transparent text-text-subtitle hover:text-text-title')}>
+                      t.key === view ? 'border-cta-primary text-brand-primary' : 'border-transparent text-text-subtitle hover:text-text-title')}>
                     {t.icon}{t.label}
                   </button>
                 ))}
               </div>
 
-              {tab === 'activity' && (
+              {view === 'activity' && (
                 <div className="flex flex-col px-4 pb-4 pt-5">
-                  {done && <RatePrompt name={person?.name} wide onRate={() => setRate(true)} />}
+                  {done && !group && <RatePrompt name={person?.name} wide onRate={() => setRate(true)} />}
                   <ActivityList events={events} />
                   <div className="pt-[14px]"><PinCard variant="activity" {...pinProps} /></div>
                 </div>
               )}
 
-              {tab === 'screener' && answersOf(s, person?.participation).map((qa, i) => (
+              {view === 'screener' && answersOf(s, person?.participation).map((qa, i) => (
                 <QARow key={i} n={i + 1} qa={qa} first={i === 0} />
               ))}
 
-              {tab === 'result' && !session && resultsOf(s, person?.participation).map((d, k) => (
+              {view === 'result' && !session && resultsOf(s, person?.participation).map((d, k) => (
                 <div key={d.label ?? k}>
                   {d.label && <DayBar label={d.label} />}
                   {d.answers.map((qa, i) => <QARow key={i} n={i + 1} qa={qa} first={i === 0} />)}
                 </div>
               ))}
 
-              {tab === 'result' && session && (
+              {view === 'result' && session && (
                 <div className="flex flex-1 flex-col gap-3 px-4 pb-4 pt-5">
-                  {running
-                    ? <SessionCard state={slot === 'finished' ? 'done' : 'running'} session={sessionInfo} onFinish={() => phase('finished')} />
+                  {/* A video call (1627:100096, 1627:100279): Scheduled For with Join Now beside the PIN, then the Video Result. */}
+                  {video && !running && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <SessionCard state="booked" session={sessionInfo && { ...sessionInfo, title: 'Scheduled For' }} cta="Join Now" onCta={joinCall} />
+                      <PinCard variant="session" {...pinProps} />
+                    </div>
+                  )}
+                  {video && running && sessionInfo && (
+                    <VideoResult title={`Video Recording of ${person?.name} and You`} who={person?.name ?? ''} length={s.duration}
+                      when={`${monthDayYear(booking!.date)}, ${booking!.slot}`} />
+                  )}
+                  {!video && (running
+                    ? <SessionCard state={slot === 'finished' ? 'done' : 'running'} session={sessionInfo} since={starts} onFinish={() => phase('finished')} />
                     : (
                       <div className="grid grid-cols-2 gap-3">
                         <SessionCard state="booked" session={sessionInfo} onStart={() => phase('running')} />
                         <PinCard variant="session" {...pinProps} />
                       </div>
-                    )}
-                  <NotesCard download={running} className="flex-1" />
+                    ))}
+                  {!video && person && (
+                    <NotesCard className="flex-1" value={person.participation.notes ?? ''} file={`${s.title} ${person.name}`}
+                      onSave={(t) => { const res = setNotes(s.id, { personId: person.id }, t); if (!res.ok) toast(res.why) }} />
+                  )}
                   {running && <PinCard variant="activity" {...pinProps} />}
                 </div>
               )}
@@ -186,7 +212,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
               {/* Qualify / Disqualify is judged on the screener alone (1627:97609),
                   so it does not wait for a slot to be sat. Only the completed
                   bar on a session study does, which is what `running` gates. */}
-              {tab !== 'activity' && (!done || (session ? running : true)) && (
+              {view !== 'activity' && !(group && done) && (!done || (session ? running : true)) && (
                 <div className={cn('flex items-center justify-between gap-4 border-t-1 border-stroke-1 bg-bg-1 px-4', session ? 'h-[73px]' : 'mt-[11px] h-20')}>
                   {/* The decision is only open while they are waiting on it. Someone
                       already qualified, disqualified, recruited or scheduled is past
@@ -263,28 +289,31 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                       not a button; once paid, only the read-back is left. */}
                   {done && session && (state === 'completed' || state === 'rated' || state === 'no_show') && (
                     <>
+                      {/* The read-back's own words (1769:86063). */}
                       <p className="flex flex-col text-text-regular">
-                        <span className="text-text-subtitle">Completion Confirmation</span>
-                        <span className="text-text-title">
+                        <span className={state === 'no_show' ? 'text-red-600' : 'text-brand-secondary'}>
+                          {state === 'no_show' ? `Marked ${person.name.split(' ')[0]} as No-show.` : `Marked ${person.name.split(' ')[0]} as completed!`}
+                        </span>
+                        <span className="text-text-subtitle">
                           {state === 'no_show'
-                            ? `${person.name} was marked a no-show and is not paid for this session.`
-                            : `${person.name} completed this session.${state === 'rated' ? ' Rated.' : ''}`}
+                            ? `You have marked ${person.name.split(' ')[0]} as no-show (absent) and it will be confirmed by team.`
+                            : person.participation.code?.byParticipant
+                              ? `This study has been successfully marked as completed with PIN by ${person.name}.`
+                              : `This study has been marked as completed for ${person.name}.`}
                         </span>
                       </p>
+                      {/* Undo beside the read-back, as the client's frames draw it (1769:86063); once paid, only the read-back. */}
                       <span className="flex items-center gap-3">
-                        {state !== 'no_show' && !person.participation.paidAt && (
-                          <Button variant="tertiary" size="none" className="h-11 px-4" onClick={() => setNoShow('one')} leftIcon={<Close className="h-4 w-4" />}>Mark No-show</Button>
-                        )}
-                        {state === 'no_show' && (
-                          <Button variant="secondary" size="none" className="h-11 px-4" leftIcon={<CheckCircle className="h-4 w-4" />} onClick={() => {
-                            const res = moveRespondent(s.id, person.id, 'completed')
-                            toast(res.ok ? `${person.name} marked completed` : res.why)
-                          }}>Mark Completed</Button>
+                        {(state === 'no_show' || !person.participation.paidAt) && (
+                          <Button variant="tertiary" size="none" className="h-11 px-4" onClick={() => {
+                            const res = undoAttendance(s.id, person.id)
+                            toast(res.ok ? (state === 'no_show' ? 'No-show undone' : 'Completion undone') : res.why)
+                          }}>Undo</Button>
                         )}
                         <span className={state === 'no_show'
                           ? 'flex h-11 items-center gap-2 rounded-sm bg-red-50 px-4 text-text-medium text-red-600'
                           : 'flex h-11 items-center gap-2 rounded-sm bg-green-50 px-4 text-text-medium text-brand-secondary'}>
-                          {state === 'no_show' ? <><Close className="h-4 w-4" />Marked as No-show</> : <><CheckCircle className="h-4 w-4" />{person.participation.code?.byParticipant ? 'Marked completed by participant' : 'Marked completed'}</>}
+                          {state === 'no_show' ? <><Close className="h-4 w-4" />Marked as No-show</> : <><CheckCircle className="h-4 w-4" />{person.participation.code?.byParticipant ? 'Marked completed by participant' : 'Marked as completed'}</>}
                         </span>
                       </span>
                     </>

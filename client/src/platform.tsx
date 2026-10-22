@@ -173,6 +173,13 @@ export function useStudies() {
       rate: (studyId: string, personId: string, dims: { expertise: number; reliability: number; communication: number }, comment?: string): Result =>
         p.rateParticipant(studyId, personId, 'dimensions', { ...dims, ...(comment?.trim() ? { comment: comment.trim() } : {}) }, actor),
       enterCode: (studyId: string, personId: string, code: string): Result => p.enterClientCode(studyId, personId, code),
+      /** Undo beside a session's read-back (client frames 1627:106074, 1769:86063): a no-show or a completion goes back to the booked session. */
+      undoAttendance: (studyId: string, personId: string): Result => {
+        const part = p.getState().studies.find((x) => x.id === studyId)?.participations.find((x) => x.personId === personId)
+        return part?.state === 'no_show' ? p.undoNoShow(studyId, personId, actor) : p.uncomplete(studyId, personId, actor)
+      },
+      /** Interview notes, on a one-to-one booking or a group session. */
+      setNotes: (studyId: string, target: { personId?: string; sessionId?: string }, text: string): Result => p.setSessionNotes(studyId, target, text),
       /** Report Participant (19 Oct 2026): opens a case in the console's Reported queue. */
       reportParticipant: (personId: string, reason: Report['reason'], detail: string, studyId?: string): Result => p.reportParticipant(clientId, personId, reason, detail, studyId),
       /** Policy section 5: the client cancels a booked session. It costs the participant nothing, and they are told. */
