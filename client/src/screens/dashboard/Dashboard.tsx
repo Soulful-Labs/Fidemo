@@ -1,5 +1,6 @@
 import { useNewStudy } from '../create/useNewStudy'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { money } from '@shared/format'
 import { useNavigate } from 'react-router-dom'
 import AppShell, { ViewAll } from '../../app/AppShell'
 import RespondentCard from '../../components/client/RespondentCard'
@@ -9,7 +10,7 @@ import Button from '../../components/ui/Button'
 import { ChevronRight, Clock, DollarCircle, ShieldIcon, UsersIcon } from '../../components/ui/icons'
 import { DASHBOARD_STUDY_IDS } from '../../mock/dashboard'
 import { useOpenProfile } from '../../app/ProfileHost'
-import { AttentionPanel, NeedRow, StepArrow, StudyCarousel } from './DashboardParts'
+import { NeedRow, StepArrow, StudyCarousel, usePerRow } from './DashboardParts'
 import { InvitePanel } from '../pool/PoolPanels'
 import { SentModal } from '../pool/PoolModals'
 import { useStudies } from '../../platform'
@@ -52,7 +53,9 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
   const [inviting, setInviting] = useState<Respondent | null>(null)
   const [sent, setSent] = useState(false)
   const [insightAt, setInsightAt] = useState(0)
-  const [allNeeds, setAllNeeds] = useState(false)
+  /** Recommended Respondents: one row, three cards at least and more on wider screens (22 Oct 2026). */
+  const recRow = useRef<HTMLDivElement>(null)
+  const perRow = usePerRow(recRow)
   const { studies: every, state: world } = useStudies()
   const { account } = useSession()
   const all = empty ? [] : every
@@ -74,20 +77,22 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
     { label: 'Ongoing Studies', value: String(d.ongoing), tint: 'yellow' as const, Icon: Clock },
     { label: 'Remaining To Hire', value: toHire.toLocaleString('en-US'), tint: 'green' as const, Icon: UsersIcon },
     { label: 'Avg. Trust Score', value: d.avgScore ? String(d.avgScore) : '—', tint: 'purple' as const, Icon: ShieldIcon },
-    { label: 'Avg. Session Incentive', value: `$${d.avgIncentive % 1 === 0 ? d.avgIncentive : d.avgIncentive.toFixed(1)}`, tint: 'blue' as const, Icon: DollarCircle },
+    { label: 'Avg. Session Incentive', value: money(d.avgIncentive), tint: 'blue' as const, Icon: DollarCircle },
   ]
   const today = new Date().toDateString()
 
   return (
     <AppShell heading={`${greeting()}, ${(account?.name ?? 'there').split(' ')[0]}!`} crumbs={[{ label: 'Dashboard' }]}>
       <div className="min-h-[881px] rounded-lg bg-bgAlt-0 p-4">
-        <div className="flex gap-6">
-          <div className="flex w-[764px] shrink-0 flex-col gap-6">
+        {/* Three equal columns (22 Oct 2026): the figures and Upcoming Sessions / Super Insights take two, Needs Your
+            Attention the third, so the three cards in that row are the same width and none moves. */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="col-span-2 flex min-w-0 flex-col gap-6">
             <div className="grid grid-cols-4 gap-3">
               {stats.map((t) => <StatTile key={t.label} label={t.label} value={t.value} tint={t.tint} icon={<t.Icon className="h-6 w-6" />} />)}
             </div>
 
-            <div className="grid h-[292px] grid-cols-[374px_374px] gap-4">
+            <div className="grid h-[292px] grid-cols-2 gap-4">
               <section className="flex flex-col rounded-lg border-1 border-stroke-1 px-4 pt-4">
                 <div className="flex items-center justify-between pb-[5px]">
                   <h2 className="text-body-medium text-text-title">Upcoming Sessions</h2>
@@ -133,15 +138,10 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
             </div>
           </div>
 
-          <section className="flex h-[400px] flex-1 flex-col rounded-lg border-1 border-stroke-1 bg-gradient-to-b from-yellow-30 to-transparent to-40% px-4 pt-[17px]">
+          <section className="flex h-[400px] min-w-0 flex-col rounded-lg border-1 border-stroke-1 bg-gradient-to-b from-yellow-30 to-transparent to-40% px-4 pt-[17px]">
             <h2 className="flex items-center gap-2.5 pb-[10px] pl-1 text-body-medium text-text-title">
               <span className="flex h-4 w-4 items-center justify-center rounded-full bg-yellow-100"><span className="h-2 w-2 rounded-full bg-cta-primary" /></span>
               Needs Your Attention
-              {needs.length > 3 && (
-                <button type="button" onClick={() => setAllNeeds(true)} className="ml-auto flex items-center gap-1 text-text-medium text-text-subtitle hover:text-text-title">
-                  View all <span className="text-text-regular">({needs.length})</span> <ChevronRight className="h-4 w-4" />
-                </button>
-              )}
             </h2>
             {needs.length === 0 && <Blank line="Nothing needs you right now." />}
             {needs.slice(0, 3).map((n) => <NeedRow key={n.key} n={n} />)}
@@ -172,8 +172,8 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
           {recommended.length === 0 ? (
             <div className="flex rounded-lg border-1 border-stroke-1 bg-bg-1"><Blank line="Recommendations appear once your first study is live." cta="Browse the pool" onClick={() => navigate('/pool')} /></div>
           ) : (
-            <div className="grid grid-cols-3 gap-3">
-              {recommended.map((r) => <RespondentCard key={r.id} respondent={r} onView={() => openProfile(r.id)} onInvite={() => setInviting(r)} />)}
+            <div ref={recRow} className="grid gap-3" style={{ gridTemplateColumns: `repeat(${perRow}, minmax(0, 1fr))` }}>
+              {recommended.slice(0, perRow).map((r) => <RespondentCard key={r.id} respondent={r} onView={() => openProfile(r.id)} onInvite={() => setInviting(r)} />)}
             </div>
           )}
         </section>
@@ -182,7 +182,6 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
       <InvitePanel open={inviting !== null} name={inviting?.name.split(' ')[0]} personId={inviting?.id} onClose={() => setInviting(null)}
         onSent={() => { setInviting(null); setSent(true) }} />
       <SentModal open={sent} onClose={() => setSent(false)} />
-      <AttentionPanel open={allNeeds} onClose={() => setAllNeeds(false)} needs={needs} />
     </AppShell>
   )
 }

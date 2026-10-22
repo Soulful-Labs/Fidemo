@@ -5,6 +5,12 @@ import Modal from '../../components/ui/Modal'
 import Popover from '../../components/ui/Popover'
 import { STUDY_TYPE } from '../../lib/studyTypes'
 import type { StudyType } from '../../lib/studyTypes'
+import { useNavigate } from 'react-router-dom'
+import { counts } from '@shared/derive'
+import { useToast } from '../../components/ui/Toast'
+import { copyText } from '../../lib/copy'
+import { useStudies } from '../../platform'
+import type { ClientStudy } from '../../platform'
 
 /** One row of a study menu, as drawn: plain text, no icon. */
 function Item({ children, onClick }: { children: string; onClick?: () => void }) {
@@ -173,5 +179,31 @@ export function DeleteStudyModal({ open, onClose, onConfirm, name }: { open: boo
           <Button variant="danger" className="flex-1" onClick={onConfirm}>Delete</Button>
         </>
       } />
+  )
+}
+
+/**
+ * A study card's three-dot menu with everything behind it (22 Oct 2026): the
+ * Dashboard's Ongoing Studies cards open the same Ongoing study options as the
+ * Studies list, and each choice does the same thing there.
+ */
+export function StudyCardMenu({ study, open, onClose }: { study: ClientStudy; open: boolean; onClose: () => void }) {
+  const toast = useToast()
+  const navigate = useNavigate()
+  const { moveStudy, duplicateStudy } = useStudies()
+  const [ask, setAsk] = useState<'pause' | 'stop' | 'resume' | null>(null)
+  const paused = study.state === 'paused'
+  const copy = async () => { onClose(); toast((await copyText(`https://humanlayer.app/study/${study.id}`)) ? 'Link copied' : 'Could not reach the clipboard') }
+  const duplicate = () => { onClose(); const res = duplicateStudy(study.id); toast(res.ok ? `Copied to Drafts as “${study.title} (copy)”` : res.why ?? 'Could not copy that study') }
+  const move = (to: Parameters<typeof moveStudy>[1], done: string) => { setAsk(null); const res = moveStudy(study.id, to); toast(res.ok ? done : res.why) }
+  return (
+    <>
+      <OngoingMenu open={open} onClose={onClose} paused={paused} onCopy={copy} onDuplicate={duplicate}
+        onPause={() => { onClose(); setAsk(paused ? 'resume' : 'pause') }} onComplete={() => { onClose(); setAsk('stop') }} />
+      <PauseStudyModal open={ask === 'pause'} onClose={() => setAsk(null)} onConfirm={() => { setAsk(null); const res = moveStudy(study.id, 'paused'); if (res.ok) navigate(`/studies/${study.id}/paused`); else toast(res.why) }} />
+      <StopCompleteModal open={ask === 'stop'} left={Math.max(0, study.required - counts(study).completed)} onClose={() => setAsk(null)}
+        onConfirm={() => move('billing', `${study.title} has stopped recruiting and is in Billing`)} />
+      <RepublishModal open={ask === 'resume'} onClose={() => setAsk(null)} onConfirm={() => move('recruiting', `${study.title} is recruiting again`)} />
+    </>
   )
 }

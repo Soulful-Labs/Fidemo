@@ -6,6 +6,7 @@ import SidePanel from '../../components/ui/SidePanel'
 import { ChevronLeft, ChevronRight } from '../../components/ui/icons'
 import type { attention } from '../../lib/insight'
 import { cn } from '../../lib/cn'
+import { StudyCardMenu } from '../studies/StudyMenus'
 
 /** The small square arrow the dashboard's steppers share (Super Insights draws it first). */
 export function StepArrow({ dir, disabled, onClick, label }: { dir: -1 | 1; disabled: boolean; onClick: () => void; label: string }) {
@@ -23,12 +24,35 @@ export function StepArrow({ dir, disabled, onClick, label }: { dir: -1 | 1; disa
  * study reachable with the arrows. Moving is tier 1, getting around: a 160ms
  * slide on ease-out, no overshoot, and none at all under reduced motion.
  */
+/**
+ * How many cards fit across a box (22 Oct 2026): at least three, and one more for every further card's
+ * width the screen allows, so wide screens show more.
+ */
+export function usePerRow(box: React.RefObject<HTMLElement | null>, cardMin = 340, gap = 12, least = 3): number {
+  const [n, setN] = useState(least)
+  useLayoutEffect(() => {
+    const el = box.current
+    if (!el) return
+    const measure = () => setN(Math.max(least, Math.floor((el.clientWidth + gap) / (cardMin + gap))))
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [box, cardMin, gap, least])
+  return n
+}
+
 export function StudyCarousel({ studies, head }: { studies: React.ComponentProps<typeof StudyCard>['study'][]; head: (arrows: ReactNode) => ReactNode }) {
   const navigate = useNavigate()
   const [at, setAt] = useState(0)
   const track = useRef<HTMLDivElement>(null)
+  const frame = useRef<HTMLDivElement>(null)
   const [step, setStep] = useState(0)
-  const last = Math.max(0, studies.length - 2)
+  /** Cards in view: three at least, more on wider screens (22 Oct 2026). */
+  const perView = usePerRow(frame)
+  /** Which card's three-dot menu is open: the same Ongoing study options as the Studies list. */
+  const [menu, setMenu] = useState<string | null>(null)
+  const last = Math.max(0, studies.length - perView)
   const index = Math.min(at, last)
   // One step is one card and the gap after it, measured so the slide lands exactly on a card edge.
   useLayoutEffect(() => {
@@ -39,10 +63,10 @@ export function StudyCarousel({ studies, head }: { studies: React.ComponentProps
     const ro = new ResizeObserver(measure)
     ro.observe(el)
     return () => ro.disconnect()
-  }, [studies.length])
-  const arrows = studies.length > 2 && (
+  }, [studies.length, perView])
+  const arrows = studies.length > perView && (
     <span className="flex items-center gap-1.5">
-      <span className="pr-1.5 text-text-regular text-text-subtitle" aria-live="polite">{index + 1}–{Math.min(index + 2, studies.length)} of {studies.length}</span>
+      <span className="pr-1.5 text-text-regular text-text-subtitle" aria-live="polite">{index + 1}–{Math.min(index + perView, studies.length)} of {studies.length}</span>
       <StepArrow dir={-1} label="Previous studies" disabled={index === 0} onClick={() => setAt(index - 1)} />
       <StepArrow dir={1} label="Next studies" disabled={index >= last} onClick={() => setAt(index + 1)} />
     </span>
@@ -50,13 +74,14 @@ export function StudyCarousel({ studies, head }: { studies: React.ComponentProps
   return (
     <>
       {head(arrows)}
-      <div className="overflow-hidden">
+      <div ref={frame} className="overflow-hidden">
         <div ref={track} className="flex gap-3 transition-transform duration-[160ms] ease-out motion-reduce:transition-none"
           style={{ transform: `translateX(-${index * step}px)` }}>
           {studies.map((s, i) => (
-            <div key={s.id} className="w-[calc((100%-12px)/2)] shrink-0" aria-hidden={i < index || i > index + 1 || undefined}
-              inert={i < index || i > index + 1 || undefined}>
-              <StudyCard onOpen={() => navigate(`/studies/${s.id}`)} onMenu={() => navigate('/studies')} study={s} className="h-full" />
+            <div key={s.id} className="shrink-0" style={{ width: `calc((100% - ${(perView - 1) * 12}px) / ${perView})` }}
+              aria-hidden={i < index || i >= index + perView || undefined} inert={i < index || i >= index + perView || undefined}>
+              <StudyCard onOpen={() => navigate(`/studies/${s.id}`)} onMenu={() => setMenu(s.id)} study={s} className="h-full"
+                menu={<StudyCardMenu study={s} open={menu === s.id} onClose={() => setMenu(null)} />} />
             </div>
           ))}
         </div>
