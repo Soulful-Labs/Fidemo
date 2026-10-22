@@ -55,7 +55,7 @@ function QuestionRead({ label, kind, prompt, options, marks }: { label: string; 
       {options?.length ? options.map((o) => (
         <span key={o} className="flex gap-1.5">
           <span className="flex h-12 flex-1 items-center gap-3 rounded-md border-1 border-stroke-input px-4 text-body-regular text-text-title">
-            <span className="h-5 w-5 shrink-0 rounded-full border-1.5 border-neutral-700" />{o}
+            <span className={cn('h-5 w-5 shrink-0 border-1.5 border-neutral-700', /multi-select/i.test(kind) ? 'rounded-[5px]' : 'rounded-full')} />{o}
           </span>
           {marks[o] && <Verdict mark={marks[o]!} />}
         </span>

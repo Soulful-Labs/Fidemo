@@ -58,7 +58,7 @@ export default function QuestionBody({ q, put, marks }: { q: FormQuestion; put: 
         {rows.map((r, i) => (
           <div key={i} className="flex items-center gap-2">
             <Input size="sm" className="w-[140px]" aria-label={`Row ${i + 1}`} placeholder="Enter row item..." value={r} onChange={(e) => put({ ...q, rows: rows.map((x, k) => (k === i ? e.target.value : x)) })} />
-            {columns.map((_, k) => <span key={k} className="flex h-[38px] w-[120px] items-center justify-center rounded-sm border-1 border-stroke-input bg-bg-0"><span className="h-4 w-4 rounded-full border-1 border-text-body" /></span>)}
+            {columns.map((_, k) => <span key={k} className="flex h-[38px] w-[120px] items-center justify-center rounded-sm border-1 border-stroke-input bg-bg-0"><span className={`h-4 w-4 border-1 border-text-body ${q.matrixKind === 'Multi-select/row' ? 'rounded-xs' : 'rounded-full'}`} /></span>)}
             <IconButton label="Add row" size={32} onClick={() => put({ ...q, rows: [...rows.slice(0, i + 1), '', ...rows.slice(i + 1)] })}><PlusIcon className="h-4 w-4" /></IconButton>
             <IconButton label="Delete row" size={32} disabled={rows.length <= 1} onClick={() => put({ ...q, rows: rows.filter((_, k) => k !== i) })}><TrashIcon className="h-4 w-4" /></IconButton>
           </div>

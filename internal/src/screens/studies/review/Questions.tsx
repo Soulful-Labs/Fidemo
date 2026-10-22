@@ -30,7 +30,7 @@ export function QuestionBlock({ label, q }: { label: string; q: Question }) {
         {q.answers?.map(([answer, verdict]) => (
           <div key={answer} className="flex gap-1">
             <div className="flex h-[38px] flex-1 items-center gap-2 rounded-sm border-1 border-stroke-input bg-bg-0 px-3 text-text-regular text-text-title">
-              <span aria-hidden="true" className="h-[18px] w-[18px] rounded-full border-1.5 border-text-subtitle" />
+              <span aria-hidden="true" className={cn('h-[18px] w-[18px] border-1.5 border-text-subtitle', /multi-select/i.test(q.kind) ? 'rounded-xs' : 'rounded-full')} />
               {answer}
             </div>
             <div className={cn('flex h-[38px] items-center rounded-sm border-1 border-stroke-1 bg-bg-1 px-3 text-text-regular', multi ? 'w-[126px]' : 'w-[112px]', VERDICT[verdict])}>

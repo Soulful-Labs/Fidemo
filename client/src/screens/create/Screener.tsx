@@ -93,7 +93,8 @@ function Options({ q, marks, markWidth, onAdd, onRemove, onText, onMark, removab
             {Array.from({ length: 6 }).map((_, i) => <span key={i} className="h-[3px] w-[3px] rounded-full bg-current" />)}
           </span>
           <span className="relative flex flex-1 items-center">
-            <span className="absolute left-4 h-4 w-4 rounded-full border-1.5 border-neutral-1000" />
+            {/* A multi-select's options are ticked, so they show a checkbox; a single-select's a radio (22 Oct 2026). */}
+            <span className={cn('absolute left-4 h-4 w-4 border-1.5 border-neutral-1000', q.kind === 'Multi-select' ? 'rounded-[5px]' : 'rounded-full')} />
             <Box value={o.text} placeholder="Enter option" onChange={(v) => onText(o.id, v)} className="pl-11" />
           </span>
           <Pick value={o.mark} tone={MARK_TONE[o.mark]} className={cn(markWidth, 'px-3')}
@@ -132,7 +133,7 @@ function Matrix({ q, write }: { q: Question; write: (next: Question) => void }) 
             onChange={(v) => write({ ...q, rows: rows.map((x, k) => (k === i ? v : x)) })} />
           {columns.map((_, c) => (
             <span key={c} className="flex h-[38px] flex-1 items-center justify-center rounded-sm bg-bg-2">
-              <span className="h-4 w-4 rounded-full border-1.5 border-neutral-1000" />
+              <span className={cn('h-4 w-4 border-1.5 border-neutral-1000', q.matrixKind === 'Multi-select/row' ? 'rounded-[5px]' : 'rounded-full')} />
             </span>
           ))}
           <button type="button" aria-label="Add row" onClick={() => write({ ...q, rows: [...rows, ''] })}
