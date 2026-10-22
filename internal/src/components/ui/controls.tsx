@@ -19,13 +19,13 @@ export function Toggle({ checked, onChange, label, disabled }: { checked: boolea
   )
 }
 
-/** "Checkbox-default": a 16px box with Radius/XS, stroke-input edge; checked fills brand-secondary with a white tick. */
+/** "Checkbox-default": a 16px box with Radius/XS, stroke-input edge; checked fills yellow-600 with a white tick, as 2367:68669 draws it (22 Oct 2026; it was an assumed green). */
 export function Checkbox({ checked, onChange, label, disabled }: { checked: boolean; onChange?: (v: boolean) => void; label?: ReactNode; disabled?: boolean }) {
   return (
     <label className={cn('inline-flex items-center gap-2', disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer')}>
       <input type="checkbox" className="peer sr-only" checked={checked} disabled={disabled} onChange={(e) => onChange?.(e.target.checked)} />
       <span aria-hidden="true" className={cn('flex h-4 w-4 shrink-0 items-center justify-center rounded-xs border-1',
-        checked ? 'border-brand-secondary bg-brand-secondary text-bg' : 'border-stroke-input bg-bg-0')}>
+        checked ? 'border-yellow-600 bg-yellow-600 text-bg' : 'border-stroke-input bg-bg-0')}>
         {checked && <CheckIcon className="h-3 w-3" strokeWidth={2.5} />}
       </span>
       {label && <span className="text-body-regular text-text-title">{label}</span>}
@@ -35,14 +35,15 @@ export function Checkbox({ checked, onChange, label, disabled }: { checked: bool
 
 /**
  * Radio, as on the Review screener answers (1984:114217): an 18px ring in
- * text-body; selected, the ring turns brand-secondary with a 10px dot.
+ * text-body; selected, the ring and its 10px dot are yellow-600, as
+ * 2325:214416 draws it (22 Oct 2026; it was an assumed green).
  */
 export function Radio({ checked, onChange, label, sub, name, disabled }: { checked: boolean; onChange?: () => void; label?: ReactNode; sub?: ReactNode; name?: string; disabled?: boolean }) {
   return (
     <label className={cn('inline-flex gap-2', sub ? 'items-start' : 'items-center', disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer')}>
       <input type="radio" name={name} className="sr-only" checked={checked} disabled={disabled} onChange={() => onChange?.()} />
-      <span aria-hidden="true" className={cn('flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-1.5', sub ? 'mt-px' : undefined, checked ? 'border-brand-secondary' : 'border-text-body')}>
-        {checked && <span className="h-2.5 w-2.5 rounded-full bg-brand-secondary" />}
+      <span aria-hidden="true" className={cn('flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-1.5', sub ? 'mt-px' : undefined, checked ? 'border-yellow-600' : 'border-text-body')}>
+        {checked && <span className="h-2.5 w-2.5 rounded-full bg-yellow-600" />}
       </span>
       {(label || sub) && (
         <span className="flex flex-col gap-0.5">

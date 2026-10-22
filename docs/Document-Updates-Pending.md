@@ -231,3 +231,22 @@ A new study state, `billing`, between running and completed (`shared/lifecycle.t
   "Every 5 days"), drawn in the client's diary dropdowns. Built today: Hour,
   Day, Week, and Every day, Every 2 days, Every 3 days, Weekly. A behaviour
   change, for the designer and the business.
+
+### B, C and D. Dialogs, controls and dropdowns
+
+- **B.** Every dialog in all three apps already opens centred (the shared
+  Modal components and the custom ones: Report Participant, Account, New
+  Study, No-show). Nothing changed. The 600px side panels stay anchored to the
+  right, as Figma draws them. The respondent app's bottom sheets stay at the
+  bottom, as its frames draw them; tell us if those count as dialogs.
+- **C.** Not covered by the 21 October audit, now following Figma: the
+  console's selected radio and checked checkbox are yellow-600, as
+  `2325:214416` and `2367:68669` draw them. They were green, assumed in turn 1
+  when no selected state was drawn. Everything the 21 October audit said to
+  leave is left. C has not been swept across every other screen of the three
+  apps; that would be a full audit of its own.
+- **D.** Every console dropdown (35 across 20 screens) is the menu Figma draws
+  (`2368:68734`): a white panel of 38px rows, the chosen one on the brand
+  yellow at 20%. It replaced a native select; the values are unchanged. The
+  client's dropdowns were already drawn menus. The respondent's date picker
+  keeps a native year list, a phone control.

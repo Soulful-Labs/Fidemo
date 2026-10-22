@@ -4,7 +4,7 @@ import { cn } from '../../lib/cn'
 import { ChevronDown } from './icons'
 
 /** Closes on a click outside or on Escape. */
-function useMenu() {
+export function useMenu() {
   const [open, setOpen] = useState(false)
   const box = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -37,7 +37,7 @@ function Panel({ width, multi, children }: { width: string; multi?: boolean; chi
 }
 
 /** One 38px menu row (Dropdown menu Item, 2368:68734): the chosen one sits on the brand yellow at 20%. */
-function Item({ on, onClick, children }: { on: boolean; onClick: () => void; children: ReactNode }) {
+export function MenuItem({ on, onClick, children }: { on: boolean; onClick: () => void; children: ReactNode }) {
   return (
     <button type="button" role="option" aria-selected={on} onClick={onClick}
       className={cn('flex h-[38px] items-center gap-2 whitespace-nowrap rounded-sm px-2.5 text-left text-body-regular text-text-title', on ? 'bg-yellow-alpha20' : 'hover:bg-bg-1')}>
@@ -65,7 +65,7 @@ export function DropdownSelect({ value, options, onChange, prefix = '', label, c
       <Trigger text={`${prefix}${value}`} open={open} label={label} onClick={() => setOpen((o) => !o)} />
       {open && (
         <Panel width={menuWidth}>
-          {options.map((o) => <Item key={o} on={o === value} onClick={() => { onChange(o); setOpen(false) }}>{o}</Item>)}
+          {options.map((o) => <MenuItem key={o} on={o === value} onClick={() => { onChange(o); setOpen(false) }}>{o}</MenuItem>)}
         </Panel>
       )}
     </div>
@@ -95,7 +95,7 @@ export function DropdownChecks({ all, options, picked, onChange, text, label, cl
         <Panel width={menuWidth} multi>
           {[all, ...options].map((o) => {
             const on = o === all ? isAll : picked.includes(o)
-            return <Item key={o} on={on} onClick={() => flip(o)}><Box on={on} />{o}</Item>
+            return <MenuItem key={o} on={on} onClick={() => flip(o)}><Box on={on} />{o}</MenuItem>
           })}
         </Panel>
       )}

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react'
 import { cn } from '../../lib/cn'
 import { ChevronDown, EyeIcon, SearchIcon } from './icons'
+import { MenuItem, useMenu } from './Dropdown'
 
 /**
  * The "Input Field" / "Email Input" / "Password Input" components. Measured
@@ -81,25 +82,31 @@ export function TextArea({ label, className, rows = 3, size = 'md', ...rest }: T
 }
 
 /**
- * The dropdown field ("All Studies", "Sort: Recent First", "Account Status"):
- * the input box with a 20px chevron on the right. A native select underneath,
- * so it works with no extra code. `size="sm"` is the 38px, 14px one on the
- * Recruited toolbar (1952:77242).
+ * The dropdown field ("All Studies", "Account Status", "Tier: All"): the
+ * input box with a 20px chevron, opening the menu Figma draws for every
+ * dropdown (22 Oct 2026, Dropdown menu Item 2368:68734): a white panel of 38px
+ * rows, the chosen one on the brand yellow at 20%. It replaced a native select.
+ * `size="sm"` is the 38px, 14px one on the Recruited toolbar (1952:77242).
  */
 export function Select({ label, value, onChange, options, placeholder, className, boxClassName, size = 'md' }: {
   label?: string; value?: string; onChange?: (v: string) => void; options: string[]; placeholder?: string
   className?: string; boxClassName?: string; size?: 'md' | 'sm'
 }) {
+  const { open, setOpen, box } = useMenu()
   return (
     <Field label={label} className={className}>
-      <span className={cn(BOX, 'relative', size === 'sm' && SM, boxClassName)}>
-        <select value={value ?? ''} onChange={(e) => onChange?.(e.target.value)} aria-label={label ?? placeholder}
-          className={cn(FIELD, 'cursor-pointer appearance-none pr-6', !value && 'text-text-body')}>
-          {placeholder !== undefined && <option value="" disabled>{placeholder}</option>}
-          {options.map((o) => <option key={o} value={o}>{o}</option>)}
-        </select>
-        <ChevronDown className="pointer-events-none absolute right-3 h-5 w-5 text-text-title" />
-      </span>
+      <div ref={box} className="relative">
+        <button type="button" aria-haspopup="listbox" aria-expanded={open} aria-label={label ?? placeholder} onClick={() => setOpen((o) => !o)}
+          className={cn(BOX, 'relative w-full cursor-pointer text-left', size === 'sm' && SM, boxClassName)}>
+          <span className={cn(FIELD, 'flex items-center truncate pr-6', !value && 'text-text-body')}>{value || placeholder || ''}</span>
+          <ChevronDown className={cn('pointer-events-none absolute right-3 h-5 w-5 text-text-title transition-transform duration-150', open && 'rotate-180')} />
+        </button>
+        {open && (
+          <div role="listbox" className="absolute left-0 right-0 top-[calc(100%+4px)] z-30 flex max-h-72 flex-col overflow-auto rounded-md border-1 border-stroke-input bg-bg-0 py-1 shadow-menu">
+            {options.map((o) => <MenuItem key={o} on={o === value} onClick={() => { onChange?.(o); setOpen(false) }}>{o}</MenuItem>)}
+          </div>
+        )}
+      </div>
     </Field>
   )
 }
