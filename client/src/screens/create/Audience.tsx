@@ -196,7 +196,7 @@ export default function Audience() {
           <div className="flex flex-col gap-3 rounded-lg border-1 border-stroke-2 bg-bgAlt-1 px-5 py-3.5">
             <div className="flex items-center justify-between gap-4">
               <div className="flex flex-col gap-0.5">
-                <p className="flex items-center gap-2 text-body-medium text-text-title">
+                <p className="flex items-center gap-2 text-text-medium text-text-title">
                   <span className="text-text-title">{SPARKLE}</span>Generate with AI
                 </p>
                 <p className="text-text-regular text-text-subtitle">Set target audience base with AI using study context</p>

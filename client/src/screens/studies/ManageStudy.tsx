@@ -49,7 +49,7 @@ function Step({ icon, title, chip, onEdit, children }: {
     <section className="rounded-lg bg-bg-1">
       <div className="flex items-center gap-3 px-4 py-3">
         <span className="text-text-subtitle">{icon}</span>
-        <h2 className="text-body-medium text-text-title">{title}</h2>
+        <h2 className="text-title-s text-text-title">{title}</h2>
         {chip}
         <span className="flex-1" />
         {onEdit && (

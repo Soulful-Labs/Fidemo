@@ -243,7 +243,7 @@ Measured specifics worth copying exactly (console, and the client is near-identi
 - **Toggle**: 40 × 24 track, 18px knob, 3px inset. Off: stroke-input track, subtitle knob. On: brand-primary track, bg-1 knob.
 - **Underline tabs**: 42 tall, 16px sides, brand-primary text and a 1px underline when active over a 1px baseline, 24px count pill.
 - **Segmented tabs**: 48 track, 4px padding, active pill 40 tall.
-- **Side panel**: 600 wide, as tall as its content, opens top right, rounded left corners, 56px title bar, footer of two 48px buttons 16 apart.
+- **Side panel**: 600 wide, as tall as its content, opens top right, rounded left corners (24px), an 18px title in a 56px title bar, footer of two 48px buttons 16 apart.
 - **Modal**: 460 wide. Centred variant: title, body max 310px, 40px above and below. Titled variant: 56px title bar, blocks 24 apart. Bottom bar 80px.
 - **Success modal**: a 160px disc, a 92px badge with a 4px rim, a white tick, one 48px button.
 
@@ -357,9 +357,11 @@ So the PIN is the participant's proof and a human confirmation is a second, sepa
 | Participant | Shown |
 |---|---|
 | Nothing recorded | Mark No-show and Mark Completed |
-| Completed | Mark No-show, and a green "Marked completed by participant", or "Marked completed" when the team or the client confirmed it |
-| No-show | Mark Completed, and a red "Marked as No-show" |
+| Completed | In the console: Mark No-show, and a green "Marked completed by participant", or "Marked completed" when the team or the client confirmed it. In the client app: the green read-back, with Undo beside it while unpaid when the client marked it (1769:86063) |
+| No-show | In the console: Mark Completed, and a red "Marked as No-show". In the client app: Undo beside the red read-back (1627:106074) |
 | Paid | Only the read-back |
+
+The two apps follow their own frames, so the same action reads two ways; this is with the designer.
 
 The read-backs are not buttons. Surveys and diaries have no session, so they have no attendance actions.
 
@@ -1129,7 +1131,7 @@ Only one dashboard state is drawn. An empty "no studies yet" state is **not desi
 | Route | Screen | Kind |
 |---|---|---|
 | `/studies` | Studies, Ongoing. Card view by default, table view via the toggle (`?view=table`) | page |
-| `/studies/drafts` | Studies, Drafts | page |
+| `/studies/drafts` | Studies, Drafts: Study Name with its thumbnail, Type, Status (In Review or Draft), Created, sortable, and the row menu on a draft | page |
 | `/studies/completed` | Studies, Completed | page |
 | `/studies/sessions` | Studies, Sessions | page |
 | none | Ongoing study options (row menu) | popover |
@@ -1140,7 +1142,7 @@ A study in Billing sits under Ongoing, with the status tag "Billing", and moves 
 
 **Sessions is a fourth tab** on the same page. It lists upcoming sessions on live studies, grouped by date, each with the time, the session type, the study, View Details and **Join and Start**. Join and Start opens the session page with the session already started; there is no call link until a video provider is wired in. A client sees only their own sessions.
 
-### 12.4 Create a study: one flow, five steps and Publish
+### 12.4 Create a study: one flow, four steps and Publish
 
 | Route | Step | What the type changes |
 |---|---|---|
@@ -1149,7 +1151,6 @@ A study in Billing sits under Ongoing, with the status tag "Billing", and moves 
 | `/studies/create/audience/no-match` | 2b. No matching audience | Nothing |
 | `/studies/create/screener` | 3. Screener | Nothing |
 | `/studies/create/study` | 4. Study setup | **Yes, the whole step** |
-| `/studies/create/pricing` | 5. Pricing | Nothing |
 | `/studies/create/publish` | Payment & Publish | Nothing |
 | `/studies/create/published` | Published | Nothing |
 
@@ -1185,11 +1186,11 @@ A study in Billing sits under Ongoing, with the status tag "Billing", and moves 
 | Video Call | The availability composer alone, at 700px: Limits, Weekly Hours, Date Overrides and the Completion Verification note |
 | In-Person | The same composer with the addresses first: saved address rows with edit and delete, then Limits, Weekly Hours, Date Overrides and Completion Verification |
 
-**The availability composer** has no Submit of its own: Continue in the top bar submits it and moves to Pricing. Weekly Hours can be added, duplicated to other days, and given a second slot per day. **Minimum notice** is a number and a unit (Minutes, Hours, Days), read back as "1 Hour", "30 Minutes". The **Completion Verification** note describes the one verification PIN the platform issues per session.
+**The availability composer** has no Submit of its own: Continue in the top bar submits it and returns to the Study step. Weekly Hours can be added, duplicated to other days, and given a second slot per day. **Minimum notice** is a number and a unit (Minutes, Hours, Days), read back as "1 Hour", "30 Minutes". The **Completion Verification** note describes the one verification PIN the platform issues per session.
 
 **The diary form** has one card per entry: DAY 1 to DAY 5 for a five-day diary, or WEEK or HOUR for those units. The number of cards is the Study Duration. Each card holds its own questions and its own Add Question, and each entry asks its own questions. Every entry must have at least one question, and a diary cannot be made shorter while a dropped entry still holds a written question; each is refused with the reason. Upload File and Generate add questions with no entry, so they are asked on every entry: each shows on every day card marked "Asked on every day", with "Change for this day only", which gives every entry its own copy to edit. A diary saved before entries had their own questions opens with its questions copied onto every entry, once, so nothing it asked is lost.
 
-**Step 5, Pricing,** holds Incentive Payments, Costing Summary and Payment, identical for every type.
+**Below the settings, on the same step,** sit Incentive Payments, Costing Summary and Payment, identical for every type, as every type's frame draws them (1518:91922, 1518:94742, 1518:92570, 1518:93998). Once the type's form or availability is set, the step reads it back in its settings card, with Edit Survey, Update Diary Questionnaire, Update Timing Availability or Update Address & Availability, and the top bar's Proceed to Publish goes on to Payment & Publish. There is no separate Pricing step. The frames' AutoPay switch and their two "25% of cost" rows are not built (D24, D22).
 
 **The question menu.** Each question in the Screener, survey and diary builders has a three-dot menu: Required (a toggle), Move up, Move down, Add question below, and Delete. Move up is off on the first question and Move down on the last; in a diary a question moves within its own day. Delete asks "Delete Question?" first. A participant may leave an optional question blank and sees "(optional)" after its prompt. A single-select that decides eligibility stops being a pre-screener question once it is made optional, since it can then be skipped. The screener renumbers by position after any move, add or delete: Pre-screener Q1 to Q3, then Q4 on.
 
@@ -1218,7 +1219,8 @@ Every Manage screen sits in a shared frame: the study header (240 × 182 thumbna
 | `/studies/:id/pay` | Pay while ongoing | page |
 | `/studies/:id/pay/due` | Pay, due as completed | page |
 | `/studies/:id/payment` | Bill Payment (a separate screen, not a tab) | page |
-| `/studies/:id/respondent/:rid` | Respondent: Screener / Study Result / Activity | page |
+| `/studies/:id/respondent/:rid` | Respondent: Screener / Study Result / Activity (Screener and Activity on a group study) | page |
+| `/studies/:id/sessions/:sid` | A group session: Study Result and Activity | page |
 | `/studies/:id/paused` | Paused study | page |
 | none | Respondent Profile Details | panel |
 | none | Rate respondent | panel |
@@ -1237,7 +1239,7 @@ Every Manage screen sits in a shared frame: the study header (240 × 182 thumbna
 |---|---|
 | Survey, Diary | An applications table: Name / Role / Status / Score, with Status and Tier filters and a pager |
 | Video Call 1:1, In-Person | A `Scheduled | Applications` switch. Scheduled is Name / Role / Score / Session Time, with Join Now on the imminent slot, and a Cancel link on each booked row |
-| Group Video, In-Person Group | A `Sessions | Applications` switch. Sessions are cards with a seats chip, View Participants and an avatar stack |
+| Group Video, In-Person Group | A `Sessions | Applications` switch. Sessions are cards with a seats chip, View Participants, which opens the session page, and an avatar stack |
 
 Status offers All, then each status its pills show (Applied, Qualified, Scheduled and so on).
 
@@ -1245,13 +1247,37 @@ Status offers All, then each status its pills show (Applied, Qualified, Schedule
 
 **A Qualified row in Applications** opens Study Result on a one-to-one study: the schedule before the session, the completed result after it, and a line saying so when the participant has not booked yet. On a group study it opens the respondent result. Applied and Disqualified rows open the screener.
 
-**Everything behind one respondent is a single screen with three tabs**, not three screens: Screener, Study Result and Activity. The study strip, the profile rail and the bottom bar are shared; only the tab body and the bar change. An applied (not yet qualified) respondent drops the Study Result tab and swaps the bar for Qualify / Disqualify.
+**Everything behind one respondent is a single screen with three tabs**, not three screens: Screener, Study Result and Activity. The study strip, the profile rail and the bottom bar are shared; only the tab body and the bar change. An applied (not yet qualified) respondent drops the Study Result tab and swaps the bar for Qualify / Disqualify. **A group study's participant has only Screener and Activity** (1627:105446, 1769:90865, 1627:108935, 1777:95895), with the session's PIN in Activity: their result and attendance are on the session page.
 
-**The only fork is the Study Result tab.** Survey and diary list the answers (the diary under DAY n bars, each day's answers against that day's questions). A session study shows the booked slot, the verification PIN, a rich-text interview notes card, and the attendance actions in 5.3. **There is no recording anywhere in these frames.** The profile rail carries Reviews beside the Trust Score.
+**The only fork is the Study Result tab.** Survey and diary list the answers (the diary under DAY n bars, each day's answers against that day's questions). A video call shows Scheduled For with Join Now beside the PIN before the session (1627:100096), and the Video Result after it (1627:100279). An in-person interview shows the booking with its address and Start Interview beside the PIN, then the running interview with Finish and its clock, then the completed one (1627:102694, 1627:102902), with the interview notes below. The attendance bar follows 5.3. The profile rail carries Reviews beside the Trust Score.
+
+**The video result.** The platform holds no recordings until a video provider is connected. The card is drawn as the frames draw it, with the session's length and date; View Video Recording and Transcript say that the recording and transcript appear there once the provider is connected.
+
+**The interview notes** are typed into the notes card, saved as they are typed on the one-to-one booking or the group session, and downloaded as a text file. The formatting row (bold, italic, underline, strike, four heading levels, list, circle) inserts plain-text marks.
+
+**The group session page** (`/studies/:id/sessions/:sid`), opened by View Participants on Recruited and View Result on Results, has Study Result and Activity tabs.
+
+| Type | Before the session | During and after |
+|---|---|---|
+| Group Video Call | Scheduled For with the seats count and Join Now, the shared Verification PIN, and the participants (Name, Role, Score) with a Tier filter (1627:105750) | The Video Result, each participant's attendance, the PIN, and Completion Confirmation with Mark all as Completed (1627:106074, 1769:91859) |
+| In-Person Group | Scheduled For with the address and Start Interview, the PIN, the participants, and the notes (1627:109239) | The interview with Finish and its clock, then Completed; the notes, the attendance, the PIN and Mark all as Completed (1627:109586) |
+
+Activity (1627:106405, 1627:109934) searches the participants by name or role and lists each with View Profile, View Activity (their steps, opened in place) and Rate or Rated, then the PIN.
+
+**Results by type.**
+
+| Type | Figures | List |
+|---|---|---|
+| Survey, Diary, Video Call | Completed, Avg. Trust Score, Rated By You, Results Summaries | One list |
+| In-Person | Sessions Completed (sessions sat against sessions booked), Participants Completed, Avg. Trust Score, Notes Summaries | One list |
+| Group Video Call | Completed, Avg. Trust Score, Results Summaries | Grouped by session: a session row with its date and View Result, then its participants with a Session column (1627:104407) |
+| In-Person Group | Completed, Avg. Trust Score, Notes Summaries | Grouped by session, as above (1627:107896) |
+
+Every row opens that participant's result. The Score heading sorts. Results Summaries downloads every completed answer as a spreadsheet; Notes Summaries downloads every interview note as one file. The study verification certificate below has two icon buttons: download, and copy its check link.
 
 **Rate (a panel)** asks for three things and no arithmetic: Expertise, Reliability and Communication at five stars each, plus an optional written review. The frame shows no weighting, no resulting score and nothing about the Trust Score. The Trust Score takes the rounded mean of the three as the study's star rating. See D16.
 
-**The Pay tab is a statement, not an approval.** It reads Payment Due, Deposit Paid and Total Cost, itemises the billing and lists the transactions already settled; the deposit reads "Incentive Deposit Paid". Nothing on it approves a respondent's earnings. Its only payment action is **Pay Bill**, unpayable while the study is recruiting and payable once it is in Billing, which opens Bill Payment: a card checkout against the invoice, with the deposit netted off. The balance is due 7 days after the study enters Billing.
+**The Pay tab is a statement, not an approval.** It has no list of respondent payouts. It reads Payment Due, Deposit Paid and Total Cost, itemises the billing and lists the transactions already settled; the deposit reads "Incentive Deposit Paid". Nothing on it approves a respondent's earnings. Its only payment action is **Pay Bill**, unpayable while the study is recruiting and payable once it is in Billing, which opens Bill Payment: a card checkout against the invoice, with the deposit netted off. The balance is due 7 days after the study enters Billing.
 
 **In Billing** the tab opens with a banner: "This study is stopped by you to mark completed!" (or "This study is stopped by the team to mark completed!", or "This study has filled its target and stopped recruiting!"), the time it stopped, and **Re-publish and Recruit** (see 5.1). Its highlighted line reads "Your study has N participants left to fill target", the target less the completions, and is left out when nothing is left. The billing card shows two figures: **Estimated**, the quote at the required number of participants, and **Final**, what was delivered, down to Net Payable. Where the deposit is more than the final bill, the difference reads "Credited to your next study". Then Payment Due with Pay Bill, Deposit Paid, Total Cost, and Transactions, each with Invoice.
 
@@ -1275,7 +1301,7 @@ Status offers All, then each status its pills show (Applied, Qualified, Schedule
 | none | Respondent Profile Details, Reviews, Invite To Study | panels |
 | none | Invitation has been sent! | modal |
 
-**Pool is one screen in two states**, with the 245px filter rail shown or hidden. It lists the participant pool with a natural-language search and nine filters, and the whole card opens a profile panel with their score, tier, verification, full profile and review history. Reviews in the panel lists what clients wrote about that person, from the platform's ratings. From there the client can invite them to a live study.
+**Pool is one screen in two states**, with the 245px filter rail shown or hidden. It lists the participant pool with a natural-language search and nine filters, and the whole card opens a profile panel with their score, tier, verification, full profile and review history. Reviews in the panel lists what clients wrote about that person, from the platform's ratings. The Pool's panel is titled "Profile of [name]" (1645:162885). From there the client can invite them to a live study; "Invitation has been sent!" names the study, and nothing is said to be sent when the client has no live study.
 
 **Micro-panels are removed.** A client-built, saved, reusable list of respondents was drawn in an earlier version of the designs and has been switched off deliberately. Everything that belonged to it is gone: the Participants Pool and Micro-Panels toggle, My Panels, Featured Public Panels, panel detail with Members, Eligible Matches and Panel Details, Create and Edit Micro-panel, Save To Micropanel, Launch Study, Invite All To Study, and the three panel dialogs.
 
@@ -1729,11 +1755,11 @@ The certificate is issued here and nowhere else, carries one unique ID per perso
 
 | # | Who | Where | What happens | State |
 |---|---|---|---|---|
-| 15 | Client | Client app | Starts Create Study. Five steps: About, Audience, Screener, Study setup, Payment and Publish | Study `draft` |
+| 15 | Client | Client app | Starts Create Study. Four steps, About, Audience, Screener and Study setup, then Payment and Publish | Study `draft` |
 | 16 | Client | Client app | About: title, type, description, duration, industry, thumbnail. **The type decides everything downstream**, including whether sessions exist at all |  |
 | 17 | Client | Client app | Audience: how many participants, and the criteria that decide who matches: country (the USA), gender, education, age, ethnicity, area type, work function, industry, role, skills, experience, household income, the repeat rule and profile tiers. Every category set must match, with any one option within it | |
 | 18 | Client | Client app | Screener: builds the questions applicants must answer. Marks correct answers where a question decides eligibility | |
-| 19 | Client | Client app | Study setup: availability, session slots, location or link, and the diary form where the type needs them. Then Pricing: the incentive and the costs | |
+| 19 | Client | Client app | Study setup: availability, session slots, location or link, and the diary form where the type needs them, and on the same step the incentive and the costs | |
 | 20 | Client | Client app | Payment and Publish: sees the fees, pays the deposit, presses Publish | Study `in_review` |
 | 21 | Client | Client app | **Or** saves a draft and leaves. The draft reopens with everything still in it | Study stays `draft` |
 | 22 | Team | Console | The study appears in Studies > To Review. A team member reads all six tabs | |
@@ -2364,6 +2390,7 @@ interface Participation {
   screenerAnswers?: Answer[]
   booking?: { date: string; slot: string; locationId?: string; rescheduleCount: number }
   cancellations?: { at: string; date: string; slot: string; by: 'client' | 'team'; reason: string }[]
+  notes?: string                 // interview notes on a one-to-one booking; a group session carries its own
   pinConfirmed?: boolean
   completedAt?: string
   clientRating?: { expertise: number; reliability: number; communication: number; comment?: string }
@@ -2427,7 +2454,7 @@ The build is not done until each of these runs end to end without a dead control
 ### 20.2 Client app
 
 1. Sign up, confirm email, fill Organization Details, add a card, reach Welcome
-2. Create a study of each of the six types through all five steps
+2. Create a study of each of the six types through all four steps and Publish
 3. Save a draft part way, find it in Drafts, resume it
 4. Publish, see it enter review
 5. Open a live study, invite a matched respondent, see them move to Invited
@@ -2491,6 +2518,8 @@ The build is not done until each of these runs end to end without a dead control
 | Four screener question types asked in the nearest available form: tap scale, tick in order, picture upload, one question per row | Respondent app |
 | Scheduled Sessions, Pay All Due Invoices, and the paid confirmation | Client app. Drawn by the designer and built, now live |
 | The question menu, its Required toggle, and the respondent's "(optional)" marker | All three apps. **Need drawing** |
+| The notes card as a working editor with plain-text formatting marks and a download | Client app |
+| What the Video Result buttons say while there is no recording | Client app |
 | The Billing banners for a study stopped by the team or filled on its own, and the console's Billing banners | Client app and console |
 | "Publish these changes live?" on Pricing & Rewards, and the client deactivation refusal in the console | Console |
 

@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import Pagination from '../../components/client/Pagination'
-import { ScoreCell, Th } from '../../components/client/RespondentTable'
+import { ScoreCell, Th, useScoreSort } from '../../components/client/RespondentTable'
 import { StudyFrame } from '../../components/client/StudyFrame'
 import { OverviewTile } from './StudyOverview'
 import { ChevronRight, Download, LinkIcon, Star } from '../../components/ui/icons'
@@ -68,9 +68,10 @@ export default function ResultsTab() {
   const sessions = grouped ? sessionSeats(s) : []
   const sessionOf = (personId: string) => sessions.findIndex((x) => x.people.includes(personId))
   /** Step 50: everyone who finished, which is the results the client receives. */
-  const rows = recruits(world, s, 'results')
+  const [scored, scoreSort] = useScoreSort(recruits(world, s, 'results')
     .filter((r) => r.state !== 'no_show')
-    .filter((r) => tier === 'All' || r.tier === tier.toLowerCase())
+    .filter((r) => tier === 'All' || r.tier === tier.toLowerCase()))
+  const rows = scored
     .map((r, i) => ({ r, i, at: sessionOf(r.id) }))
     .sort((a, b) => (grouped ? (a.at < 0 ? 999 : a.at) - (b.at < 0 ? 999 : b.at) : 0) || a.i - b.i)
     .map((x) => x.r)
@@ -138,7 +139,7 @@ export default function ResultsTab() {
                     <Th label="Role" className={grouped ? 'w-[19.7%]' : 'w-[32.2%]'} />
                     {grouped && <Th label="Session" className="w-[12.5%]" />}
                     <Th label="Date" className="w-[16%]" />
-                    <Th label="Score" sortable className="w-[16.1%]" />
+                    <Th label="Score" sortable className="w-[16.1%]" {...scoreSort} />
                     <Th label="" className="w-[19.6%]" />
                   </tr>
                 </thead>

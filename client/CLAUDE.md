@@ -1656,10 +1656,11 @@ preselected at Publish, no AutoPay, no 3% fee line, "Prefer fresh people").
 
 - **Sidebar:** Studies has two sub-items, My Studies and Sessions. My Studies
   has three tabs: Ongoing, Drafts, Completed.
-- **Pricing is a fifth Create step** (`/studies/create/pricing`, every type):
-  Incentive Payments, Costing Summary and Payment. Study setup holds only the
-  type's own settings. The survey and diary composer is a full page ending in
-  "Save & Continue".
+- **Pricing sits inside the Study step** (since 22 Oct 2026, as every Create
+  frame draws it; there is no `/studies/create/pricing`): the type's settings
+  card, then Incentive Payments, Costing Summary and Payment, ending in Proceed
+  to Publish. The survey and diary composer is a full page ending in
+  "Save & Continue"; a session composer is submitted by Continue.
 - **Deposit:** 25% of recruitment plus 25% of incentives, taken at submission
   (`depositParts`, `DEPOSIT_RULE` in `shared/platform.ts`). The drawn card
   swaps the two labels; the build has them the right way round.
@@ -1699,3 +1700,19 @@ is where each lives in the code.
 - **Shell**: the HumanLayer wordmark, and "Stuck? Need Help?" above the account
   card (`app/StuckHelp.tsx`).
 
+
+
+## Client round, 22 Oct 2026 (offline run)
+
+- **Results flow, every type**: `/studies/:id/sessions/:sid` (SessionPage,
+  SessionPeople, SessionActivity) for both group types; Results grouped by
+  session for group types; Notes Summaries on in-person types; a group
+  participant's page is Screener and Activity only; a video call shows Join
+  Now, then the Video Result (no recordings exist; its buttons say so).
+- **Interview notes are kept** (`Participation.notes`, `Session.notes`,
+  `setSessionNotes` in shared/store.ts). The console still shows its sample
+  notes.
+- **Undo beside read-backs** in the client (frames 1769:86063, 1627:106074);
+  the console keeps Mark Completed. Flagged for the designer.
+- **Side panels** are as tall as their content with rounded left corners; the
+  notifications panel floats. Studies' sub-items fold away outside Studies.

@@ -245,7 +245,7 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
                               {progressPct(s) > 0 && <span className="h-full rounded-full bg-brand-secondary" style={{ width: `${progressPct(s)}%` }} />}
                               {progressPct(s) < 100 && <span className="h-full flex-1 rounded-full bg-green-100" />}
                             </span>
-                            <span className="text-label text-text-subtitle">{progressPct(s)}% complete</span>
+                            <span className="text-text-regular text-text-subtitle">{progressPct(s)}% complete</span>
                           </span>
                         )}
                         {/* The Drafts frame draws the menu on a draft only; a study in review has none. */}

@@ -69,6 +69,7 @@ export function ChangePasswordModal({
   const submit = () => {
     if (account && current !== account.password) { toast('That is not your current password'); return }
     if (next.length < 8) { toast('Use at least 8 characters'); return }
+    if (!/[^A-Za-z0-9]/.test(next) || !/[A-Z]/.test(next) || !/[0-9]/.test(next)) { toast('Use at least 1 special character, 1 uppercase character, and 1 number'); return }
     if (next !== confirm) { toast('The two new passwords do not match'); return }
     update({ password: next })
     setCurrent(''); setNext(''); setConfirm('')
@@ -123,7 +124,7 @@ export function OutcomeModal({
     <Modal open={open} onClose={onClose} wide title={d.title} body={d.body}
       footer={<Button fullWidth onClick={onClose}>{'cta' in d ? d.cta : 'Done'}</Button>}>
       <span className={cn('mx-auto -order-1 mb-1 flex h-[160px] w-[160px] items-center justify-center rounded-full',
-        alert ? 'bg-[#ffdcc4]' : 'bg-[#fee2b5]')}>
+        alert ? 'bg-[#ffdcc4]' : 'bg-yellow-100')}>
         <span className={cn('flex h-[92px] w-[92px] items-center justify-center rounded-full border-b-4 text-bg-0',
           alert ? 'border-[#c24a00] bg-[#e85d04]' : 'border-yellow-700 bg-cta-primary')}>
           {alert ? <Info className="h-12 w-12" /> : <Check className="h-12 w-12 [&>path]:stroke-[3]" />}
@@ -150,7 +151,7 @@ export function LogoutModal({ open, onClose }: { open: boolean; onClose: () => v
           }}>Logout</Button>
         </>
       }>
-      <span className="mx-auto -order-1 mb-1 flex h-[72px] w-[72px] items-center justify-center rounded-lg bg-[#fdecec] text-[#e33a38]">
+      <span className="mx-auto -order-1 mb-1 flex h-[72px] w-[72px] items-center justify-center rounded-lg bg-red-50 text-red-600">
         <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8"
           strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M10 4H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3" />

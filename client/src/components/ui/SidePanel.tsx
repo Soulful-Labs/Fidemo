@@ -32,7 +32,7 @@ export default function SidePanel({
         className={cn('flex max-h-full w-panel flex-col self-start overflow-hidden rounded-l-xl bg-bg-0 shadow-xl', className)}>
         <header className={cn('flex h-14 shrink-0 items-center justify-between gap-4 border-b-1 border-stroke-1 px-4', headerClassName)}>
           <div className="flex min-w-0 flex-col">
-            {typeof title === 'string' ? <h2 className="text-title-m text-text-title">{title}</h2> : title}
+            {typeof title === 'string' ? <h2 className="text-title-s text-text-title">{title}</h2> : title}
             {subtitle && <p className="text-text-regular text-text-subtitle">{subtitle}</p>}
           </div>
           <div className="flex shrink-0 items-center gap-4">

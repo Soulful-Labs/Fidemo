@@ -73,7 +73,7 @@ export default function Pool() {
                     <button type="button" aria-label="Hide filters" onClick={() => setFilters(false)}
                       className="flex h-6 w-7 items-center justify-center rounded-sm bg-bgAlt-2 text-text-title hover:bg-bg-2">{RAIL}</button>
                     <span className="flex-1" />
-                    <button type="button" onClick={clear} className="inline-flex items-center gap-1 text-text-medium text-text-title hover:text-brand-primary">
+                    <button type="button" onClick={() => { if (chips.length === 0 && query === "") { toast("No filters are set"); return } clear() }} className="inline-flex items-center gap-1 text-text-medium text-text-title hover:text-brand-primary">
                       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4.5V8H16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                       Reset
                     </button>

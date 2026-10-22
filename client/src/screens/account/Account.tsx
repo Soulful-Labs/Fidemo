@@ -200,16 +200,16 @@ export default function Account() {
                     <p className="text-body-medium text-text-title">{r.study}</p>
                     <p className="flex items-center gap-2">
                       <Stars n={r.stars} />
-                      <span className="text-body-medium text-text-title">{r.rating}</span>
+                      <span className="text-text-medium text-text-title">{r.rating}</span>
                       <span className="text-text-body">&bull;</span>
                       <span className="text-text-regular text-text-subtitle">{r.at}</span>
                     </p>
                     {r.body && <p className="text-text-regular leading-5 text-text-subtitle">{r.body}</p>}
                     <p className="flex items-center gap-2 truncate">
                       <span className="shrink-0 text-text-regular text-text-subtitle">To participant:</span>
-                      {r.toId ? <PersonName id={r.toId} className="shrink-0 text-body-medium text-text-title">{r.to}</PersonName> : <span className="shrink-0 text-body-medium text-text-title">{r.to}</span>}
+                      {r.toId ? <PersonName id={r.toId} className="shrink-0 text-text-medium text-text-title">{r.to}</PersonName> : <span className="shrink-0 text-text-medium text-text-title">{r.to}</span>}
                       <Stars n={r.toStars} />
-                      <span className="shrink-0 text-body-medium text-text-title">{r.toRating}</span>
+                      <span className="shrink-0 text-text-medium text-text-title">{r.toRating}</span>
                       {r.toBody && <span className="truncate text-text-regular text-text-body">{r.toBody}</span>}
                     </p>
                   </div>

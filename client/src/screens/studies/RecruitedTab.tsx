@@ -8,7 +8,7 @@ import Tabs from '../../components/ui/Tabs'
 import Pagination from '../../components/client/Pagination'
 import { StudyFrame } from '../../components/client/StudyFrame'
 import DownloadSessionsPanel from './DownloadSessionsPanel'
-import { ScoreCell, StatusPill, Th } from '../../components/client/RespondentTable'
+import { ScoreCell, StatusPill, Th, useScoreSort } from '../../components/client/RespondentTable'
 import { Calendar, ChevronRight, Clock, VideoIcon } from '../../components/ui/icons'
 import { useToast } from '../../components/ui/Toast'
 import { slotOf, usePlatform, useStudies, useStudy } from '../../platform'
@@ -49,15 +49,20 @@ export default function RecruitedTab() {
   const booked = session && state === 'booked'
 
   const all = recruits(world, s, 'recruited')
-  const applications = all
+  /** Status sorts in the order a participant moves through them; Score, highest first then lowest. */
+  const [byStatus, setByStatus] = useState<-1 | 0 | 1>(0)
+  const order = Object.values(CLIENT_TAG)
+  const [scoredApplications, appScoreSort] = useScoreSort(all
     .filter((r) => status === 'All' || CLIENT_TAG[r.state] === status)
-    .filter((r) => tier === 'All' || r.tier === tier.toLowerCase())
+    .filter((r) => tier === 'All' || r.tier === tier.toLowerCase()))
+  const applications = byStatus === 0 ? scoredApplications
+    : [...scoredApplications].sort((a, b) => (order.indexOf(CLIENT_TAG[a.state]) - order.indexOf(CLIENT_TAG[b.state])) * byStatus)
   const shownApplications = paginate(applications, page)
   /** Status (22 Oct 2026): All, then each status the Applications pills show, in the order a participant moves through them. */
   const statusMenu = ['All', ...[...new Set(all.map((r) => CLIENT_TAG[r.state]))].sort((a, b) => Object.values(CLIENT_TAG).indexOf(a) - Object.values(CLIENT_TAG).indexOf(b))]
   /** Scheduled lists only sessions still to come or running (22 Oct 2026); once one ends it leaves, to Results when completed and to Applications when not. */
-  const scheduled = all.filter((r) => r.state === 'scheduled' && r.participation.booking
-    && sessionStartOf(r.participation.booking).getTime() + s.durationMins * 60_000 > Date.now())
+  const [scheduled, bookedScoreSort] = useScoreSort(all.filter((r) => r.state === 'scheduled' && r.participation.booking
+    && sessionStartOf(r.participation.booking).getTime() + s.durationMins * 60_000 > Date.now()))
   /** A booked row opens Study Result (the schedule and PIN); so does a qualified application, the schedule or the completed result. Applied and Disqualified open the screener. */
   const opens = (r: (typeof all)[number], toResult: boolean) => `/studies/${s.id}/respondent/${r.id}${toResult ? '/result' : '?state=recruited'}`
   /**
@@ -133,8 +138,9 @@ export default function RecruitedTab() {
                     <tr className="border-b-1 border-stroke-input bg-bg-1">
                       <Th label="Name" className={booked ? 'w-[14.3%]' : 'w-[16.1%]'} />
                       <Th label="Role" className={booked ? 'w-[28.6%]' : 'w-[32.1%]'} />
-                      {booked ? <Th label="Score" sortable className="w-[17%]" /> : <Th label="Status" sortable className="w-[14.3%]" />}
-                      {booked ? <Th label="Session Time" className="w-[40.1%]" /> : <Th label="Score" sortable className="w-[37.5%]" />}
+                      {booked ? <Th label="Score" sortable className="w-[17%]" {...bookedScoreSort} />
+                        : <Th label="Status" sortable className="w-[14.3%]" dir={byStatus} onSort={() => setByStatus((d) => (d === 0 ? 1 : d === 1 ? -1 : 0))} />}
+                      {booked ? <Th label="Session Time" className="w-[40.1%]" /> : <Th label="Score" sortable className="w-[37.5%]" {...appScoreSort} />}
                     </tr>
                   </thead>
                   <tbody>

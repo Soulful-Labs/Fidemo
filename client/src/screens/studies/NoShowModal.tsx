@@ -43,7 +43,7 @@ export default function NoShowModal({
                 Are you sure <span className="text-text-large text-text-title">{full} has not attended</span> the study
                 session that failed to attend the study and want to mark them absent as no-show?
               </p>
-              <p className="mt-4 rounded-md bg-[#fee9e7] p-3 text-text-regular leading-5 text-[#e33a38]">
+              <p className="mt-4 rounded-md bg-red-50 p-3 text-text-regular leading-5 text-red-600">
                 This will not allow {name} to get paid for this study and will be confirmed{'  '}by our team
                 further from {name} as well.
               </p>
@@ -53,14 +53,14 @@ export default function NoShowModal({
             /* The frame is hidden: its body and warning strings are unreadable. */
             <>
               <p className="pt-4 text-text-regular leading-5 text-text-subtitle">&nbsp;</p>
-              <p className="mt-4 h-16 rounded-md bg-[#fee9e7]" />
+              <p className="mt-4 h-16 rounded-md bg-red-50" />
             </>
           )}
         </div>
 
         <div className="flex h-20 items-center gap-4 px-4">
           <Button variant="tertiary" size="none" className="h-12 w-[206px]" onClick={onConfirm ?? onClose}>
-            <span className="text-body-medium text-[#e33a38]">Mark as No-Show</span>
+            <span className="text-body-medium text-red-600">Mark as No-Show</span>
           </Button>
           <Button size="none" className="h-12 w-[206px]" onClick={onClose}>
             <span className="text-body-medium">Cancel</span>

@@ -34,7 +34,7 @@ function Field({ label, placeholder, value, onChange, type, eye, check, select, 
     <label className="flex flex-col gap-1">
       <span className="text-text-regular text-text-subtitle">{label}</span>
       <span className={cn('flex items-center justify-between gap-3 rounded-sm border-1 px-4 text-body-regular',
-        error ? 'border-[#e33a38]' : 'border-stroke-input',
+        error ? 'border-red-600' : 'border-stroke-input',
         short ? 'h-[38px]' : 'h-12')}>
         <input
           value={value ?? ''}
@@ -55,7 +55,7 @@ function Field({ label, placeholder, value, onChange, type, eye, check, select, 
         {check && !value && <CheckCircle className="h-5 w-5 text-text-subtitle" />}
         {select && <ChevronDown className="h-5 w-5 text-text-subtitle" />}
       </span>
-      {error && <span className="text-text-regular text-[#e33a38]">{error}</span>}
+      {error && <span className="text-text-regular text-red-600">{error}</span>}
     </label>
   )
 }
@@ -111,7 +111,7 @@ export function SignUp() {
         </span>
         I agree to Focus Insite&rsquo;s Terms of use and Privacy policy
       </button>
-      {error && !error.field && <p className="pt-2 text-text-regular text-[#e33a38]">{error.why}</p>}
+      {error && !error.field && <p className="pt-2 text-text-regular text-red-600">{error.why}</p>}
       <Button fullWidth size="none" className="mt-[34px] h-12 text-body-medium" onClick={submit}>Sign Up</Button>
       <NavLink to="/signin" className="mt-3 flex h-12 items-center justify-center rounded-sm border-1 border-cta-tertiaryStroke text-body-regular text-text-title hover:bg-bg-1">
         Already have an account?&nbsp;<span className="text-body-medium">Log In</span>
@@ -154,7 +154,7 @@ export function SignIn() {
         <Field label="Email" placeholder="Enter email address" value={email} onChange={(v) => { setEmail(v); setError(null) }} />
         <Field label="Password" placeholder="Enter your password" eye value={password} onChange={(v) => { setPassword(v); setError(null) }} />
       </div>
-      {error && <p className="pt-2 text-text-regular text-[#e33a38]">{error}</p>}
+      {error && <p className="pt-2 text-text-regular text-red-600">{error}</p>}
       {/* Was a paragraph, so it looked live and did nothing. Figma draws a
           reset branch of its own (1794:80317 Check Email, 1794:80515 Set New
           Password, 1794:80698 Password has been updated!) which is not built,
@@ -264,7 +264,7 @@ export function OrganizationDetails() {
         </div>
         <Field label="Location" placeholder="City, State, Country" value={location} onChange={setLocation} />
       </div>
-      {error && <p className="pt-2 text-text-regular text-[#e33a38]">{error}</p>}
+      {error && <p className="pt-2 text-text-regular text-red-600">{error}</p>}
       <Button fullWidth size="none" className="mt-8 h-12 text-body-medium" onClick={submit}>Continue</Button>
     </OnboardShell>
   )
@@ -320,7 +320,7 @@ export function PaymentMethod() {
         <Field label="Billing Address" placeholder="Enter street or area" short value={address} onChange={setAddress} />
         <Field label="Zip Code" placeholder="Enter zip code" short value={zip} onChange={setZip} />
       </div>
-      {error && <p className="pt-2 text-text-regular text-[#e33a38]">{error}</p>}
+      {error && <p className="pt-2 text-text-regular text-red-600">{error}</p>}
       <Button fullWidth size="none" className="mt-8 h-12 text-body-medium" onClick={submit}>Continue</Button>
       <button type="button" onClick={skip}
         className="mt-3 flex h-12 w-full items-center justify-center rounded-sm border-1 border-cta-tertiaryStroke text-body-regular text-text-subtitle hover:bg-bg-1">

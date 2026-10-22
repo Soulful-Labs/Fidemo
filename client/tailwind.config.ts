@@ -51,9 +51,9 @@ export default {
         'el-s': '16px', 'el-m': '20px', 'el-l': '24px', 'el-xl': '32px', 'el-3xl': '48px', 'el-4xl': '56px',
       },
       // Radius/*.
-      borderRadius: { none: '4px', sm: '8px', md: '12px', lg: '16px', xl: '24px', full: '100px' },
+      borderRadius: { none: '4px', sm: '8px', md: '12px', lg: '16px', xl: '24px', '3xl': '40px', full: '100px' },
       // Stroke/1, Stroke/1 + Half, Stroke/2.
-      borderWidth: { 1: '1px', 1.5: '1.5px', 2: '2px' },
+      borderWidth: { 0.5: '0.5px', 1: '1px', 1.5: '1.5px', 2: '2px' },
       fontFamily: { sans: ['Geist', 'system-ui', 'sans-serif'] },
       // Lables/*, Body/* and Titles/*. Figma letterSpacing -1 / -2 is -0.01em / -0.02em.
       fontSize: {

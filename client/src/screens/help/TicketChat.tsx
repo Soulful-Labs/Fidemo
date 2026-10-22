@@ -40,7 +40,9 @@ export default function TicketChat() {
   const { id: ticketId } = useParams()
   const record = tickets.find((x) => x.id === ticketId) ?? tickets[0]
   const send = () => {
-    if (!draft.trim() || !record) return
+    if (!record) return
+    // An empty Send said nothing (22 Oct 2026 sweep); now it says why nothing was sent.
+    if (!draft.trim()) { toast('Write a message first'); return }
     replyToTicket(record.id, draft.trim(), attached ? 'Screenshot' : undefined)
     setDraft('')
     setAttached(false)

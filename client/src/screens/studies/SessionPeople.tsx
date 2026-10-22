@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Button from '../../components/ui/Button'
 import { CheckCircle, Close } from '../../components/ui/icons'
-import { ScoreCell, Th } from '../../components/client/RespondentTable'
+import { ScoreCell, Th, useScoreSort } from '../../components/client/RespondentTable'
 import { PersonName } from '../../app/ProfileHost'
 import { useToast } from '../../components/ui/Toast'
 import { useStudies } from '../../platform'
@@ -21,6 +21,7 @@ export default function SessionPeople({ study, people, anyone, done }: {
   const { moveRespondent, enterCode, undoAttendance } = useStudies()
   const toast = useToast()
   const [noShow, setNoShow] = useState<Recruit | null>(null)
+  const [sorted, scoreSort] = useScoreSort(people)
 
   /** Workflow 42: no code, no payment. The client enters the session's code on the participant's behalf, then completes. */
   const complete = (r: Recruit) => {
@@ -70,7 +71,7 @@ export default function SessionPeople({ study, people, anyone, done }: {
           <tr className="border-b-1 border-stroke-input bg-bg-1">
             <Th label="Name" className="w-[16%]" />
             <Th label="Role" className="w-[26%]" />
-            <Th label="Score" sortable className={done ? 'w-[18%]' : 'w-[58%]'} />
+            <Th label="Score" sortable className={done ? 'w-[18%]' : 'w-[58%]'} {...scoreSort} />
             {done && <Th label="" className="w-[40%]" />}
           </tr>
         </thead>
@@ -80,7 +81,7 @@ export default function SessionPeople({ study, people, anyone, done }: {
               {anyone ? 'No one matches this filter.' : 'No one has booked a seat in this session yet.'}
             </td></tr>
           )}
-          {people.map((r) => (
+          {sorted.map((r) => (
             <tr key={r.id} className="border-b-1 border-stroke-input last:border-b-0">
               <td className={`${done ? 'h-[60px]' : 'h-[52px]'} px-[18px] text-text-regular text-text-title`}><PersonName id={r.id}>{r.name}</PersonName></td>
               <td className="px-[18px] text-text-regular text-text-title">{r.role}</td>

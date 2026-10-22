@@ -340,7 +340,7 @@ export default function Screener() {
 
           <div className="ml-7 flex flex-col gap-3 rounded-lg border-1 border-stroke-2 bg-bgAlt-1 p-[14px]">
             <div className="flex flex-col gap-0.5">
-              <p className="flex items-center gap-2 text-body-medium text-text-title">{SPARKLE}Generate with AI</p>
+              <p className="flex items-center gap-2 text-text-medium text-text-title">{SPARKLE}Generate with AI</p>
               <p className="text-text-regular text-text-subtitle">Let our AI-assistant generate questions</p>
             </div>
             <div className="flex items-center gap-3">

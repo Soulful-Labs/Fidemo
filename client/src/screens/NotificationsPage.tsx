@@ -24,7 +24,7 @@ export default function NotificationsPage() {
         <div className="mx-auto w-[600px]">
           <div className="flex h-8 items-center justify-between gap-4">
             <span className="flex items-center gap-2">
-              <span className="text-title-m text-text-title">Notifications</span>
+              <span className="text-title-s text-text-title">Notifications</span>
               {unread > 0 && <Tag tone="grey" className="h-7 px-2.5">{unread}</Tag>}
             </span>
             <Button variant="ghost" className="h-6 px-0 text-text-regular text-text-subtitle"

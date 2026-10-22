@@ -142,7 +142,7 @@ export default function Help() {
                 <NavLink key={t.id} to={`/help/tickets/${t.id}`}
                   className="flex h-[76px] items-center border-b-1 border-stroke-input last:border-b-0 hover:bg-bg-1">
                   <span className="flex w-[594px] flex-col gap-1 px-4">
-                    <span className="text-body-medium text-text-title">{t.subject}</span>
+                    <span className="text-text-medium text-text-title">{t.subject}</span>
                     <span className="flex items-center gap-2 truncate text-text-regular text-text-subtitle">
                       {t.unread && <span className="h-2 w-2 shrink-0 rounded-full bg-cta-primary" />}
                       <span className="truncate">{t.last}</span>

@@ -23,7 +23,7 @@ export default function Popover({
 export function PopoverItem({ icon, children, onClick, danger }: { icon?: ReactNode; children: ReactNode; onClick?: () => void; danger?: boolean }) {
   return (
     <button type="button" onClick={onClick}
-      className={cn('flex w-full items-center gap-2 px-3 py-2 text-left text-text-regular hover:bg-bg-1', danger ? 'text-[#e33a38]' : 'text-text-title')}>
+      className={cn('flex w-full items-center gap-2 px-3 py-2 text-left text-text-regular hover:bg-bg-1', danger ? 'text-red-600' : 'text-text-title')}>
       {icon}
       {children}
     </button>

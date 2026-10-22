@@ -93,7 +93,7 @@ export function OverviewBody({ s, daysRow }: { s: ClientStudy; daysRow?: boolean
       {pace && pace.state !== 'done' && (
         <section className="flex min-h-[87px] flex-col justify-center gap-2 rounded-lg bg-gradient-to-r from-yellow-30 to-bg-1 px-4 py-3">
           <p className="flex items-center gap-2 text-body-medium text-brand-primary">{SPARKLE}AI Super Insight</p>
-          <p className="text-[17px] leading-6 tracking-[-0.01em] text-text-subtitle">
+          <p className="text-body-regular text-text-subtitle">
             <span className="text-text-title">{pace.state === 'ahead' ? 'You are ahead of pace.' : 'You are behind pace.'}</span>{' '}
             {pace.state === 'ahead'
               ? `At this rate the study fills in about ${pace.daysToFinish} days, with ${s.daysRemaining} left.`

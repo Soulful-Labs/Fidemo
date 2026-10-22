@@ -84,7 +84,7 @@ The paid-participation market is the mechanism: people give their time and opini
 | Area | Included |
 |---|---|
 | Respondent mobile app | Full journey: landing, sign-up, onboarding and ID upload, browsing and filtering studies, applying, screener, scheduling, attendance by PIN, survey and diary completion, rating, reporting a study, wallet, withdrawals, reward points and redemption, profile, Trust Score, certificate, referrals, settings, support |
-| Client desktop app | Full journey: sign-up and organisation details, payment method, study creation in five steps and Publish across six study types, pool search, managing a live study, scheduled sessions, recruiting and qualifying, results, rating, invoices and payment including paying several at once, notifications, help, account |
+| Client desktop app | Full journey: sign-up and organisation details, payment method, study creation in four steps and Publish across six study types, pool search, managing a live study, scheduled sessions, recruiting and qualifying, results, rating, invoices and payment including paying several at once, notifications, help, account |
 | Internal console | Dashboard queues, study review and approval, study management including changing a live study, participants and their profiles, identity and profession verification, reports and moderation on people and on studies, clients and business verification, support, finance, withdrawal release and refunds, pricing and rewards, sub-admins |
 | Six study types | Survey, Video Call 1:1, Group Video Call, In-Person 1:1, In-Person Group, Diary |
 | Trust and rewards | Trust Score, tiers, reward points, redemption, the certificate, as the policy defines them |
@@ -186,7 +186,7 @@ The automatic check tries to resolve the VAT number and website. **Only failures
 
 ### P2: Set up the study
 
-The client creates a study in five steps: About (including the type), Audience, Screener, Study setup (the type-specific part) and Pricing, then Payment & Publish. They can start from a written brief, which fills what it names. They pay a deposit and publish.
+The client creates a study in four steps: About (including the type), Audience, Screener, and Study setup (the type-specific part, with the incentive and the costs), then Payment & Publish. They can start from a written brief, which fills what it names. They pay a deposit and publish.
 
 **Every study then passes through team review**, in Studies > To Review. The reviewer reads six tabs and either approves it live, after a confirmation, or requests changes with a written note, which returns the study to the client's drafts with the note recorded in its revisions history.
 
