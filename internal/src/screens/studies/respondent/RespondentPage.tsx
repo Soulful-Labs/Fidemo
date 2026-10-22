@@ -35,7 +35,10 @@ export default function RespondentPage() {
 
   const group = study.type === 'video-group' || study.type === 'in-person-group'
   const stage = group && r.stage !== 'applied' ? 'finished' : r.stage
-  const keys: Tab[] = stage === 'applied' ? ['screener', 'activity'] : ['screener', 'result', 'activity']
+  const sessionType = study.type === 'video' || study.type === 'in-person'
+  /** Qualified on a one-to-one study and not yet booked (22 Oct 2026): Study Result says so, since Recruited opens it there. */
+  const unbooked = stage === 'applied' && sessionType && (r.participation.state === 'qualified' || r.participation.state === 'recruited')
+  const keys: Tab[] = stage === 'applied' && !unbooked ? ['screener', 'activity'] : ['screener', 'result', 'activity']
   const wanted = params.get('tab') as Tab | null
   const tab: Tab = wanted && keys.includes(wanted) ? wanted : stage === 'applied' ? 'screener' : 'result'
   const finished = stage === 'finished'
@@ -77,6 +80,9 @@ export default function RespondentPage() {
         </div>
       )}
       {tab === 'result' && !session && study.type !== 'diary' && <Answers answers={r.tasks} />}
+      {tab === 'result' && unbooked && (
+        <p className="rounded-lg bg-bg-1 p-4 text-text-regular text-text-subtitle">{r.name} is qualified and has not booked a session yet. Their session and Verification PIN will show here once they book.</p>
+      )}
       {tab === 'result' && session && !finished && r.session && (
         <div className="flex flex-col gap-3">
           <div className="grid grid-cols-2 gap-3">

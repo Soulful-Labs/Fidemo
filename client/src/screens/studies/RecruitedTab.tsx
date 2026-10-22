@@ -13,7 +13,7 @@ import { Calendar, ChevronRight, Clock, VideoIcon } from '../../components/ui/ic
 import { useToast } from '../../components/ui/Toast'
 import { slotOf, usePlatform, useStudies, useStudy } from '../../platform'
 import { CancelSessionModal } from './StudyMenus'
-import { pageLabels, paginate, recruits, sessionSeats } from '@shared/derive'
+import { pageLabels, paginate, recruits, sessionSeats, sessionStartOf } from '@shared/derive'
 import { slotDay } from '@shared/format'
 import { CLIENT_TAG } from '@shared/lifecycle'
 
@@ -50,7 +50,11 @@ export default function RecruitedTab() {
     .filter((r) => status === 'All' || CLIENT_TAG[r.state] === status)
     .filter((r) => tier === 'All' || r.tier === tier.toLowerCase())
   const shownApplications = paginate(applications, page)
-  const scheduled = all.filter((r) => r.state === 'scheduled' && r.participation.booking)
+  /** Scheduled lists only sessions still to come or running (22 Oct 2026); once one ends it leaves, to Results when completed and to Applications when not. */
+  const scheduled = all.filter((r) => r.state === 'scheduled' && r.participation.booking
+    && sessionStartOf(r.participation.booking).getTime() + s.durationMins * 60_000 > Date.now())
+  /** A booked row opens Study Result (the schedule and PIN); so does a qualified application, the schedule or the completed result. Applied and Disqualified open the screener. */
+  const opens = (r: (typeof all)[number], toResult: boolean) => `/studies/${s.id}/respondent/${r.id}${toResult ? '/result' : '?state=recruited'}`
   /**
    * A group study's sessions are the study's own, each with its seats and the
    * people booked into it; the seat count is no longer a constant.
@@ -134,7 +138,7 @@ export default function RecruitedTab() {
                       ? paginate(scheduled, page).rows.map((r, i) => (
                         <tr key={r.id} className="border-b-1 border-stroke-input last:border-b-0">
                           <td className="h-[60px] px-[18px] text-text-regular text-text-title">
-                            <span className="flex items-center gap-2"><Avatar name={r.name} photo={r.photo} size={28} /><Link to={`/studies/${s.id}/respondent/${r.id}?state=recruited`} className="hover:underline">{r.name}</Link></span>
+                            <span className="flex items-center gap-2"><Avatar name={r.name} photo={r.photo} size={28} /><Link to={opens(r, true)} className="hover:underline">{r.name}</Link></span>
                           </td>
                           <td className="h-[60px] px-[18px] text-text-regular text-text-title">{r.role}</td>
                           <td className="h-[60px] px-[18px]"><ScoreCell score={r.score} tier={r.tier} /></td>
@@ -164,7 +168,7 @@ export default function RecruitedTab() {
                       : shownApplications.rows.map((r) => (
                         <tr key={r.id} className="border-b-1 border-stroke-input last:border-b-0">
                           <td className="h-row px-[18px] text-text-regular text-text-title">
-                            <span className="flex items-center gap-2"><Avatar name={r.name} photo={r.photo} size={28} /><Link to={`/studies/${s.id}/respondent/${r.id}?state=recruited`} className="hover:underline">{r.name}</Link></span>
+                            <span className="flex items-center gap-2"><Avatar name={r.name} photo={r.photo} size={28} /><Link to={opens(r, session && r.state !== 'applied' && r.state !== 'disqualified')} className="hover:underline">{r.name}</Link></span>
                           </td>
                           <td className="h-row px-[18px] text-text-regular text-text-title">{r.role}</td>
                           <td className="h-row px-[18px]">

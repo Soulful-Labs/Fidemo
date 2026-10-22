@@ -15,7 +15,11 @@ import { usePlatform } from '../platform'
  */
 export interface Match { id: string; initial: string; name: string; role: string; score: string; tier: Tier; verified?: boolean }
 export type ApplicationStatus = 'Applied' | 'Qualified' | 'Disqualified'
-export interface Application { id: string; name: string; role: string; status: ApplicationStatus; score: string; tier: Tier }
+export interface Application {
+  id: string; name: string; role: string; status: ApplicationStatus; score: string; tier: Tier
+  /** Where the row opens, under the study (22 Oct 2026): a qualified group participant opens their session, a qualified one-to-one participant their Study Result. */
+  opens: string
+}
 export interface Booking { id: string; name: string; role: string; score: string; tier: Tier; day: string; time: string; join: boolean }
 export interface Session { id: string; name: string; day: string; time: string; address?: string; seats: string; people: string }
 
@@ -60,16 +64,32 @@ export function recruiting(state: PlatformState, study: Study, now = new Date())
   const byScore = <T extends { score: string }>(a: T, b: T) => Number.parseInt(b.score, 10) - Number.parseInt(a.score, 10)
   const matched = recruits(state, study, 'matched', now).map(card).sort(byScore)
   const invited = recruits(state, study, 'invited', now).map(card).sort(byScore)
-  const applications: Application[] = recruits(state, study, 'recruited', now).map((r) => ({ ...row(r), status: statusOf(r.participation.state) }))
+  const seats = sessionSeats(study)
+  const group = study.type === 'group_video_call' || study.type === 'in_person_group'
+  const oneToOne = study.type === 'video_call' || study.type === 'in_person'
+  /**
+   * A Qualified row (22 Oct 2026): in a group study it opens the person's session, which shows its results
+   * once it has run (1952:79377) and the scheduled session before; one-to-one it opens Study Result, the
+   * schedule (1952:82213) or the completed result (1952:82396). Applied and Disqualified open the screener.
+   */
+  const opensFor = (r: ReturnType<typeof recruits>[number]) => {
+    if (statusOf(r.participation.state) !== 'Qualified') return `respondents/${r.id}`
+    const seat = group ? seats.find((x) => x.people.includes(r.id)) : undefined
+    if (seat) return `sessions/${seat.id}`
+    return oneToOne ? `respondents/${r.id}?tab=result` : `respondents/${r.id}`
+  }
+  const applications: Application[] = recruits(state, study, 'recruited', now).map((r) => ({ ...row(r), status: statusOf(r.participation.state), opens: opensFor(r) }))
+  /** Scheduled lists only sessions still to come or running (22 Oct 2026); once one has ended it leaves this list, to Results when completed and to Applications when not. */
   const scheduled: Booking[] = recruits(state, study, undefined, now)
-    .filter((r) => r.participation.booking && (r.participation.state === 'scheduled'))
+    .filter((r) => r.participation.booking && r.participation.state === 'scheduled'
+      && startOf(r.participation.booking.date, r.participation.booking.slot).getTime() + study.durationMins * 60_000 > now.getTime())
     .sort((a, b) => startOf(a.participation.booking!.date, a.participation.booking!.slot).getTime() - startOf(b.participation.booking!.date, b.participation.booking!.slot).getTime())
     .map((r) => {
       const b = r.participation.booking!
       const start = startOf(b.date, b.slot).getTime()
       return { ...row(r), day: shortDay(b.date), time: b.slot, join: study.type === 'video_call' && now.getTime() >= start - 15 * 60_000 && now.getTime() <= start + study.durationMins * 60_000 }
     })
-  const sessions: Session[] = sessionSeats(study).map((x, i) => ({
+  const sessions: Session[] = seats.map((x, i) => ({
     id: x.id, name: `Session ${i + 1}`, day: cardDay(x.date), time: slotRange(x.slot, study.durationMins),
     address: study.type === 'in_person_group' ? addressOf(study, x.locationId) : undefined,
     seats: `${x.taken} / ${x.seats} Seats`, people: x.people.map((id) => personById(state, id)?.name.slice(0, 1) ?? '').join(''),

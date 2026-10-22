@@ -104,12 +104,12 @@ export default function RecruitedTab({ study, view, onView }: { study: ManagedSt
       </div>
       {showApplications ? (
         <>
-          {applications.length ? <Table rowHeight={52} rows={shown as typeof applications} rowKey={(r) => r.id} columns={APPLICATION_COLUMNS} onRowClick={(r) => open(r.id)} /> : empty('No one has applied to this study yet.')}
+          {applications.length ? <Table rowHeight={52} rows={shown as typeof applications} rowKey={(r) => r.id} columns={APPLICATION_COLUMNS} onRowClick={(r) => navigate(`/studies/${study.id}/${r.opens}`)} /> : empty('No one has applied to this study yet.')}
           <div className="pt-3"><Pagination page={Math.min(page, pages)} pages={pages} onChange={setPage} /></div>
         </>
       ) : booked ? (
         <>
-          {scheduled.length ? <Table rowHeight={60} rows={shown as typeof scheduled} rowKey={(r) => r.id} columns={bookingColumns((r) => open(r.id))} onRowClick={(r) => open(r.id)} /> : empty('No sessions are booked yet.')}
+          {scheduled.length ? <Table rowHeight={60} rows={shown as typeof scheduled} rowKey={(r) => r.id} columns={bookingColumns((r) => open(r.id))} onRowClick={(r) => navigate(`/studies/${study.id}/respondents/${r.id}?tab=result`)} /> : empty('No sessions are booked yet.')}
           <div className="pt-3"><Pagination page={Math.min(page, pages)} pages={pages} onChange={setPage} /></div>
         </>
       ) : (
