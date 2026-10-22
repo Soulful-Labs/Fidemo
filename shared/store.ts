@@ -15,6 +15,7 @@ import { DECISION_UNDO_MS, DEMO_SESSION_CODE, REPORT_MAX_CHARS, RESTRICTION_DAYS
 import { POINTS, canRedeem, starsForRating, starsFromDimensions } from './rules'
 import { monthDayYear } from './format'
 import { sessionStartOf as sessionStart } from './derive'
+import { clientDeactivationRefusal } from './derive'
 import { EMPTY_PROFILE } from './seed/people'
 import { MAX_RUN_DAYS, audienceFault, buildStudy, fitsStudy, formFromStudy, liveEditFault, studyTypeOf, summarise } from './studyForm'
 import { buildScreener, buildTasks } from './questions'
@@ -1196,6 +1197,8 @@ export function createPlatform(options: Options = {}) {
       if (!client) return no('No such client')
       if (client.status === status) return no(`This account is already ${status}`)
       if (!reason.trim()) return no('A reason is required')
+      // 22 Oct 2026: not while a study is running or an invoice is unpaid; the refusal names them.
+      if (status === 'deactivated') { const why = clientDeactivationRefusal(s, clientId); if (why) return no(why) }
       client.status = status
       client.statusNote = status === 'active' ? undefined : { reason: reason.trim(), at: iso(), by: actor.kind === 'team' ? actor.id : '' }
       log(s, actor, `${status === 'active' ? 'Reactivated' : 'Deactivated'} the account of ${client.company}`, `Clients / Profile / ${status === 'active' ? 'Reactivate' : 'Deactivate'}`)

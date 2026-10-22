@@ -8,6 +8,7 @@
  * is refused with a reason.
  */
 import { diffForms, studyHistory } from '../shared/revisions'
+import { clientDeactivationBlockers, clientDeactivationRefusal } from '../shared/derive'
 import { withdrawals,
   billing, consoleDashboard, hasCertificate, payoutsToProcess, referralCode, counts, financeTotals, personFigures, pointsRows, poolPerson, recruit, refundsPending, respondentStudies, sharedPhoto, sharedVideo, trustInputs,
 } from '../shared/derive'
@@ -555,6 +556,21 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   const d = diffForms({ ...base, ethnicity: [] , areaTypes: [] }, { ...base, ethnicity: ['Asian'], areaTypes: ['Rural'] })
   check('revisions record ethnicity and area type changes', d.some((c) => c.path.join('/') === 'Audience/Ethnicity') && d.some((c) => c.path.join('/') === 'Audience/Area Type'), JSON.stringify(d))
   check('neither changes the price', priced({ ...base, ethnicity: ['White'], areaTypes: ['Rural'] }) === priced(base) && !priced(base).startsWith('refused'), priced(base))
+}
+
+// A client cannot be deactivated while a study runs or an invoice is unpaid (22 Oct 2026).
+{
+  const busy = st().clients.find((c) => clientDeactivationBlockers(st(), c.id).studies.length > 0 && c.status !== 'deactivated')!
+  const firstStudy = clientDeactivationBlockers(st(), busy.id).studies[0]!
+  const refused = p.setClientStatus(busy.id, 'deactivated', 'Testing', team)
+  check('deactivate client: refused while a study runs, naming it', !refused.ok && refused.why.includes(firstStudy) && st().clients.find((c) => c.id === busy.id)!.status !== 'deactivated', refused.ok ? '' : refused.why)
+  const owing = st().clients.find((c) => clientDeactivationBlockers(st(), c.id).invoices.length > 0 && c.status !== 'deactivated')
+  if (owing) {
+    const r = p.setClientStatus(owing.id, 'deactivated', 'Testing', team)
+    check('deactivate client: refused while an invoice is unpaid, naming it', !r.ok && r.why.includes(clientDeactivationBlockers(st(), owing.id).invoices[0]!.split(' ')[0]!), r.ok ? '' : r.why)
+  }
+  const free = st().clients.find((c) => !clientDeactivationRefusal(st(), c.id) && c.status !== 'deactivated')
+  if (free) check('deactivate client: allowed with nothing running or owed', p.setClientStatus(free.id, 'deactivated', 'Testing', team).ok && p.setClientStatus(free.id, 'active', 'Back', team).ok)
 }
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nall checks passed')

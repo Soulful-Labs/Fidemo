@@ -88,8 +88,9 @@ export function Modal({ open, onClose, title, layout = 'centred', footer, childr
  */
 export function SuccessModal({ open, onClose, title, body, action, onAction, tone = 'yellow' }: {
   open: boolean; onClose: () => void; title: string; body: ReactNode; action: string; onAction: () => void
-  /** green: "This study has been published live!" (1982:109978) draws the badge in green. */
-  tone?: 'yellow' | 'green'
+  /** green: "This study has been published live!" (1982:109978) draws the badge in green. alert: the orange
+   *  refusal, as the client app's "Your account has active studies!" (1684:129433). */
+  tone?: 'yellow' | 'green' | 'alert'
 }) {
   useEscape(open, onClose)
   if (!open) return null
@@ -110,8 +111,15 @@ export function SuccessModal({ open, onClose, title, body, action, onAction, ton
 }
 
 /** The badge: a 92px yellow-500 disc with a 4px brand-primary rim and a white tick, on a 160px yellow-100 disc. */
-export function SuccessBadge({ tone = 'yellow' }: { tone?: 'yellow' | 'green' }) {
+export function SuccessBadge({ tone = 'yellow' }: { tone?: 'yellow' | 'green' | 'alert' }) {
   const green = tone === 'green'
+  if (tone === 'alert') return (
+    <span className="flex h-40 w-40 items-center justify-center rounded-full bg-orange-100">
+      <span className="flex h-[92px] w-[92px] items-center justify-center rounded-full border-b-4 border-state-destructiveEdge bg-state-destructive text-bg-0">
+        <svg viewBox="0 0 24 24" className="h-12 w-12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 7.5h.01" /></svg>
+      </span>
+    </span>
+  )
   return (
     <span className={cn('flex h-40 w-40 items-center justify-center rounded-full', green ? 'bg-state-successBg' : 'bg-yellow-100')}>
       <span className={cn('flex h-[92px] w-[92px] items-center justify-center rounded-full border-4', green ? 'border-state-successHover bg-state-success' : 'border-brand-primary bg-yellow-500')}>

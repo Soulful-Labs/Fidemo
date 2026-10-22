@@ -1196,3 +1196,25 @@ export function participantReviews(state: PlatformState, personId: string): Part
     reply: p.clientReview?.comment ?? '',
   }))).sort((a, b) => b.at.localeCompare(a.at))
 }
+
+/**
+ * What stops a client account being deactivated (22 Oct 2026): any study still running (recruiting, ongoing
+ * or paused) and any invoice not yet paid. Both are named so the team can say which.
+ */
+export function clientDeactivationBlockers(state: PlatformState, clientId: string): { studies: string[]; invoices: string[] } {
+  const mine = state.studies.filter((s) => s.clientId === clientId)
+  return {
+    studies: mine.filter((s) => isLive(s.state) || s.state === 'paused').map((s) => s.title),
+    invoices: invoices(mine).filter((i) => !i.paid).map((i) => `${i.number} (${i.study})`),
+  }
+}
+
+/** One sentence naming them, or empty when nothing stands in the way. */
+export function clientDeactivationRefusal(state: PlatformState, clientId: string): string {
+  const b = clientDeactivationBlockers(state, clientId)
+  const parts = [
+    b.studies.length ? `${b.studies.length === 1 ? 'an ongoing study' : `${b.studies.length} ongoing studies`}: ${b.studies.join(', ')}` : '',
+    b.invoices.length ? `${b.invoices.length === 1 ? 'an unpaid invoice' : `${b.invoices.length} unpaid invoices`}: ${b.invoices.join(', ')}` : '',
+  ].filter(Boolean)
+  return parts.length ? `This account has ${parts.join('; and ')}. It can be deactivated only once every study is completed and every invoice is paid.` : ''
+}

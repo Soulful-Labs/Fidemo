@@ -13,7 +13,7 @@ import { cn } from '../../lib/cn'
 import { useClientView } from '../../mock/clients'
 import { platform } from '@shared/store'
 import { monthDayYear } from '@shared/format'
-import { TEAM } from '../../platform'
+import { TEAM, usePlatform } from '../../platform'
 import type { ClientStudy } from '../../mock/clients'
 import { AccountFlow } from '../participants/profile/accountDialogs'
 import type { AccountStep } from '../participants/profile/accountDialogs'
@@ -22,6 +22,8 @@ import InvoicePanel from './InvoicePanel'
 import { ClientAbout, ClientHeader } from './parts'
 import { useFacet } from '../participants/verifications/VerificationsList'
 import { STUDY_TYPE_LABEL } from '../../components/app/StudyTypeTag'
+import { clientDeactivationRefusal } from '@shared/derive'
+import { SuccessModal } from '../../components/ui/Overlay'
 
 type Tab = 'about' | 'studies' | 'payments'
 const TYPES = ['survey', 'video', 'video-group', 'in-person', 'in-person-group', 'diary']
@@ -63,6 +65,9 @@ export default function ClientProfile() {
     setParams({ ...(t !== 'about' && { tab: t }), ...(n.sub === 'completed' && { sub: 'completed' }) }, { replace: true })
   }
   const [menu, setMenu] = useState(false)
+  /** A client with a running study or an unpaid invoice cannot be deactivated (22 Oct 2026): the alert names them. */
+  const refusal = clientDeactivationRefusal(usePlatform(), c.id)
+  const [blocked, setBlocked] = useState(false)
   const [rowMenu, setRowMenu] = useState<string | null>(null)
   const [invoice, setInvoice] = useState<string | null>(null)
   const [flow, setFlow] = useState<AccountStep>(null)
@@ -101,7 +106,7 @@ export default function ClientProfile() {
           {menu && (
             <ul role="menu" className="absolute right-0 top-[46px] z-30 w-[220px] rounded-lg bg-bg-0 p-2 shadow-[0_4px_16px_rgba(32,30,25,0.12)]">
               {['Send E-mail', off ? 'Reactivate Account' : 'Deactivate Account'].map((item) => (
-                <li key={item} role="none"><button role="menuitem" type="button" onClick={() => { setMenu(false); if (item === 'Send E-mail') window.location.href = `mailto:${c.email}`; else setFlow('form') }}
+                <li key={item} role="none"><button role="menuitem" type="button" onClick={() => { setMenu(false); if (item === 'Send E-mail') window.location.href = `mailto:${c.email}`; else if (!off && refusal) setBlocked(true); else setFlow('form') }}
                   className="flex h-[38px] w-full items-center rounded-sm px-3 text-body-regular text-text-title hover:bg-bg-1">{item}</button></li>))}
             </ul>
           )}
@@ -143,6 +148,7 @@ export default function ClientProfile() {
       </div>
       
       <InvoicePanel studyId={invoice} onClose={() => setInvoice(null)} />
+      <SuccessModal open={blocked} onClose={() => setBlocked(false)} tone="alert" title={`${c.company} has active studies!`} body={refusal} action="Got It!" onAction={() => setBlocked(false)} />
       <AccountFlow name={c.name.split(' ')[0]} kind={off ? 'reactivate' : 'deactivate'} step={flow} onStep={setFlow} onReason={(reason) => platform().setClientStatus(c.id, off ? 'active' : 'deactivated', reason, TEAM)} onDone={() => setFlow(null)} />
     </AppShell>
   )
