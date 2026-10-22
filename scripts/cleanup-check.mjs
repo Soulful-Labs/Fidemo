@@ -170,12 +170,17 @@ const myState = () => st(`s.studies.find((x) => x.id === ${JSON.stringify(S.id)}
   await C.ev(`(() => { const b = [...document.querySelectorAll('main button')].filter(__vis).find((x) => x.textContent.trim() === 'Cancel'); if (!b) throw new Error('no Cancel on the scheduled row'); b.click(); return true })()`); await sleep(400)
   const modal = flat(await body(C))
   if (!/costs \w+ nothing/.test(modal)) g.push('the confirmation does not say it costs them nothing')
+  // 22 Oct 2026: the reason is required; Yes stays off until there is one, and it reaches the participant.
+  const offEmpty = await C.ev(`(() => { const b = [...document.querySelectorAll('button')].filter(__vis).find((x) => x.textContent.trim() === 'Yes, Cancel Session'); return Boolean(b && b.disabled) })()`)
+  if (!offEmpty) g.push('Yes, Cancel Session is pressable with no reason')
+  await C.ev(`(() => { __type(document.querySelector('textarea[aria-label="Reason for cancelling"]'), 'The moderator is unwell'); return true })()`); await sleep(200)
   await clickExact(C, 'Yes, Cancel Session'); await sleep(900)
   await R.open('/notifications'); await sleep(500)
   const t1 = await trust()
   if (t1 !== t0) g.push(`trust ${t0} -> ${t1}`)
   if (await myState() === 'scheduled') g.push('the session is still booked')
   if (!(await R.has('Study cancelled by client'))) g.push('no notification for the participant')
+  if (!(await R.has('The moderator is unwell'))) g.push('the reason is not in the participant\'s notification')
   say(2, 'A client cancelling costs the participant nothing, and the participant is told', g, `cancelled 3 hours before, inside the participant's 24-hour window: Trust Score ${t0} -> ${t1}; state ${await myState()}; "Study cancelled by client" in their notifications`)
 }
 

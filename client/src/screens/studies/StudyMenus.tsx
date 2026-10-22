@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import Button from '../../components/ui/Button'
 import Checkbox from '../../components/ui/Checkbox'
 import Modal from '../../components/ui/Modal'
@@ -139,16 +140,25 @@ export function RepublishModal({ open, onClose, onConfirm }: { open: boolean; on
  * client cancels costs the participant nothing, and they are told. They can
  * book again while the study runs.
  */
-export function CancelSessionModal({ open, onClose, onConfirm, name }: { open: boolean; onClose: () => void; onConfirm: () => void; name: string }) {
+export function CancelSessionModal({ open, onClose, onConfirm, name }: { open: boolean; onClose: () => void; onConfirm: (reason: string) => void; name: string }) {
+  // The reason is required (22 Oct 2026): it goes to the participant in their notification and is kept against the booking.
+  const [reason, setReason] = useState('')
+  const close = () => { setReason(''); onClose() }
   return (
-    <Modal open={open} onClose={onClose} title="Cancel Session?"
+    <Modal open={open} onClose={close} title="Cancel Session?"
       body={`${name}'s session will be cancelled and the time released. This costs ${name} nothing, and they are told straight away. They can book another time while the study runs.`}
       footer={
         <>
-          <Button variant="tertiary" className="flex-1" onClick={onClose}>No, Keep It</Button>
-          <Button className="flex-1" onClick={onConfirm}>Yes, Cancel Session</Button>
+          <Button variant="tertiary" className="flex-1" onClick={close}>No, Keep It</Button>
+          <Button className="flex-1" disabled={!reason.trim()} onClick={() => { onConfirm(reason.trim()); setReason('') }}>Yes, Cancel Session</Button>
         </>
-      } />
+      }>
+      <label className="mt-4 flex flex-col gap-1.5 text-left text-text-regular text-text-subtitle">
+        Reason, sent to {name} (required)
+        <textarea rows={3} value={reason} onChange={(e) => setReason(e.target.value)} aria-label="Reason for cancelling"
+          className="rounded-md border-1 border-stroke-input bg-bg-0 p-3 text-text-title outline-none focus:border-cta-primary" />
+      </label>
+    </Modal>
   )
 }
 

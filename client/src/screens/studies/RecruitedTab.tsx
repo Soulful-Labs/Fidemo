@@ -184,7 +184,7 @@ export default function RecruitedTab() {
         </div>
       </StudyFrame>
       <CancelSessionModal open={cancelling !== null} name={cancelling?.name.split(' ')[0] ?? ''} onClose={() => setCancelling(null)}
-        onConfirm={() => { if (!cancelling) return; const res = cancelSession(s.id, cancelling.id); setCancelling(null); toast(res.ok ? 'Session cancelled. They have been told, at no cost to them.' : res.why) }} />
+        onConfirm={(reason) => { if (!cancelling) return; const res = cancelSession(s.id, cancelling.id, reason); setCancelling(null); toast(res.ok ? 'Session cancelled. They have been told, at no cost to them.' : res.why) }} />
       <DownloadSessionsPanel study={s} open={downloads} onClose={() => setDownloads(false)}
         artefact={s.type === 'group_video_call' ? 'Recordings + Transcript' : 'Notes'} />
     </AppShell>

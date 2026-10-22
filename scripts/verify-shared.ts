@@ -455,7 +455,10 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   const events = meP().trustEvents.length
   check('cancel: the client cancels for free, even inside 24 hours, and the participant is told', p.cancelSessionFor(booked.id, DEMO_PERSON_ID, client, 'Interviewer unwell').ok && fig().trustScore === beforeClient && meP().trustEvents.length === events && meP().notifications[0]?.title === 'Study cancelled by client' && stateOf() !== 'scheduled')
   p.reset(); clock = start - 2 * 3_600_000
-  check('cancel: the team cancels for free as well', p.cancelSessionFor(booked.id, DEMO_PERSON_ID, team, '').ok && fig().trustScore === beforeClient && meP().trustEvents.length === events)
+  check('cancel: the reason is required (22 Oct 2026)', !p.cancelSessionFor(booked.id, DEMO_PERSON_ID, team, '  ').ok && stateOf() === 'scheduled')
+  check('cancel: the team cancels for free as well', p.cancelSessionFor(booked.id, DEMO_PERSON_ID, team, 'Room unavailable').ok && fig().trustScore === beforeClient && meP().trustEvents.length === events)
+  check('cancel: the reason reaches the participant and is kept against the booking', /Room unavailable/.test(meP().notifications[0]?.body ?? '')
+    && st().studies.find((x) => x.id === booked.id)!.participations.find((q) => q.personId === DEMO_PERSON_ID)!.cancellations?.at(-1)?.reason === 'Room unavailable')
   check('cancel: a participant cannot use the client route', !p.cancelSessionFor(booked.id, DEMO_PERSON_ID, { kind: 'participant', id: DEMO_PERSON_ID }, '').ok)
 
   p.reset(); clock = now.getTime()

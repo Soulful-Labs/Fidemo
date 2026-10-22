@@ -162,8 +162,10 @@ export function createPlatform(options: Options = {}) {
    */
   const cancelFor = (s: PlatformState, study: Study, p: Participation, by: 'client' | 'team', reason: string) => {
     const when = p.booking ? `${monthDayYear(p.booking.date)} at ${p.booking.slot}` : 'booked'
+    // The reason is kept against the booking it cancelled, so the team can read it later.
+    if (p.booking) p.cancellations = [...(p.cancellations ?? []), { at: iso(), date: p.booking.date, slot: p.booking.slot, by, reason }]
     p.state = 'qualified'; p.booking = undefined; p.code = undefined
-    stamp(p, by === 'client' ? 'Session cancelled by the client' : 'Session cancelled by the team')
+    stamp(p, `${by === 'client' ? 'Session cancelled by the client' : 'Session cancelled by the team'}${reason ? `: ${reason}` : ''}`)
     const open = isLive(study.state)
     notify(s, p.personId, {
       kind: 'session', title: by === 'client' ? 'Study cancelled by client' : 'Your session was cancelled',
@@ -675,6 +677,8 @@ export function createPlatform(options: Options = {}) {
       if (!hit) return no('Not on this study')
       if (hit.p.state !== 'scheduled') return no('There is no booked session to cancel')
       if (actor.kind !== 'client' && actor.kind !== 'team') return no('Only the client or the team can cancel a session for a participant')
+      // 22 Oct 2026: a session cancelled for someone always says why.
+      if (!reason.trim()) return no('Give a reason for cancelling the session')
       cancelFor(s, hit.study, hit.p, actor.kind, reason.trim())
       log(s, actor, `Cancelled ${nameOf(s, personId)}'s session on ${hit.study.title}`, 'Studies / Sessions / Cancel')
       return yes()

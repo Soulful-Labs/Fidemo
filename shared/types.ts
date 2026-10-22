@@ -106,6 +106,8 @@ export interface Participation {
   /** What they answered to the eligibility questions they passed (workflow 28). */
   preAnswers?: Answers
   booking?: Booking
+  /** Sessions the client or the team cancelled for them (22 Oct 2026): when, the slot, who, and the reason given. */
+  cancellations?: { at: string; date: string; slot: string; by: 'client' | 'team'; reason: string }[]
   /** Workflow 42: a code at the end of every session, entered by both sides. */
   code?: { value: string; byParticipant: boolean; byClient: boolean }
   /** Diary studies: the days filled in. */
