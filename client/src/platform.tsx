@@ -161,7 +161,12 @@ export function useStudies() {
           case 'qualified': case 'disqualified': case 'applied': return p.decide(studyId, personId, to, actor)
           case 'recruited': return p.recruit(studyId, personId)
           case 'completed': return p.complete(studyId, personId, actor)
-          case 'no_show': return p.markNoShow(studyId, personId, actor)
+          case 'no_show': {
+            // Someone marked completed, not yet paid, is marked back first, as the console does; a paid one is refused by the store.
+            const part = p.getState().studies.find((s) => s.id === studyId)?.participations.find((x) => x.personId === personId)
+            if (part?.state === 'completed' && !part.paidAt) { const back = p.uncomplete(studyId, personId, actor); if (!back.ok) return back }
+            return p.markNoShow(studyId, personId, actor)
+          }
         }
       },
       /** Policy section 6: three dimensions at five stars each, plus an optional written review. */

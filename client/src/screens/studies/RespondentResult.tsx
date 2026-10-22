@@ -258,15 +258,36 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                       no-show is past it, so their outcome is stated rather than
                       offered again; the store refused it and the buttons read as
                       broken. Same rule as Qualify above. */}
+                  {/* Since 22 Oct 2026 the actions follow the state, as on the console's rows (1952:79377): completed,
+                      Mark No-show beside a green read-back; a no-show, Mark Completed beside a red one. A read-back is
+                      not a button; once paid, only the read-back is left. */}
                   {done && session && (state === 'completed' || state === 'rated' || state === 'no_show') && (
-                    <p className="flex flex-col text-text-regular">
-                      <span className="text-text-subtitle">Completion Confirmation</span>
-                      <span className="text-text-title">
-                        {state === 'no_show'
-                          ? `${person.name} was marked a no-show and is not paid for this session.`
-                          : `${person.name} completed this session.${state === 'rated' ? ' Rated.' : ''}`}
+                    <>
+                      <p className="flex flex-col text-text-regular">
+                        <span className="text-text-subtitle">Completion Confirmation</span>
+                        <span className="text-text-title">
+                          {state === 'no_show'
+                            ? `${person.name} was marked a no-show and is not paid for this session.`
+                            : `${person.name} completed this session.${state === 'rated' ? ' Rated.' : ''}`}
+                        </span>
+                      </p>
+                      <span className="flex items-center gap-3">
+                        {state !== 'no_show' && !person.participation.paidAt && (
+                          <Button variant="tertiary" size="none" className="h-11 px-4" onClick={() => setNoShow('one')} leftIcon={<Close className="h-4 w-4" />}>Mark No-show</Button>
+                        )}
+                        {state === 'no_show' && (
+                          <Button variant="secondary" size="none" className="h-11 px-4" leftIcon={<CheckCircle className="h-4 w-4" />} onClick={() => {
+                            const res = moveRespondent(s.id, person.id, 'completed')
+                            toast(res.ok ? `${person.name} marked completed` : res.why)
+                          }}>Mark Completed</Button>
+                        )}
+                        <span className={state === 'no_show'
+                          ? 'flex h-11 items-center gap-2 rounded-sm bg-red-50 px-4 text-text-medium text-red-600'
+                          : 'flex h-11 items-center gap-2 rounded-sm bg-green-50 px-4 text-text-medium text-brand-secondary'}>
+                          {state === 'no_show' ? <><Close className="h-4 w-4" />Marked as No-show</> : <><CheckCircle className="h-4 w-4" />{person.participation.code?.byParticipant ? 'Marked completed by participant' : 'Marked completed'}</>}
+                        </span>
                       </span>
-                    </p>
+                    </>
                   )}
                   {done && session && state === 'scheduled' && (
                     <>

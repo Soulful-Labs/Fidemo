@@ -1,7 +1,7 @@
 import { diaryWords } from '@shared/platform'
 import { Fragment, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
-import { canUndoDecision, decide, markCompleted, markNoShow, undoAttendance } from '../../../mock/attendance'
+import { canUndoDecision, decide, markCompleted, markNoShow } from '../../../mock/attendance'
 import { useManagedStudy } from '../../../mock/manage'
 import { useRespondent } from '../../../mock/results'
 import { CompletedBar, CompletionBar, ScreenerBar } from './bars'
@@ -54,7 +54,8 @@ export default function RespondentPage() {
   if (tab === 'screener' && stage === 'applied') bar = <ScreenerBar state={screener} canUndo={canUndoDecision(p)} onDecide={(to) => decide(study.id, r.id, to)} />
   if (tab === 'result' && finished) bar = session
     ? <CompletionBar label={inPerson ? 'Completion Confirmation' : 'Final Completion Confirmation'} name={r.name} state={completion}
-        onComplete={() => markCompleted(study.id, r.id)} onNoShow={() => setAsking(true)} onUndo={() => undoAttendance(study.id, p)} />
+        byParticipant={Boolean(p.code?.byParticipant)}
+        onComplete={() => markCompleted(study.id, r.id)} onNoShow={() => setAsking(true)} />
     : <CompletedBar closed={closed} kind={study.type === 'diary' ? 'diary' : 'survey'} name={r.name} noShow={noShow} />
   const sessionTitle = inPerson ? `In-person interview of ${r.name} and Client` : 'Scheduled For'
 

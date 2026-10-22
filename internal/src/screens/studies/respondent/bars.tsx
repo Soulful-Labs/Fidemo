@@ -63,11 +63,14 @@ export type CompletionState = 'todo' | 'completed' | 'settled' | 'noshow'
  * Mark No-show / Mark Completed; then "Marked John as completed!" with or
  * without Undo, or "Marked John as No-show." with Undo. `label` is the first
  * line before a decision: video draws "Final Completion Confirmation",
- * in-person "Completion Confirmation". The state is the participation's; Undo
- * shows until the payout has been approved.
+ * in-person "Completion Confirmation". The state is the participation's.
+ * Since 22 Oct 2026 the actions follow it, as on the group session's rows
+ * (1952:79377): completed, Mark No-show beside a green read-back; a no-show,
+ * Mark Completed beside a red one. A read-back is not a button, and once the
+ * payout is approved only the read-back is left.
  */
-export function CompletionBar({ label, name, state, onNoShow, onComplete, onUndo }: {
-  label: string; name: string; state: CompletionState; onNoShow: () => void; onComplete: () => void; onUndo: () => void
+export function CompletionBar({ label, name, state, byParticipant, onNoShow, onComplete }: {
+  label: string; name: string; state: CompletionState; byParticipant?: boolean; onNoShow: () => void; onComplete: () => void
 }) {
   const first = name.split(' ')[0]
   if (state === 'todo') return (
@@ -80,8 +83,9 @@ export function CompletionBar({ label, name, state, onNoShow, onComplete, onUndo
   return (
     <Bar tone={good ? 'good' : 'bad'} muted title={good ? `Marked ${first} as completed!` : `Marked ${first} as No-show.`}
       line={good ? `This study has been successfully marked as completed with PIN by the ${name}.` : `You have marked ${first} as no-show (absent) and it wll be confirmed by team.`}>
-      {state !== 'settled' && <Button variant="tertiary" size="md" className="px-3" onClick={onUndo}>Undo</Button>}
-      <SmallOutcome good={good}>{good ? 'Marked as completed' : 'Marked as No-show'}</SmallOutcome>
+      {state === 'completed' && <Button variant="tertiary" size="md" className="px-3" leftIcon={<CloseIcon className="h-4 w-4" />} onClick={onNoShow}>Mark No-show</Button>}
+      {state === 'noshow' && <Button variant="secondary" size="md" className="px-3" leftIcon={<VerifiedIcon className="h-4 w-4" />} onClick={onComplete}>Mark Completed</Button>}
+      <SmallOutcome good={good}>{good ? (byParticipant ? 'Marked completed by participant' : 'Marked as completed') : 'Marked as No-show'}</SmallOutcome>
     </Bar>
   )
 }

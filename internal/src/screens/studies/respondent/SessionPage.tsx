@@ -60,9 +60,15 @@ export default function SessionPage() {
 
   const NoShowButton = ({ p }: { p: Person }) => <Button variant="tertiary" size="md" className="px-3" leftIcon={<CloseIcon className="h-4 w-4" />} onClick={() => setNoShow(p)}>Mark No-show</Button>
   const CompleteButton = ({ p, back: marksBack }: { p: Person; back?: boolean }) => <Button variant="secondary" size="md" className="px-3" leftIcon={<VerifiedIcon className="h-4 w-4" />} onClick={() => marksBack ? setBack(p) : markCompleted(study.id, p.id)}>Mark Completed</Button>
+  /**
+   * The row's actions follow the participant's state (1952:79377, 22 Oct 2026), the same for every type:
+   * nothing recorded, Mark No-show and Mark Completed; completed, Mark No-show and a green read-back;
+   * a no-show, Mark Completed and a red read-back. A read-back is not a button. Once paid, a completion
+   * cannot be undone, so only its read-back shows.
+   */
   const actions = (p: Person) => {
-    if (p.state === 'completed') return <>{!inPerson && <NoShowButton p={p} />}<Tag good>{p.codeConfirmed ? 'Marked completed by participant' : 'Marked completed'}</Tag></>
-    if (p.state === 'no_show') return inPerson ? <><CompleteButton p={p} back /><Tag good={false}>Marked No-show by client</Tag></> : <><NoShowButton p={p} /><Tag good={false}>Marked as No-show</Tag></>
+    if (p.state === 'completed') return <>{!p.participation.paidAt && <NoShowButton p={p} />}<Tag good>{p.codeConfirmed ? 'Marked completed by participant' : 'Marked completed'}</Tag></>
+    if (p.state === 'no_show') return <><CompleteButton p={p} back /><Tag good={false}>Marked as No-show</Tag></>
     return <><NoShowButton p={p} /><CompleteButton p={p} /></>
   }
 
