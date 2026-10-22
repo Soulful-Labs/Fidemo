@@ -7,10 +7,9 @@ import Button, { IconButton } from '../../../components/ui/Button'
 import { AudienceIcon, ClipboardIcon, ClockIcon, CopyIcon, DotsIcon, LinkIcon, ScreenerIcon } from '../../../components/ui/icons'
 import { UnderlineTabs } from '../../../components/ui/Tabs'
 import type { ManagedStudy } from '../../../mock/manage'
-import { BillLine } from '../review/PaymentRevisions'
 import { AudiencePills, Block, EstimatedAudience } from './ManageTab'
 import { ClientCard } from './OverviewTab'
-import { Billing, Money, Transaction, feeLines } from './PayTab'
+import { Money, StoppedBill, Transaction } from './PayTab'
 import { billing } from '@shared/derive'
 import { money, monthDayYearTime } from '@shared/format'
 import { DEPOSIT_RULE } from '@shared/platform'
@@ -40,8 +39,9 @@ const Stat = ({ label, value, rest, ring }: { label: string; value: string; rest
  * - Overview (1932:96426): Success, Completed, Qualified, Closed; description,
  *   share link, Duration; the Audience, Screener and Study blocks; About Client.
  * - Results (1932:96711): the running study's Results with 30 /30 required.
- * - Payments (1932:97043): Total Paid, the bill as paid, and both receipts.
- *   The frame lights "Results" over this content; the tab is lit by route.
+ * - Payments (1932:97043, redrawn 22 Oct 2026): the bill as paid, with
+ *   Estimated and Final, and both invoices. The frame lights "Results" over
+ *   this content; the tab is lit by route.
  * No Manage Study, Matched or Recruited: nothing is left to run.
  */
 export default function CompletedStudy({ study, tab, onTab }: { study: ManagedStudy; tab: Tab; onTab: (t: Tab) => void }) {
@@ -107,33 +107,34 @@ export default function CompletedStudy({ study, tab, onTab }: { study: ManagedSt
   )
 }
 
-/** The completed study's payments: what was paid, from the study's own records (shared/derive.ts billing). */
+/**
+ * The completed study's payments (1932:97043): Billing on the left with
+ * Estimated and Final, down to Net Payable, marked Paid; Payment Overview on
+ * the right with Deposit Paid and Total Cost; then Transactions, the final
+ * settlement and the incentive deposit, each with its invoice. Every figure is
+ * the study's own record (shared/derive.ts billing).
+ */
 function CompletedPayments({ studyId }: { studyId: string }) {
   const real = usePlatform().studies.find((x) => x.id === studyId)
   if (!real) return null
   const b = billing(real)
-  const deposit = real.payments.filter((x) => x.kind === 'deposit').reduce((n, x) => n + x.amount, 0)
-  const balance = real.payments.filter((x) => x.kind === 'balance').reduce((n, x) => n + x.amount, 0)
+  const paid = real.payments.filter((x) => x.kind === 'deposit' || x.kind === 'balance').sort((x, y) => y.at.localeCompare(x.at))
   return (
-    <div className="pt-4">
-      <h2 className="text-title-s leading-[25px] text-text-title">Payment Overview</h2>
-      <div className="flex pt-2"><Money short label="Total Paid" value={money(deposit + balance)} /></div>
-      <div className="grid grid-cols-2 items-start gap-6 pt-5">
-        <div>
-          <h2 className="pb-2 text-title-s leading-[25px] text-text-title">Billing</h2>
-          <Billing lines={feeLines(real)}>
-            <BillLine bold line={{ label: 'Total cost', amount: money(b.total) }} />
-            <BillLine line={{ label: 'Paid: Deposit', detail: DEPOSIT_RULE, amount: `-${money(deposit)}` }} />
-            <BillLine line={{ label: 'Paid: Due Payment', amount: `-${money(balance)}` }} />
-          </Billing>
-        </div>
-        <div>
-          <h2 className="pb-3 text-title-s leading-[25px] text-text-title">Transactions</h2>
-          <div className="flex flex-col gap-2">
-            {real.payments.filter((x) => x.kind !== 'refund').map((x) => (
-              <Transaction key={x.id} title={x.kind === 'deposit' ? 'Deposit - Paid' : 'Billed Invoice - Paid'} amount={money(x.amount)} at={monthDayYearTime(x.at)} detail={x.kind === 'deposit' ? DEPOSIT_RULE : money(x.amount)} />
-            ))}
-          </div>
+    <div className="grid grid-cols-2 items-start gap-6 pt-5">
+      <div>
+        <h2 className="pb-3 text-title-s leading-[25px] text-text-title">Billing</h2>
+        <StoppedBill study={real} paid />
+      </div>
+      <div className="flex flex-col gap-3">
+        <h2 className="text-title-s leading-[25px] text-text-title">Payment Overview</h2>
+        <div className="flex gap-3"><Money short label="Deposit Paid" value={money(b.deposit)} /><Money short label="Total Cost" value={money(b.totalCost)} /></div>
+        <h2 className="pt-6 text-title-s leading-[25px] text-text-title">Transactions</h2>
+        <div className="flex flex-col gap-2">
+          {paid.map((x) => (
+            <Transaction key={x.id} action="Invoice" of={real.title} title={x.kind === 'deposit' ? 'Incentive Deposit Paid' : 'Final Settlement Due Paid'}
+              amount={money(x.amount)} at={monthDayYearTime(x.at)} detail={x.kind === 'deposit' ? DEPOSIT_RULE : 'Billed on delivery'} />
+          ))}
+          {paid.length === 0 && <p className="text-text-regular text-text-subtitle">Nothing has been paid on this study yet.</p>}
         </div>
       </div>
     </div>

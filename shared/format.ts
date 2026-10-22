@@ -55,7 +55,11 @@ export const dayOrToday = (iso?: string, now: Date = new Date()): string =>
   !iso ? '' : new Date(iso).toDateString() === now.toDateString() ? 'Today' : monthDayYear(iso)
 
 /** "$3,350", "$124.8", "-$500" */
-export const money = (n: number): string => `${n < 0 ? '-' : ''}$${Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 2 })}`
+/** "$1,250", or "$937.50" when there are cents: never "$937.5". */
+export const money = (n: number): string => {
+  const cents = Math.round(Math.abs(n) * 100) % 100 !== 0
+  return `${n < 0 ? '-' : ''}$${Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: cents ? 2 : 0, maximumFractionDigits: 2 })}`
+}
 
 export const count = (n: number): string => n.toLocaleString('en-US')
 

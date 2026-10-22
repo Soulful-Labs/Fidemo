@@ -48,9 +48,12 @@ export const FEES = [
 /** The study's own fee lines (shared/derive.ts billing), in the shape BillLine draws. */
 export const feeLines = (study: Study) => billing(study).lines.map((l) => ({ label: l.label, detail: l.sub, amount: money(l.amount), info: l.info }))
 
-export function Billing({ children, lines = FEES }: { children: ReactNode; lines?: { label: string; detail?: string; amount: string; info?: boolean }[] }) {
+export function Billing({ children, lines = FEES, top }: { children: ReactNode; lines?: { label: string; detail?: string; amount: string; info?: boolean }[]
+  /** Drawn above the lines, inside the card: the Estimated / Final switch (2325:221199, 1932:97043). */
+  top?: ReactNode }) {
   return (
     <div className="flex flex-col gap-3 rounded-lg bg-bg-1 p-4">
+      {top}
       {lines.map((line, i) => <div key={line.label} className="flex flex-col gap-3">{i > 0 && <Rule />}<BillLine line={line} /></div>)}
       <Rule />
       {children}
@@ -126,7 +129,9 @@ export default function PayTab({ study }: { study: ManagedStudy }) {
  * the quote at the target, Final is what was delivered, each down to Net
  * Payable after the deposit.
  */
-function StoppedBill({ study }: { study: Study }) {
+export function StoppedBill({ study, paid }: { study: Study
+  /** A completed, settled study (1932:97043): the last line reads "Net Payable - Paid". */
+  paid?: boolean }) {
   const [view, setView] = useState('final')
   const b = billing(study)
   const lines = view === 'final' ? b.lines : b.estimate.lines
@@ -134,13 +139,13 @@ function StoppedBill({ study }: { study: Study }) {
   const net = view === 'final' ? b.net : b.estimate.net
   return (
     <div className="flex flex-col gap-3">
-      <SegmentedTabs className="w-full" segmentClassName="flex-1" value={view} onChange={setView} items={[{ key: 'estimated', label: 'Estimated' }, { key: 'final', label: 'Final' }]} />
-      <Billing lines={lines.map((l) => ({ label: l.label, amount: money(l.amount), detail: l.sub, info: l.info }))}>
+      <Billing top={<SegmentedTabs className="w-full" segmentClassName="flex-1" value={view} onChange={setView} items={[{ key: 'estimated', label: 'Estimated' }, { key: 'final', label: 'Final' }]} />}
+        lines={lines.map((l) => ({ label: l.label, amount: money(l.amount), detail: l.sub, info: l.info }))}>
         <BillLine line={{ label: 'Total cost', amount: money(total) }} />
         <Rule />
         <BillLine line={{ label: 'Less: Incentive Deposit', amount: `-${money(b.deposit)}` }} />
         <Rule />
-        <BillLine bold line={{ label: net < 0 ? 'Credited to the next study' : 'Net Payable', amount: money(Math.abs(net)) }} />
+        <BillLine bold line={{ label: net < 0 ? 'Credited to the next study' : paid ? 'Net Payable - Paid' : 'Net Payable', amount: money(Math.abs(net)) }} />
       </Billing>
     </div>
   )
