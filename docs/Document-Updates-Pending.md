@@ -260,3 +260,122 @@ pages (console 58, client 58, respondent 51; console and client share 51, and
 26 plus a few inline. The other graphic assets (illustrations, badges,
 empty-state pictures) have not been counted. B is confirmed: the respondent's
 bottom sheets are not dialogs and stay at the bottom, as Figma draws them.
+
+## Pending, 22 October 2026, second round: profiles, attendance, cancellations, dropdowns
+
+Figma was the authority for this round. Built in all three apps where it
+applied; nothing below changes a score, a tier, a point value, a redemption
+rule or a fee.
+
+### 1. Console Matched and Invited
+
+The whole respondent card opens the full profile (Invite and View Profile keep
+their own clicks). Reviews beside Trust Score in the profile panel opens that
+participant's reviews.
+
+### 2. Attendance actions follow the participant's state (1952:79377)
+
+Console session rows, the console one-to-one bar and the client's respondent
+result: nothing recorded, Mark No-show and Mark Completed; completed, Mark
+No-show and a green "Marked completed by participant" (or "Marked completed"
+when the team or client confirmed it); a no-show, Mark Completed and a red
+"Marked as No-show". The read-backs are not buttons. Once paid, only the
+read-back is left. Surveys and diaries have no session, so no attendance
+actions; they are unchanged.
+
+### 3. Cancel Session needs a reason (console and client)
+
+- The reason is required in both dialogs; the button stays off until there is
+  one, and the store refuses an empty one.
+- The client's Cancel Session? dialog had no reason field; it has one now
+  ("Reason, sent to {name} (required)"). The console's said "(optional)"; it
+  says "(required)".
+- The reason is in the participant's "Study cancelled by client" notification
+  and is kept against the booking (`Participation.cancellations`: when, the
+  slot, who, the reason). The team sees it on the respondent's Activity tab in
+  the console ("Session cancelled by the client: {reason}").
+- Respondent Cancel Study is unchanged: no reason field, the 24 hour rule and
+  the Trust Score deduction exactly as they were.
+
+**Gaps, not built, frames needed:**
+- **The console cannot cancel a one-to-one booking.** Cancel Session exists
+  only on a group session's page. Needed: a Cancel Session control on the
+  console's Scheduled row (Recruited > Scheduled, 1952:81128) or on the booked
+  respondent page (1952:82213), and its dialog (the group one's wording would
+  serve).
+- **The client cannot cancel a seat on a group session.** The client has no
+  group session page; its Recruited > Sessions cards only open the
+  Applications list. Needed: a client session page listing the seats (the
+  console's 1952:79052 is the model) with a per-seat Cancel, or a Cancel on the
+  group respondent's result page, and its dialog.
+
+### 4. Participant names open their profile
+
+Console: names open `/participants/:id` (reported study reports, session rows
+and session activity, the respondent rail, payout and verification page
+headers, referrals and referral points, the client profile's "To participant"
+reviews); Matched cards and the Recruited, Results and Applications rows already
+did. Client: names open the profile panel, with Reviews and Invite To Study
+(Matched and Invited cards, Results, Pay, the respondent rail, Account Rating &
+Reviews, the Dashboard).
+
+**Left unclickable on purpose:**
+- **The last breadcrumb** on a person's own page (verification, payout,
+  participant profile, respondent result). It marks where you are; the header
+  name beside it is the link where the page is not the profile itself.
+- **The participant's own profile header** in the console: it is that profile.
+- **The Sub-Admin activity log.** Each entry is stored as a sentence ("Restricted
+  the account of Ruby Okoro") with no record of whom it concerns, so there is no
+  id to link. Linking it means recording the subject on every logged action.
+- **Earlier reviews on a client's record** (seeded history, for example "Noah W"
+  under Rating & Reviews): they name a participant without linking a person.
+- **The respondent app.** A participant never sees another participant's
+  profile (only their own referrals' names), so nothing there opens one.
+
+### 5. Recruited > Applications > Qualified (console and client)
+
+A Qualified row on a group study opens that person's session, which shows the
+results once it has run (1952:79377) and the scheduled session before. On a
+one-to-one study it opens Study Result: the schedule (1952:82213) before the
+session, the completed result (1952:82396) after. A qualified one-to-one
+participant who has not booked yet sees a line saying so on Study Result (not
+drawn). Applied and Disqualified rows open the screener as before. The client
+has no group session page, so a client group row opens the respondent result.
+
+### 6. Recruited > Scheduled
+
+Lists only sessions still to come or running; one that has ended leaves the
+list, to Results if completed and to Applications (Qualified) if not. A row
+opens Study Result with Scheduled For, Join Now and the Verification PIN
+(1952:82213). Console and client.
+
+### 7. Dropdowns filled, chosen from the data where Figma draws no menu
+
+| Where | Options |
+|---|---|
+| Tier, everywhere (Figma 2003:134356) | All Tiers, Platinum (90+ score), Gold (70 to 90 score), Silver (up to 70 score); the bands read from the policy's thresholds |
+| Recruited Status, console (Figma 1932:110854) | All, Applied, Qualified, Disqualified |
+| Recruited Status, client | All, then each status its pills show (Applied, Qualified, Scheduled...), because the client's table shows more than three |
+| Matched Sort (console, client) | Score (as matched), Name |
+| Matched Location (console, client) | All, then the places the people listed are in |
+| Clients list, Industry and Location | All, then what the listed clients hold |
+| Clients list, Last Active / Deactivated | All, Today, Last 7 days, This Month, Last 30 days, Last 3 months (the participants list's periods, 2003:133961) |
+| Participant verifications, Flagged for / Reported By | All, then the values in that table |
+| Client verifications | Pending: Flagged for, by reason. History: Result, Verified or Rejected (every check is a business verification, so "Flagged for" would offer one value) |
+| Participant and client profiles, Studies | the study-type filter: All, then the types listed |
+| Advanced Filters (Roles, Domain, Location, Language) | what the platform's participants hold; picking one adds its chip |
+| Client Help, Sort by | Newest first, Oldest first (a menu now, not a toggle) |
+
+Every one of these narrows what it sits over. Not changed: the Participants
+list's four dropdowns already carried Figma's options but still filter nothing;
+the respondent app had no empty or single-option dropdown.
+
+### 8. Reviews beside Trust Score
+
+Console: the profile panel (Matched) and the respondent rail (2383:135816, the
+"Reviews ›" link) open "Reviews of {name}". Client: every profile panel's
+Reviews link opens Reviews (1645:163046) for that person, built from the
+platform's ratings; it showed a drawn sample of Ferry L. before.
+
+**Outstanding: the respondent's own reviews.** The respondent app has no screen
+for the reviews clients wrote about them. For the designer to draw.
