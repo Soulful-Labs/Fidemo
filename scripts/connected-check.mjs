@@ -169,7 +169,7 @@ const alive = async () => (await R.alive()) && (await C.alive()) && (await I.ali
   const g = []
   try {
     await I.go('/internal/studies')
-    await C.click('Create Study', 800); await C.ev(FORMS)
+    await C.click('Create Study', 800); await C.click('Fill from scratch instead', 700); await C.ev(FORMS)
     await C.click('Survey')
     await C.ev(`(() => { __type(__al('Duration'), '15'); __ph('Enter title of your study', ${JSON.stringify(S.title)}); __ph('Enter study description', 'A short survey made to follow one study through all three apps.'); return true })()`)
     await C.click('Continue')

@@ -23,7 +23,9 @@ const READABLE = /\.(txt|md|csv)$/i
  * (lib/fromPrompt.ts, no model) and fills the About description, the Audience
  * and the Screener with only what the text says. Fill from scratch skips it.
  */
-export default function NewStudyDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+export default function NewStudyDialog({ open, onClose, onStart, onDone }: { open: boolean; onClose: () => void
+  /** Opened from Create Study elsewhere (app/NewStudyHost.tsx): starts the study before filling it, then moves to About. */
+  onStart?: () => void; onDone?: () => void }) {
   const toast = useToast()
   const { draft, set } = useDraft()
   const [text, setText] = useState('')
@@ -40,6 +42,7 @@ export default function NewStudyDialog({ open, onClose }: { open: boolean; onClo
 
   const generate = () => {
     if (!all || saysNothing(all)) { toast('Your description does not say what the study is about or who it is for, so nothing was filled'); return }
+    onStart?.()
     set('aiPrompt', all)
     const audience = audienceFromPrompt(all, draft)
     for (const [k, v] of Object.entries(audience.patch)) set(k as keyof typeof audience.patch, v as never)
@@ -47,7 +50,8 @@ export default function NewStudyDialog({ open, onClose }: { open: boolean; onClo
     const screened = made.length > 0 && buildScreener(made).ok
     if (screened) set('questions', made)
     toast(`Filled ${audience.filled.length} field${audience.filled.length === 1 ? '' : 's'}${screened ? ` and ${made.length} screener questions` : ''} from your description`)
-    onClose()
+    setText(''); setBrief(null)
+    if (onDone) onDone(); else onClose()
   }
 
   return (
@@ -84,7 +88,7 @@ export default function NewStudyDialog({ open, onClose }: { open: boolean; onClo
               <Button size="none" className="h-[38px] px-4" leftIcon={SPARKLE} disabled={!all} onClick={generate}>Generate and Fill</Button>
             </div>
           </div>
-          <Button variant="tertiary" size="none" className="h-[38px] self-start px-3" leftIcon={<NoteIcon className="h-5 w-5" />} onClick={onClose}>
+          <Button variant="tertiary" size="none" className="h-[38px] self-start px-3" leftIcon={<NoteIcon className="h-5 w-5" />} onClick={() => { if (onStart) { onStart(); setText(''); setBrief(null); onDone?.() } else onClose() }}>
             Fill from scratch instead
           </Button>
         </div>

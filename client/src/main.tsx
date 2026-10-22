@@ -9,6 +9,7 @@ import { PlatformClock } from './platform'
 import { SessionProvider } from './mock/session'
 import { WorkspaceProvider } from './mock/workspace'
 import { ProfileHost } from './app/ProfileHost'
+import { NewStudyHost } from './app/NewStudyHost'
 
 function Routed() {
   return useRoutes(routes)
@@ -23,7 +24,9 @@ createRoot(document.getElementById('root')!).render(
             <PlatformClock />
             <ToastHost>
               <ProfileHost>
-                <Routed />
+                <NewStudyHost>
+                  <Routed />
+                </NewStudyHost>
               </ProfileHost>
             </ToastHost>
           </CreateProvider>

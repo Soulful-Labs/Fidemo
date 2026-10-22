@@ -168,12 +168,12 @@ const aboutTitle = () => C.ev(`(__all('input').find((e) => e.placeholder === 'En
 // ---- 3. Create Study always starts a new study
 const g3 = []
 const LEFT = `Left half way ${tag}`
-await C.click('Create Study', 600); await C.ev(FORMS)
+await C.click('Create Study', 600); await C.click('Fill from scratch instead', 700); await C.ev(FORMS)
 if (await aboutTitle() !== '') g3.push('the first Create Study did not open blank')
 await C.click('Video Call')
 await C.ev(`(() => { __ph('Enter title of your study', ${JSON.stringify(LEFT)}); __ph('Enter study description', 'Typed, then left.'); return true })()`); await sleep(200)
 await C.go('/client/dashboard'); await sleep(300)
-await C.click('Create Study', 700); await C.ev(FORMS)
+await C.click('Create Study', 700); await C.click('Fill from scratch instead', 700); await C.ev(FORMS)
 if (!(await C.path()).endsWith('/create/about')) g3.push('Create Study went to ' + await C.path())
 const blank1 = { title: await aboutTitle(), description: await C.ev(`document.querySelector('textarea').value`), type: await C.ev(`[...document.querySelectorAll('[aria-pressed=true]')].map((b) => b.innerText.split('\\n')[0]).join()`) }
 if (blank1.title !== '' || blank1.description !== '') g3.push('with work in progress it opened holding ' + JSON.stringify(blank1))
@@ -184,7 +184,7 @@ await C.go('/client/studies/drafts'); await sleep(300)
 await C.click(LEFT, 700)
 if (await aboutTitle() !== LEFT) g3.push('the draft did not reopen from Drafts')
 await C.go('/client/studies'); await sleep(300)
-await C.click('Create Study', 700); await C.ev(FORMS)
+await C.click('Create Study', 700); await C.click('Fill from scratch instead', 700); await C.ev(FORMS)
 if (await aboutTitle() !== '') g3.push('with a draft open for editing it opened holding ' + JSON.stringify(await aboutTitle()))
 if ((await titles()).filter((t) => t.startsWith(LEFT)).length !== 1) g3.push('editing then Create Study left ' + (await titles()).filter((t) => t.startsWith(LEFT)).length + ' copies of the draft')
 say(3, 'Create Study opens blank even with a draft in progress', g3, `the unfinished study went to Drafts once, as "${LEFT}", and reopened from there`)
