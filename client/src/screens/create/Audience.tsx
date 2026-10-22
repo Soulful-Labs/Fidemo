@@ -8,7 +8,6 @@ import { Chip, Field, Section, TextBox } from './CreateBits'
 import { useToast } from '../../components/ui/Toast'
 import Picker from '../../components/ui/Picker'
 import { Fragment, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import PromptDialog from './PromptDialog'
 import ForecastCard from '../../components/client/ForecastCard'
 import { audienceFromPrompt } from '../../lib/fromPrompt'
@@ -17,6 +16,7 @@ import { tierOf } from '@shared/derive'
 import { AUDIENCE_LISTS, EXPERIENCE_RANGES, INCOME_RANGES, audienceFault, educationOf, gendersOf } from '@shared/studyForm'
 import { TIERS } from '@shared/rules'
 import CheckPicker from '../../components/ui/CheckPicker'
+import { SUPPORT_EMAIL, WORK_FUNCTIONS } from '@shared/platform'
 import { GoldMark, PlatinumMark, SilverMark } from '../../components/ui/icons'
 import type { StudyForm } from '@shared/studyForm'
 import { useClient, usePlatform } from '../../platform'
@@ -107,7 +107,6 @@ function Help({ text, error }: { text: string; error?: string }) {
  */
 export default function Audience() {
   const toast = useToast()
-  const navigate = useNavigate()
   const { draft, set } = useDraft()
   const [asking, setAsking] = useState(false)
   /** What the last Generate filled, and what the text did not mention, shown under the card. */
@@ -130,6 +129,8 @@ export default function Audience() {
   const genders = gendersOf(draft)
   const industries = draft.industries.split(',').map((x) => x.trim()).filter(Boolean)
   const noFunction = tried && !draft.functions.trim()
+  const functions = draft.functions.split(',').map((x) => x.trim()).filter(Boolean)
+  const tierPicks = draft.tiers.split(',').map((x) => x.trim()).filter((x) => ['Platinum', 'Gold', 'Silver'].includes(x))
   const noIndustry = tried && !draft.industries.trim()
   const check = () => { setTried(true); return audienceFault(draft) }
   const editing = useEditing()
@@ -138,8 +139,12 @@ export default function Audience() {
     functions: (
       <label className="flex flex-col gap-0.5">
         <span className="text-text-regular text-text-subtitle">{need('Work Function', true)}</span>
-        <TextBox value={draft.functions} placeholder="e.g. Product, Engineering, Marketing" onChange={(v) => set('functions', v)}
-          className={noFunction ? 'border-red-600' : undefined} />
+        {/* A dropdown of the work functions a participant picks from on their profile (22 Oct 2026; Figma draws no list), several allowed. */}
+        <CheckPicker label="Work Function" value={functions.length ? functions.join(', ') : 'Select work functions...'}
+          options={WORK_FUNCTIONS.map((w) => ({ value: w }))} picked={functions} onChange={(next) => set('functions', next.join(', '))} />
+        {functions.length > 0 && (
+          <span className="flex flex-wrap gap-2 pt-1.5">{functions.map((w) => <Chip key={w} onRemove={() => set('functions', functions.filter((x) => x !== w).join(', '))}>{w}</Chip>)}</span>
+        )}
         <Help text="The area of work, not the job title. A product manager's work function is Product." error={noFunction ? 'Enter a work function, for example Product' : undefined} />
       </label>
     ),
@@ -215,18 +220,13 @@ export default function Audience() {
                 </div>
 
                 <div className="flex flex-col gap-2">
+                  {/* The USA only (22 Oct 2026, decided scope): the field shows it and offers nothing else. */}
                   <Field label="Country">
-                    <Picker multiple picked={draft.countries} options={AUDIENCE_OPTIONS.countries}
-                      value={`${draft.countries.length} countries selected  •  Choose country...`}
-                      onPick={(v) => set('countries', draft.countries.includes(v)
-                        ? draft.countries.filter((x) => x !== v) : [...draft.countries, v])} />
+                    <Picker picked={[...AUDIENCE_OPTIONS.countries]} options={[...AUDIENCE_OPTIONS.countries]} value="1 country selected  •  USA only"
+                      onPick={() => set('countries', [...AUDIENCE_OPTIONS.countries])} />
                   </Field>
                   <div className="flex flex-wrap items-center gap-2">
-                    {draft.countries.map((c) => (
-                      <Chip key={c} onRemove={() => set('countries', draft.countries.filter((x) => x !== c))}>
-                        {FLAG[c]}{c}
-                      </Chip>
-                    ))}
+                    {AUDIENCE_OPTIONS.countries.map((c) => <Chip key={c}>{FLAG[c]}{c}</Chip>)}
                   </div>
                 </div>
 
@@ -276,24 +276,29 @@ export default function Audience() {
                     label={`Who has never participated in any study with ${client?.company || 'you'} (You) before`}
                     sub="Select this to exclude people who have previously participated in your studies" />
                 </div>
-                {/* Profile Tiers (19 Oct 2026, as drawn): one choice, each with its icon, the Trust Score it means and
-                    the share of verified, active participants at that tier or above, counted from the pool. */}
-                <Field label="Profile Tiers">
-                  <CheckPicker single label="Profile Tiers" value={draft.tiers || 'Select tiers...'} picked={[draft.tiers || 'Any tier']}
-                    onChange={([v]) => set('tiers', !v || v === 'Any tier' ? '' : v)}
-                    options={[
-                      { value: 'Any tier', label: 'Any', sub: 'For all tiers' },
-                      { value: 'Platinum only', label: 'Platinum Tier', sub: `${TIERS.platinum}+ Trust score, top ${share(['platinum'])}% of participants`, icon: <PlatinumMark className="h-6 w-6 text-tier-platinum" /> },
-                      { value: 'Gold and above', label: 'Gold Tier and above', sub: `${TIERS.gold}+ Trust score, top ${share(['gold', 'platinum'])}% of participants`, icon: <GoldMark className="h-6 w-6 text-tier-gold" /> },
-                      { value: 'Silver and above', label: 'Silver Tier and above', sub: `${TIERS.silver}+ Trust score, all participants`, icon: <SilverMark className="h-6 w-6 text-tier-silver" /> },
-                    ]} />
-                </Field>
+                {/* Profile Tiers (22 Oct 2026): several tiers, shown as tags like the other multi-select fields. Each line
+                    carries its icon, the Trust Score band and the share of the pool at that tier, counted from the pool. */}
+                <div className="flex flex-col gap-2">
+                  <Field label="Profile Tiers">
+                    <CheckPicker label="Profile Tiers" all="Any" value={tierPicks.length ? tierPicks.map((t) => `${t} Tier`).join(', ') : 'Any tier'} picked={tierPicks}
+                      onChange={(next) => set('tiers', next.filter((v) => v !== 'Any').join(', '))}
+                      options={[
+                        { value: 'Platinum', label: 'Platinum Tier', sub: `${TIERS.platinum}+ Trust score, ${share(['platinum'])}% of participants`, icon: <PlatinumMark className="h-6 w-6 text-tier-platinum" /> },
+                        { value: 'Gold', label: 'Gold Tier', sub: `${TIERS.gold} to ${TIERS.platinum} Trust score, ${share(['gold'])}% of participants`, icon: <GoldMark className="h-6 w-6 text-tier-gold" /> },
+                        { value: 'Silver', label: 'Silver Tier', sub: `${TIERS.silver} to ${TIERS.gold} Trust score, ${share(['silver'])}% of participants`, icon: <SilverMark className="h-6 w-6 text-tier-silver" /> },
+                      ]} />
+                  </Field>
+                  {tierPicks.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2">{tierPicks.map((t) => <Chip key={t} onRemove={() => set('tiers', tierPicks.filter((x) => x !== t).join(', '))}>{t} Tier</Chip>)}</div>
+                  )}
+                </div>
               </div>
             </Section>
           </div>
         </div>
 
-        <ForecastCard className="sticky top-[88px]" onContact={() => navigate('/help?panel=ask')} />
+        {/* Contact Us writes to the team from the client's own mail app (22 Oct 2026); it does not raise a support ticket. */}
+        <ForecastCard className="sticky top-[88px]" onContact={() => { window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Matching participants for ${draft.title.trim() || 'a new study'}`)}` }} />
       </div>
       <PromptDialog open={asking} onClose={() => setAsking(false)} onGenerate={generate} action="Fill Audience"
         lead="Describe your study: who you want to hear from (their job, industry, age, where they live) and what it is about." />

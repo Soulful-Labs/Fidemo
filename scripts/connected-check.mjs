@@ -127,16 +127,15 @@ const buildScreener = (qs) => `(() => {
 const AUDIENCE = { participants: '', roles: 'Oncologist, Nurse', functions: 'Consultation', skills: 'Triage', industries: 'Healthcare' }
 const fillAudience = (participants) => `(async () => {
   __type(__all('main input')[0], ${JSON.stringify(participants)})
-  await __choose(__btn('2 countries selected'), 'United Kingdom', 'Canada')
   await __choose(__btn('All Genders'), 'Female')
   await __choose(__btn('2 range selected'), '18–20', '21–29', '30–39', '40–54')
-  __ph('e.g. Product Manager', ${JSON.stringify(AUDIENCE.roles)}); __ph('e.g. Product, Engineering, Marketing', ${JSON.stringify(AUDIENCE.functions)})
+  __ph('e.g. Product Manager', ${JSON.stringify(AUDIENCE.roles)}); await __choose(__btn('Select work functions...'), ...${JSON.stringify(AUDIENCE.functions)}.split(', '))
   __ph('e.g. SQL, Figma', ${JSON.stringify(AUDIENCE.skills)}); __ph('e.g. Healthcare, Finance', ${JSON.stringify(AUDIENCE.industries)})
   __all('[role=radio]')[0].click(); await __wait()
-  __btn('Select tiers...').click(); await __wait(); [...document.querySelectorAll('[role=option]')].find((o) => o.textContent.trim().startsWith('Silver Tier')).click(); await __wait()
+  await __choose(__btn('Any tier'), 'Silver Tier')
   return true })()`
 /** Education is left as the step opens with it; the pool holds one level of education, so any other would estimate an audience of none. */
-const AUDIENCE_SHOWN = ['United States of America, Canada', 'Female', "Graduate or Bachelor's", '30–39, 40–54', 'Oncologist, Nurse', 'Consultation', 'Triage', 'Healthcare', 'Silver and above']
+const AUDIENCE_SHOWN = ['United States of America', 'Female', "Graduate or Bachelor's", '30–39, 40–54', 'Oncologist, Nurse', 'Consultation', 'Triage', 'Healthcare', 'Silver']
 
 const hours = (from, to) => `await __time('Monday from', ${JSON.stringify(from)}); await __time('Monday to', ${JSON.stringify(to)}); __al('Copy Monday').click(); await __wait(); __al('Saturday').click(); await __wait(); __al('Sunday').click(); await __wait();`
 const address = (street, city, zip) => `__ph('Office number, Building/Street name, Area', ${JSON.stringify(street)}); __ph('City, State', ${JSON.stringify(city)}); __ph('Zip Code', ${JSON.stringify(zip)}); await __wait(); __all('button').filter((b) => b.textContent.trim() === 'Add Address').pop().click(); await __wait();`
@@ -175,7 +174,7 @@ const alive = async () => (await R.alive()) && (await C.alive()) && (await I.ali
     await C.ev(`(() => { __type(__al('Duration'), '15'); __ph('Enter title of your study', ${JSON.stringify(S.title)}); __ph('Enter study description', 'A short survey made to follow one study through all three apps.'); return true })()`)
     await C.click('Continue')
     // Work Function and Industry are required; this audience is everyone in healthcare.
-    await C.ev(`(() => { __ph('e.g. Product, Engineering, Marketing', 'Consultation, Patient Care, Research'); __ph('e.g. Healthcare, Finance', 'Healthcare'); return true })()`); await sleep(150)
+    await C.ev(`(async () => { await __choose(__btn('Select work functions...'), 'Consultation', 'Patient Care', 'Research'); __ph('e.g. Healthcare, Finance', 'Healthcare'); return true })()`); await sleep(150)
     await C.click('Continue')
     await C.ev(buildScreener(THREE)); await sleep(200)
     await C.click('Continue')

@@ -152,7 +152,7 @@ export function blankForm(): StudyForm {
     type: 'in_person', groupVideo: false, groupInPerson: false,
     duration: 40, endDate: '', title: '', description: '', thumbnail: '', image: '',
     participants: '10',
-    countries: ['United States of America', 'United Kingdom'],
+    countries: ['United States of America'],
     gender: ['All Genders'], education: ["Graduate or Bachelor's"],
     ageRanges: ['18–20', '21–29'],
     roles: '', functions: '', skills: '', industries: '',
@@ -256,6 +256,15 @@ const COUNTRY_CODE: Record<string, string> = {
 const TIERS_AT: Record<string, Tier[]> = {
   'Silver and above': ['silver', 'gold', 'platinum'], 'Gold and above': ['gold', 'platinum'], 'Platinum only': ['platinum'],
 }
+/**
+ * The tiers a study asks for, or undefined for any tier. Since 22 Oct 2026 Profile Tiers takes several, kept as
+ * "Platinum, Gold"; a form saved with one of the old "... and above" choices still reads as before.
+ */
+export function tiersOf(value: string): Tier[] | undefined {
+  if (TIERS_AT[value]) return TIERS_AT[value]
+  const picked = list(value).map((t) => t.toLowerCase()).filter((t): t is Tier => t === 'silver' || t === 'gold' || t === 'platinum')
+  return picked.length ? picked : undefined
+}
 const EDUCATION_WORDS = ['high school', 'bachelor', 'master', 'doctor']
 /** The levels a form accepts. A form saved before education took several levels holds one string. */
 export const educationOf = (f: Pick<StudyForm, 'education'>): string[] =>
@@ -319,7 +328,7 @@ export function audiencePeople(state: PlatformState, f: StudyForm, now: Date = n
   const has = (mine: string[], wanted: string[]) => wanted.some((w) => mine.some((m) => m.toLowerCase().includes(w) || w.includes(m.toLowerCase())))
   const codes = f.countries.map((c) => COUNTRY_CODE[c] ?? c)
   const edu = educationOf(f).map((e) => EDUCATION_WORDS.find((w) => e.toLowerCase().includes(w))).filter((w): w is string => Boolean(w))
-  const tiers = TIERS_AT[f.tiers]
+  const tiers = tiersOf(f.tiers)
   return state.people.filter((p) => {
     if (p.status !== 'active' || p.identity.state !== 'verified') return false
     if (codes.length && !codes.some((c) => p.location.endsWith(`, ${c}`) || p.location.includes(c))) return false
@@ -610,7 +619,8 @@ export function formFromStudy(s: Study): StudyForm {
  * by the team uses the same words a client could have picked.
  */
 export const AUDIENCE_LISTS = {
-  countries: ['United States of America', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'India', 'Japan'],
+  /** The USA only: the decided scope (22 Oct 2026). */
+  countries: ['United States of America'],
   gender: ['All Genders', 'Male', 'Female', 'Other'],
   education: ['Some High School', 'High School Graduate', 'Some College, no degree', 'Associate Degree', "Graduate or Bachelor's", "Master's degree", 'Doctorate'],
   ageRanges: ['18–20', '21–29', '30–39', '40–54', '50–59', '60+'],

@@ -49,11 +49,14 @@ export function Chip({ children, onRemove }: { children: ReactNode; onRemove?: (
   return (
     <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-bg-1 px-3 text-text-regular text-text-title">
       {children}
-      <button type="button" aria-label="Remove" onClick={onRemove} className="text-text-body hover:text-text-title">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true">
-          <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        </svg>
-      </button>
+      {/* A chip that cannot be removed (the USA, the only country) draws no cross. */}
+      {onRemove && (
+        <button type="button" aria-label="Remove" onClick={onRemove} className="text-text-body hover:text-text-title">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true">
+            <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </button>
+      )}
     </span>
   )
 }
@@ -77,12 +80,13 @@ export function TierBar({ label, value, colour }: { label: string; value: number
  * options follow below them (nothing beyond the drawn rows is invented).
  */
 export const AUDIENCE_OPTIONS = {
-  countries: ['United States of America', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'India', 'Japan'],
+  /** The USA only: the decided scope (22 Oct 2026). */
+  countries: AUDIENCE_LISTS.countries,
   /** Stored as the profile's own word ("Other"); the popover writes "Others". */
   gender: ['Male', 'Female', 'Other'],
   education: ['Some High School', 'High School Graduate', 'Some College, no degree', 'Associate Degree', "Graduate or Bachelor's", "Master's degree", 'Doctorate'],
   ageRanges: ['18–20', '21–29', '30–39', '40–54', '50–59', '60+'],
   /** Industries (popover drawn with search): its four rows, then the industries the platform's profiles and onboarding already use. */
   industries: AUDIENCE_LISTS.industries,
-  tiers: ['Any tier', 'Silver and above', 'Gold and above', 'Platinum only'],
+  tiers: ['Platinum', 'Gold', 'Silver'],
 }

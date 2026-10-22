@@ -88,7 +88,7 @@ export default function CheckPicker({
                 </Row>
                 </Fragment>
               ) : (
-                <Row key={o.value} on={on} onClick={() => toggle(o.value)}><Box on={on} />{o.label ?? o.value}</Row>
+                <Row key={o.value} on={on} tall={Boolean(o.sub)} onClick={() => toggle(o.value)}><Box on={on} />{o.icon}{o.sub ? <span className="flex flex-1 flex-col"><span>{o.label ?? o.value}</span><span className="text-text-regular text-text-subtitle">{o.sub}</span></span> : (o.label ?? o.value)}</Row>
               )
             })}
             {search && q.trim() && !options.some((o) => (o.label ?? o.value).toLowerCase() === q.trim().toLowerCase()) && (

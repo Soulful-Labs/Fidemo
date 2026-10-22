@@ -129,6 +129,9 @@ export function quoteStudy(type: StudyType, required: number, incentivePer: numb
 }
 
 /** What a profile can say about someone's work. A study's audience names these in its own words; a match is the same words, ignoring case. */
+/** Where a client writes to the team (22 Oct 2026: Contact Us opens the mail client with it, not a support ticket). */
+export const SUPPORT_EMAIL = 'support@humanlayer.app'
+
 export const WORK_FUNCTIONS = ['Consultation', 'Patient Care', 'Research', 'Engineering', 'Product', 'Design', 'Marketing', 'Sales', 'Operations', 'Finance', 'Teaching', 'Management']
 export const SKILLS = ['Diagnosis', 'Triage', 'Clinical Research', 'Programming', 'Data Analysis', 'Writing', 'Public Speaking', 'Budgeting', 'Forecasting', 'Project Management', 'Coaching', 'Negotiation']
 
