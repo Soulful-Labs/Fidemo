@@ -468,3 +468,80 @@ the console; their screen says so.
   Gold Tier, Platinum Tier.
 - **Payout and transaction pagers** drew ten pages whatever the rows; they now
   count the rows.
+
+## Pending, 22 October 2026, fourth round: the client app, from Figma
+
+Figma was the authority for this round.
+
+### Built
+
+1. **Dashboard** (`826:85021`): the top row is three equal columns; Upcoming
+   Sessions, Super Insights and Needs Your Attention are the same width and
+   none moved. Needs Your Attention has no View All (it shows three rows).
+   Ongoing Studies and Recommended Respondents show three cards across at
+   least, and one more for every 340px the screen allows (four at 1920).
+   Avg. Session Incentive keeps its cents ($101.67, was $101.7).
+2. **Dashboard, Ongoing Studies menus** open the same Ongoing study options as
+   the Studies list (Copy Study Link, Pause or Resume, Stop-complete,
+   Duplicate to Drafts), each with its own confirmation.
+3. **Participant cards**: the whole card opens the profile, everywhere (Pool,
+   Matched and Invited, Invite From Pool, Dashboard); its buttons keep their
+   own clicks.
+4. **Reviews** in every profile panel opens that person's reviews
+   (`1645:163046`). The respondent result rail also gains Reviews beside
+   Trust Score, as the console's.
+5. **New Study** opens over the screen Create Study was pressed on. Closing it
+   leaves the client there; Generate and Fill or Fill from scratch start the
+   study (anything in progress goes to Drafts first) and open About.
+6. **Create header** (`1622:81504`): three parts, the title truncated with its
+   full text on hover, the stepper centred in a white track of outlined chips.
+7. **Stepper**: every step already reached, and every earlier step, can be
+   clicked; a draft reopened from Drafts can reach every step.
+8. **Wide screens**: at 1600px and wider the step's content and its preview or
+   forecast card sit side by side and are centred together; at 1440 Figma's
+   left alignment stays.
+9. **Audience, Contact Us** opens the mail client (`mailto:support@humanlayer.app`,
+   subject "Matching participants for {study}"). **The address is new**: the
+   build had no support address, so one on the decided domain was used.
+   Please confirm or give the right one.
+10. **Country** is the USA only, shown as a fixed chip; every study saves the
+    USA whatever an older draft held.
+11. **Work Function** is a dropdown, several allowed, shown as tags. **Figma
+    draws no list**, so it offers the participant profile's own work functions
+    (so a study only asks for what someone can pick): Consultation, Patient
+    Care, Research, Engineering, Product, Design, Marketing, Sales, Operations,
+    Finance, Teaching, Management.
+12. **Profile Tiers** takes several tiers, shown as tags: Platinum, Gold,
+    Silver, each with its band and its share of the pool. A study saved with an
+    old "... and above" choice still reads as before.
+13. **Study setup, in person and video** (`1518:93678`, `1518:93042`): the
+    composer alone at Figma's 700px, with no settings card beside it and no
+    Submit of its own; Continue in the top bar submits it and moves to
+    Pricing. Minimum notice is a number and a unit (Minutes, Hours, Days).
+    Saved address rows with edit and delete, Limits, Weekly Hours with add,
+    duplicate and a second slot per day, and Date Overrides with its rows were
+    already there. The Completion Verification note is added, worded for the
+    single verification PIN the platform issues; Figma's text speaks of
+    check-in and check-out codes, which the platform does not have.
+
+### Across the app
+
+- **A, typography and colour**: the 21 October audit's fixes stand; the
+  screens changed this round were matched to their frames. The sidebar and
+  landing wordmark is Title-L-24 in black (`290:15869`).
+- **B, dropdowns**: every client dropdown now opens the same menu (a rounded
+  panel with the menu shadow, 38px rows, the chosen one on yellow at 20%); the
+  simpler Picker menus were brought into line. There are no native dropdowns.
+- **C, spacing**: matched on the screens changed this round; no full sweep of
+  every screen was made in this round.
+- **Brand outside the app**: the client landing header and footer carry the H
+  mark and the black wordmark; the five landing pictures were retaken. The
+  console's entrance already carries its own lock-up and has no footer.
+
+### For the designer
+
+- Figma draws the client lock-up as the wordmark alone; by decision it now
+  carries the H mark like the console and the respondent app.
+- Work Function has no drawn list (see 11).
+- The Completion Verification wording (see 13).
+- The Create stepper has a fifth step, Pricing (15 Oct 2026); Figma draws four.
