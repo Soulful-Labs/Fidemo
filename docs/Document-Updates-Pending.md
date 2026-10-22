@@ -379,3 +379,92 @@ platform's ratings; it showed a drawn sample of Ferry L. before.
 
 **Outstanding: the respondent's own reviews.** The respondent app has no screen
 for the reviews clients wrote about them. For the designer to draw.
+
+## Pending, 22 October 2026, third round: console, from Figma
+
+Figma was the authority for this round; the Trust and Rewards Policy outranks
+it on scores, tiers, points, ratings and the certificate. The policy now lives
+on as `docs/Trust-and-Rewards-Policy-v2.html` (the signed original is
+unchanged).
+
+**PRD Section 6 reproduces the policy in full and now needs updating to match
+v2.** The PRD itself has not been edited.
+
+### Built
+
+1. **Completed study, Payments** (`1932:97043`, redrawn): Billing with
+   Estimated and Final, down to "Net Payable - Paid"; Payment Overview with
+   Deposit Paid and Total Cost; Transactions, the final settlement and the
+   incentive deposit, each with Invoice. Amounts keep their cents ("$937.50",
+   never "$937.5"), everywhere.
+2. **Reported Studies, History** (`2314:147851`): View Support Ticket on every
+   resolved round; a round resolved without a ticket gets one when it is first
+   opened, kept against the round. A reporter's name opens their profile in a
+   pop-up, on Pending and History.
+3. **Studies in the participant profile**: every row opens the study as it
+   stands for that participant. Invited to apply: the study's Invited list.
+   Invited to schedule or complete, Scheduled, Applied, History: their own
+   page on the study (the screener while applied or disqualified, the result
+   after). Saved without taking part (and drafts): the study itself. A
+   completed study opens as completed. Reward Points rows for a study open the
+   same way. **None left unclickable.**
+4. **Wallet, Transaction Details**: shows the earning itself (it was a drawn
+   sample); the study card opens that participant's completion result. A
+   points redemption has no study card. The wallet and points balances are the
+   participant's own (they were drawn figures). Wallet tables page at ten.
+5. **Verifications, Reported** (`2036:144297`): View Study and the Reported By
+   card now show on a pending report too; Reported By opens the reporting
+   client's profile; the header carries the participant's real certificate ID
+   (it was the drawn "HL-R-9F2A-3K7P"). **Nobody is ever reported by the
+   system**: the three seeded reports that were are now credited to the
+   clients whose studies they came from, and "System (Algo)" is gone from the
+   lists, History and the Dashboard. Flagged For, Reported By and Result offer
+   the values their tables hold. Pagers count the real rows (they always drew
+   ten pages).
+6. **Clients list**: built in the previous round. Industry and Location offer
+   what the listed clients hold; Last Active offers All, Today, Last 7 days,
+   This Month, Last 30 days, Last 3 months (the participants list's periods,
+   `2003:133961`); all three filter.
+7. **Deactivating a client** (no frame): refused while a study is recruiting,
+   ongoing or paused, or an invoice is unpaid. The alert follows the client
+   app's "Your account has active studies!" (`1684:129433`): "{Company} has
+   active studies!", naming every study and invoice in the way, and Got It!.
+   The store refuses it too.
+8. **Finance, a participant payout** opens Payout Details (`2317:160127`), not
+   Transaction Details.
+9. **Edit Client Fees** saves. The add-ons' edit and delete work; Create
+   Add-on works; Save Changes first asks "Publish these changes live?" (the
+   console's standard dialog; no frame draws this one), saying the fees go
+   live for every client and that a study already created keeps its fees;
+   then "Changes are published live!" (`2058:193905`).
+10. **Edit Trust Score** as `2058:196166`: Earned For (Onboarding, Per Study
+    Completion with its total, Max Study per year, 5/4/3 star), Deducted For
+    (2/1 star, No Show, Late Show Up, Cancelled Session, Fraud), Important to
+    know. It saves, with the same warning and confirmation. Edit Tiers and
+    Edit Reward Points save the same way, so the build agrees with policy v2.
+
+### How a saved value behaves (policy v2 section 10)
+
+Only a master admin can save; a sub-admin with Pricing & Rewards access is
+refused. Every change is recorded with who and when (`settingsLog`, and the
+Sub-Admin activity log: "Changed the client fees"). A change applies only from
+then on: each Trust Score and points event counts at the value in force when it
+happened, so no existing score or balance moves; a study keeps the rates it was
+created with, so no agreed price moves. The participant fees (withdrawal fee,
+points value, redemption minimum) are policy section 4 and are not saved from
+the console; their screen says so.
+
+### For the designer
+
+- **No Show is -4, not the frame's -2** (`2058:196166`). Cancelling properly
+  costs 2; if not turning up also cost 2 there would be no reason to cancel
+  rather than ghost. Please redraw the field at -4.
+- **The publish warning has no frame.** Built as the console's standard
+  titled 460 dialog: "Publish these changes live?", Cancel / Yes, Publish Live.
+- **The client deactivation refusal has no console frame.** Built from the
+  client app's alert (`1684:129433`), in orange.
+- **Edit Tiers' field labels** were drawn "Withdrawal" and "Reward Points
+  Value" for Silver and Gold; now that the screen saves they read Silver Tier,
+  Gold Tier, Platinum Tier.
+- **Payout and transaction pagers** drew ten pages whatever the rows; they now
+  count the rows.
