@@ -11,6 +11,7 @@ import { useSession } from '../mock/session'
 import { useWorkspace } from '../mock/workspace'
 import { notificationRoute } from '../lib/notificationRoute'
 import { useStudies } from '../platform'
+import { LogoMark } from '../components/ui/Logo'
 
 /** The left navigation, in the order drawn on every 1440 frame. */
 const NAV = [
@@ -34,8 +35,8 @@ export function SideNav() {
     <nav className="sticky top-0 flex h-screen max-h-[960px] w-nav shrink-0 flex-col border-r-1 border-stroke-warm bg-yellow-20">
       {/* The wordmark sits over the same rule the top bar ends on (y 68 in every 13 Oct 2026 export). */}
       <div className="flex h-[68px] shrink-0 items-center border-b-1 border-stroke-warm pl-7">
-        {/* HumanLayer in every sidebar of the 19 Oct 2026 export (Sidebard). */}
-        <span className="text-title-l text-text-title">HumanLayer</span>
+        {/* HumanLayer in every sidebar (Sidebard 290:15869): Title-L-24, Geist Semibold 24, line 100%, -2%, in black. Figma draws the wordmark alone; by decision (22 Oct 2026) the H mark goes before it, as the console's lock-up: 26 x 32, 14 apart. */}
+        <span className="flex items-center gap-[14px]"><LogoMark className="h-8 w-[26px]" /><span className="text-title-l text-text-wordmark">HumanLayer</span></span>
       </div>
 
       <ul className="flex flex-1 flex-col gap-1.5 pl-4 pr-[18px] pt-5">
