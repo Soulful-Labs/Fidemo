@@ -185,7 +185,7 @@ const myState = () => st(`s.studies.find((x) => x.id === ${JSON.stringify(S.id)}
 }
 
 // ---- 3. A restricted participant cannot redeem, apply, attend or submit, and is told why and until when
-const report = (id) => `s.reports.push({ id: '${id}', personId: 'jonathan', reportedBy: 'system', reason: 'Spam Apply', detail: 'Applied to 12 unrelated studies within an hour', at: new Date().toISOString() })`
+const report = (id) => `s.reports.push({ id: '${id}', personId: 'jonathan', reportedBy: 'cl-lumen', reason: 'Spam Apply', detail: 'The same copied answers were given to every screener question', at: new Date().toISOString() })`
 async function restrictInConsole(id, statement) {
   await I.open(`/internal/participants/verifications/${id}`)
   await I.click('Restrict Account', 500)

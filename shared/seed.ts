@@ -26,7 +26,7 @@ import type {
   Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudyReport, StudySetup, StudyType, TeamMember, Ticket,
 } from './types'
 
-export const SEED_VERSION = 13
+export const SEED_VERSION = 14
 export const DEMO_PERSON_ID = 'jonathan'
 export const DEMO_PERSON_EMAIL = 'jonathan.reeve@example.com'
 export const DEMO_CLIENT_ID = 'cl-soulful'
@@ -621,11 +621,11 @@ export function buildSeed(now: Date = new Date()): PlatformState {
   // ---------------------------------------------------------------- reports
 
   const reports: Report[] = [
-    { id: 'rp-1', personId: 'maya-j', reportedBy: 'system', reason: 'AI/Bot Activity', detail: 'Study answers were found AI-generated', studyId: 'st-social', at: at(-1, 10, 21) },
+    { id: 'rp-1', personId: 'maya-j', reportedBy: DEMO_CLIENT_ID, reason: 'AI/Bot Activity', detail: 'Study answers were found AI-generated', studyId: 'st-social', at: at(-1, 10, 21) },
     { id: 'rp-2', personId: 'gen-14', reportedBy: 'cl-lumen', reason: 'Abusive Behaviour', detail: 'Used abusive language towards the moderator during the session', studyId: 'st-08', at: at(-2, 14, 0) },
-    { id: 'rp-3', personId: 'gen-25', reportedBy: 'system', reason: 'Spam Apply', detail: 'Applied to 14 unrelated studies within an hour', at: at(-2, 9, 30) },
+    { id: 'rp-3', personId: 'gen-25', reportedBy: 'cl-lumen', reason: 'Spam Apply', detail: 'The same copied answers were given to every screener question', studyId: 'st-08', at: at(-2, 9, 30) },
     { id: 'rp-4', personId: 'gen-07', reportedBy: DEMO_CLIENT_ID, reason: 'Wrong Match', detail: 'Stated role does not match the answers given in the screener', studyId: 'st-pay', at: at(-4, 16, 15) },
-    { id: 'rp-5', personId: 'gen-22', reportedBy: 'system', reason: 'Spam Apply', detail: 'Applied to 11 unrelated studies within an hour', at: at(-5, 9, 0), outcome: 'restricted', note: 'Restricted for 15 days as for the 1st time.', decidedAt: at(-3, 16, 0), decidedBy: 'tm-james' },
+    { id: 'rp-5', personId: 'gen-22', reportedBy: 'cl-procto', reason: 'Spam Apply', detail: 'Screener answers were pasted in from another study', studyId: 'st-29', at: at(-5, 9, 0), outcome: 'restricted', note: 'Restricted for 15 days as for the 1st time.', decidedAt: at(-3, 16, 0), decidedBy: 'tm-james' },
     { id: 'rp-6', personId: 'gen-21', reportedBy: 'cl-procto', reason: 'AI/Bot Activity', detail: 'Study answers were found AI-generated', studyId: 'st-29', at: at(-9, 10, 0), outcome: 'deactivated', note: 'Deactivated the account.', decidedAt: at(-6, 12, 0), decidedBy: 'tm-maya' },
     { id: 'rp-7', personId: 'gen-30', reportedBy: 'cl-meadow', reason: 'Wrong Match', detail: 'Reported as not a daily coffee drinker', studyId: 'st-25', at: at(-14, 10, 0), outcome: 'rejected', note: 'Screener answers support the stated habit; report rejected.', decidedAt: at(-12, 9, 30), decidedBy: 'tm-james' },
   ]

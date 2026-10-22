@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { IconButton } from '../../../components/ui/Button'
 import { SearchInput, Select } from '../../../components/ui/Input'
 import { ListIcon } from '../../../components/ui/icons'
-import Table, { Pagination } from '../../../components/ui/Table'
+import Table from '../../../components/ui/Table'
 import { UnderlineTabs } from '../../../components/ui/Tabs'
 import { cn } from '../../../lib/cn'
 import { PERIODS, SORTS } from '../../../mock/profile'
@@ -11,6 +11,7 @@ import { EarningsFilters, PayoutDetails, PointsFilters, TransactionDetails } fro
 import PersonLink from '../../../components/app/PersonLink'
 import { useNavigate } from 'react-router-dom'
 import { count, money } from '@shared/format'
+import { usePaged } from '../../../components/ui/Table'
 
 export type WalletSub = 'earnings' | 'payouts' | 'points' | 'referrals'
 export const WALLET_SUBS = [{ key: 'earnings', label: 'Earnings' }, { key: 'payouts', label: 'Payouts' }, { key: 'points', label: 'Reward Points' }, { key: 'referrals', label: 'Referrals' }]
@@ -41,6 +42,7 @@ export default function WalletTab({ sub, onSub, view }: { sub: WalletSub; onSub:
   /** The payout row that was clicked: Payout Details shows that one. */
   const [payout, setPayout] = useState<ProfileView['PAYOUTS'][number] | null>(null)
   const close = () => setDialog(null)
+  const earnPage = usePaged(EARNINGS), payPage = usePaged(PAYOUTS), pointPage = usePaged(POINTS)
   const navigate = useNavigate()
   const [tx, setTx] = useState<ProfileView['EARNINGS'][number] | null>(null)
   const f = view.figures
@@ -53,13 +55,13 @@ export default function WalletTab({ sub, onSub, view }: { sub: WalletSub; onSub:
         <div className="pt-5">
           <Balance label="Wallet Balance" value={money(f.walletBalance)} total={money(f.allTimeEarned)} />
           <div className="flex gap-3 pb-3 pt-5"><SearchInput size="sm" placeholder="Search transaction..." /><Period w="w-60" /><FilterButton onClick={() => setDialog('earnFilter')} /></div>
-          <Table empty="Earnings will appear here once a study is paid." rowHeight={52} rows={EARNINGS} rowKey={(r) => r.id} onRowClick={(r) => { setTx(r); setDialog('tx') }} columns={[
+          <Table empty="Earnings will appear here once a study is paid." rowHeight={52} rows={earnPage.rows} rowKey={(r) => r.id} onRowClick={(r) => { setTx(r); setDialog('tx') }} columns={[
             { key: 'what', header: 'Particular', width: '1fr', render: (r) => <span className="-ml-1">{r.what}</span> },
             { key: 'when', header: 'Date - Time', width: 260, sortable: true, render: (r) => <When day={r.day} time={r.time} /> },
             { key: 'id', header: 'Transaction ID', width: 200, render: (r) => r.id },
             { key: 'amount', header: 'Amount', width: 200, sortable: true, render: (r) => <span className="text-state-success">{r.amount}</span> },
           ]} />
-          <div className="pt-3"><Pagination page={1} pages={10} /></div>
+          <div className="pt-3">{earnPage.pager}</div>
         </div>
       )}
       {sub === 'payouts' && (
@@ -75,13 +77,13 @@ export default function WalletTab({ sub, onSub, view }: { sub: WalletSub; onSub:
           </div>
           <H>Payout History</H>
           <div className="flex gap-3 pb-3"><SearchInput size="sm" placeholder="Search transaction..." /><Period w="w-60" /><Sort /></div>
-          <Table empty="Withdrawals will appear here." rowHeight={52} rows={PAYOUTS} rowKey={(r) => r.key} onRowClick={(r) => { setPayout(r); setDialog('payout') }} columns={[
+          <Table empty="Withdrawals will appear here." rowHeight={52} rows={payPage.rows} rowKey={(r) => r.key} onRowClick={(r) => { setPayout(r); setDialog('payout') }} columns={[
             { key: 'when', header: 'Date - Time', width: 316, sortable: true, render: (r) => <When day={r.day} time={r.time} /> },
             { key: 'to', header: 'To', width: 244, render: (r) => r.to }, { key: 'id', header: 'Transaction ID', width: 200, render: (r) => r.id },
             { key: 'amount', header: 'Amount', width: 200, sortable: true, render: (r) => <span className="text-text-medium">{r.amount}</span> },
             { key: 'status', header: 'Status', width: '1fr', render: (r) => <Pill good={r.status === 'Completed'}>{r.status}</Pill> },
           ]} />
-          <div className="pt-3"><Pagination page={1} pages={10} /></div>
+          <div className="pt-3">{payPage.pager}</div>
         </div>
       )}
       {sub === 'points' && (
@@ -90,12 +92,12 @@ export default function WalletTab({ sub, onSub, view }: { sub: WalletSub; onSub:
           <Balance green label="Balance" value={count(f.points)} total={count(earnedPoints)} />
           <H>Points History</H>
           <div className="flex gap-3 pb-3"><SearchInput size="sm" placeholder="Search transaction..." /><Period w="w-60" /><Sort /><FilterButton onClick={() => setDialog('pointFilter')} /></div>
-          <Table empty="Reward points will appear here as they are earned." rowHeight={52} rows={POINTS} rowKey={(r) => r.key} onRowClick={(r) => { if (r.opens) navigate(r.opens) }} columns={[
+          <Table empty="Reward points will appear here as they are earned." rowHeight={52} rows={pointPage.rows} rowKey={(r) => r.key} onRowClick={(r) => { if (r.opens) navigate(r.opens) }} columns={[
             { key: 'what', header: 'Particulars', width: '1fr', render: (r) => <span className="-ml-1 flex gap-2"><span className="text-text-medium">{r.kind}</span><span aria-hidden="true">•</span>{r.personId ? <PersonLink id={r.personId}>{r.what}</PersonLink> : r.what}</span> },
             { key: 'when', header: 'Date - Time', width: 260, sortable: true, render: () => <When day="Jul 22, 2026" time="11:00 PM" /> },
             { key: 'points', header: 'Points', width: 200, sortable: true, render: (r) => <span className="text-body-regular text-state-success">{r.points}</span> },
           ]} />
-          <div className="pt-3"><Pagination page={1} pages={10} /></div>
+          <div className="pt-3">{pointPage.pager}</div>
           <H>Redeem History</H>
           <div className="flex gap-3 pb-3"><SearchInput size="sm" placeholder="Search transaction..." /><Period w="w-60" /></div>
           <Table empty="Redeemed points will appear here." rowHeight={52} rows={REDEEMS} rowKey={(r) => r.key} columns={[

@@ -102,7 +102,7 @@ export function Select({ label, value, onChange, options, placeholder, className
           <ChevronDown className={cn('pointer-events-none absolute right-3 h-5 w-5 text-text-title transition-transform duration-150', open && 'rotate-180')} />
         </button>
         {open && (
-          <div role="listbox" className="absolute left-0 right-0 top-[calc(100%+4px)] z-30 flex max-h-72 flex-col overflow-auto rounded-md border-1 border-stroke-input bg-bg-0 py-1 shadow-menu">
+          <div role="listbox" className="absolute left-0 right-0 top-[calc(100%+4px)] z-30 flex max-h-72 flex-col overflow-auto [&>*]:shrink-0 rounded-md border-1 border-stroke-input bg-bg-0 py-1 shadow-menu">
             {options.map((o) => <MenuItem key={o} on={o === value} onClick={() => { onChange?.(o); setOpen(false) }}>{o}</MenuItem>)}
           </div>
         )}

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
 import { ChevronLeft, ChevronRight, SortIcon } from './icons'
@@ -66,4 +67,12 @@ export function Pagination({ page, pages, onChange }: { page: number; pages: num
       <button type="button" aria-label="Next page" onClick={() => onChange?.(Math.min(pages, page + 1))} className={cn(sq, 'border-1 border-cta-tertiaryStroke')}><ChevronRight className="h-5 w-5" /></button>
     </nav>
   )
+}
+
+/** A table's rows ten to a page, and the pager that moves through them: never more pages than there are rows. */
+export function usePaged<T>(rows: T[], size = 10): { rows: T[]; pager: ReactNode } {
+  const [page, setPage] = useState(1)
+  const pages = Math.max(1, Math.ceil(rows.length / size))
+  const p = Math.min(page, pages)
+  return { rows: rows.slice((p - 1) * size, p * size), pager: <Pagination page={p} pages={pages} onChange={setPage} /> }
 }

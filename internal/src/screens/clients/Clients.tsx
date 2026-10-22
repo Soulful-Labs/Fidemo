@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import { SearchInput, Select } from '../../components/ui/Input'
-import Table, { Pagination } from '../../components/ui/Table'
+import Table from '../../components/ui/Table'
 import type { Column } from '../../components/ui/Table'
 import { SegmentedTabs } from '../../components/ui/Tabs'
 import { useClients } from '../../mock/clients'
 import type { Client } from '../../mock/clients'
 import { inPeriod, PERIODS } from '../../mock/clients'
+import { usePaged } from '../../components/ui/Table'
 
 const columns = (last: string): Column<Client>[] => [
   { key: 'name', header: 'Name', width: 200, sortable: true, render: (r) => <span className="flex items-center gap-2"><img src={r.photo} alt="" className="h-6 w-6 rounded-full object-cover" />{r.name}</span> },
@@ -34,7 +35,8 @@ export default function Clients() {
   const [place, setPlace] = useState('All')
   const [period, setPeriod] = useState('All')
   const options = (k: 'industry' | 'location') => [...new Set(everyone.map((r) => r[k]).filter(Boolean))].sort()
-  const rows = everyone.filter((r) => (industry === 'All' || r.industry === industry) && (place === 'All' || r.location === place) && inPeriod(r.at, period))
+  const found = everyone.filter((r) => (industry === 'All' || r.industry === industry) && (place === 'All' || r.location === place) && inPeriod(r.at, period))
+  const paged = usePaged(found)
   return (
     <AppShell crumbs={[{ label: 'Clients' }]}>
       <SegmentedTabs className="w-[280px]" segmentClassName="flex-1 min-w-0" value={off ? 'deactivated' : 'active'} onChange={(k) => setParams(k === 'active' ? {} : { tab: k }, { replace: true })}
@@ -46,8 +48,8 @@ export default function Clients() {
         <Select size="sm" className="w-[190px] shrink-0" value={`Location: ${place}`} options={['Location: All', ...options('location').map((o) => `Location: ${o}`)]} onChange={(v) => setPlace(v.replace('Location: ', ''))} />
         <Select size="sm" className="w-[190px] shrink-0" value={`${last}: ${period}`} options={[`${last}: All`, ...PERIODS.map((p) => `${last}: ${p}`)]} onChange={(v) => setPeriod(v.replace(`${last}: `, ''))} />
       </div>
-      <Table empty={everyone.length ? 'No client matches these filters.' : off ? 'Clients whose accounts are deactivated will appear here.' : 'Clients will appear here once they sign up.'} className="mt-3" rowHeight={52} rows={rows} rowKey={(r) => r.id} onRowClick={(r) => navigate(`/clients/${r.id}`)} columns={columns(last)} />
-      <div className="pt-3"><Pagination page={1} pages={10} /></div>
+      <Table empty={everyone.length ? 'No client matches these filters.' : off ? 'Clients whose accounts are deactivated will appear here.' : 'Clients will appear here once they sign up.'} className="mt-3" rowHeight={52} rows={paged.rows} rowKey={(r) => r.id} onRowClick={(r) => navigate(`/clients/${r.id}`)} columns={columns(last)} />
+      <div className="pt-3">{paged.pager}</div>
     </AppShell>
   )
 }

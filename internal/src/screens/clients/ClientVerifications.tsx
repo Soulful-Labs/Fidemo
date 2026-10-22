@@ -4,7 +4,7 @@ import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import { SearchInput } from '../../components/ui/Input'
 import { CloseIcon, SupportIcon, VerifiedIcon } from '../../components/ui/icons'
-import Table, { Pagination } from '../../components/ui/Table'
+import Table from '../../components/ui/Table'
 import type { Column } from '../../components/ui/Table'
 import { SegmentedTabs, UnderlineTabs } from '../../components/ui/Tabs'
 import { cn } from '../../lib/cn'
@@ -18,6 +18,7 @@ import DecisionFlow from '../participants/verifications/dialogs'
 import type { Decision, Step } from '../participants/verifications/dialogs'
 import { ClientAbout, ClientHeader } from './parts'
 import { useFacet } from '../participants/verifications/VerificationsList'
+import { usePaged } from '../../components/ui/Table'
 
 const col = (key: keyof ClientCheck, header: string, width: number | string, sortable = false): Column<ClientCheck> => ({ key, header, width, sortable, render: (r) => <span className="block truncate">{r[key]}</span> })
 const who: Column<ClientCheck> = { key: 'name', header: 'Name', width: 200, sortable: true, render: (r) => <span className="flex items-center gap-2"><img src={r.photo} alt="" className="h-6 w-6 rounded-full object-cover" />{r.name}</span> }
@@ -37,6 +38,7 @@ export function ClientVerificationsList() {
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const history = params.get('tab') === 'history'
+  const paged = usePaged<ClientCheck>(history ? CLIENT_HISTORY : CLIENT_PENDING)
   const open = (r: ClientCheck) => navigate(`/clients/verifications/${r.id}`)
   return (
     <AppShell crumbs={[{ label: 'Verifications' }]}>
@@ -45,10 +47,10 @@ export function ClientVerificationsList() {
       <h2 className="pb-2 pt-4 text-title-s leading-[25px] text-text-title">{history ? 'History' : count}</h2>
       <div className="flex gap-4 pb-[15px]"><SearchInput size="sm" placeholder="Search participants by name or role..." />{history ? historyBy : pendingBy}</div>
       {history
-        ? <Table empty="Business verifications you have decided will appear here." rowHeight={52} rows={CLIENT_HISTORY} rowKey={(r) => r.id} onRowClick={open} columns={[who, col('role', 'Role', 220), col('date', 'Completed', 130, true), flag, col('reason', 'Verification Remarks', '1fr'),
+        ? <Table empty="Business verifications you have decided will appear here." rowHeight={52} rows={paged.rows} rowKey={(r) => r.id} onRowClick={open} columns={[who, col('role', 'Role', 220), col('date', 'Completed', 130, true), flag, col('reason', 'Verification Remarks', '1fr'),
           { key: 'result', header: 'Result', width: 120, render: (r) => <span className={cn('inline-flex h-7 items-center rounded-full px-2.5 text-text-regular', r.result === 'Verified' ? 'bg-state-successBg text-state-success' : 'bg-orange-100 text-state-destructive')}>{r.result}</span> }]} />
-        : <Table empty="Business checks that need a person will appear here." rowHeight={52} rows={CLIENT_PENDING} rowKey={(r) => r.id} onRowClick={open} columns={[who, col('role', 'Role', 240), col('date', 'Date', 130, true), flag, col('reason', 'Reason', '1fr')]} />}
-      <div className="border-b-1 border-stroke-1 pb-10 pt-3"><Pagination page={1} pages={10} /></div>
+        : <Table empty="Business checks that need a person will appear here." rowHeight={52} rows={paged.rows} rowKey={(r) => r.id} onRowClick={open} columns={[who, col('role', 'Role', 240), col('date', 'Date', 130, true), flag, col('reason', 'Reason', '1fr')]} />}
+      <div className="border-b-1 border-stroke-1 pb-10 pt-3">{paged.pager}</div>
     </AppShell>
   )
 }

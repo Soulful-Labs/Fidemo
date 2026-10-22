@@ -40,15 +40,19 @@ const Note = ({ tone, title, children, when }: { tone: 'good' | 'bad' | 'warn'; 
 const Label = ({ children }: { children: string }) => <p className="text-text-regular leading-5 text-text-subtitle">{children}</p>
 
 /** One report against a participant: what, when, by whom, and the decision once taken. */
-function Report({ decided, children, reason, detail, at, by, onStudy }: { decided: boolean; children?: ReactNode; reason: string; detail: string; at: string; by: string; onStudy?: () => void }) {
+/**
+ * One report (2036:144297): the category, the finding, View Study, the date and the Reported By card, pending
+ * or decided alike (22 Oct 2026). The card opens the reporting client's profile.
+ */
+function Report({ decided, children, reason, detail, at, by, onStudy, onBy }: { decided: boolean; children?: ReactNode; reason: string; detail: string; at: string; by: string; onStudy?: () => void; onBy?: () => void }) {
   return (
     <section className={cn('rounded-lg p-4 text-text-regular leading-5', decided ? 'bg-bg-1' : 'bg-yellow-40')}>
       <h3 className="text-body-medium leading-[22px] text-text-title">{reason}</h3>
       <p className="pt-2 text-text-title">{detail}</p>
-      {decided && <Button variant="tertiary" size="md" className="mt-2 rounded-sm bg-bg-1 px-3" leftIcon={<ExternalIcon className="h-4 w-4" />} onClick={onStudy}>View Study</Button>}
+      {onStudy && <Button variant={decided ? 'tertiary' : 'secondary'} size="md" className={cn('mt-2 rounded-sm px-3', decided && 'bg-bg-1')} leftIcon={<ExternalIcon className="h-4 w-4" />} onClick={onStudy}>View Study</Button>}
       <p className="pt-2 text-text-subtitle">{at}</p>
-      {decided && <><p className="pt-2 text-text-body">Reported By</p>
-        <span className="mt-1.5 inline-flex h-7 items-center gap-2 rounded-full bg-bgAlt-2 px-2.5 text-text-title"><img src={avatarFor(String(by))} alt="" className="h-4 w-4 rounded-full" />{by}<ChevronRight className="h-4 w-4 text-text-subtitle" /></span></>}
+      {by && <><p className="pt-4 text-text-body">Reported By</p>
+        <button type="button" onClick={onBy} className="mt-1.5 inline-flex h-8 items-center gap-2 rounded-full border-1 border-stroke-3 bg-bg-0 px-2.5 text-text-title hover:bg-bg-1"><img src={avatarFor(String(by))} alt="" className="h-4 w-4 rounded-full" />{by}<ChevronRight className="h-4 w-4 text-text-subtitle" /></button></>}
       {children}
     </section>
   )
@@ -115,7 +119,7 @@ export default function VerificationDetail() {
         <img src={who.photo} alt="" className="h-[87px] w-[87px] rounded-sm object-cover" />
         <div className="min-w-0 flex-1">
           <h1 className="text-title-s leading-[25px] text-text-title"><PersonLink id={person.id}>{who.name}</PersonLink></h1>
-          <p className="flex items-center gap-2 pt-1 text-text-regular leading-[22px] text-text-subtitle"><span className="text-body-regular">{who.role}</span><span aria-hidden="true">•</span>{who.place}<span aria-hidden="true">•</span>Cert. ID: HL-R-9F2A-3K7P</p>
+          <p className="flex items-center gap-2 pt-1 text-text-regular leading-[22px] text-text-subtitle"><span className="text-body-regular">{who.role}</span><span aria-hidden="true">•</span>{who.place}<span aria-hidden="true">•</span>{PERSON.cert}</p>
           <div className="flex gap-3 pt-2">
             <span className="flex h-7 items-center rounded-full bg-yellow-50 px-2.5 text-text-regular text-brand-primary">{PERSON.completion}</span>
             {who.verified && <span className="flex h-7 items-center gap-1 rounded-full border-1 border-stroke-3 px-2.5 text-text-regular text-text-subtitle"><VerifiedIcon className="h-4 w-4 text-state-success" />Profession Verified</span>}
@@ -197,7 +201,7 @@ export default function VerificationDetail() {
       {kind === 'report' && (
         <div className="flex flex-col gap-3 pt-4">
           <h2 className="text-body-regular leading-[22px] text-text-subtitle">Reported For</h2>
-          <Report decided={!pending} reason={c.report?.reason ?? ''} detail={c.report?.detail ?? ''} at={monthDayYear(c.report?.at)} by={c.reporter} onStudy={() => c.report?.studyId && navigate(`/studies/${c.report.studyId}`)}>
+          <Report decided={!pending} reason={c.report?.reason ?? ''} detail={c.report?.detail ?? ''} at={monthDayYear(c.report?.at)} by={c.reporter} onBy={() => c.report && navigate(`/clients/${c.report.reportedBy}`)} onStudy={c.report?.studyId ? () => navigate(`/studies/${c.report!.studyId}`) : undefined}>
             {pending && (
               <div className="flex gap-3 pt-4">
                 <Button className="px-5" onClick={() => start('reject-report')}>Reject Report</Button>
@@ -212,7 +216,7 @@ export default function VerificationDetail() {
             </div>
           </Report>
           {c.earlier.map((r) => (
-            <Report key={r.id} decided reason={r.reason} detail={r.detail} at={monthDayYear(r.at)} by={c.reporter}>
+            <Report key={r.id} decided reason={r.reason} detail={r.detail} at={monthDayYear(r.at)} by={state.clients.find((x) => x.id === r.reportedBy)?.name ?? ''} onBy={() => navigate(`/clients/${r.reportedBy}`)} onStudy={r.studyId ? () => navigate(`/studies/${r.studyId}`) : undefined}>
               <div className="pt-4"><Note tone={r.outcome === 'deactivated' ? 'bad' : 'warn'} title={r.outcome === 'deactivated' ? 'Deactivated the account.' : 'Restricted the account!'} when={monthDayYear(r.decidedAt)}>{r.note}</Note></div>
             </Report>
           ))}

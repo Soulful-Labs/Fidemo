@@ -407,7 +407,7 @@ export interface StudyReport {
 export interface Report {
   id: string
   personId: string
-  /** 'system' or a client id. */
+  /** The client who reported them (22 Oct 2026: there is no automated flagging, so never the system). */
   reportedBy: string
   reason: ReportReason
   detail: string

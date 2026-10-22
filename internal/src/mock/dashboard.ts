@@ -100,7 +100,7 @@ export function useDashboard() {
     const flagged: ActionGroup = {
       key: 'flagged', title: 'Flagged/reported accounts', count: String(d.reports.length), viewAll: '/participants/verifications?tab=reported',
       rows: d.reports.slice(0, FIRST).map((r) => {
-        const by = r.reportedBy === 'system' ? 'By System (Algo)' : `By Client: ${clientById(state, r.reportedBy)?.company ?? ''},`
+        const by = `By Client: ${clientById(state, r.reportedBy)?.company ?? ''},`
         const study = r.studyId ? state.studies.find((s) => s.id === r.studyId)?.title : undefined
         return { id: r.id, title: shortName(personById(state, r.personId)?.name ?? ''), meta: by, detail: [`For ${r.reason}`, ...(study ? [study] : [])], when: ago(r.at, now), to: `/participants/verifications/${r.id}` }
       }),

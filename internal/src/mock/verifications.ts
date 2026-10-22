@@ -16,7 +16,7 @@ import { photoFor, tierName } from './participants'
  */
 export interface Pending { id: string; photo: string; name: string; role: string; date: string; by?: string; flag: string; reason: string; result?: string }
 
-const reporter = (state: PlatformState, r: Report) => (r.reportedBy === 'system' ? 'System (Algo)' : clientById(state, r.reportedBy)?.name ?? '')
+const reporter = (state: PlatformState, r: Report) => clientById(state, r.reportedBy)?.name ?? ''
 const RESULT: Record<NonNullable<Report['outcome']>, string> = { rejected: 'Rejected', restricted: 'Restricted', deactivated: 'Deactivated' }
 
 export function useVerificationLists() {
@@ -68,7 +68,7 @@ export function useVerificationCase(id: string) {
         photo: photoFor(person),
         verified: person.profession.state === 'verified', score: String(trustScoreOf(state, person.id)), tier: tierName(state, person.id),
       },
-      reporter: report ? (report.reportedBy === 'system' ? 'System (Algo)' : clientById(state, report.reportedBy)?.name ?? '') : '',
+      reporter: report ? clientById(state, report.reportedBy)?.name ?? '' : '',
       studyTitle: report?.studyId ? state.studies.find((s) => s.id === report.studyId)?.title : undefined,
       decidedBy: teamById(state, (report?.decidedBy ?? check?.decidedBy))?.name,
       restrictions: restrictionCount(state, person.id),
