@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SideNav } from '../../app/AppShell'
@@ -86,36 +87,44 @@ export default function CreateShell({ step, action, children, check }: {
   const next = STEPS[index + 1]
   const navigate = useNavigate()
   const toast = useToast()
-  const { draft } = useDraft()
+  const { draft, set } = useDraft()
   const editing = useEditing()
+  /** Every step up to the furthest one reached can be clicked; so can any earlier step (22 Oct 2026). */
+  const reached = Math.max(draft.reached ?? 0, index)
+  useEffect(() => { if ((draft.reached ?? 0) < index) set('reached', index) }, [draft.reached, index, set])
 
   return (
     <div className="flex min-h-screen bg-yellow-20">
       <SideNav />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-[69px] shrink-0 items-center justify-between gap-6 border-b-1 border-stroke-input bg-yellow-20 px-4">
-          <span className="min-w-0 truncate text-body-regular text-text-subtitle">{editing ? 'Edit Study' : 'Create Study'} / <span className="text-text-title">{draft.title.trim() || 'Study Name'}</span></span>
+        {/* Three parts, as 1622:81504 draws it: the title on the left (truncated, never stretching), the stepper
+            in the centre, the actions on the right. */}
+        <header className="sticky top-0 z-30 grid h-[69px] shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-6 border-b-1 border-stroke-input bg-yellow-20 px-4">
+          <span className="min-w-0 truncate text-body-regular text-text-subtitle" title={draft.title.trim() || undefined}>{editing ? 'Edit Study' : 'Create Study'} / <span className="text-text-title">{draft.title.trim() || 'Study Name'}</span></span>
 
-          <ol className="flex items-center">
+          <ol className="flex items-center rounded-full bg-bg-0 p-1">
             {STEPS.map((s, i) => {
               const on = s.key === step
-              const done = i < index
+              const open = !on && i <= reached
+              const chip = cn('flex h-7 items-center gap-1.5 rounded-full border-1 px-3 text-text-medium',
+                on ? 'border-stroke-2 bg-bgAlt-2 text-brand-secondary' : 'border-stroke-2 bg-bg-0', !on && (i < index ? 'text-text-subtitle' : 'text-text-body'))
               return (
                 <li key={s.key} className="flex items-center">
-                  {i > 0 && <span className="h-px w-4 bg-neutral-700" />}
-                  <span className={cn('flex h-7 items-center gap-1.5 rounded-full px-3 text-text-medium',
-                    on ? 'bg-bgAlt-2 text-brand-secondary'
-                      : done ? 'bg-bg-0 text-text-subtitle' : 'bg-bg-0 text-text-body')}>
-                    <s.Icon className="h-4 w-4" />
-                    {s.label}
-                  </span>
+                  {i > 0 && <span className="h-px w-4 bg-stroke-2" />}
+                  {open ? (
+                    <button type="button" onClick={() => navigate(s.to)} className={cn(chip, 'hover:border-stroke-3 hover:text-text-title')}>
+                      <s.Icon className="h-4 w-4" />{s.label}
+                    </button>
+                  ) : (
+                    <span aria-current={on ? 'step' : undefined} className={chip}><s.Icon className="h-4 w-4" />{s.label}</span>
+                  )}
                 </li>
               )
             })}
           </ol>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-end gap-3">
             {editing && !action ? <EditActions /> : action ?? (
               <>
                 <SaveDraftButton />

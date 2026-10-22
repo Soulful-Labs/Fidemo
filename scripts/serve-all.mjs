@@ -23,6 +23,9 @@ createServer((req, res) => {
     const app = path.startsWith('/client') ? 'client' : path.startsWith('/internal') ? 'internal' : ''
     file = join(ROOT, app, 'index.html')
   }
+  // A request that lands while build:all has emptied dist/ gets a 503, not a crashed server.
+  let body
+  try { body = readFileSync(file) } catch { res.writeHead(503, { 'cache-control': 'no-store' }).end('Rebuilding, try again in a moment'); return }
   res.writeHead(200, { 'content-type': TYPES[extname(file)] ?? 'application/octet-stream', 'cache-control': 'no-store' })
-  res.end(readFileSync(file))
+  res.end(body)
 }).listen(PORT, () => console.log(`one origin on http://localhost:${PORT}  (/  /client  /internal)`))

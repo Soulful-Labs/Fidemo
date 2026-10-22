@@ -165,7 +165,7 @@ export function blankForm(): StudyForm {
     ],
     incentive: 700, tasks: [], tasksSubmitted: false,
     durationUnit: 'Day', frequency: 'Every 2 days', studyDuration: '5 days', minimumRequired: '4 days',
-    buffer: '15 minutes', notice: '10                    Minutes', seats: '10 seats',
+    buffer: '15 minutes', notice: '10 Minutes', seats: '10 seats',
     hours: Object.fromEntries(WEEKDAYS.slice(0, 5).map((d) => [d, [{ ...BLANK_WINDOW }]])),
     overrides: [], addresses: [], sessions: [],
     availabilitySet: false,

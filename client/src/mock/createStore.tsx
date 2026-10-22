@@ -20,6 +20,8 @@ export type CreateDraft = StudyForm & {
   surveyOpen: boolean
   /** What the client typed into Generate with AI, shared by the steps that generate from it. Not part of the study. */
   aiPrompt?: string
+  /** The furthest step this study has been opened on (22 Oct 2026): every step up to it can be clicked in the stepper. Not part of the study. */
+  reached?: number
 }
 export { blankQuestion }
 
@@ -39,7 +41,7 @@ interface Ctx {
 }
 const CreateCtx = createContext<Ctx | null>(null)
 
-const fresh = (): CreateDraft => ({ ...blankForm(), surveyOpen: false, aiPrompt: '' })
+const fresh = (): CreateDraft => ({ ...blankForm(), surveyOpen: false, aiPrompt: '', reached: 0 })
 
 /**
  * Work in progress is kept in this browser as it is typed, per client account,
@@ -72,14 +74,14 @@ export function CreateProvider({ children }: { children: ReactNode }) {
     if (!owner || owner !== loadedFor) return
     try { localStorage.setItem(KEY, JSON.stringify({ owner, draft, draftId } satisfies Kept)) } catch { /* storage full or blocked: the work stays in memory */ }
   }, [owner, loadedFor, draft, draftId])
-  const open = useCallback((study: Study) => { setDraft({ ...formFromStudy(study), surveyOpen: false }); setDraftId(study.id) }, [])
+  const open = useCallback((study: Study) => { setDraft({ ...formFromStudy(study), surveyOpen: false, reached: 99 }); setDraftId(study.id) }, [])
   const reset = useCallback(() => { setDraft(fresh()); setDraftId(undefined) }, [])
   const value = useMemo<Ctx>(() => ({
     draft, draftId, open, reset,
     inProgress: () => Boolean(draftId) || Boolean(draft.title.trim() || draft.description.trim() || draft.thumbnail || draft.tasks.length || draft.addresses.length || draft.sessions.length
       || draft.availabilitySet || draft.questions.some((q) => q.text.trim())),
     set: (k, v) => setDraft((d) => ({ ...d, [k]: v })),
-    form: () => { const { surveyOpen: _open, aiPrompt: _prompt, ...form } = draft; return { ...form, education: educationOf(form), gender: gendersOf(form).length ? gendersOf(form) : ['All Genders'] } },
+    form: () => { const { surveyOpen: _open, aiPrompt: _prompt, reached: _reached, ...form } = draft; return { ...form, education: educationOf(form), gender: gendersOf(form).length ? gendersOf(form) : ['All Genders'] } },
   }), [draft, draftId, open, reset])
   return <CreateCtx.Provider value={value}>{children}</CreateCtx.Provider>
 }

@@ -143,7 +143,7 @@ await C.ev(BUILD_SCREENER); await sleep(300)
 const built = await C.ev(`[...document.querySelectorAll('input[placeholder="Enter question text..."]')].map((i, n) => ({ n: n + 1, text: i.value, type: i.closest('.py-4').querySelectorAll('button')[0].innerText.trim() })).filter((q) => q.text)`)
 say(1, 'As a client, create a study and add 3 screener questions with different answer types', built.length === 3 && new Set(built.map((b) => b.type)).size === 3, built.map((b) => `block ${b.n}: "${b.text}" (${b.type})`).join(' | '))
 await C.click('Continue')
-await C.click('Set Timing Availability'); await C.ev(SET_HOURS); await C.click('Submit'); await C.click('Continue', 700); await C.click('Proceed to Publish')
+await C.click('Set Timing Availability'); await C.ev(SET_HOURS); await C.click('Continue', 700); await C.click('Proceed to Publish')
 // The demo client's saved card is already selected at Publish.
 await C.click('Publish Study', 900)
 const id = await C.ev(`(__st().studies.find((s) => s.title === ${JSON.stringify(TITLE)}) || {}).id`)

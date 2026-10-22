@@ -156,7 +156,7 @@ const STUDIES = [
     tasks: ['How often do you shop online?', 'What stops you buying?'],
   },
   {
-    key: 'video 1:1', card: 'Video Call', duration: 45, participants: '8', incentive: 150, screener: THREE, opener: 'Set Timing Availability', submit: 'Submit',
+    key: 'video 1:1', card: 'Video Call', duration: 45, participants: '8', incentive: 150, screener: THREE, opener: 'Set Timing Availability', submit: 'Continue',
     setup: `await __choose(__btn('15 minutes'), '10 minutes'); await __choose(__btn('10 Minutes'), '1 Hour'); ${hours('09:00 AM', '05:00 PM')}
       __al('Add hours to Tuesday').click(); await __wait(); await __time('Tuesday from', '06:00 PM', 1); await __time('Tuesday to', '08:00 PM', 1);
       __click('Add Override'); await __wait(300); __type(__al('Override from'), ${JSON.stringify(ymd(off))}); __type(__al('Override to'), ${JSON.stringify(ymd(off))}); __al('Mark Unavailable For Full Day').click(); await __wait(); __click('Save override'); await __wait(300);`,
@@ -166,7 +166,7 @@ const STUDIES = [
     slots: ['09:00 AM', '09:55 AM', '10:50 AM'], closed: off,
   },
   {
-    key: 'group video', card: 'Video Call', group: 0, duration: 60, participants: '10', incentive: 90, screener: THREE, opener: 'Set Timing Availability', submit: 'Submit',
+    key: 'group video', card: 'Video Call', group: 0, duration: 60, participants: '10', incentive: 90, screener: THREE, opener: 'Set Timing Availability', submit: 'Continue',
     setup: `__type(__al('Seats per session'), '6 seats'); ${session(after(5), '10:00 AM')} ${session(after(7), '02:00 PM')}`,
     typeLabel: 'Group Video Call', summary: '2 sessions, 6 seats per session',
     client: ['6 seats', `${after(5).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', weekday: 'long' })}, 10:00 AM`, `${after(7).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', weekday: 'long' })}, 02:00 PM`],
@@ -174,7 +174,7 @@ const STUDIES = [
     sessions: [[after(5), '10:00 AM'], [after(7), '02:00 PM']],
   },
   {
-    key: 'in-person 1:1', card: 'In-Person', duration: 30, participants: '6', incentive: 200, screener: THREE, opener: 'Set Address & Availability', submit: 'Submit',
+    key: 'in-person 1:1', card: 'In-Person', duration: 30, participants: '6', incentive: 200, screener: THREE, opener: 'Set Address & Availability', submit: 'Continue',
     setup: `${address('12 Main St', 'Austin, Texas', '73301')} ${address('4 Dock Road', 'Houston, Texas', '77002')} await __choose(__btn('10 Minutes'), '1 Day'); ${hours('10:00 AM', '04:00 PM')}`,
     typeLabel: 'In-Person', summary: '2 addresses, available 5 days/week, custom timings',
     client: ['12 Main St, Austin, Texas, 73301', '4 Dock Road, Houston, Texas, 77002', '15 minutes', '1 Day', '10:00 AM to 04:00 PM'],
@@ -182,7 +182,7 @@ const STUDIES = [
     slots: ['10:00 AM', '10:45 AM'], noticeHours: 24, places: ['12 Main St, Austin, Texas, 73301', '4 Dock Road, Houston, Texas, 77002'],
   },
   {
-    key: 'in-person group', card: 'In-Person', group: 1, duration: 90, participants: '8', incentive: 120, screener: THREE, opener: 'Set Address & Availability', submit: 'Submit',
+    key: 'in-person group', card: 'In-Person', group: 1, duration: 90, participants: '8', incentive: 120, screener: THREE, opener: 'Set Address & Availability', submit: 'Continue',
     setup: `__type(__al('Seats per session'), '4 seats'); ${address('9 Canal St', 'Leeds, UK', 'LS1 4AP')} ${session(after(6), '11:00 AM')} ${session(after(8), '03:30 PM')}`,
     typeLabel: 'In-Person Group', summary: '2 sessions, 4 seats per session, 1 address',
     client: ['4 seats', '9 Canal St, Leeds, UK, LS1 4AP', `${after(6).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', weekday: 'long' })}, 11:00 AM`, `${after(8).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', weekday: 'long' })}, 03:30 PM`],
@@ -243,11 +243,14 @@ async function studyStep(s) {
   if (s.before) { await C.ev(`(async () => { ${s.before} return true })()`); await sleep(150) }
   await C.click(s.opener, 500)
   await C.ev(`(async () => { ${s.setup} return true })()`); await sleep(200)
-  await C.click(s.submit, 500)
-  const stuck = await C.ev(`Boolean(__all('button').find((b) => b.textContent.trim() === ${JSON.stringify(s.submit)}))`)
-  if (stuck) throw new Error(`${s.key}: the composer did not accept Submit: ` + await C.ev(`document.querySelector('[role=status], [role=alert]')?.innerText ?? '(no reason shown)'`))
-  // Study setup and pricing are two steps (15 Oct 2026): the incentive is on Pricing.
-  await C.click('Continue', 700); await C.ev(FORMS);
+  await C.click(s.submit, 700)
+  const stuck = s.submit === 'Continue'
+    ? !(await C.path()).endsWith('/pricing')
+    : await C.ev(`Boolean(__all('button').find((b) => b.textContent.trim() === ${JSON.stringify(s.submit)}))`)
+  if (stuck) throw new Error(`${s.key}: the composer did not accept ${s.submit}: ` + await C.ev(`document.querySelector('[role=status], [role=alert]')?.innerText ?? '(no reason shown)'`))
+  // Study setup and pricing are two steps (15 Oct 2026): the incentive is on Pricing. A session study's Continue is already there.
+  if (!(await C.path()).endsWith('/pricing')) await C.click('Continue', 700)
+  await C.ev(FORMS);
   await C.ev(`(() => { __type(__al('Incentive Amount'), '$${s.incentive}'); return true })()`); await sleep(150)
 }
 
@@ -381,9 +384,10 @@ console.log('\n5. Save a draft, leave, come back: nothing was lost')
     await aboutToScreener(s)
     await C.click(s.opener, 500)
     await C.ev(`(async () => { ${s.setup} return true })()`); await sleep(200)
-    await C.click(s.submit, 500)
-    // Study setup and pricing are two steps (15 Oct 2026): the incentive is on Pricing.
-    await C.click('Continue', 700); await C.ev(FORMS);
+    await C.click(s.submit, 700)
+    // Study setup and pricing are two steps (15 Oct 2026): the incentive is on Pricing. A session study's Continue is already there.
+    if (!(await C.path()).endsWith('/pricing')) await C.click('Continue', 700)
+    await C.ev(FORMS);
     await C.ev(`(() => { __type(__al('Incentive Amount'), '$${s.incentive}'); return true })()`); await sleep(150)
     await C.click('Save Draft & Exit', 800)
     if (!(await C.path()).endsWith('/studies/drafts')) gaps.push('did not land on Drafts: ' + await C.path())

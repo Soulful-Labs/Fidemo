@@ -87,6 +87,8 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
   const windows = (d: Weekday): TimeWindow[] => draft.hours[d] ?? []
   const setWindows = (d: Weekday, next: TimeWindow[]) => set('hours', { ...draft.hours, [d]: next })
 
+  const noticeNumber = (draft.notice.match(/\d+/) ?? ['10'])[0]
+  const noticeUnit = /day/i.test(draft.notice) ? 'Days' : /hour/i.test(draft.notice) ? 'Hours' : 'Minutes'
   /** Submit keeps what was set only if it can be offered; otherwise it says what to fix and stays open. */
   const submit = () => {
     const fault = availabilityFault({ ...form(), availabilitySet: true })
@@ -109,15 +111,18 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
         <div className="grid grid-cols-2 gap-x-6 gap-y-1">
           <label className="flex flex-col gap-1">
             <span className="text-text-regular text-text-subtitle">Buffer between meetings</span>
-            <Picker value={draft.buffer} className="w-full"
+            <Picker value={draft.buffer} h="h-[38px]" className="w-full text-text-regular"
               options={['No buffer', '5 minutes', '10 minutes', '15 minutes', '30 minutes']}
               onPick={(v) => set('buffer', v)} />
           </label>
+          {/* Minimum notice (1518:93678): a number and its unit, Minutes, Hours or Days, kept together as "10 Minutes". */}
           <label className="flex flex-col gap-1">
             <span className="text-text-regular text-text-subtitle">Minimum notice duration</span>
-            <Picker value={draft.notice} className="w-full"
-              options={['10                    Minutes', '30 Minutes', '1 Hour', '1 Day']}
-              onPick={(v) => set('notice', v)} />
+            <span className="flex h-[38px] items-center rounded-md border-1 border-stroke-input bg-bg pl-3">
+              <input aria-label="Minimum notice" inputMode="numeric" value={noticeNumber} onChange={(e) => set('notice', `${e.target.value.replace(/[^\d]/g, '')} ${noticeUnit}`)}
+                className="min-w-0 flex-1 bg-transparent text-text-regular text-text-title outline-none" />
+              <Picker value={noticeUnit} h="h-[36px]" className="w-[120px] border-0 bg-transparent text-text-regular" options={['Minutes', 'Hours', 'Days']} onPick={(u) => set('notice', `${noticeNumber} ${u}`)} />
+            </span>
           </label>
           <span className="text-text-regular text-text-subtitle">
             {address ? 'It is a duration added between consecutive scheduled meetings.' : 'It is a duration gap added between consecutive scheduled meetings.'}
@@ -219,7 +224,7 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
             <Toggle checked={windows(d).length > 0} label={d}
               onChange={(v) => setWindows(d, v ? [{ ...BLANK_WINDOW }] : [])} />
           </span>
-          <span className="flex h-[38px] w-[86px] items-center text-text-regular text-text-title">{d}</span>
+          <span className="flex h-[38px] w-[86px] items-center text-body-regular text-text-title">{d}</span>
           {windows(d).length > 0 ? (
             <span className="flex flex-col gap-2">
               {windows(d).map((w, i) => (
@@ -248,7 +253,7 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
   )
 
   return (
-    <div className="flex w-[628px] shrink-0 flex-col overflow-hidden rounded-lg border-1 border-stroke-input">
+    <div className="flex w-[700px] max-w-full shrink-0 flex-col overflow-hidden rounded-lg border-1 border-stroke-input">
       <div className="flex items-center gap-3 border-b-1 border-stroke-input bg-yellow-30 px-4 py-3">
         <button type="button" aria-label="Back" onClick={onBack}
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border-1 border-stroke-input bg-bg text-text-subtitle">
@@ -257,7 +262,8 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
         <span className="text-title-s text-text-title">{title}</span>
         <span className="flex-1" />
         <span className="text-text-regular text-text-subtitle">Auto-saved</span>
-        <Button size="row" onClick={submit}>Submit</Button>
+        {/* The frames draw no Submit here: the top bar's Continue submits the availability (22 Oct 2026). */}
+        <button type="button" hidden data-submit-availability onClick={submit} />
       </div>
 
       {/* The in-person frames disagree on the order: the 1:1 setup
@@ -292,6 +298,12 @@ export default function AvailabilityComposer({ group, address, title = 'Set Avai
               </div>
             ))}
           </Card>
+        )}
+        {address && !group && (
+          <div className="rounded-md border-1 border-stroke-input px-4 py-3">
+            <p className="text-text-medium text-text-title">Completion Verification</p>
+            <p className="pt-1 text-text-regular text-text-subtitle">A verification PIN is generated automatically for each scheduled session, to be shared with the participant to verify completion.</p>
+          </div>
         )}
       </div>
     </div>

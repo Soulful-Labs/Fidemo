@@ -142,8 +142,8 @@ await step(1, 'Client creates and publishes a study', async () => {
   // The client's own screener: one eligibility question and two more, in three answer types.
   await C.ev(BUILD_SCREENER)
   await C.click('Continue'); expect((await C.path()).endsWith('/study'), 'Continue did not reach Study setup: ' + await C.path())
-  await C.click('Set Timing Availability'); await C.ev(SET_HOURS); await C.click('Submit')
-  await C.click('Continue', 700); await C.click('Proceed to Publish'); expect((await C.path()).endsWith('/publish'), 'did not reach Publish: ' + await C.path())
+  await C.click('Set Timing Availability'); await C.ev(SET_HOURS); await C.click('Continue', 700)
+  await C.click('Proceed to Publish'); expect((await C.path()).endsWith('/publish'), 'did not reach Publish: ' + await C.path())
   // The demo client's saved card is already selected, so nothing is typed.
   expect(await C.ev(`[...document.querySelectorAll('[role=radio]')].some((r) => r.getAttribute('aria-checked') === 'true')`), 'no saved card selected at Publish')
   await C.click('Publish Study', 900)

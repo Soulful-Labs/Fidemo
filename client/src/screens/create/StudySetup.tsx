@@ -142,6 +142,9 @@ export default function StudySetup() {
   const formOpen = open && (type === 'survey' || type === 'diary')
   /** Save & Continue on an open survey or diary form submits it, as the form's own Submit did. */
   const saveForm = () => document.querySelector<HTMLButtonElement>('[data-submit-form]')?.click()
+  /** A session study's open composer is submitted by Continue, which then moves on (1518:93678 draws no Submit of its own). */
+  const sessionOpen = open && (type === 'video_call' || type === 'in_person')
+  const submitAvailability = () => document.querySelector<HTMLButtonElement>('[data-submit-availability]')?.click()
 
   return (
     <CreateShell step="study" action={
@@ -149,7 +152,9 @@ export default function StudySetup() {
         <SaveDraftButton />
         {formOpen
           ? <Button size="row" onClick={saveForm}>Save &amp; Continue</Button>
-          : <Button size="row" disabled={!setupDone(draft)} onClick={() => nav('/studies/create/pricing')}>Continue</Button>}
+          : sessionOpen
+            ? <Button size="row" onClick={submitAvailability}>Continue</Button>
+            : <Button size="row" disabled={!setupDone(draft)} onClick={() => nav('/studies/create/pricing')}>Continue</Button>}
       </>
     }>
       <div className={`rounded-lg bg-bg-0 px-6 ${formOpen && type === 'diary' ? 'pt-6' : 'pt-[9px]'} ${type === 'diary' ? 'min-h-[1707px]' : type === 'video_call' ? (open ? 'min-h-[1408px]' : 'min-h-[1374px]') : type === 'in_person' ? (open ? (group ? 'min-h-[1408px]' : 'min-h-[1579px]') : 'min-h-[1374px]') : 'min-h-[1302px]'}`}>
@@ -160,7 +165,7 @@ export default function StudySetup() {
                 title={type === 'in_person' && !group ? 'Set Address & Availability' : 'Set Availability'}
                 onOverride={(id) => { setEditing(id); setOverride(true) }}
                 onBack={() => set('surveyOpen', false)}
-                onSubmit={() => { set('availabilitySet', true); set('surveyOpen', false) }} />
+                onSubmit={() => { set('availabilitySet', true); set('surveyOpen', false); nav('/studies/create/pricing') }} />
             ) : type === 'diary' ? (
               <SurveyComposer title="Create Diary Form" submit="Submit Diary Form" diary
                 lead="Setup your form inputs form for users with AI or manually" kind="Multi-line input"
@@ -171,7 +176,8 @@ export default function StudySetup() {
                 onSubmit={() => { set('tasksSubmitted', true); set('surveyOpen', false) }}
                 onBack={() => set('surveyOpen', false)} />
             )}
-            {!formOpen && (
+            {/* The frames draw the composer alone: no settings card beside it (22 Oct 2026, 1518:93678). */}
+            {!formOpen && !sessionOpen && (
               <div className="flex w-[488px] shrink-0 flex-col">
                 <TypeSettings type={type} group={group} open={open} />
               </div>

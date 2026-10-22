@@ -289,9 +289,8 @@ await C.click('Continue'); await C.ev(FORMS)
 await C.click('Set Address & Availability', 500)
 await C.ev(`(async () => { ${address('12 Main St', 'Austin, Texas', '73301')} ${address('4 Dock Road', 'Houston, Texas', '77002')} await __choose(__btn('15 minutes'), '10 minutes'); await __choose(__btn('10 Minutes'), '1 Hour'); ${hours('09:00 AM', '05:00 PM')}
   __al('Add hours to Tuesday').click(); await __wait(); await __time('Tuesday from', '06:00 PM', 1); await __time('Tuesday to', '08:00 PM', 1); return true })()`)
-await sleep(200); await C.click('Submit', 500)
-// Study setup and pricing are two steps (15 Oct 2026): the incentive is on Pricing.
-await C.click('Continue', 700); await C.ev(FORMS);
+// Since 22 Oct 2026 the composer has no Submit: Continue submits the availability and moves to Pricing.
+await sleep(200); await C.click('Continue', 900); await C.ev(FORMS);
 await C.ev(`(() => { __type(__al('Incentive Amount'), '$${PLACE.incentive}'); return true })()`); await sleep(150)
 await C.click('Save Draft & Exit', 800)
 await C.open('/client/studies/drafts'); await C.ev(FORMS)
