@@ -50,7 +50,8 @@ export default function Finance({ refunds, payouts }: { refunds?: boolean; payou
   const shown = TX.slice((Math.min(page, pages) - 1) * 10, Math.min(page, pages) * 10)
   const open = (r: Tx) => {
     if (r.type.startsWith('Participant Earning')) setDetail({ kind: 'earning', id: r.id })
-    else if (r.type.startsWith('Participant Payout')) setDetail({ kind: 'payouts', id: r.id })
+    // A payout opens its Payout Details screen (2317:160127), not Transaction Details (22 Oct 2026).
+    else if (r.type.startsWith('Participant Payout') && r.row.personId) navigate(`/finance/payouts/${r.row.personId}/${r.row.id.replace(/^lp-/, '')}`)
     else if (r.type.startsWith('Study Payment')) setDetail({ kind: 'payments', id: r.id })
     else if (r.row.studyId) navigate(`/finance/refunds/${r.row.studyId}`)
   }
