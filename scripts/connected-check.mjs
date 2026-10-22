@@ -181,8 +181,8 @@ const alive = async () => (await R.alive()) && (await C.alive()) && (await I.ali
     await C.click('Create Survey Questionnaire', 500)
     await C.ev(`(async () => { __ph('Enter question text...', 'How often do you shop online?'); __ph('Enter option', 'Weekly', 0); __ph('Enter option', 'Monthly', 1); return true })()`); await sleep(200)
     await C.click('Save & Continue', 500)
-    // Study setup and pricing are two steps (15 Oct 2026): the incentive is on Pricing.
-    await C.click('Continue', 700); await C.ev(FORMS);
+    // The incentive and costs sit under the study settings on the Study step (22 Oct 2026, every Create frame).
+    await C.ev(FORMS);
     await C.ev(`(() => { __type(__al('Incentive Amount'), '$${S.incentive}'); return true })()`); await sleep(150)
     await C.click('Proceed to Publish', 700); await C.ev(FORMS)
     // The demo client's saved card is already selected at Publish.

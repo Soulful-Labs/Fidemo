@@ -40,7 +40,7 @@ function Funnel({ steps }: { steps: number[] }) {
   const BLOCK = ['h-[126px] bg-cta-secondary', 'h-[94px] bg-yellow-400', 'h-[62px] bg-brand-primary']
   const NECK = ['fill-yellow-300', 'fill-yellow-500']
   return (
-    <div className="flex h-[126px] items-center pl-[53px]" aria-hidden="true">
+    <div className="flex h-[126px] items-center justify-center" aria-hidden="true">
       {steps.map((n, i) => (
         <div key={i} className="flex items-center">
           <span className={cn('flex w-[120px] items-center justify-center text-[44px] font-semibold leading-none tracking-[-0.02em] text-bg-0',
@@ -111,8 +111,9 @@ export function OverviewBody({ s, daysRow }: { s: ClientStudy; daysRow?: boolean
               <div key={f.label} className="flex h-6 items-center">
                 <dt className="w-[108px] text-body-regular text-text-title">{f.label}</dt>
                 <dd className="w-[50px] text-title-m text-text-title">{f.n}</dd>
-                <span className="h-2.5 w-[281px]"><span className={cn('block h-full rounded-full', f.bar)} style={{ width: `${Math.round((f.n / top) * 100)}%` }} /></span>
-                <span className="flex-1 text-right text-body-regular text-text-body">{Math.round((f.n / top) * 100)}%</span>
+                {/* The bar takes whatever width the card leaves (22 Oct 2026), so it grows with the screen. */}
+                <span className="h-2.5 min-w-0 flex-1"><span className={cn('block h-full rounded-full', f.bar)} style={{ width: `${Math.round((f.n / top) * 100)}%` }} /></span>
+                <span className="w-14 shrink-0 text-right text-body-regular text-text-body">{Math.round((f.n / top) * 100)}%</span>
               </div>
             ))}
           </dl>

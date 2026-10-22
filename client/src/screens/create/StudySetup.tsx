@@ -6,7 +6,7 @@ import { studySummary } from '@shared/studyForm'
 import { setupDone, useDraft } from '../../mock/createStore'
 import CreateShell, { SaveDraftButton } from './CreateShell'
 import { Section } from './CreateBits'
-import { SettingsCard } from './StudyBits'
+import { CostingSummary, IncentivePayments, Payment, SettingsCard } from './StudyBits'
 import SurveyComposer from './SurveyComposer'
 import AvailabilityComposer from './AvailabilityComposer'
 import OverridePanel from './OverridePanel'
@@ -125,10 +125,12 @@ function TypeSettings({ type, group, open }: { type: string; group: boolean; ope
 }
 
 /**
- * 2.1.3 Study setup, the one step where the four types differ. Since 15 Oct
- * 2026 it holds only the type's own settings, for every type; pricing is the
- * next step (Pricing.tsx). The survey and diary composers open as the whole
- * page, with Save & Continue in the top bar (Create Survey_Study, 15 Oct 2026).
+ * 2.1.3 Study setup, the one step where the four types differ. As every type's
+ * frame draws it (1518:91922, 1518:94742, 1518:92570, 1518:93998), the type's
+ * settings card sits above Incentive Payments, Costing Summary and Payment, and
+ * the step ends in Proceed to Publish. The survey and diary composers open as
+ * the whole page, with Save & Continue in the top bar; a session study's
+ * composer is submitted by Continue. Either returns here.
  */
 export default function StudySetup() {
   const nav = useNavigate()
@@ -154,7 +156,7 @@ export default function StudySetup() {
           ? <Button size="row" onClick={saveForm}>Save &amp; Continue</Button>
           : sessionOpen
             ? <Button size="row" onClick={submitAvailability}>Continue</Button>
-            : <Button size="row" disabled={!setupDone(draft)} onClick={() => nav('/studies/create/pricing')}>Continue</Button>}
+            : <Button size="row" disabled={!setupDone(draft)} title={setupDone(draft) ? undefined : 'Finish the study settings first'} onClick={() => nav('/studies/create/publish')}>Proceed to Publish</Button>}
       </>
     }>
       <div className={`rounded-lg bg-bg-0 px-6 ${formOpen && type === 'diary' ? 'pt-6' : 'pt-[9px]'} ${type === 'diary' ? 'min-h-[1707px]' : type === 'video_call' ? (open ? 'min-h-[1408px]' : 'min-h-[1374px]') : type === 'in_person' ? (open ? (group ? 'min-h-[1408px]' : 'min-h-[1579px]') : 'min-h-[1374px]') : 'min-h-[1302px]'}`}>
@@ -165,7 +167,7 @@ export default function StudySetup() {
                 title={type === 'in_person' && !group ? 'Set Address & Availability' : 'Set Availability'}
                 onOverride={(id) => { setEditing(id); setOverride(true) }}
                 onBack={() => set('surveyOpen', false)}
-                onSubmit={() => { set('availabilitySet', true); set('surveyOpen', false); nav('/studies/create/pricing') }} />
+                onSubmit={() => { set('availabilitySet', true); set('surveyOpen', false) }} />
             ) : type === 'diary' ? (
               <SurveyComposer title="Create Diary Form" submit="Submit Diary Form" diary
                 lead="Setup your form inputs form for users with AI or manually" kind="Multi-line input"
@@ -186,6 +188,9 @@ export default function StudySetup() {
         ) : (
           <div className="mx-auto flex w-[600px] flex-col">
             <TypeSettings type={type} group={group} open={open} />
+            <IncentivePayments />
+            <CostingSummary />
+            <Payment />
           </div>
         )}
       </div>

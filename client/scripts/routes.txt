@@ -58,7 +58,6 @@ account/settings
 studies/st-goal/invited
 studies/st-travel/pay/due
 studies/st-goal/respondent/ava-b?state=recruited
-studies/create/pricing
 studies/st-remote/manage
 studies/st-remote/manage?tab=payment
 studies/st-remote/manage?tab=revisions

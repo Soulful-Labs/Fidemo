@@ -50,11 +50,13 @@ const COLUMNS: Record<Exclude<StudiesTab, 'sessions'>, { key: string; header: st
     { key: 'created', header: 'Created', sortable: true, width: '9.57%' },
     { key: 'menu', header: '', width: '5.12%' },
   ],
+  // 1518:90624 (22 Oct 2026): Study Name, Type, Status, Created and the row menu.
   drafts: [
-    { key: 'name', header: 'Study Name', width: '51.9%' },
-    { key: 'type', header: 'Type', width: '31.1%' },
-    { key: 'created', header: 'Created', sortable: true, width: '12.6%' },
-    { key: 'menu', header: '', width: '4.4%' },
+    { key: 'name', header: 'Study Name', width: '47.1%' },
+    { key: 'type', header: 'Type', width: '20%' },
+    { key: 'status', header: 'Status', width: '15.6%' },
+    { key: 'created', header: 'Created', sortable: true, width: '13.4%' },
+    { key: 'menu', header: '', width: '3.9%' },
   ],
   completed: [
     { key: 'name', header: 'Study Name', width: '36.2%' },
@@ -227,16 +229,12 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
                               {s.image && <img src={s.image} alt="" className="h-full w-full object-cover" />}
                             </span>
                             <button type="button" onClick={() => open(s)} className="line-clamp-2 text-left text-text-medium hover:text-brand-primary">{s.name}</button>
-                            {/* No frame draws this pill: the Drafts table has no status
-                                column, and a study waiting on the team is not a draft. */}
-                            {s.state === 'in_review' && (
-                              <span className="inline-flex h-7 shrink-0 items-center rounded-full bg-yellow-30 px-[14px] text-text-regular text-brand-primary">
-                                In Review
-                              </span>
-                            )}
                           </span>
                         )}
                         {c.key === 'type' && <StudyTypeTag type={s.type} />}
+                        {c.key === 'status' && (s.state === 'in_review'
+                          ? <span className="inline-flex h-7 items-center rounded-full bg-yellow-30 px-[14px] text-text-regular text-brand-primary">In Review</span>
+                          : <span className="inline-flex h-7 items-center rounded-full bg-bg-3 px-[14px] text-text-regular text-text-subtitle">Draft</span>)}
                         {c.key === 'created' && <span className="whitespace-nowrap text-text-subtitle">{s.created}</span>}
                         {c.key === 'required' && String(s.required)}
                         {c.key === 'qualified' && String(counts(s).everQualified)}
@@ -250,7 +248,8 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
                             <span className="text-label text-text-subtitle">{progressPct(s)}% complete</span>
                           </span>
                         )}
-                        {c.key === 'menu' && (
+                        {/* The Drafts frame draws the menu on a draft only; a study in review has none. */}
+                        {c.key === 'menu' && !(tab === 'drafts' && s.state === 'in_review') && (
                           <span className="relative flex justify-end">
                             <button type="button" aria-label="Study options" onClick={() => setRowMenu(rowMenu === s.id ? null : s.id)}
                               className="text-text-subtitle hover:text-text-title">

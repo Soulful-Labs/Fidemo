@@ -3,25 +3,25 @@ import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { SideNav } from '../../app/AppShell'
 import Button from '../../components/ui/Button'
-import { DiaryIcon, Info, PaymentsIcon, PoolIcon, StudiesIcon } from '../../components/ui/icons'
+import { DiaryIcon, Info, PoolIcon, StudiesIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { useToast } from '../../components/ui/Toast'
 import { useDraft } from '../../mock/createStore'
 import { useStudies } from '../../platform'
 
-export type CreateStep = 'about' | 'audience' | 'screener' | 'study' | 'pricing' | 'publish'
+export type CreateStep = 'about' | 'audience' | 'screener' | 'study' | 'publish'
 
 /**
- * The step chips in the Create top bar, with the rule between them. Study
- * setup and pricing are two steps (15 Oct 2026): the type's own settings,
- * then Incentive Payments, Costing Summary and the Payment card.
+ * The step chips in the Create top bar, with the rule between them. Four
+ * steps, as every Create frame draws them (22 Oct 2026): the Study step holds
+ * the type's own settings and, below them, Incentive Payments, Costing
+ * Summary and the Payment card.
  */
 const STEPS: { key: CreateStep; label: string; Icon: typeof Info; to: string }[] = [
   { key: 'about', label: 'About', Icon: Info, to: '/studies/create/about' },
   { key: 'audience', label: 'Audience', Icon: PoolIcon, to: '/studies/create/audience' },
   { key: 'screener', label: 'Screener', Icon: StudiesIcon, to: '/studies/create/screener' },
   { key: 'study', label: 'Study', Icon: DiaryIcon, to: '/studies/create/study' },
-  { key: 'pricing', label: 'Pricing', Icon: PaymentsIcon, to: '/studies/create/pricing' },
 ]
 
 /**

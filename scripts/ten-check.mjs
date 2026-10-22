@@ -277,8 +277,8 @@ const surveyConfirm = await C.has('Delete Question?')
 await clickExact(C, 'Delete'); await sleep(400)
 const surveyAfter = await countQ()
 await C.click('Save & Continue', 600)
-// Study setup and pricing are two steps (15 Oct 2026): the incentive is on Pricing.
-await C.click('Continue', 700); await C.ev(FORMS);
+// The incentive and costs sit under the study settings on the Study step (22 Oct 2026, every Create frame).
+await C.ev(FORMS);
 await C.ev(`(() => { __type(__al('Incentive Amount'), '$40'); return true })()`); await sleep(200)
 const studyText2 = await body(C)
 await C.click('Proceed to Publish', 800); await C.ev(FORMS)

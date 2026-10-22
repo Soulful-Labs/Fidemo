@@ -230,8 +230,8 @@ await C.click('Create Survey Questionnaire', 500)
 await C.ev(`(async () => { __ph('Enter question text...', 'How often do you shop online?'); __ph('Enter option', 'Weekly', 0); __ph('Enter option', 'Monthly', 1);
   __btn('Add Question').click(); await __wait(); await __choose(__all('button').filter((b) => b.textContent.trim() === 'Single-select').pop(), 'Multi-line input'); __ph('Enter question text...', 'What stops you buying?', 5); return true })()`)
 await sleep(200); await C.click('Save & Continue', 500)
-// Study setup and pricing are two steps (15 Oct 2026): the incentive is on Pricing.
-await C.click('Continue', 700); await C.ev(FORMS);
+// The incentive and costs sit under the study settings on the Study step (22 Oct 2026, every Create frame).
+await C.ev(FORMS);
 await C.ev(`(() => { __type(__al('Incentive Amount'), '$${SURVEY.incentive}'); return true })()`); await sleep(200)
 const m1 = await money(SURVEY, true, 'Study step'); g3.push(...m1.gaps)
 await C.click('Proceed to Publish', 600)
@@ -276,8 +276,8 @@ await C.ev(`(async () => { __btn('Add Question', 1).click(); await __wait(); __b
   for (let d = 0; d < 3; d++) { __ph('Enter question text...', 'What did you eat today?', d * 2); __ph('Enter question text...', 'How did you feel afterwards?', d * 2 + 1) }
   return true })()`); await sleep(200)
 await C.click('Save & Continue', 500)
-// Study setup and pricing are two steps (15 Oct 2026): the incentive is on Pricing.
-await C.click('Continue', 700); await C.ev(FORMS);
+// The incentive and costs sit under the study settings on the Study step (22 Oct 2026, every Create frame).
+await C.ev(FORMS);
 await C.ev(`(() => { __type(__al('Incentive Amount'), '$${DIARY.incentive}'); return true })()`); await sleep(150)
 await C.click('Proceed to Publish', 600); await C.ev(FORMS); await C.ev(card); await C.click('Publish Study', 900)
 DIARY.id = await idOf(DIARY)
@@ -288,7 +288,7 @@ await C.click('Continue'); await C.ev(FORMS)
 await C.click('Set Address & Availability', 500)
 await C.ev(`(async () => { ${address('12 Main St', 'Austin, Texas', '73301')} ${address('4 Dock Road', 'Houston, Texas', '77002')} await __choose(__btn('15 minutes'), '10 minutes'); __type(__al('Minimum notice'), '1'); await __wait(); await __choose(__btn('Minutes'), 'Hours'); ${hours('09:00 AM', '05:00 PM')}
   __al('Add hours to Tuesday').click(); await __wait(); await __time('Tuesday from', '06:00 PM', 1); await __time('Tuesday to', '08:00 PM', 1); return true })()`)
-// Since 22 Oct 2026 the composer has no Submit: Continue submits the availability and moves to Pricing.
+// The composer has no Submit: Continue submits the availability and returns to the Study step, where the incentive is.
 await sleep(200); await C.click('Continue', 900); await C.ev(FORMS);
 await C.ev(`(() => { __type(__al('Incentive Amount'), '$${PLACE.incentive}'); return true })()`); await sleep(150)
 await C.click('Save Draft & Exit', 800)
@@ -299,8 +299,7 @@ const draftAbout = await C.ev(`__all('main input, main textarea').map((e) => e.v
 for (const x of [PLACE.title, PLACE.description, dmy(end)]) if (!draftAbout.includes(x)) g4.push('draft, About: ' + x)
 await C.go('/client/studies/create/study'); await C.ev(FORMS); await sleep(300)
 g4.push(...(await lacks(C, ['2 addresses, available 5 days/week, custom timings'])).map((x) => 'draft, Study: ' + x))
-// The costs are on the Pricing step now (15 Oct 2026).
-await C.click('Continue', 700); await C.ev(FORMS)
+// The costs are on the Study step, under the settings (22 Oct 2026).
 const m2 = await money(PLACE, false, 'Study step'); g3.push(...m2.gaps)
 await C.click('Proceed to Publish', 600)
 g3.push(...(await money(PLACE, false, 'summary')).gaps)

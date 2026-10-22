@@ -350,7 +350,7 @@ async function restrictInConsole(id, statement) {
   await C.ev(clientSession('jennifer@soulfullabs.com')); await C.open('/client/studies')
   await C.click('Create Study', 700); await C.click('Fill from scratch instead', 700)
   await C.click('Survey', 300)
-  const recruit = async () => { await C.go('/client/studies/create/pricing'); await sleep(500); return flat(await C.ev(`(() => { const el = [...document.querySelectorAll('*')].find((e) => e.children.length < 6 && /^Recruitment Cost/.test(e.innerText ?? '')); return el ? el.innerText : '' })()`)) }
+  const recruit = async () => { await C.go('/client/studies/create/study'); await sleep(500); return flat(await C.ev(`(() => { const el = [...document.querySelectorAll('*')].find((e) => e.children.length < 6 && /^Recruitment Cost/.test(e.innerText ?? '')); return el ? el.innerText : '' })()`)) }
   const setAud = async (roles, skills) => { await C.go('/client/studies/create/audience'); await sleep(500); await C.ev(FORMS); await C.ev(`(() => { __ph('e.g. Product Manager', ${JSON.stringify(roles)}); __ph('e.g. SQL, Figma', ${JSON.stringify(skills)}); return true })()`); await sleep(200) }
   await setAud('', ''); const none = await recruit()
   await setAud('Nurse', ''); const roles = await recruit()

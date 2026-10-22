@@ -244,11 +244,10 @@ async function studyStep(s) {
   await C.ev(`(async () => { ${s.setup} return true })()`); await sleep(200)
   await C.click(s.submit, 700)
   const stuck = s.submit === 'Continue'
-    ? !(await C.path()).endsWith('/pricing')
+    ? await C.ev(`Boolean(document.querySelector('[data-submit-availability]'))`)
     : await C.ev(`Boolean(__all('button').find((b) => b.textContent.trim() === ${JSON.stringify(s.submit)}))`)
   if (stuck) throw new Error(`${s.key}: the composer did not accept ${s.submit}: ` + await C.ev(`document.querySelector('[role=status], [role=alert]')?.innerText ?? '(no reason shown)'`))
-  // Study setup and pricing are two steps (15 Oct 2026): the incentive is on Pricing. A session study's Continue is already there.
-  if (!(await C.path()).endsWith('/pricing')) await C.click('Continue', 700)
+  // The incentive and costs sit under the study settings on the Study step (22 Oct 2026, every Create frame).
   await C.ev(FORMS);
   await C.ev(`(() => { __type(__al('Incentive Amount'), '$${s.incentive}'); return true })()`); await sleep(150)
 }
@@ -384,8 +383,6 @@ console.log('\n5. Save a draft, leave, come back: nothing was lost')
     await C.click(s.opener, 500)
     await C.ev(`(async () => { ${s.setup} return true })()`); await sleep(200)
     await C.click(s.submit, 700)
-    // Study setup and pricing are two steps (15 Oct 2026): the incentive is on Pricing. A session study's Continue is already there.
-    if (!(await C.path()).endsWith('/pricing')) await C.click('Continue', 700)
     await C.ev(FORMS);
     await C.ev(`(() => { __type(__al('Incentive Amount'), '$${s.incentive}'); return true })()`); await sleep(150)
     await C.click('Save Draft & Exit', 800)
@@ -407,8 +404,7 @@ console.log('\n5. Save a draft, leave, come back: nothing was lost')
     await need('Screener', promptsOf(s.screener))
     await C.click('Continue')
     await need('Study', [s.summary])
-    // The incentive is on the Pricing step since 15 Oct 2026.
-    await C.go('/client/studies/create/pricing'); await need('Pricing', [`$${s.incentive}`]); await C.go('/client/studies/create/study'); await C.ev(FORMS)
+    await need('Study, incentive', [`$${s.incentive}`])
     await C.click('Update Address & Availability', 500)
     await need('Availability', ['12 Main St, Austin, Texas, 73301', '4 Dock Road, Houston, Texas, 77002'])
     const times = await C.ev(`({ from: __al('Monday from').innerText.trim(), to: __al('Friday to').innerText.trim(), sat: __al('Saturday').getAttribute('aria-checked'), notice: __al('Minimum notice').value === '1' && Boolean(__all('button').find((b) => b.textContent.trim() === 'Days')) })`)
