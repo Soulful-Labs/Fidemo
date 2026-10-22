@@ -16,11 +16,13 @@ import RespondentProfile from './RespondentProfile'
  * A "Respondent Profile Card" (368 x 170 on bg-1, 12 inside): a 40px initial,
  * the name over the role; the match score with its shield, the tier and, for
  * some, "Profession-Verified"; then either Invite To Study and View Profile,
- * or, once invited, a flat "Invitation Sent!" in their place.
+ * or, once invited, a flat "Invitation Sent!" in their place. The whole card
+ * opens the full profile (22 Oct 2026), on Matched and on Invited.
  */
 function Card({ person, invited, onInvite, onView }: { person: Match; invited: boolean; onInvite: () => void; onView: () => void }) {
   return (
-    <article className="rounded-lg bg-bg-1 p-3">
+    <article role="button" tabIndex={0} aria-label={`Open ${person.name}'s profile`} onClick={onView} onKeyDown={(e) => { if (e.key === 'Enter') onView() }}
+      className="cursor-pointer rounded-lg bg-bg-1 p-3 hover:bg-bg-2">
       <div className="flex items-center gap-2">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-bg-3 text-title-s text-text-subtitle">{person.initial}</span>
         <div className="min-w-0">
@@ -37,8 +39,8 @@ function Card({ person, invited, onInvite, onView }: { person: Match; invited: b
         <p className="mt-3 flex h-[38px] items-center justify-center rounded-md border-1 border-stroke-input text-text-medium text-text-disabled">Invitation Sent!</p>
       ) : (
         <div className="mt-3 flex gap-3">
-          <Button variant="secondary" size="md" className="flex-1 px-0" onClick={onInvite}>Invite To Study</Button>
-          <Button variant="tertiary" size="md" className="flex-1 px-0 bg-bg-1" rightIcon={<ChevronRight className="h-4 w-4" />} onClick={onView}>View Profile</Button>
+          <Button variant="secondary" size="md" className="flex-1 px-0" onClick={(e) => { e.stopPropagation(); onInvite() }}>Invite To Study</Button>
+          <Button variant="tertiary" size="md" className="flex-1 px-0 bg-bg-1" rightIcon={<ChevronRight className="h-4 w-4" />} onClick={(e) => { e.stopPropagation(); onView() }}>View Profile</Button>
         </div>
       )}
     </article>

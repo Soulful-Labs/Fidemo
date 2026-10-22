@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import type { ReactNode } from 'react'
+import { ReviewsPanel } from '../../participants/panels'
 import TierTag from '../../../components/app/TierTag'
 import Button from '../../../components/ui/Button'
 import { ChevronRight, InfoIcon, VerifiedIcon } from '../../../components/ui/icons'
@@ -35,6 +37,9 @@ const Gauge = ({ score }: { score: number }) => (
  */
 export default function RespondentProfile({ personId, invited, onClose, onInvite }: { personId?: string; invited: boolean; onClose: () => void; onInvite: () => void }) {
   const P = useRespondentProfile(personId)
+  // Reviews beside the Trust Score (2383:135816) opens the participant's reviews; closing them comes back here.
+  const [reviews, setReviews] = useState(false)
+  if (reviews) return <ReviewsPanel open personId={personId} onClose={() => setReviews(false)} />
   if (!P) return null
   return (
     <SidePanel open onClose={onClose} title={P.name}
@@ -54,7 +59,7 @@ export default function RespondentProfile({ personId, invited, onClose, onInvite
         <section className="flex h-56 flex-1 flex-col rounded-lg bg-bgAlt-1 p-4">
           <div className="flex h-7 items-center justify-between">
             <h3 className="text-text-regular text-text-subtitle">Trust Score</h3>
-            <button type="button" className="flex items-center gap-1 text-text-medium text-text-title">Reviews <ChevronRight className="h-4 w-4" /></button>
+            <button type="button" onClick={() => setReviews(true)} className="flex items-center gap-1 text-text-medium text-text-title hover:text-brand-primary">Reviews <ChevronRight className="h-4 w-4" /></button>
           </div>
           <div className="pt-3.5"><Gauge score={P.score} /></div>
           <div className="flex justify-center pt-4"><TierTag tier={P.tier} size={32} /></div>
