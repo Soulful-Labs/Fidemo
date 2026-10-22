@@ -1,8 +1,9 @@
 # Document updates pending
 
-Applied on 22 October 2026. `PRD-Focus-Insite-Platform-v2.md` and
+Applied on 23 October 2026. `PRD-Focus-Insite-Platform-v2.md` and
 `BRD-Focus-Insite-Platform-v2.md` (repo root) describe the build after the
-rounds of 21 and 22 October 2026, and PRD Section 6 reproduces
+rounds of 21 and 22 October 2026, including the client round finished
+overnight, and PRD Section 6 reproduces
 `docs/Trust-and-Rewards-Policy-v2.html`. The originals are unchanged.
 
 Five decisions are open and recorded as open in PRD Section 16: the deposit
@@ -25,7 +26,19 @@ Work that is not built, so there is nothing to describe yet.
 - **Selected radios and checked checkboxes** follow Figma's yellow-600 in the
   console. No sweep of every other screen in the three apps has been made.
 - **Spacing** was matched on the screens changed in the 22 October client
-  round only; no full sweep.
+  rounds only; no full sweep.
+- **Colours per element** could not be compared automatically: Figma's
+  metadata carries sizes, not fills. The token values match Figma's
+  variables; raw colours that had a token now use it. Those with no token
+  (amber Disqualified and No-show pills, the orange account alert, the
+  success disc on Published, the dark attachment placeholder in chat, the
+  pink paused banner) are left as measured.
+- **The console's interview notes** still show sample text; the client's are
+  now kept (`setSessionNotes`). The console should read and write the same
+  notes.
+- **The dashboard picture on the client landing page** was not retaken this
+  round (it needs the settled demo state); its sidebar shows Studies
+  expanded.
 - **The respondent's own reviews.** The respondent app has no screen for the
   reviews clients wrote about them.
 
@@ -42,6 +55,22 @@ Work that is not built, so there is nothing to describe yet.
   functions.
 - Completion Verification is worded for the one verification PIN; Figma speaks
   of check-in and check-out codes.
-- The Create stepper has five steps (Pricing is the fifth); Figma draws four.
+- Edit Study in the study options menu, and the Edit buttons on Manage
+  Study, are drawn and deliberately not built this round.
+- Undo beside a session read-back: the client follows its frames
+  (1769:86063, 1627:106074: Undo), the console its own (1952:79377: Mark
+  Completed beside "Marked as No-show"). The same action reads two ways; one
+  is probably wrong.
+- The Create flow is four steps with pricing inside the Study step, as the
+  frames draw it; this changes the 15 October decision of a separate
+  Pricing step. The frames' AutoPay switch and "25% of cost" rows stay out.
+- Video Result: no recording exists until a video provider is connected; its
+  buttons say so. Needs a drawn empty state.
+- The notes editor's formatting row inserts plain-text marks.
+- Help's reply-time lines come from the workflow; no frame draws them.
+- Red for a neutral state: the Paused study banner (1704:143783) is drawn
+  pink-red, though pausing is not an error. Built as drawn; please review.
+- Payments' paid-all dialog keeps the frame's typos ("and and", "has been
+  cleared").
 - Needed: a Cancel Session control for a one-to-one booking in the console,
   and a per-seat Cancel on a group session in the client app.

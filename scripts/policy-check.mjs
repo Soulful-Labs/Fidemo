@@ -330,16 +330,16 @@ void by
   if (payAll) g.push(`the Pay All panel now has ${payAll} download controls`)
   await fetchFile('Invoice row, with Pay All open', C, '/client/payments?panel=payall', `const b = document.querySelector('button[aria-label="Download invoice"]'); if (!b) throw new Error('no invoice row'); b.click()`)
   await fetchFile('Results summaries', C, '/client/studies/st-pay/results', btn('Download', 0))
-  await fetchFile('Results certificate', C, '/client/studies/st-pay/results', btn('Download', 1))
+  // The certificate's download is an icon button since 22 Oct 2026 (1627:104407).
+  await fetchFile('Results certificate', C, '/client/studies/st-pay/results', `const b = document.querySelector('button[aria-label="Download the certificate"]'); if (!b) throw new Error('no certificate download'); b.click()`)
   await fetchFile('Pay tab invoice', C, '/client/studies/st-pay/pay', btn('Invoice'))
   await fetchFile('Session attendance list', C, '/client/studies/st-fitness/recruited?panel=downloads', btn('Download List'))
-  await C.go('/client/studies/st-sleep/respondent/ferry-l/result?session=running'); await sleep(900)
-  const notes = await C.ev(`Boolean(document.querySelector('button[aria-label="Download notes"]'))`)
-  if (notes) g.push('the notes download is still there')
+  // The notes are kept since 22 Oct 2026, so their download gives what was typed.
+  await fetchFile('Interview notes', C, '/client/studies/st-sleep/respondent/ferry-l/result?session=running', `const t = document.querySelector('textarea[aria-label="Interview notes"]'); if (!t) throw new Error('no notes box'); const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set; set.call(t, 'Policy check note'); t.dispatchEvent(new Event('input', { bubbles: true })); await new Promise((r) => setTimeout(r, 700)); document.querySelector('button[aria-label="Download notes"]').click()`)
   const anyClaim = []
   for (const [t, paths] of [[C, ['/client/payments', '/client/studies/st-pay/results', '/client/studies/st-pay/pay']], [R, ['/wallet/payouts/po-1']]]) for (const p of paths) { await t.go(p); await sleep(400); if (/downloaded/i.test(await text(t))) anyClaim.push(p) }
   if (anyClaim.length) g.push('a screen still says "downloaded": ' + anyClaim.join(', '))
-  say(5, 'Every download either produces a file or is gone', g, `${got.length} files saved, each named in its message:\n         ${got.join('\n         ')}\n       Session notes: the download is gone (the notes are sample text, nothing to give)`)
+  say(5, 'Every download either produces a file or is gone', g, `${got.length} files saved, each named in its message:\n         ${got.join('\n         ')}`)
 }
 
 // ---- 6. no real face anywhere

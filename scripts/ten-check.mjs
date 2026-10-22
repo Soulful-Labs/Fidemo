@@ -330,7 +330,7 @@ const cardsBAfter = await st(C, `s.clients.find((c) => c.id === ${JSON.stringify
 {
   const g = []
   if (cardsB !== 'VISA 1111') g.push(`the onboarding card was not saved (${cardsB})`)
-  if (!pubB.radio.some((r) => /\*\*\*\* 1111/.test(r) && r.endsWith('=true'))) g.push(`not selected at Publish: ${pubB.radio.join(' | ')}`)
+  if (!pubB.radio.some((r) => /(?:\*{4}|•{4}) 1111/.test(r) && r.endsWith('=true'))) g.push(`not selected at Publish: ${pubB.radio.join(' | ')}`)
   if (pubB.cardFields !== 0) g.push('the card form is shown to be filled again')
   if (disabledB !== false) g.push('Publish Study disabled')
   if (!publishedB) g.push('did not publish')
@@ -351,9 +351,9 @@ const replaced = await st(C, `s.clients.find((c) => c.id === ${JSON.stringify(id
 const accountCard3 = await body(C)
 {
   const g = []
-  if (!/Payment Method/.test(accountCard1) || !/\*\*\*\* 1111/.test(accountCard1)) g.push('the account does not show the card')
+  if (!/Payment Method/.test(accountCard1) || !/(?:\*{4}|•{4}) 1111/.test(accountCard1)) g.push('the account does not show the card')
   if (edited !== '1111 Expires 01/31' || !/Expires 01\/31/.test(accountCard2)) g.push(`edit: ${edited}`)
-  if (replaced !== 'Mastercard 4444 Expires 02/32 default' || !/\*\*\*\* 4444/.test(accountCard3)) g.push(`replace: ${replaced}`)
+  if (replaced !== 'Mastercard 4444 Expires 02/32 default' || !/(?:\*{4}|•{4}) 4444/.test(accountCard3)) g.push(`replace: ${replaced}`)
   say(5, 'client', 'The card can be edited from the client\'s account', g, `Account > Payment Method > Edit or Replace: expiry changed to 01/31, then replaced with ${replaced}`)
 }
 
