@@ -3,13 +3,13 @@ import { NavLink, useLocation, useNavigate, useSearchParams } from 'react-router
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import Tabs from '../../components/ui/Tabs'
-import Select from '../../components/ui/Select'
 import Tag from '../../components/ui/Tag'
 import { AskSupportPanel, SentSuccessModal } from './HelpPanels'
 import { ChevronDown, ChevronRight, MessageIcon, Search } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { DIRECT_HELP, REPLY_TIMES, FAQS } from '../../mock/help'
 import { useWorkspace } from '../../mock/workspace'
+import Picker from '../../components/ui/Picker'
 
 /** One question, open or closed. The frame draws the first one open. */
 function Faq({ q, a, open, onToggle }: { q: string; a?: string; open?: boolean; onToggle: () => void }) {
@@ -118,8 +118,7 @@ export default function Help() {
                   placeholder="Search by name or ticket number"
                   className="min-w-0 flex-1 bg-transparent text-body-regular text-text-title outline-none placeholder:text-text-body" />
               </span>
-              <Select value={`Sort by: ${sort}`} className="w-[240px]"
-                onClick={() => setSort((v) => (v === 'Newest first' ? 'Oldest first' : 'Newest first'))} />
+              <Picker value={`Sort by: ${sort}`} className="w-[240px]" options={['Sort by: Newest first', 'Sort by: Oldest first']} onPick={(v) => setSort(v.replace('Sort by: ', ''))} />
             </div>
 
             <div className="mt-6 overflow-hidden rounded-lg border-1 border-stroke-input">

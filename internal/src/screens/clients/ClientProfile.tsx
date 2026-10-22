@@ -4,7 +4,7 @@ import AppShell from '../../app/AppShell'
 import StudyTypeTag from '../../components/app/StudyTypeTag'
 import type { StudyType } from '../../components/app/StudyTypeTag'
 import Button, { IconButton } from '../../components/ui/Button'
-import { SearchInput, Select } from '../../components/ui/Input'
+import { SearchInput } from '../../components/ui/Input'
 import { DotsIcon, DownloadIcon, ExternalIcon, EyeIcon, ReceiptIcon } from '../../components/ui/icons'
 import Table from '../../components/ui/Table'
 import type { Column } from '../../components/ui/Table'
@@ -20,6 +20,8 @@ import type { AccountStep } from '../participants/profile/accountDialogs'
 import { Mastercard } from '../studies/review/PaymentRevisions'
 import InvoicePanel from './InvoicePanel'
 import { ClientAbout, ClientHeader } from './parts'
+import { useFacet } from '../participants/verifications/VerificationsList'
+import { STUDY_TYPE_LABEL } from '../../components/app/StudyTypeTag'
 
 type Tab = 'about' | 'studies' | 'payments'
 const TYPES = ['survey', 'video', 'video-group', 'in-person', 'in-person-group', 'diary']
@@ -54,6 +56,8 @@ export default function ClientProfile() {
   const off = view.deactivated
   const tab: Tab = params.get('tab') === 'studies' ? 'studies' : params.get('tab') === 'payments' ? 'payments' : 'about'
   const done = params.get('sub') === 'completed'
+  /** The study-type filter (the loose "Type Filter" menu, 22 Oct 2026): All, then the types this client runs. */
+  const [studyRows, typeSelect] = useFacet(done ? view.COMPLETED : view.ONGOING, 'type', '', (t) => STUDY_TYPE_LABEL[t as StudyType] ?? t, 'w-[200px]')
   const go = (n: { tab?: Tab; sub?: string }) => {
     const t = n.tab ?? tab
     setParams({ ...(t !== 'about' && { tab: t }), ...(n.sub === 'completed' && { sub: 'completed' }) }, { replace: true })
@@ -115,8 +119,8 @@ export default function ClientProfile() {
         {tab === 'studies' && (
           <div>
             <UnderlineTabs items={[{ key: 'ongoing', label: 'Ongoing' }, { key: 'completed', label: 'Completed' }]} value={done ? 'completed' : 'ongoing'} onChange={(k) => go({ sub: k })} />
-            <div className="flex gap-3 pb-3 pt-4"><SearchInput size="sm" placeholder="Search studies..." /><Select size="sm" className="w-[134px] shrink-0" value="All" options={['All']} /></div>
-            <Table empty={done ? 'This client\u2019s completed studies will appear here.' : 'This client\u2019s running studies will appear here.'} rows={done ? view.COMPLETED : view.ONGOING} rowKey={(r) => r.id} columns={studyCols} highlight="st-pay"
+            <div className="flex gap-3 pb-3 pt-4"><SearchInput size="sm" placeholder="Search studies..." />{typeSelect}</div>
+            <Table empty={done ? 'This client\u2019s completed studies will appear here.' : 'This client\u2019s running studies will appear here.'} rows={studyRows} rowKey={(r) => r.id} columns={studyCols} highlight="st-pay"
               onRowClick={(r) => navigate(`/studies/${r.id}${done ? '?state=completed' : ''}`)} />
           </div>
         )}

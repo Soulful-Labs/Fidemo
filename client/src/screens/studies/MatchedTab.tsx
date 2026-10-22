@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
-import Select from '../../components/ui/Select'
 import Tabs from '../../components/ui/Tabs'
 import RespondentCard from '../../components/client/RespondentCard'
 import { useOpenProfile } from '../../app/ProfileHost'
@@ -13,6 +12,8 @@ import InviteFromPool from './InviteFromPool'
 import { useStudies, useStudy } from '../../platform'
 import { recruits } from '@shared/derive'
 import { useToast } from '../../components/ui/Toast'
+import Picker from '../../components/ui/Picker'
+import { TIER_MENU, tierFromMenu } from '@shared/lifecycle'
 
 /**
  * Matched (1627:96237) and Invited (1627:96329) are one tab with a segmented
@@ -35,9 +36,14 @@ export default function MatchedTab() {
   const toast = useToast()
   /** The frame draws nine cards; the rest are behind Load more. */
   const [shown, setShown] = useState(9)
-  const matched = recruits(world, s, state)
-    .filter((r) => tier === 'All' || r.tier === tier.toLowerCase())
-    .sort((a, b) => b.score - a.score)
+  /** Sort and Location are not drawn as menus (22 Oct 2026): Sort offers the score (as matched) and the name, Location the places these people are in. */
+  const [sort, setSort] = useState<'Score' | 'Name'>('Score')
+  const [place, setPlace] = useState('All')
+  const pool = recruits(world, s, state)
+  const places = [...new Set(pool.map((r) => r.location).filter(Boolean))].sort()
+  const matched = pool
+    .filter((r) => (tier === 'All' || r.tier === tier.toLowerCase()) && (place === 'All' || r.location === place))
+    .sort((a, b) => (sort === 'Name' ? a.name.localeCompare(b.name) : b.score - a.score))
   const people = matched.slice(0, shown)
   /** Respondent Profile Details (1627:98130), with its Reviews page: the one profile host every name opens. */
   const openProfile = useOpenProfile()
@@ -73,10 +79,9 @@ export default function MatchedTab() {
             <Tabs variant="segmented" className="w-[238px]" value={state} onChange={(k) => setState(k as 'matched' | 'invited')}
               items={[{ key: 'matched', label: 'Matched' }, { key: 'invited', label: 'Invited' }]} />
             <div className="flex items-center gap-3">
-              <Select value="Sort: Score" className="w-[180px]" onClick={() => toast('Ranked by score and tier, as the matching does')} />
-              <Select value={`Tier: ${tier}`} className="w-[160px]"
-                onClick={() => setTier((t) => (t === 'All' ? 'Platinum' : t === 'Platinum' ? 'Gold' : t === 'Gold' ? 'Silver' : 'All'))} />
-              <Select value="Location: All" className="w-[180px]" onClick={() => toast('Every matched respondent is in the study’s target locations')} />
+              <Picker value={`Sort: ${sort}`} className="w-[180px]" options={['Sort: Score', 'Sort: Name']} onPick={(v) => setSort(v === 'Sort: Name' ? 'Name' : 'Score')} />
+              <Picker value={`Tier: ${tier}`} className="w-[230px]" options={TIER_MENU.map((m) => m.label)} onPick={(v) => { const t = tierFromMenu(v); setTier(t ? t[0]!.toUpperCase() + t.slice(1) : 'All') }} />
+              <Picker value={`Location: ${place}`} className="w-[200px]" options={['All', ...places].map((p) => `Location: ${p}`)} onPick={(v) => setPlace(v.replace('Location: ', ''))} />
             </div>
           </div>
 

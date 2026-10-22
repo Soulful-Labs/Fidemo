@@ -16,6 +16,8 @@ import { ActivityList, JoinNow, Notes, PinCard, SessionCard, VideoResult } from 
 import DetailShell, { DETAIL_TABS } from './DetailShell'
 import CancelSessionDialog from './CancelSessionDialog'
 import { MarkBackDialog, NoShowDialog, RatePanel } from './dialogs'
+import { TIER_MENU, tierFromMenu, tierMenuValue } from '@shared/lifecycle'
+import type { Tier as SharedTier } from '@shared/types'
 
 const Tag = ({ good, children }: { good: boolean; children: string }) => (
   <span className={cn('flex h-[38px] items-center gap-1 rounded-md px-3 text-text-regular', good ? 'bg-state-successBg text-state-success' : 'bg-red-50 text-state-danger')}>
@@ -51,12 +53,14 @@ export default function SessionPage() {
   const [rating, setRating] = useState<Person | null>(null)
   const [profile, setProfile] = useState<string | undefined>()
   const [cancelling, setCancelling] = useState<Person | null>(null)
+  const [tier, setTier] = useState<SharedTier | null>(null)
   if (!x) return <DetailShell study={study} tabs={[DETAIL_TABS.result]} tab="result" onTab={() => undefined}><p className="text-text-regular text-text-subtitle">This study has no sessions yet.</p></DetailShell>
 
-  const people = x.people
+  /** Tier (2003:134356) filters the participants listed (22 Oct 2026); attendance still counts everyone. */
+  const people = x.people.filter((p) => !tier || p.tier.toLowerCase() === tier)
   const started = Date.now() >= startOf(x.startsAt, x.slot).getTime()
-  const done = params.get('state') === 'completed' || started || people.some((p) => p.state === 'completed' || p.state === 'no_show')
-  const allDone = people.length > 0 && people.every((p) => p.state === 'completed' || p.state === 'no_show')
+  const done = params.get('state') === 'completed' || started || x.people.some((p) => p.state === 'completed' || p.state === 'no_show')
+  const allDone = x.people.length > 0 && x.people.every((p) => p.state === 'completed' || p.state === 'no_show')
 
   const NoShowButton = ({ p }: { p: Person }) => <Button variant="tertiary" size="md" className="px-3" leftIcon={<CloseIcon className="h-4 w-4" />} onClick={() => setNoShow(p)}>Mark No-show</Button>
   const CompleteButton = ({ p, back: marksBack }: { p: Person; back?: boolean }) => <Button variant="secondary" size="md" className="px-3" leftIcon={<VerifiedIcon className="h-4 w-4" />} onClick={() => marksBack ? setBack(p) : markCompleted(study.id, p.id)}>Mark Completed</Button>
@@ -76,7 +80,7 @@ export default function SessionPage() {
     <div>
       <div className="flex items-center justify-between pb-3">
         <h2 className="text-body-medium leading-[22px] text-text-title">Participants</h2>
-        <Select size="sm" className="w-40" value="Tier: All" options={['Tier: All']} />
+        <Select size="sm" className="w-56" value={tierMenuValue(tier)} options={TIER_MENU.map((m) => m.label)} onChange={(v) => setTier(tierFromMenu(v))} />
       </div>
       <div role="table" className="overflow-hidden rounded-lg border-1 border-stroke-2 text-text-regular text-text-title">
         <div role="row" className="grid h-[52px] grid-cols-[160px_280px_1fr] items-center bg-bg-1 px-4 text-text-subtitle">
@@ -90,7 +94,7 @@ export default function SessionPage() {
             {!done && p.state === 'scheduled' && <Button variant="tertiary" size="md" className="px-3" onClick={() => setCancelling(p)}>Cancel Session</Button>}
           </div>
         ))}
-        {people.length === 0 && <p className="border-t-1 border-stroke-1 p-4 text-text-subtitle">No one has booked a seat in this session yet.</p>}
+        {people.length === 0 && <p className="border-t-1 border-stroke-1 p-4 text-text-subtitle">{x.people.length ? 'No one matches this filter.' : 'No one has booked a seat in this session yet.'}</p>}
       </div>
     </div>
   )
@@ -98,7 +102,7 @@ export default function SessionPage() {
   const scheduled = inPerson
     ? <SessionCard title="Scheduled For" date={x.date} time={x.time} address={x.address} />
     : <SessionCard title="Scheduled For" date={x.date} time={x.time} aside={<span className="flex h-7 items-center rounded-full bg-bg-2 px-3 text-text-regular text-text-title">{x.seats}</span>}><JoinNow /></SessionCard>
-  const markAll = () => { for (const p of people) if (p.state !== 'completed' && p.state !== 'no_show') markCompleted(study.id, p.id) }
+  const markAll = () => { for (const p of x.people) if (p.state !== 'completed' && p.state !== 'no_show') markCompleted(study.id, p.id) }
 
   return (
     <DetailShell study={study} tabs={[DETAIL_TABS.result, DETAIL_TABS.activity]} tab={tab} bar={tab === 'result' && done ? <GroupCompletionBar done={allDone} onAll={markAll} /> : undefined}

@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import type { ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import AppShell from '../../../app/AppShell'
 import { SearchInput, Select } from '../../../components/ui/Input'
@@ -19,9 +21,22 @@ const by = col('by', 'Reported By', 150, { render: (r) => <span className={r.by 
 const result = (reportedGreen: boolean): Column<Row> => ({ key: 'result', header: 'Result', width: 120, render: (r) => (
   <span className={cn('inline-flex h-7 items-center rounded-full px-2.5 text-text-regular', reportedGreen && r.result === 'Rejected' ? RESULT.Verified : RESULT[r.result ?? ''])}>{r.result}</span>) })
 
-const Toolbar = ({ filter }: { filter: string }) => (
-  <div className="flex gap-4 pb-[15px]"><SearchInput size="sm" placeholder="Search participants by name or role..." /><Select size="sm" className="w-[200px] shrink-0" value={filter} options={[filter]} /></div>
+const Toolbar = ({ select }: { select: ReactNode }) => (
+  <div className="flex gap-4 pb-[15px]"><SearchInput size="sm" placeholder="Search participants by name or role..." />{select}</div>
 )
+
+/**
+ * "Flagged for All" / "Reported By All" (22 Oct 2026): the drawn label, then each value the table holds;
+ * picking one narrows the table. The options are not drawn, so they are read from the rows.
+ */
+export function useFacet<R extends object>(rows: R[], key: keyof R & string, prefix: string, name: (raw: string) => string = (x) => x, className = 'w-[240px]'): [R[], ReactNode] {
+  const at = (r: R) => String((r as Record<string, unknown>)[key] ?? '')
+  const [value, setValue] = useState('')
+  const show = (raw: string) => `${prefix ? `${prefix} ` : ''}${raw ? name(raw) : 'All'}`
+  const options = [...new Set(rows.map(at).filter(Boolean))].sort()
+  const select = <Select size="sm" className={`${className} shrink-0`} value={show(value)} options={[show(''), ...options.map(show)]} onChange={(v) => setValue(options.find((o) => show(o) === v) ?? '')} />
+  return [rows.filter((r) => !value || at(r) === value), select]
+}
 
 /**
  * Verifications (Onboarding 2022:168589, Reported 2036:142437): two segments,
@@ -39,20 +54,25 @@ export default function VerificationsList() {
   const [params, setParams] = useSearchParams()
   const reported = params.get('tab') === 'reported'
   const open = (r: Row) => navigate(`/participants/verifications/${r.id}`)
-  const { ONBOARDING, ONBOARDING_HISTORY, REPORTED, REPORTED_HISTORY, counts } = useVerificationLists()
+  const lists = useVerificationLists()
+  const { counts } = lists
+  const [ONBOARDING, onboardingBy] = useFacet(lists.ONBOARDING as Row[], 'flag', 'Flagged for')
+  const [REPORTED, reportedBy] = useFacet(lists.REPORTED as Row[], 'by', 'Reported By')
+  const [ONBOARDING_HISTORY, onboardingHistoryBy] = useFacet(lists.ONBOARDING_HISTORY as Row[], 'flag', 'Flagged for')
+  const [REPORTED_HISTORY, reportedHistoryBy] = useFacet(lists.REPORTED_HISTORY as Row[], 'flag', 'Flagged for')
   return (
     <AppShell className="pb-8" crumbs={[{ label: 'Verifications' }]}>
       <SegmentedTabs className="w-[280px]" segmentClassName="flex-1 min-w-0" value={reported ? 'reported' : 'onboarding'}
         onChange={(k) => setParams(k === 'reported' ? { tab: k } : {}, { replace: true })} items={[{ key: 'onboarding', label: 'Onboarding' }, { key: 'reported', label: 'Reported' }]} />
       <h2 className="pb-2 pt-4 text-title-s leading-[25px] text-text-title">{reported ? counts.reported : counts.onboarding}</h2>
-      <Toolbar filter={reported ? 'Reported By All' : 'Flagged for All'} />
+      <Toolbar select={reported ? reportedBy : onboardingBy} />
       {reported
         ? <Table empty="Participants reported by a client or by the system will appear here." rowHeight={52} rows={REPORTED as Row[]} rowKey={(r) => r.id} onRowClick={open} columns={[{ ...who, width: 180 }, col('role', 'Role', 206), col('date', 'Date', 124, { sortable: true }), by, col('flag', 'Flagged For', 170), col('reason', 'Reason', '1fr')]} />
         : <Table empty="Identity and profession checks that need a person will appear here." rowHeight={52} rows={ONBOARDING as Row[]} rowKey={(r) => r.id} onRowClick={open} columns={[who, col('role', 'Role', 240), col('date', 'Date', 130, { sortable: true }), col('flag', 'Flagged For', 170), col('reason', 'Reason', '1fr')]} />}
       <div className="pt-3"><Pagination page={1} pages={10} /></div>
 
       <h2 className="mt-8 border-t-1 border-stroke-1 pb-3 pt-8 text-title-s leading-[25px] text-text-title">History</h2>
-      <Toolbar filter="Flagged for All" />
+      <Toolbar select={reported ? reportedHistoryBy : onboardingHistoryBy} />
       {reported
         ? <Table empty="Reports you have decided will appear here." rowHeight={52} rows={REPORTED_HISTORY as Row[]} rowKey={(r) => r.id} onRowClick={open} columns={[who, by.width ? { ...by, width: 220 } : by, col('date', 'Completed', 130, { sortable: true }), col('flag', 'Flagged For', 170), col('reason', 'Verification Remarks', '1fr'), result(true)]} />
         : <Table empty="Verifications you have decided will appear here." rowHeight={52} rows={ONBOARDING_HISTORY as Row[]} rowKey={(r) => r.id} onRowClick={open} columns={[who, col('role', 'Role', 220), col('date', 'Completed', 130, { sortable: true }), col('flag', 'Flagged For', 170), col('reason', 'Verification Remarks', '1fr'), result(false)]} />}

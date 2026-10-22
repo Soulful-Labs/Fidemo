@@ -5,7 +5,8 @@
  * from it. A state is what a thing is; what each app calls it is a label,
  * and the labels sit apart at the bottom so each app keeps its frames' words.
  */
-import type { Participation, ParticipationState, PayoutStatus, Study, StudyState, StudyType } from './types'
+import type { Participation, ParticipationState, PayoutStatus, Study, StudyState, StudyType, Tier } from './types'
+import { TIERS } from './rules'
 import { isSessionType } from './platform'
 
 // ---------------------------------------------------------------- the study
@@ -217,3 +218,22 @@ export const PAYOUT_MOVES: Record<PayoutStatus, PayoutStatus[]> = {
 export const payoutState = (status: string): PayoutStatus =>
   status === 'processing' ? 'pending' : status === 'completed' ? 'paid' : (status as PayoutStatus)
 export const canMovePayout = (from: string, to: PayoutStatus): boolean => PAYOUT_MOVES[payoutState(from)].includes(to)
+
+// ------------------------------------------------------------- filter menus
+
+/**
+ * The Tier menu (2003:134356, 22 Oct 2026): "All Tiers", then each tier with
+ * its band. The bands are read from the policy's thresholds, never typed.
+ */
+export const TIER_MENU: { label: string; tier: Tier | null }[] = [
+  { label: 'All Tiers', tier: null },
+  { label: `Platinum (${TIERS.platinum}+ score)`, tier: 'platinum' },
+  { label: `Gold (${TIERS.gold} to ${TIERS.platinum} score)`, tier: 'gold' },
+  { label: `Silver (up to ${TIERS.gold} score)`, tier: 'silver' },
+]
+/** What a closed Tier dropdown reads: "Tier: All", "Tier: Gold". */
+export const tierMenuValue = (tier: Tier | null): string => `Tier: ${tier ? tier[0]!.toUpperCase() + tier.slice(1) : 'All'}`
+export const tierFromMenu = (label: string): Tier | null => TIER_MENU.find((m) => m.label === label)?.tier ?? null
+
+/** The Recruited Status menu (1932:110854): All and the three statuses the Applications table draws. */
+export const APPLICATION_STATUS_MENU = ['All', 'Applied', 'Qualified', 'Disqualified'] as const

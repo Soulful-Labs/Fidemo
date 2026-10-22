@@ -11,6 +11,8 @@ import { useRecruiting } from '../../../mock/recruiting'
 import type { Match } from '../../../mock/recruiting'
 import { TEAM, say } from '../../../platform'
 import RespondentProfile from './RespondentProfile'
+import { TIER_MENU, tierFromMenu, tierMenuValue } from '@shared/lifecycle'
+import type { Tier as SharedTier } from '@shared/types'
 
 /**
  * A "Respondent Profile Card" (368 x 170 on bg-1, 12 inside): a 40px initial,
@@ -61,7 +63,18 @@ export default function MatchedTab({ study, invited, onSegment }: { study: Manag
   const [sent, setSent] = useState<Match | null>(null)
   const [viewing, setViewing] = useState<Match | null>(null)
   const { matched, invited: sentTo } = useRecruiting(study.raw)
-  const people = invited ? sentTo : matched
+  /**
+   * Sort, Tier and Location (22 Oct 2026). Tier is the drawn menu (2003:134356); Sort and Location are not
+   * drawn, so Sort offers the score (as matched) and the name, and Location the places these people are in.
+   */
+  const [sort, setSort] = useState<'Score' | 'Name'>('Score')
+  const [tier, setTier] = useState<SharedTier | null>(null)
+  const [place, setPlace] = useState('All')
+  const pool = invited ? sentTo : matched
+  const places = [...new Set(pool.map((m) => m.location).filter(Boolean))].sort()
+  const people = pool
+    .filter((m) => (!tier || m.tier.toLowerCase() === tier) && (place === 'All' || m.location === place))
+    .sort((a, b) => sort === 'Name' ? a.name.localeCompare(b.name) : Number.parseInt(b.score, 10) - Number.parseInt(a.score, 10))
   const first = (m: Match) => m.name.split(' ')[0]
   const send = (m: Match) => { setAsking(null); if (say(platform().invite(study.id, m.id, TEAM))) setSent(m) }
   return (
@@ -72,14 +85,14 @@ export default function MatchedTab({ study, invited, onSegment }: { study: Manag
         <SegmentedTabs className="w-60" segmentClassName="flex-1 min-w-0" value={invited ? 'invited' : 'matched'} onChange={(k) => onSegment(k === 'invited')}
           items={[{ key: 'matched', label: 'Matched' }, { key: 'invited', label: 'Invited' }]} />
         <div className="flex gap-3">
-          <Select className="w-[180px]" value="Sort: Score" options={['Sort: Score']} />
-          <Select className="w-[156px]" value="Tier: All" options={['Tier: All']} />
-          <Select className="w-[200px]" value="Location: All" options={['Location: All']} />
+          <Select className="w-[180px]" value={`Sort: ${sort}`} options={['Sort: Score', 'Sort: Name']} onChange={(v) => setSort(v === 'Sort: Name' ? 'Name' : 'Score')} />
+          <Select className="w-[230px]" value={tierMenuValue(tier)} options={TIER_MENU.map((m) => m.label)} onChange={(v) => setTier(tierFromMenu(v))} />
+          <Select className="w-[200px]" value={`Location: ${place}`} options={['Location: All', ...places.map((p) => `Location: ${p}`)]} onChange={(v) => setPlace(v.replace('Location: ', ''))} />
         </div>
       </div>
       <div className="grid grid-cols-3 gap-3 pt-6">
         {people.map((m) => <Card key={m.id} person={m} invited={invited} onInvite={() => setAsking(m)} onView={() => setViewing(m)} />)}
-        {people.length === 0 && <p className="col-span-3 rounded-lg bg-bg-1 p-4 text-text-regular text-text-subtitle">{invited ? 'No one has been invited to this study yet.' : 'No one in the pool is waiting to be invited to this study.'}</p>}
+        {people.length === 0 && <p className="col-span-3 rounded-lg bg-bg-1 p-4 text-text-regular text-text-subtitle">{pool.length ? 'No one matches these filters.' : invited ? 'No one has been invited to this study yet.' : 'No one in the pool is waiting to be invited to this study.'}</p>}
       </div>
 
       <Modal open={asking !== null} onClose={() => setAsking(null)} className="[&>div>div]:max-w-[330px]" title={`Invite ${asking ? first(asking) : ''} to apply for this study?`}

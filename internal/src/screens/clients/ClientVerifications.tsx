@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
-import { SearchInput, Select } from '../../components/ui/Input'
+import { SearchInput } from '../../components/ui/Input'
 import { CloseIcon, SupportIcon, VerifiedIcon } from '../../components/ui/icons'
 import Table, { Pagination } from '../../components/ui/Table'
 import type { Column } from '../../components/ui/Table'
@@ -17,6 +17,7 @@ import { Field } from '../participants/profile/AboutTab'
 import DecisionFlow from '../participants/verifications/dialogs'
 import type { Decision, Step } from '../participants/verifications/dialogs'
 import { ClientAbout, ClientHeader } from './parts'
+import { useFacet } from '../participants/verifications/VerificationsList'
 
 const col = (key: keyof ClientCheck, header: string, width: number | string, sortable = false): Column<ClientCheck> => ({ key, header, width, sortable, render: (r) => <span className="block truncate">{r[key]}</span> })
 const who: Column<ClientCheck> = { key: 'name', header: 'Name', width: 200, sortable: true, render: (r) => <span className="flex items-center gap-2"><img src={r.photo} alt="" className="h-6 w-6 rounded-full object-cover" />{r.name}</span> }
@@ -28,7 +29,11 @@ const flag: Column<ClientCheck> = { key: 'flag', header: 'Flagged For', width: 1
  * "Onboarding"; built as "Pending" on both.
  */
 export function ClientVerificationsList() {
-  const { CLIENT_PENDING, CLIENT_HISTORY, count } = useClientChecks()
+  const checks = useClientChecks()
+  const { count } = checks
+  /** Every check here is a business verification, so Pending narrows by what failed and History by the result (22 Oct 2026). */
+  const [CLIENT_PENDING, pendingBy] = useFacet(checks.CLIENT_PENDING, 'reason', 'Flagged for')
+  const [CLIENT_HISTORY, historyBy] = useFacet(checks.CLIENT_HISTORY, 'result', 'Result:')
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const history = params.get('tab') === 'history'
@@ -38,7 +43,7 @@ export function ClientVerificationsList() {
       <SegmentedTabs className="w-[280px]" segmentClassName="flex-1 min-w-0" value={history ? 'history' : 'pending'} onChange={(k) => setParams(k === 'history' ? { tab: k } : {}, { replace: true })}
         items={[{ key: 'pending', label: 'Pending' }, { key: 'history', label: 'History' }]} />
       <h2 className="pb-2 pt-4 text-title-s leading-[25px] text-text-title">{history ? 'History' : count}</h2>
-      <div className="flex gap-4 pb-[15px]"><SearchInput size="sm" placeholder="Search participants by name or role..." /><Select size="sm" className="w-[200px] shrink-0" value="Flagged for All" options={['Flagged for All']} /></div>
+      <div className="flex gap-4 pb-[15px]"><SearchInput size="sm" placeholder="Search participants by name or role..." />{history ? historyBy : pendingBy}</div>
       {history
         ? <Table empty="Business verifications you have decided will appear here." rowHeight={52} rows={CLIENT_HISTORY} rowKey={(r) => r.id} onRowClick={open} columns={[who, col('role', 'Role', 220), col('date', 'Completed', 130, true), flag, col('reason', 'Verification Remarks', '1fr'),
           { key: 'result', header: 'Result', width: 120, render: (r) => <span className={cn('inline-flex h-7 items-center rounded-full px-2.5 text-text-regular', r.result === 'Verified' ? 'bg-state-successBg text-state-success' : 'bg-orange-100 text-state-destructive')}>{r.result}</span> }]} />

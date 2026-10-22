@@ -5,7 +5,6 @@ import { Avatar } from '../../components/client/RespondentCard'
 import { useNavigate, useParams } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
-import Select from '../../components/ui/Select'
 import Pagination from '../../components/client/Pagination'
 import { ScoreCell, Th } from '../../components/client/RespondentTable'
 import { StudyFrame } from '../../components/client/StudyFrame'
@@ -18,6 +17,8 @@ import { monthDayYear } from '@shared/format'
 import { averageScore, counts, pageLabels, paginate, recruits, studyCertificate } from '@shared/derive'
 import { useState } from 'react'
 import { PersonName } from '../../app/ProfileHost'
+import Picker from '../../components/ui/Picker'
+import { TIER_MENU, tierFromMenu } from '@shared/lifecycle'
 
 /** The sealed stamp the certificate card is drawn with. */
 function Seal() {
@@ -89,8 +90,8 @@ export default function ResultsTab() {
 
           <div className="mt-6 flex h-[38px] items-center justify-between gap-4">
             <h2 className="text-title-s leading-[22px] text-text-title">Completed Study Respondents</h2>
-            <Select value={`Tier: ${tier}`} h="h-[38px]" className="w-[160px] text-text-regular"
-              onClick={() => setTier((v) => (v === 'All' ? 'Platinum' : v === 'Platinum' ? 'Gold' : v === 'Gold' ? 'Silver' : 'All'))} />
+            <Picker value={`Tier: ${tier}`} h="h-[38px]" className="w-[220px] text-text-regular" options={TIER_MENU.map((m) => m.label)}
+              onPick={(v) => { const t = tierFromMenu(v); setTier(t ? t[0]!.toUpperCase() + t.slice(1) : 'All') }} />
           </div>
 
           <div className="pt-3">

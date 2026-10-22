@@ -11,6 +11,8 @@ import { cn } from '../../../lib/cn'
 import type { ManagedStudy } from '../../../mock/manage'
 import { useRecruiting } from '../../../mock/recruiting'
 import type { Application, ApplicationStatus, Booking, Session } from '../../../mock/recruiting'
+import { APPLICATION_STATUS_MENU, TIER_MENU, tierFromMenu, tierMenuValue } from '@shared/lifecycle'
+import type { Tier as SharedTier } from '@shared/types'
 
 const STATUS: Record<ApplicationStatus, string> = {
   Applied: 'bg-yellow-50 text-brand-primary',
@@ -84,13 +86,24 @@ export default function RecruitedTab({ study, view, onView }: { study: ManagedSt
   const segmented = group || booked
   const showApplications = !segmented || view === 'applications'
   const open = (id: string) => navigate(`/studies/${study.id}/respondents/${id}`)
-  const { applications, scheduled, sessions } = useRecruiting(study.raw)
+  const { applications: allApplications, scheduled: allScheduled, sessions } = useRecruiting(study.raw)
   const [page, setPage] = useState(1)
+  /** Status (1932:110854) and Tier (2003:134356) filter the table under them (22 Oct 2026). */
+  const [status, setStatus] = useState('All')
+  const [tier, setTier] = useState<SharedTier | null>(null)
+  const tierOk = (t: string) => !tier || t.toLowerCase() === tier
+  const applications = allApplications.filter((r) => (status === 'All' || r.status === status) && tierOk(r.tier))
+  const scheduled = allScheduled.filter((r) => tierOk(r.tier))
   const rows = showApplications ? applications : scheduled
   const pages = Math.max(1, Math.ceil(rows.length / 10))
   const shown = rows.slice((Math.min(page, pages) - 1) * 10, Math.min(page, pages) * 10)
   const empty = (text: string) => <p className="rounded-lg bg-bg-1 p-4 text-text-regular text-text-subtitle">{text}</p>
-  const filters = <div className="flex gap-3"><Select size="sm" className="w-40" value="Status: All" options={['Status: All']} /><Select size="sm" className="w-40" value="Tier: All" options={['Tier: All']} /></div>
+  const filters = (
+    <div className="flex gap-3">
+      {showApplications && <Select size="sm" className="w-44" value={`Status: ${status}`} options={[...APPLICATION_STATUS_MENU]} onChange={(v) => { setStatus(v); setPage(1) }} />}
+      <Select size="sm" className="w-56" value={tierMenuValue(tier)} options={TIER_MENU.map((m) => m.label)} onChange={(v) => { setTier(tierFromMenu(v)); setPage(1) }} />
+    </div>
+  )
   return (
     <div>
       <h2 className="text-title-s leading-[25px] text-text-title">Recruited Respondents</h2>
@@ -104,12 +117,12 @@ export default function RecruitedTab({ study, view, onView }: { study: ManagedSt
       </div>
       {showApplications ? (
         <>
-          {applications.length ? <Table rowHeight={52} rows={shown as typeof applications} rowKey={(r) => r.id} columns={APPLICATION_COLUMNS} onRowClick={(r) => navigate(`/studies/${study.id}/${r.opens}`)} /> : empty('No one has applied to this study yet.')}
+          {applications.length ? <Table rowHeight={52} rows={shown as typeof applications} rowKey={(r) => r.id} columns={APPLICATION_COLUMNS} onRowClick={(r) => navigate(`/studies/${study.id}/${r.opens}`)} /> : empty(allApplications.length ? 'No one matches these filters.' : 'No one has applied to this study yet.')}
           <div className="pt-3"><Pagination page={Math.min(page, pages)} pages={pages} onChange={setPage} /></div>
         </>
       ) : booked ? (
         <>
-          {scheduled.length ? <Table rowHeight={60} rows={shown as typeof scheduled} rowKey={(r) => r.id} columns={bookingColumns((r) => open(r.id))} onRowClick={(r) => navigate(`/studies/${study.id}/respondents/${r.id}?tab=result`)} /> : empty('No sessions are booked yet.')}
+          {scheduled.length ? <Table rowHeight={60} rows={shown as typeof scheduled} rowKey={(r) => r.id} columns={bookingColumns((r) => open(r.id))} onRowClick={(r) => navigate(`/studies/${study.id}/respondents/${r.id}?tab=result`)} /> : empty(allScheduled.length ? 'No one matches these filters.' : 'No sessions are booked yet.')}
           <div className="pt-3"><Pagination page={Math.min(page, pages)} pages={pages} onChange={setPage} /></div>
         </>
       ) : (

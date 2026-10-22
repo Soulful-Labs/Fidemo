@@ -1,10 +1,13 @@
 import StudyTypeTag from '../../../components/app/StudyTypeTag'
-import { SearchInput, Select } from '../../../components/ui/Input'
+import { SearchInput } from '../../../components/ui/Input'
 import Table from '../../../components/ui/Table'
 import type { Column } from '../../../components/ui/Table'
 import { UnderlineTabs } from '../../../components/ui/Tabs'
 import { cn } from '../../../lib/cn'
 import type { ProfileView, StudyLine, StudyStatus } from '../../../mock/profile'
+import { useFacet } from '../verifications/VerificationsList'
+import { STUDY_TYPE_LABEL } from '../../../components/app/StudyTypeTag'
+import type { StudyType } from '../../../components/app/StudyTypeTag'
 
 export type StudySub = 'invites' | 'scheduled' | 'applied' | 'history' | 'saved'
 export const STUDY_SUBS = [{ key: 'invites', label: 'Invites To Schedule' }, { key: 'scheduled', label: 'Scheduled' }, { key: 'applied', label: 'Applied' }, { key: 'history', label: 'History' }, { key: 'saved', label: 'Saved' }]
@@ -39,13 +42,18 @@ const Heading = ({ children }: { children: string }) => <h3 className="pb-2 pt-4
  * headings. Read only: no row action is drawn, and rows are not links.
  */
 export default function StudiesTab({ sub, onSub, view }: { sub: StudySub; onSub: (s: StudySub) => void; view: ProfileView }) {
-  const { INVITES, SCHEDULED, APPLIED, HISTORY, SAVED } = view
+  const { SAVED } = view
+  /** The study-type filter (the loose "Type Filter" menus, 22 Oct 2026): All, then the types in this list. */
+  const typeName = (t: string) => STUDY_TYPE_LABEL[t as StudyType] ?? t
+  const rowsOf = sub === 'invites' ? view.INVITES : sub === 'scheduled' ? view.SCHEDULED : sub === 'applied' ? view.APPLIED : view.HISTORY
+  const [shown, typeSelect] = useFacet(rowsOf, 'type', '', typeName, 'w-[200px]')
+  const [INVITES, SCHEDULED, APPLIED, HISTORY] = [shown, shown, shown, shown]
   return (
     <div>
       <UnderlineTabs items={STUDY_SUBS} value={sub} onChange={(k) => onSub(k as StudySub)} />
       <div className="flex gap-3 pb-3 pt-4">
         <SearchInput size="sm" placeholder="Search studies..." />
-        {sub !== 'saved' && <Select size="sm" className="w-[134px] shrink-0" value="All" options={['All']} />}
+        {sub !== 'saved' && typeSelect}
       </div>
       {sub === 'invites' && <T rows={INVITES} cols={COLS.invites} />}
       {sub === 'scheduled' && <T rows={SCHEDULED} cols={COLS.scheduled} />}

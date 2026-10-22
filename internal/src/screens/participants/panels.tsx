@@ -18,13 +18,21 @@ import { usePlatform } from '../../platform'
  */
 export function AdvancedFilters({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [chips, setChips] = useState(ADVANCED.map((f) => f.chips))
+  /** Each list offers what the platform's participants hold (22 Oct 2026; the menus are not drawn): picking one adds its chip. */
+  const people = usePlatform().people
+  const uniq = (xs: string[]) => [...new Set(xs.filter(Boolean))].sort()
+  const choices = [
+    uniq(people.map((p) => p.profile.occupation)), uniq(people.map((p) => p.profile.industry)),
+    uniq(people.map((p) => p.location)), uniq(people.flatMap((p) => p.profile.languages)),
+  ]
   return (
     <SidePanel open={open} onClose={onClose} title="Advanced Filters"
       footer={<><Button variant="tertiary" onClick={onClose}>Cancel</Button><Button onClick={onClose}>Save</Button></>}>
       <div className="flex flex-col gap-4 pb-2">
         {ADVANCED.map((f, i) => (
           <div key={f.label}>
-            <Select size="sm" label={f.label} placeholder={f.placeholder} options={[]} />
+            <Select size="sm" label={f.label} placeholder={f.placeholder} options={choices[i]!.filter((o) => !chips[i]!.includes(o))}
+              onChange={(v) => setChips((all) => all.map((list, j) => (j === i ? [...list, v] : list)))} />
             <div className="flex gap-2 pt-2">
               {chips[i]!.map((c) => <Chip key={c} onRemove={() => setChips((all) => all.map((list, j) => (j === i ? list.filter((x) => x !== c) : list)))}>{c}</Chip>)}
             </div>

@@ -10,6 +10,8 @@ import { useResults } from '../../../mock/results'
 import type { ResultRow } from '../../../mock/results'
 import { DownloadSessions, RatePanel, RatedPanel } from '../respondent/dialogs'
 import { Tile } from './OverviewTab'
+import { TIER_MENU, tierFromMenu, tierMenuValue } from '@shared/lifecycle'
+import type { Tier as SharedTier } from '@shared/types'
 
 /**
  * Results (1952:81223 and siblings): tiles and a summary card with Download;
@@ -31,8 +33,11 @@ export default function ResultsTab({ study, completed }: { study: ManagedStudy; 
   const C = spec.certificate
   const [rated, setRated] = useState<ResultRow | null>(null)
   const [page, setPage] = useState(1)
-  const pages = Math.max(1, Math.ceil(spec.rows.length / 10))
-  const rows = group ? spec.rows : spec.rows.slice((Math.min(page, pages) - 1) * 10, Math.min(page, pages) * 10)
+  /** Tier (2003:134356) filters the completed respondents (22 Oct 2026). */
+  const [tier, setTier] = useState<SharedTier | null>(null)
+  const shownRows = spec.rows.filter((r) => !tier || r.tier.toLowerCase() === tier)
+  const pages = Math.max(1, Math.ceil(shownRows.length / 10))
+  const rows = group ? shownRows : shownRows.slice((Math.min(page, pages) - 1) * 10, Math.min(page, pages) * 10)
   const [rating, setRating] = useState<ResultRow | null>(null)
   const [downloading, setDownloading] = useState(false)
   const grid = group ? 'grid-cols-[180px_280px_160px_160px_1fr_150px]' : 'grid-cols-[180px_360px_180px_180px_1fr]'
@@ -69,7 +74,7 @@ export default function ResultsTab({ study, completed }: { study: ManagedStudy; 
 
       <div className="flex items-center justify-between pb-3.5 pt-5">
         <h2 className="text-title-s leading-[25px] text-text-title">Completed Study Respondents</h2>
-        <Select size="sm" className="w-40" value="Tier: All" options={['Tier: All']} />
+        <Select size="sm" className="w-56" value={tierMenuValue(tier)} options={TIER_MENU.map((m) => m.label)} onChange={(v) => { setTier(tierFromMenu(v)); setPage(1) }} />
       </div>
       <div role="table" className="overflow-hidden rounded-lg border-1 border-stroke-2">
         <div role="row" className={`grid ${grid} h-[52px] items-center bg-bg-1 text-text-regular text-text-subtitle`}>
@@ -87,7 +92,7 @@ export default function ResultsTab({ study, completed }: { study: ManagedStudy; 
             {rows.filter((r) => r.session === s.code).map((r) => <Row key={r.id} r={r} />)}
           </Fragment>
         )) : rows.map((r) => <Row key={r.id} r={r} />)}
-        {spec.rows.length === 0 && <p className="border-t-1 border-stroke-1 p-4 text-text-regular text-text-subtitle">No one has completed this study yet.</p>}
+        {shownRows.length === 0 && <p className="border-t-1 border-stroke-1 p-4 text-text-regular text-text-subtitle">{spec.rows.length ? 'No one matches this filter.' : 'No one has completed this study yet.'}</p>}
       </div>
       <div className="pt-3"><Pagination page={Math.min(page, pages)} pages={pages} onChange={setPage} /></div>
 

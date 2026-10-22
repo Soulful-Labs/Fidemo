@@ -13,7 +13,7 @@ import { usePlatform } from '../platform'
  * Qualified or Disqualified); Scheduled the booked sessions; Sessions a group
  * study's own sessions with the people booked into them.
  */
-export interface Match { id: string; initial: string; name: string; role: string; score: string; tier: Tier; verified?: boolean }
+export interface Match { id: string; initial: string; name: string; role: string; score: string; tier: Tier; verified?: boolean; location: string }
 export type ApplicationStatus = 'Applied' | 'Qualified' | 'Disqualified'
 export interface Application {
   id: string; name: string; role: string; status: ApplicationStatus; score: string; tier: Tier
@@ -60,7 +60,7 @@ const statusOf = (state: string): ApplicationStatus => state === 'applied' ? 'Ap
 
 export function recruiting(state: PlatformState, study: Study, now = new Date()) {
   const row = (r: ReturnType<typeof recruits>[number]) => ({ id: r.id, name: r.name, role: r.role, score: String(r.score), tier: TIER_NAME[r.tier] })
-  const card = (r: ReturnType<typeof recruits>[number]): Match => ({ ...row(r), initial: r.name.slice(0, 1), score: `${r.score}%`, verified: r.professionVerified })
+  const card = (r: ReturnType<typeof recruits>[number]): Match => ({ ...row(r), initial: r.name.slice(0, 1), score: `${r.score}%`, verified: r.professionVerified, location: r.location })
   const byScore = <T extends { score: string }>(a: T, b: T) => Number.parseInt(b.score, 10) - Number.parseInt(a.score, 10)
   const matched = recruits(state, study, 'matched', now).map(card).sort(byScore)
   const invited = recruits(state, study, 'invited', now).map(card).sort(byScore)

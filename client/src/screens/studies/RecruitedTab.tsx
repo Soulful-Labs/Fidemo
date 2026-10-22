@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
-import Select from '../../components/ui/Select'
 import Tabs from '../../components/ui/Tabs'
 import Pagination from '../../components/client/Pagination'
 import { StudyFrame } from '../../components/client/StudyFrame'
@@ -16,6 +15,8 @@ import { CancelSessionModal } from './StudyMenus'
 import { pageLabels, paginate, recruits, sessionSeats, sessionStartOf } from '@shared/derive'
 import { slotDay } from '@shared/format'
 import { CLIENT_TAG } from '@shared/lifecycle'
+import Picker from '../../components/ui/Picker'
+import { TIER_MENU, tierFromMenu } from '@shared/lifecycle'
 
 /**
  * Recruited (1627:96535). The study type changes what this tab is: a survey
@@ -50,6 +51,8 @@ export default function RecruitedTab() {
     .filter((r) => status === 'All' || CLIENT_TAG[r.state] === status)
     .filter((r) => tier === 'All' || r.tier === tier.toLowerCase())
   const shownApplications = paginate(applications, page)
+  /** Status (22 Oct 2026): All, then each status the Applications pills show, in the order a participant moves through them. */
+  const statusMenu = ['All', ...[...new Set(all.map((r) => CLIENT_TAG[r.state]))].sort((a, b) => Object.values(CLIENT_TAG).indexOf(a) - Object.values(CLIENT_TAG).indexOf(b))]
   /** Scheduled lists only sessions still to come or running (22 Oct 2026); once one ends it leaves, to Results when completed and to Applications when not. */
   const scheduled = all.filter((r) => r.state === 'scheduled' && r.participation.booking
     && sessionStartOf(r.participation.booking).getTime() + s.durationMins * 60_000 > Date.now())
@@ -80,10 +83,9 @@ export default function RecruitedTab() {
                 items={[{ key: 'booked', label: group ? 'Sessions' : 'Scheduled' }, { key: 'applications', label: 'Applications' }]} />
             ) : <span />}
             <div className="flex items-center gap-3">
-              <Select value={`Status: ${status}`} h="h-[38px]" className="w-[156px] text-text-regular"
-                onClick={() => setStatus((v) => (v === 'All' ? 'Applied' : v === 'Applied' ? 'Qualified' : v === 'Qualified' ? 'Disqualified' : 'All'))} />
-              <Select value={`Tier: ${tier}`} h="h-[38px]" className="w-[156px] text-text-regular"
-                onClick={() => setTier((v) => (v === 'All' ? 'Platinum' : v === 'Platinum' ? 'Gold' : v === 'Gold' ? 'Silver' : 'All'))} />
+              {!booked && <Picker value={`Status: ${status}`} h="h-[38px]" className="w-[180px] text-text-regular" options={statusMenu} onPick={(v) => { setStatus(v); setPage(1) }} />}
+              <Picker value={`Tier: ${tier}`} h="h-[38px]" className="w-[220px] text-text-regular" options={TIER_MENU.map((m) => m.label)}
+                onPick={(v) => { const t = tierFromMenu(v); setPage(1); setTier(t ? t[0]!.toUpperCase() + t.slice(1) : 'All') }} />
             </div>
           </div>
 

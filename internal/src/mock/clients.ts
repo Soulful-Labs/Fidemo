@@ -14,7 +14,7 @@ import { billView } from './money'
  * 2051:143182), read from the shared platform. Every figure, bill and
  * invoice is shared/derive.ts.
  */
-export interface Client { id: string; photo: string; name: string; role: string; company: string; industry: string; location: string; date: string }
+export interface Client { id: string; photo: string; name: string; role: string; company: string; industry: string; location: string; date: string; at: string }
 
 /** A client's picture: a drawn, faceless figure from their id, the same on every screen. The frames' portraits were photographs of real faces. */
 export const clientPhoto = (_state: PlatformState, id: string): string => avatarFor(id)
@@ -22,7 +22,21 @@ export const clientPhoto = (_state: PlatformState, id: string): string => avatar
 const row = (state: PlatformState, c: PlatformClient): Client => ({
   id: c.id, photo: clientPhoto(state, c.id), name: c.name, role: c.role, company: c.company, industry: c.industry, location: c.location,
   date: dayOrToday(c.status === 'deactivated' ? c.statusNote?.at : c.lastActiveAt),
+  at: (c.status === 'deactivated' ? c.statusNote?.at : c.lastActiveAt) ?? '',
 })
+
+/** The periods a "Last Active" or "Deactivated" dropdown offers, as the participants list draws them (2003:133961). */
+export const PERIODS = ['Today', 'Last 7 days', 'This Month', 'Last 30 days', 'Last 3 months'] as const
+/** Whether a date falls in one of those periods; "All" takes everything. */
+export function inPeriod(iso: string, period: string, now = new Date()): boolean {
+  if (!(PERIODS as readonly string[]).includes(period)) return true
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return false
+  const days = (now.getTime() - d.getTime()) / 86_400_000
+  if (period === 'Today') return d.toDateString() === now.toDateString()
+  if (period === 'This Month') return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+  return days <= (period === 'Last 7 days' ? 7 : period === 'Last 30 days' ? 30 : 92)
+}
 
 export function useClients(tab: 'active' | 'deactivated') {
   const state = usePlatform()
