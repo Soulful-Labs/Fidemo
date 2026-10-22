@@ -8,6 +8,7 @@ import type { ProfileView, StudyLine, StudyStatus } from '../../../mock/profile'
 import { useFacet } from '../verifications/VerificationsList'
 import { STUDY_TYPE_LABEL } from '../../../components/app/StudyTypeTag'
 import type { StudyType } from '../../../components/app/StudyTypeTag'
+import { useNavigate } from 'react-router-dom'
 
 export type StudySub = 'invites' | 'scheduled' | 'applied' | 'history' | 'saved'
 export const STUDY_SUBS = [{ key: 'invites', label: 'Invites To Schedule' }, { key: 'scheduled', label: 'Scheduled' }, { key: 'applied', label: 'Applied' }, { key: 'history', label: 'History' }, { key: 'saved', label: 'Saved' }]
@@ -32,7 +33,10 @@ const COLS = {
   applied: [name, type(180), date('Applied'), price, match, status],
   history: [name, type(180), date('Completed', 160), price, status],
 }
-const T = ({ rows, cols }: { rows: StudyLine[]; cols: Column<StudyLine>[] }) => <Table empty="Studies will appear here as this participant takes part." rows={rows} rowKey={(r) => r.id} columns={cols} highlight={rows.length > 2 ? 'st-pay' : undefined} />
+function T({ rows, cols }: { rows: StudyLine[]; cols: Column<StudyLine>[] }) {
+  const navigate = useNavigate()
+  return <Table empty="Studies will appear here as this participant takes part." rows={rows} rowKey={(r) => r.id} columns={cols} highlight={rows.length > 2 ? 'st-pay' : undefined} onRowClick={(r) => navigate(r.opens)} />
+}
 const Heading = ({ children }: { children: string }) => <h3 className="pb-2 pt-4 text-body-medium leading-[22px] text-text-title">{children}</h3>
 
 /**

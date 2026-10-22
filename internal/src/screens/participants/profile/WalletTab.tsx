@@ -9,6 +9,8 @@ import { PERIODS, SORTS } from '../../../mock/profile'
 import type { ProfileView } from '../../../mock/profile'
 import { EarningsFilters, PayoutDetails, PointsFilters, TransactionDetails } from './walletDialogs'
 import PersonLink from '../../../components/app/PersonLink'
+import { useNavigate } from 'react-router-dom'
+import { count, money } from '@shared/format'
 
 export type WalletSub = 'earnings' | 'payouts' | 'points' | 'referrals'
 export const WALLET_SUBS = [{ key: 'earnings', label: 'Earnings' }, { key: 'payouts', label: 'Payouts' }, { key: 'points', label: 'Reward Points' }, { key: 'referrals', label: 'Referrals' }]
@@ -39,14 +41,19 @@ export default function WalletTab({ sub, onSub, view }: { sub: WalletSub; onSub:
   /** The payout row that was clicked: Payout Details shows that one. */
   const [payout, setPayout] = useState<ProfileView['PAYOUTS'][number] | null>(null)
   const close = () => setDialog(null)
+  const navigate = useNavigate()
+  const [tx, setTx] = useState<ProfileView['EARNINGS'][number] | null>(null)
+  const f = view.figures
+  /** Every point the participant has earned, for the Reward Points card's all-time line. */
+  const earnedPoints = POINTS.reduce((n, r) => n + Number.parseInt(r.points.replace(/[^\d]/g, ''), 10), 0)
   return (
     <div>
       <UnderlineTabs items={WALLET_SUBS} value={sub} onChange={(k) => onSub(k as WalletSub)} />
       {sub === 'earnings' && (
         <div className="pt-5">
-          <Balance label="Wallet Balance" value="$542.60" total="$18,264" />
+          <Balance label="Wallet Balance" value={money(f.walletBalance)} total={money(f.allTimeEarned)} />
           <div className="flex gap-3 pb-3 pt-5"><SearchInput size="sm" placeholder="Search transaction..." /><Period w="w-60" /><FilterButton onClick={() => setDialog('earnFilter')} /></div>
-          <Table empty="Earnings will appear here once a study is paid." rowHeight={52} rows={EARNINGS} rowKey={(r) => r.id} onRowClick={() => setDialog('tx')} columns={[
+          <Table empty="Earnings will appear here once a study is paid." rowHeight={52} rows={EARNINGS} rowKey={(r) => r.id} onRowClick={(r) => { setTx(r); setDialog('tx') }} columns={[
             { key: 'what', header: 'Particular', width: '1fr', render: (r) => <span className="-ml-1">{r.what}</span> },
             { key: 'when', header: 'Date - Time', width: 260, sortable: true, render: (r) => <When day={r.day} time={r.time} /> },
             { key: 'id', header: 'Transaction ID', width: 200, render: (r) => r.id },
@@ -80,10 +87,10 @@ export default function WalletTab({ sub, onSub, view }: { sub: WalletSub; onSub:
       {sub === 'points' && (
         <div>
           <H>Saved Payment Methods</H>
-          <Balance green label="Balance" value="1244" total="18,264" />
+          <Balance green label="Balance" value={count(f.points)} total={count(earnedPoints)} />
           <H>Points History</H>
           <div className="flex gap-3 pb-3"><SearchInput size="sm" placeholder="Search transaction..." /><Period w="w-60" /><Sort /><FilterButton onClick={() => setDialog('pointFilter')} /></div>
-          <Table empty="Reward points will appear here as they are earned." rowHeight={52} rows={POINTS} rowKey={(r) => r.key} columns={[
+          <Table empty="Reward points will appear here as they are earned." rowHeight={52} rows={POINTS} rowKey={(r) => r.key} onRowClick={(r) => { if (r.opens) navigate(r.opens) }} columns={[
             { key: 'what', header: 'Particulars', width: '1fr', render: (r) => <span className="-ml-1 flex gap-2"><span className="text-text-medium">{r.kind}</span><span aria-hidden="true">•</span>{r.personId ? <PersonLink id={r.personId}>{r.what}</PersonLink> : r.what}</span> },
             { key: 'when', header: 'Date - Time', width: 260, sortable: true, render: () => <When day="Jul 22, 2026" time="11:00 PM" /> },
             { key: 'points', header: 'Points', width: 200, sortable: true, render: (r) => <span className="text-body-regular text-state-success">{r.points}</span> },
@@ -114,7 +121,7 @@ export default function WalletTab({ sub, onSub, view }: { sub: WalletSub; onSub:
           ]} />
         </div>
       )}
-      <TransactionDetails open={dialog === 'tx'} onClose={close} /><PayoutDetails open={dialog === 'payout'} onClose={close} payout={payout} />
+      <TransactionDetails open={dialog === 'tx'} onClose={close} tx={tx} /><PayoutDetails open={dialog === 'payout'} onClose={close} payout={payout} />
       <EarningsFilters open={dialog === 'earnFilter'} onClose={close} /><PointsFilters open={dialog === 'pointFilter'} onClose={close} />
     </div>
   )

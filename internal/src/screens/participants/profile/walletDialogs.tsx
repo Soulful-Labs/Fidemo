@@ -6,24 +6,31 @@ import Button from '../../../components/ui/Button'
 import { OptionTile } from '../../../components/ui/controls'
 import { CalendarIcon, ChevronRight, DownloadIcon, ReceiptIcon } from '../../../components/ui/icons'
 import { Modal } from '../../../components/ui/Overlay'
+import { useNavigate } from 'react-router-dom'
 
 type Props = { open: boolean; onClose: () => void }
+type Earning = ProfileView['EARNINGS'][number]
 const Fact = ({ icon, label, children }: { icon?: ReactNode; label: string; children: ReactNode }) => (
   <div><p className="flex items-center gap-1 text-text-regular leading-5 text-text-subtitle">{icon}{label}</p><p className="pt-1 text-body-medium leading-[22px] text-text-title">{children}</p></div>
 )
 
 /** Transaction Details (2021:165045, 460 x 389): the study an earning came from, the amount, when, and its number. */
-export function TransactionDetails({ open, onClose }: Props) {
+export function TransactionDetails({ open, onClose, tx }: Props & { tx: Earning | null }) {
+  const navigate = useNavigate()
+  if (!tx) return null
   return (
     <Modal open={open} onClose={onClose} layout="titled" title="Transaction Details">
       <div className="flex flex-col gap-5 pb-2">
-        <div className="rounded-lg bg-bg-1 p-3">
-          <p className="flex items-center justify-between text-body-medium leading-[22px] text-text-title">Online Learning Engagement Strategies<ChevronRight className="h-5 w-5" /></p>
-          <div className="flex gap-2 pt-3"><StudyTypeTag type="survey" filled /><span className="flex h-8 items-center rounded-full border-1 border-stroke-3 px-3 text-text-regular text-text-subtitle">Healthcare</span></div>
-        </div>
-        <Fact icon={<ReceiptIcon className="h-4 w-4 text-brand-primary" />} label="Amount">$120</Fact>
-        <Fact icon={<CalendarIcon className="h-4 w-4 text-brand-primary" />} label="Date and Time">July 22, 2026 &nbsp;•&nbsp; 11:00 PM</Fact>
-        <Fact icon={<span className="text-brand-primary">#</span>} label="Transaction Number">#260-552</Fact>
+        {tx.study ? (
+          /* The study card opens this participant's completion result for that study (22 Oct 2026). */
+          <button type="button" onClick={() => { onClose(); navigate(tx.study!.opens) }} className="rounded-lg bg-bg-1 p-3 text-left hover:bg-bg-2">
+            <p className="flex items-center justify-between text-body-medium leading-[22px] text-text-title">{tx.study.title}<ChevronRight className="h-5 w-5" /></p>
+            <div className="flex gap-2 pt-3"><StudyTypeTag type={tx.study.type} filled /><span className="flex h-8 items-center rounded-full border-1 border-stroke-3 px-3 text-text-regular text-text-subtitle">{tx.study.industry}</span></div>
+          </button>
+        ) : <div className="rounded-lg bg-bg-1 p-3 text-body-medium leading-[22px] text-text-title">{tx.what}</div>}
+        <Fact icon={<ReceiptIcon className="h-4 w-4 text-brand-primary" />} label="Amount">{tx.amount}</Fact>
+        <Fact icon={<CalendarIcon className="h-4 w-4 text-brand-primary" />} label="Date and Time">{tx.day} &nbsp;•&nbsp; {tx.time}</Fact>
+        <Fact icon={<span className="text-brand-primary">#</span>} label="Transaction Number">{tx.id}</Fact>
       </div>
     </Modal>
   )

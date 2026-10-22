@@ -10,6 +10,7 @@ import { clockTime, dayMonthYear, money, monthDayYear, monthDayYearTime } from '
 import type { StudyType } from '../components/app/StudyTypeTag'
 import { consoleType, studyPictures, usePlatform } from '../platform'
 import { photoFor, tierName } from './participants'
+import { recruitingTab } from '@shared/lifecycle'
 
 /**
  * One participant as the profile draws them (section 1992:101340), read from
@@ -17,7 +18,11 @@ import { photoFor, tierName } from './participants'
  * wallet, points and referrals. Every figure is shared/derive.ts.
  */
 export type StudyStatus = 'In Review' | 'In Process' | 'Paid' | 'Rejected' | 'No Show'
-export interface StudyLine { id: string; name: string; thumb: string; type: StudyType; date: string; price: string; match: string; status?: StudyStatus }
+export interface StudyLine {
+  id: string; name: string; thumb: string; type: StudyType; date: string; price: string; match: string; status?: StudyStatus
+  /** Where the row opens (22 Oct 2026): the study as it stands for this participant. */
+  opens: string
+}
 
 const HISTORY_LABEL: Partial<Record<RespondentStudy['status'], StudyStatus>> = {
   in_process: 'In Process', paid: 'Paid', late_show: 'Paid', not_needed: 'Paid', rejected: 'Rejected', no_show: 'No Show',
@@ -38,9 +43,26 @@ export function useProfile(personId?: string) {
     const p = (personId && personById(state, personId)) || state.people[1]!
     const f = personFigures(state, p.id)
     const studies = respondentStudies(state, p.id)
+    /**
+     * A row opens the study at the state it is in for this participant: once they applied, their own page
+     * (the screener while applied or disqualified, the result after); invited, the study's Invited list;
+     * saved without taking part, the study itself. A completed study opens as completed.
+     */
+    const opensFor = (studyId: string): string => {
+      const st = state.studies.find((x) => x.id === studyId)
+      const part = st?.participations.find((q) => q.personId === p.id)
+      const closed = st?.state === 'completed'
+      const where = part ? recruitingTab(part.state) : null
+      if (where === 'recruited' || where === 'results') {
+        const tab = part!.state === 'applied' || part!.state === 'disqualified' ? 'screener' : 'result'
+        return `/studies/${studyId}/respondents/${p.id}?tab=${tab}${closed ? '&from=completed' : ''}`
+      }
+      if (closed) return `/studies/${studyId}?state=completed`
+      return where === 'invited' ? `/studies/${studyId}?tab=matched&seg=invited` : `/studies/${studyId}`
+    }
     const line = (s: RespondentStudy, status?: StudyStatus): StudyLine => ({
       id: s.id, name: s.title, thumb: studyPictures(s.id, s.image).small, type: consoleType(s.type), date: when(s),
-      price: money(s.reward), match: `${s.matchScore}%`, status,
+      price: money(s.reward), match: `${s.matchScore}%`, status, opens: opensFor(s.id),
     })
     const by = (...st: RespondentStudy['status'][]) => studies.filter((s) => st.includes(s.status))
     const INVITES = by('invited_to_apply', 'invited_to_schedule', 'invited_to_complete').map((s) => line(s))
@@ -79,13 +101,22 @@ export function useProfile(personId?: string) {
       ],
       INVITES, SCHEDULED, APPLIED, HISTORY,
       SAVED: { invites: saved(INVITES), scheduled: saved(SCHEDULED), drafts: DRAFTS, applied: saved(APPLIED), history: saved(HISTORY) },
-      EARNINGS: walletRows(state, p.id).map((r) => ({ what: r.title, day: monthDayYear(r.at), time: clockTime(r.at), id: r.txNumber, amount: money(r.amount) })),
+      EARNINGS: walletRows(state, p.id).map((r) => {
+        const st = r.studyId ? state.studies.find((x) => x.id === r.studyId) : undefined
+        return {
+          what: r.title, day: monthDayYear(r.at), time: clockTime(r.at), id: r.txNumber, amount: money(r.amount),
+          /** Transaction Details' study card (2021:165045): the study, and where it opens, this participant's completion result. */
+          study: st && { title: st.title, type: consoleType(st.type), industry: st.industry, opens: opensFor(st.id) },
+        }
+      }),
       PAYOUTS: payoutRows(p).map((r) => ({ key: r.id, day: monthDayYear(r.at), time: clockTime(r.at), to: `To ${p.payoutMethods.find((m) => m.accountNumber.replace(/\s/g, '').endsWith(r.destination.replace(/\D/g, '')))?.bankName ?? 'Bank'}... ${r.destination}`, id: r.txId, amount: money(r.amount), status: r.status === 'processing' ? 'Processing' : 'Completed',
         /** For Payout Details: the payout itself, not the frame's sample. */
         bank: r.destination.slice(-4), when: monthDayYearTime(r.at), fee: money(r.fee), net: money(r.net), expected: r.status === 'processing' ? monthDayYear(r.expectedBy ?? withdrawalExpectedBy(r.at)) : '' })),
       POINTS: pointsRows(state, p.id).map((r) => ({ key: r.id, kind: r.label, what: r.detail, points: `+${r.amount}`,
         /** A referral's particulars is the friend; once they joined, their name opens their profile. */
-        personId: state.people.find((x) => x.email === p.referrals.find((f) => `pt-${f.id}` === r.id)?.email)?.id })),
+        personId: state.people.find((x) => x.email === p.referrals.find((f) => `pt-${f.id}` === r.id)?.email)?.id,
+        /** A study's points open that study as it stands for this participant. */
+        opens: r.kind === 'study' ? opensFor(r.id.slice(3)) : undefined })),
       REDEEMS: redeemRows(p).map((r) => ({ key: r.id, what: `${r.points} points redeemed`, points: `-${r.points}` })),
       REFERRALS: p.referrals.map((r) => ({ key: r.id, photo: avatarFor(r.id), name: r.name,
         /** The friend's own record, once they joined with that email; their name then opens their profile. */
