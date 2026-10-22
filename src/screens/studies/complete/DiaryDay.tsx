@@ -36,7 +36,7 @@ export default function DiaryDay() {
   const questions = tasksForDay(study.tasks, day)
   const key = `${study.id}:day${day}`
   const current = answers[key] ?? {}
-  const complete = questions.every((q) => isAnswered(q, current[q.id]))
+  const complete = questions.every((q) => q.optional || isAnswered(q, current[q.id]))
   const overview = `/studies/${id}/diary`
 
   const submit = () => {
@@ -74,7 +74,7 @@ export default function DiaryDay() {
           <section key={question.id} className="flex flex-col gap-3">
             <h2 className="flex gap-2 text-body-medium text-text-title">
               <span>{i + 1}.</span>
-              <span>{question.prompt}</span>
+              <span>{question.prompt}{question.optional && <span className="text-text-body"> (optional)</span>}</span>
             </h2>
             <QuestionInput
               question={question}

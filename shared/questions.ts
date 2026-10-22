@@ -27,6 +27,8 @@ export interface AuthoredQuestion {
   rows?: string[]; columns?: string[]
   /** A diary question's entry, 1 first. None means every entry. */
   day?: number
+  /** Required, from the question menu (22 Oct 2026). Absent means required. */
+  required?: boolean
 }
 
 type Refusal = { ok: false; why: string }
@@ -88,10 +90,13 @@ function asked(q: AuthoredQuestion, id: string): Question[] | string {
 }
 
 /** A question that can decide eligibility on its own: one answer, with a right one and a wrong one. */
+/** A pre-screener question decides eligibility, so it must be answered: one the client made optional is an ordinary screener question. */
 const decides = (q: AuthoredQuestion) => {
   const opts = optionsOf(q)
-  return q.kind === 'Single-select' && opts.some((o) => o.mark === 'Correct') && opts.some((o) => o.mark !== 'Correct')
+  return q.required !== false && q.kind === 'Single-select' && opts.some((o) => o.mark === 'Correct') && opts.some((o) => o.mark !== 'Correct')
 }
+/** The built questions, marked optional when the client turned Required off. */
+const flagged = (q: AuthoredQuestion, made: Question[]): Question[] => (q.required === false ? made.map((t) => ({ ...t, optional: true })) : made)
 
 /**
  * The screener a study is submitted with, from what the client built.
@@ -120,7 +125,7 @@ export function buildScreener(authored: AuthoredQuestion[]): Built | Refusal {
     leading = false
     const made = asked(q, id)
     if (typeof made === 'string') return { ok: false, why: `Screener question ${i + 1} ${made}` }
-    screener.push(...made)
+    screener.push(...flagged(q, made))
   }
   return { ok: true, preScreener, screener }
 }
@@ -131,7 +136,7 @@ export function buildTasks(authored: AuthoredQuestion[]): { ok: true; tasks: Que
   for (const [i, q] of authored.filter(filled).entries()) {
     const made = asked(q, `t${i + 1}`)
     if (typeof made === 'string') return { ok: false, why: `Study question ${i + 1} ${made}` }
-    tasks.push(...(q.day ? made.map((t) => ({ ...t, day: q.day })) : made))
+    tasks.push(...flagged(q, q.day ? made.map((t) => ({ ...t, day: q.day })) : made))
   }
   return { ok: true, tasks }
 }

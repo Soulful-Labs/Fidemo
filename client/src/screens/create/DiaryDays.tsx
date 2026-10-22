@@ -2,6 +2,7 @@ import Button from '../../components/ui/Button'
 import { Plus } from '../../components/ui/icons'
 import type { Question, QuestionKind } from '../../mock/createStore'
 import { QuestionBlock } from './Screener'
+import { listActions } from './QuestionMenu'
 
 /** Each question numbered within its own entry, the entries in order (Q1, Q2 on DAY 1, Q1 on DAY 2). */
 export function relabelDays(qs: Question[]): Question[] {
@@ -66,9 +67,11 @@ export function DiaryDays({ questions, total, unit, write, fresh, marksFor, onDe
           <p className="flex h-7 items-center justify-center rounded-full bg-bgAlt-2 text-text-regular uppercase text-text-title">{unit} {day}</p>
           {questions.filter((q) => !q.day || q.day === day).map((q, i) => (
             <div key={q.id} className="flex flex-col gap-1.5">
+              {/* The menu moves a question within its own day; one asked every day moves among the every-day questions. */}
               <QuestionBlock q={{ ...q, label: `Q${i + 1}` }} index={i} plain marksFor={marksFor} markWidth="w-[118px]" labelClass="h-8 bg-bgAlt-2 px-3.5" largePreview
                 write={(next) => write(questions.map((x) => (x.id === next.id ? { ...next, label: x.label } : x)))}
-                onDelete={() => { write(questions.filter((x) => x.id !== q.id)); onDeleted(q.day ? `${unit} ${day} Q${i + 1}` : `Q${i + 1}, asked every ${unit.toLowerCase()},`) }} />
+                actions={listActions(questions, questions.indexOf(q), (next) => { write(next); if (next.length < questions.length) onDeleted(q.day ? `${unit} ${day} Q${i + 1}` : `Q${i + 1}, asked every ${unit.toLowerCase()},`) },
+                  () => fresh(q.day ?? day), (x) => (x.day ?? 0) === (q.day ?? 0))} />
               {!q.day && (
                 <p className="flex items-center gap-2 pl-9 text-text-regular text-text-body">
                   Asked on every {unit.toLowerCase()}

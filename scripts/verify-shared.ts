@@ -15,7 +15,7 @@ import { PAYOUT_MOVES, respondentStatus, participationOf } from '../shared/lifec
 import { FEES, TIMINGS, depositFor, diaryWords, quoteStudy } from '../shared/platform'
 import { POINTS, REDEEM, TIERS, TRUST, starsForRating, starsFromDimensions, trustScore } from '../shared/rules'
 import { DEMO_CLIENT_ID, DEMO_PERSON_ID, MASTER_ADMIN_ID, buildSeed } from '../shared/seed'
-import { buildScreener, screenerOutline, taskResults } from '../shared/questions'
+import { buildScreener, buildTasks, screenerOutline, taskResults } from '../shared/questions'
 import type { AuthoredQuestion } from '../shared/questions'
 import { AUDIENCE_LISTS, audiencePeople, blankForm, blankQuestion, buildStudy, estimateAudience, formFromStudy, formId, studyDetails, summarise } from '../shared/studyForm'
 import type { FormQuestion, StudyForm } from '../shared/studyForm'
@@ -150,6 +150,8 @@ const made = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Journey study', type
   check('create: the audience is written as entered, and sets the repeat rule', sum.audience.some((a) => a.label === 'Roles' && a.value === 'Oncologist, Nurse') && sum.audience.some((a) => a.label === 'Gender' && a.value === 'Female') && sum.audience.some((a) => a.label === 'Profile Tiers') && (() => { const b = buildStudy(aud, now); return b.ok && b.study.repeatRule === 'exclude' && b.study.targetProfession === 'Oncologist, Nurse' })())
   // 22 Oct 2026: two conditions. A draft saved with the old "fresh" reads as N/A, which allows everyone.
   check('create: an older draft with the "fresh" condition builds a study that allows everyone', (() => { const b = buildStudy({ ...aud, condition: 'fresh' as never }, now); return b.ok && b.study.repeatRule === 'allow' })())
+  // 22 Oct 2026: Required, from the question menu. Off builds an optional question; a deciding one stops being a pre-screener.
+  check('create: a question with Required off is optional, and is not a pre-screener', (() => { const t = buildTasks([{ kind: 'Multi-line input', text: 'Anything else?', required: false }]); const sc = buildScreener([{ kind: 'Single-select', text: 'Do you drive?', options: [{ text: 'Yes', mark: 'Correct' }, { text: 'No', mark: 'Incorrect' }], required: false }]); return t.ok && t.tasks[0]?.optional === true && sc.ok && sc.preScreener.length === 0 && sc.screener[0]?.optional === true })())
   const everyone = estimateAudience(st(), formOf({ countries: [], gender: ['All Genders'], education: [], ageRanges: [], functions: '', industries: '' }), now)
   check('create: the estimated audience is counted from the pool and narrows with the audience', everyone > 0 && estimateAudience(st(), aud, now) < everyone && sum.estimatedAudience === String(estimateAudience(st(), aud, now)), `${everyone} -> ${sum.estimatedAudience}`)
   check('create: the summary names the type and the setup that was built', sum.typeLabel === 'Video Call' && sum.studySummary.value === 'available 5 days/week, custom timings' && sum.screenerSummary === '3 inputs', `${sum.typeLabel} / ${sum.studySummary.value} / ${sum.screenerSummary}`)

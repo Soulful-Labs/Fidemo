@@ -41,7 +41,8 @@ export default function QuestionFlow({
   useEffect(() => { reached.current = Math.max(reached.current, index + 1) }, [index])
   const question = questions[index]
   const last = index === questions.length - 1
-  const answered = question ? isAnswered(question, answers[question.id]) : false
+  // An optional question (the client turned Required off) can be left blank.
+  const answered = question ? question.optional || isAnswered(question, answers[question.id]) : false
   const pct = ((index + 1) / Math.max(1, questions.length)) * 100
 
   const back = () => (index === 0 ? onExit() : setIndex((i) => i - 1))
@@ -84,7 +85,7 @@ export default function QuestionFlow({
         {header}
         {question ? (
           <>
-            <h2 className="text-title-s text-text-title">{question.prompt}</h2>
+            <h2 className="text-title-s text-text-title">{question.prompt}{question.optional && <span className="text-text-body"> (optional)</span>}</h2>
             <QuestionInput
               key={question.id}
               question={question}

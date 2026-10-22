@@ -11,6 +11,8 @@ import { useToast } from '../../components/ui/Toast'
 import { useState } from 'react'
 import { buildScreener } from '@shared/questions'
 import PromptDialog from './PromptDialog'
+import QuestionMenu, { listActions } from './QuestionMenu'
+import type { QuestionActions } from './QuestionMenu'
 import { screenerFromPrompt } from '../../lib/fromPrompt'
 
 const SPARKLE = (
@@ -150,14 +152,16 @@ function Matrix({ q, write }: { q: Question; write: (next: Question) => void }) 
  * Delete, on the question itself: one click on the bin, then a confirmation.
  * It replaces the three-dot menu, whose only item was Delete Question.
  */
-function DeleteQuestion({ label, onDelete }: { label: string; onDelete: () => void }) {
+/** Labels by position after a move, an add or a delete: the first three are the pre-screener. */
+const renumber = (qs: Question[]): Question[] => qs.map((q, i) => ({ ...q, label: i < 3 ? `Pre-screener - Q${i + 1}` : `Q${i + 1}` }))
+
+/** The question's three-dot menu (QuestionMenu.tsx), with the confirmation its Delete asks first. */
+function QuestionOptions({ label, required, actions }: { label: string; required: boolean; actions: QuestionActions }) {
   const [asking, setAsking] = useState(false)
+  const onDelete = actions.onDelete
   return (
     <span className="relative flex shrink-0">
-      <button type="button" aria-label={`Delete ${label}`} title="Delete question" onClick={() => setAsking(true)}
-        className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-sm border-1 border-stroke-input bg-bg text-text-subtitle hover:text-red-600">
-        <Trash className="h-5 w-5" />
-      </button>
+      <QuestionMenu label={label} required={required} actions={actions} onAskDelete={() => setAsking(true)} />
       <Modal open={asking} onClose={() => setAsking(false)} title="Delete Question?"
         body={<>{label} and everything typed into it will be removed. This cannot be undone.</>}
         footer={
@@ -185,8 +189,10 @@ function optionsFor(q: Question, kind: QuestionKind, marks: string[]) {
 }
 
 /** One question: its label, its answer type, and whatever that type needs. */
-export function QuestionBlock({ q, index, write, onDelete, marksFor = MARKS_FOR, markWidth = 'w-[110px]', plain, labelClass, largePreview }: {
-  q: Question; index: number; write: (next: Question) => void; onDelete: () => void
+export function QuestionBlock({ q, index, write, actions, marksFor = MARKS_FOR, markWidth = 'w-[110px]', plain, labelClass, largePreview }: {
+  q: Question; index: number; write: (next: Question) => void
+  /** The three-dot menu's actions (22 Oct 2026): Required, Move up, Move down, Add question below, Delete. */
+  actions: QuestionActions
   /** The verdicts an option can carry: a screener's by default, a survey's Qualify and Disqualify. */
   marksFor?: (kind: QuestionKind) => string[]; markWidth?: string
   /** The survey and diary composers draw their questions without the rule between them. */
@@ -216,7 +222,7 @@ export function QuestionBlock({ q, index, write, onDelete, marksFor = MARKS_FOR,
             options={['Single-select', 'Multi-select', 'Single-line input', 'Number input',
               'Multi-line input', 'Slider', 'Ranking', 'File Upload', 'Mattrix']}
             onPick={(v) => write({ ...q, kind: v as QuestionKind, options: optionsFor(q, v as QuestionKind, marksFor(v as QuestionKind)) })} />
-          <DeleteQuestion label={q.label} onDelete={onDelete} />
+          <QuestionOptions label={q.label} required={q.required !== false} actions={actions} />
         </div>
 
         <Box value={q.text} placeholder="Enter question text..." onChange={(v) => write({ ...q, text: v })} />
@@ -359,14 +365,14 @@ export default function Screener() {
                 {/* One screener: the first three are the pre-screener, shown only by their tags (Pre-screener - Q1 to Q3). */}
                 <QuestionBlock q={q} index={i}
                   write={(next) => set('questions', draft.questions.map((x) => (x.id === next.id ? next : x)))}
-                  onDelete={() => { set('questions', draft.questions.filter((x) => x.id !== q.id)); toast(`${q.label} deleted`) }} />
+                  actions={listActions(draft.questions, i, (next) => { set('questions', renumber(next)); if (next.length < draft.questions.length) toast(`${q.label} deleted`) }, () => blankQuestion('Q'))} />
               </div>
             ))}
           </div>
 
           <div className="pl-7">
             <Button variant="secondary" size="row" className="w-full" leftIcon={<Plus className="h-5 w-5" />}
-              onClick={() => set('questions', [...draft.questions, blankQuestion(`Q${draft.questions.length + 1}`)])}>
+              onClick={() => set('questions', renumber([...draft.questions, blankQuestion('Q')]))}>
               Add Question
             </Button>
           </div>

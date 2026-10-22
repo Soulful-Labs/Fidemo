@@ -139,3 +139,34 @@ with a 90px brand-secondary ring; the funnel's numbers fade into their block.
   still filters anyone. A draft saved with "fresh" reads as N/A.
 - The client app keeps "(You)" after its own company; the console shows the
   study's client company with no "(You)", since the team is not the client.
+
+### E. Multi-select shows checkboxes
+
+Every builder and read-back draws a multi-select's options (and a
+Multi-select/row matrix) with checkboxes, a single-select's with radios: the
+client's Screener and survey builders, the client's submitted-study
+read-back, the console's Review screener list and its Edit Study matrix. The
+respondent app and both previews already did.
+
+### 9. The question menu (no frame; for the designer to draw)
+
+**Reverses the 15 October 2026 decision** (one-click delete with a bin).
+Each question in the client's Screener, survey and diary builders and in the
+console's Edit Study has a three-dot menu: Required (a toggle), Move up, Move
+down, Add question below, Delete. Move up is off on the first question, Move
+down on the last; in a diary a question moves within its own day. Delete
+asks "Delete Question?" in the client, as the bin did; the console deletes at
+once, as its bin did.
+
+- **Required** is new data: `optional` on a built question (`shared/types.ts`),
+  `required: false` on the form. The respondent may leave an optional question
+  blank (Continue, Submit and Submit Progress allow it), sees "(optional)"
+  after its prompt (new copy, not drawn), and the store accepts a survey with
+  an optional question unanswered. A deciding single-select made optional is
+  no longer a pre-screener question, since it cannot decide eligibility if it
+  can be skipped.
+- The client screener renumbers by position after any move, add or delete
+  (Pre-screener - Q1 to Q3, then Q4 on).
+- ten-check item 11 now checks the menu (was "deletes in one click").
+- For the designer: draw the menu, its Required toggle and the respondent's
+  optional marker.

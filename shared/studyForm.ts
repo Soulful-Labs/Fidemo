@@ -30,6 +30,8 @@ export interface FormQuestion {
   rows?: string[]
   /** A diary question's entry, 1 first (2354:155489, 21 Oct 2026). None means every entry. */
   day?: number
+  /** Required, from the question menu (22 Oct 2026). Absent means required. */
+  required?: boolean
 }
 
 /** "09:00 AM" to "05:30 PM". */
@@ -553,7 +555,7 @@ const KIND_OF: Record<Question['kind'], AuthoredKind> = { single: 'Single-select
 function questionOf(q: Question, label: string, marks: string[]): FormQuestion {
   const kind = (q.authored as AuthoredKind | undefined) ?? KIND_OF[q.kind]
   const options = 'options' in q ? q.options.map((o) => ({ id: formId('o'), text: o, mark: q.marks?.[o] ?? (kind === 'Ranking' ? '' : marks[0] ?? '') })) : []
-  return { ...blankQuestion(label, kind, marks), text: q.prompt, ...(options.length ? { options } : {}), ...(q.day ? { day: q.day } : {}) }
+  return { ...blankQuestion(label, kind, marks), text: q.prompt, ...(options.length ? { options } : {}), ...(q.day ? { day: q.day } : {}), ...(q.optional ? { required: false } : {}) }
 }
 
 /**

@@ -10,6 +10,7 @@ import { blankQuestion, useDraft } from '../../mock/createStore'
 import type { Question, QuestionKind } from '../../mock/createStore'
 import { QuestionBlock } from './Screener'
 import ComposerContext from './ComposerContext'
+import { listActions } from './QuestionMenu'
 import { DiarySetupCard } from './DiarySetup'
 import { DiaryDays, fitDays, relabelDays, startDays } from './DiaryDays'
 import { questionLines, surveyFromPrompt } from '../../lib/fromPrompt'
@@ -136,7 +137,7 @@ export default function SurveyComposer({
               {questions.map((q, i) => (
                 <QuestionBlock key={q.id} q={q} index={i} plain marksFor={marksFor} markWidth="w-[118px]"
                   write={(next) => write(questions.map((x) => (x.id === next.id ? next : x)))}
-                  onDelete={() => { write(questions.filter((x) => x.id !== q.id)); toast(`${q.label} deleted`) }} />
+                  actions={listActions(questions, i, (next) => { write(next); if (next.length < questions.length) toast(`${q.label} deleted`) }, () => fresh(questions.length + 1))} />
               ))}
             </div>
             <Button variant="tertiary" size="row" className="w-full" leftIcon={<Plus className="h-5 w-5" />}

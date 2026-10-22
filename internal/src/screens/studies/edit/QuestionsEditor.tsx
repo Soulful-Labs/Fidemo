@@ -3,9 +3,10 @@ import type { AuthoredKind } from '@shared/questions'
 import { MARKS, blankQuestion, formId } from '@shared/studyForm'
 import type { FormQuestion } from '@shared/studyForm'
 import { useState } from 'react'
-import Button, { IconButton } from '../../../components/ui/Button'
+import Button from '../../../components/ui/Button'
 import Input, { Select } from '../../../components/ui/Input'
-import { GripIcon, PlusIcon, TrashIcon } from '../../../components/ui/icons'
+import { GripIcon, PlusIcon } from '../../../components/ui/icons'
+import QuestionMenu from './QuestionMenu'
 import { cn } from '../../../lib/cn'
 import QuestionBody, { PICKED } from './QuestionBody'
 
@@ -20,8 +21,8 @@ function asKind(q: FormQuestion, kind: AuthoredKind, marks: string[]): FormQuest
  * The question builder of Edit Study (2325:214502 Screener, 2325:214997
  * survey): each question's label, kind, words and what its kind needs.
  * Questions are dragged by the grip to change their order, added at the
- * foot, and deleted with the bin (the earlier decision over the drawn
- * kebab). `label` names a question by position ("Pre-screener - Q1",
+ * foot, and each has the three-dot menu (22 Oct 2026, reversing the 15 Oct
+ * one-click bin): Required, Move up, Move down, Add question below, Delete. `label` names a question by position ("Pre-screener - Q1",
  * "SQ 1"); `marks` is the verdict list for a kind.
  */
 export default function QuestionsEditor({ questions, onChange, label, marks }: {
@@ -49,7 +50,11 @@ export default function QuestionsEditor({ questions, onChange, label, marks }: {
               <span className="flex-1" />
               {q.kind === 'Mattrix' && <Select size="sm" className="w-[170px]" value={q.matrixKind ?? 'Single-select/row'} options={['Single-select/row', 'Multi-select/row']} onChange={(v) => put(i, { ...q, matrixKind: v })} />}
               <Select size="sm" className="w-[170px]" value={q.kind} options={[...AUTHORED_KINDS]} onChange={(k) => put(i, asKind(q, k as AuthoredKind, marks(k as AuthoredKind)))} />
-              <IconButton label={`Delete ${label(i)}`} size={32} onClick={() => onChange(relabel(questions.filter((_, j) => j !== i)))}><TrashIcon className="h-4 w-4" /></IconButton>
+              <QuestionMenu label={label(i)} required={q.required !== false}
+                onRequired={(v) => put(i, { ...q, required: v ? undefined : false })}
+                onUp={i > 0 ? () => move(i, i - 1) : undefined} onDown={i < questions.length - 1 ? () => move(i, i + 1) : undefined}
+                onAddBelow={() => onChange(relabel([...questions.slice(0, i + 1), blankQuestion(label(i + 1)), ...questions.slice(i + 1)]))}
+                onDelete={() => onChange(relabel(questions.filter((_, j) => j !== i)))} />
             </div>
             <Input size="sm" placeholder="Enter question text..." aria-label={`${label(i)} question`} value={q.text} onChange={(e) => put(i, { ...q, text: e.target.value })} />
             <QuestionBody q={q} put={(x) => put(i, x)} marks={marks(q.kind) ?? MARKS[q.kind] ?? []} />

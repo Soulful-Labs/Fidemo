@@ -44,6 +44,8 @@ export interface QuestionMeta {
   format?: 'number'
   /** A diary question asked on this entry only (1 is the first). None means it is asked on every entry. */
   day?: number
+  /** The client turned Required off (question menu, 22 Oct 2026): it may be left unanswered. Absent means required. */
+  optional?: boolean
 }
 
 export type Question = QuestionMeta & (

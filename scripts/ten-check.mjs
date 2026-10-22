@@ -242,10 +242,15 @@ await C.click('Generate', 500)
 const screenerPrefill = await C.ev(`document.querySelector('#ai-prompt')?.value`)
 await C.click('Add Questions', 600)
 const generatedQs = await C.ev(`[...document.querySelectorAll('input')].filter((e) => e.placeholder === 'Enter question text...').map((e) => e.value).filter(Boolean)`)
-const kebabs = await C.ev(`document.querySelectorAll('[aria-label="Question options"]').length`)
+// Since 22 Oct 2026 each question has a three-dot menu (Required, Move up, Move down, Add question below, Delete), reversing the 15 Oct bin.
 const countQ = () => C.ev(`[...document.querySelectorAll('input')].filter((e) => e.placeholder === 'Enter question text...').length`)
+const menus = await C.ev(`[...document.querySelectorAll('button')].filter((b) => /^Options for /.test(b.getAttribute('aria-label') || '')).length`)
+const bins = await C.ev(`[...document.querySelectorAll('button')].filter((b) => /^Delete (Q|SQ|Pre-screener)/.test(b.getAttribute('aria-label') || '')).length`)
+const menuItem = (label, item) => C.ev(`(async () => { [...document.querySelectorAll('button')].find((b) => b.getAttribute('aria-label') === ${JSON.stringify('Options for ' + label)}).click(); await new Promise((r) => setTimeout(r, 200)); const m = [...document.querySelectorAll('[role=menuitem]')].find((b) => b.textContent.trim() === ${JSON.stringify(item)}); const off = !m || m.disabled; if (m && !m.disabled) m.click(); else document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })); return !off })()`)
+const firstUp = await C.ev(`(async () => { [...document.querySelectorAll('button')].find((b) => b.getAttribute('aria-label') === 'Options for Pre-screener - Q1').click(); await new Promise((r) => setTimeout(r, 200)); const m = [...document.querySelectorAll('[role=menuitem]')].find((b) => b.textContent.trim() === 'Move up'); const off = Boolean(m?.disabled); document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })); return off })()`)
+await sleep(200)
 const beforeDel = await countQ()
-await C.ev(`(() => { [...document.querySelectorAll('button')].find((b) => b.getAttribute('aria-label') === 'Delete Q9').click(); return true })()`); await sleep(300)
+await menuItem('Q9', 'Delete'); await sleep(300)
 const confirmShown = await C.has('Delete Question?')
 await clickExact(C, 'Delete'); await sleep(400)
 const afterDel = await countQ()
@@ -258,8 +263,16 @@ const studyText = await body(C)
 await C.click('Create Survey Questionnaire', 600); await C.ev(FORMS)
 await C.ev(`(() => { __ph('Enter question text...', 'How often do you shop online?'); __ph('Enter option', 'Weekly', 0); __ph('Enter option', 'Monthly', 1); return true })()`)
 await C.click('Add Question', 300)
+// Add question below on SQ 1, then Move up on the new SQ 2: the typed question is now SQ 2.
+const qText = () => C.ev(`[...document.querySelectorAll('input')].filter((e) => e.placeholder === 'Enter question text...').map((e) => e.value)`)
+const beforeAdd = await countQ()
+await menuItem('SQ 1', 'Add question below'); await sleep(300)
+const afterAdd = await countQ(); const addedAt = (await qText())[1]
+await menuItem('SQ 2', 'Move up'); await sleep(300)
+const movedTo = (await qText()).indexOf('How often do you shop online?')
 const surveyBefore = await countQ()
-await C.ev(`(() => { [...document.querySelectorAll('button')].find((b) => b.getAttribute('aria-label') === 'Delete SQ 2').click(); return true })()`); await sleep(300)
+// Delete the blank one, now SQ 1, so the typed question is still there to submit.
+await menuItem('SQ 1', 'Delete'); await sleep(300)
 const surveyConfirm = await C.has('Delete Question?')
 await clickExact(C, 'Delete'); await sleep(400)
 const surveyAfter = await countQ()
@@ -419,13 +432,17 @@ const respAfter = flat(await R.ev(`(() => { const lab = [...document.querySelect
     `"${AI_1}" -> ${Object.entries(ai1.d).filter(([k]) => k !== 'description').map(([k, v]) => `${k} ${Array.isArray(v) ? v.join('/') : v}`).join(', ')}\n       "${AI_2}" -> ${Object.entries(ai2.d).filter(([k]) => k !== 'description').map(([k, v]) => `${k} ${Array.isArray(v) ? v.join('/') : v}`).join(', ')}\n       Screener Generate from the same text added: ${generatedQs.slice(-5).join(' / ')}`)
 }
 
-// ---- 11: delete in one click
+// ---- 11: the question menu (22 Oct 2026, reversing the 15 Oct one-click bin)
 {
   const g = []
-  if (kebabs !== 0) g.push(`${kebabs} three-dot menus left`)
-  if (!confirmShown || afterDel !== beforeDel - 1) g.push(`screener: ${beforeDel} -> ${afterDel}, confirmation ${confirmShown}`)
-  if (!surveyConfirm || surveyAfter !== surveyBefore - 1) g.push(`survey: ${surveyBefore} -> ${surveyAfter}, confirmation ${surveyConfirm}`)
-  say(11, 'client', 'A question deletes in one click in both builders', g, `Screener: bin on Q9, "Delete Question?", ${beforeDel} -> ${afterDel} questions. Survey builder: bin on SQ 2, confirmed, ${surveyBefore} -> ${surveyAfter}`)
+  if (menus === 0 || bins !== 0) g.push(`${menus} three-dot menus, ${bins} bins left`)
+  if (!firstUp) g.push('Move up is offered on the first question')
+  if (!confirmShown || afterDel !== beforeDel - 1) g.push(`screener Delete: ${beforeDel} -> ${afterDel}, confirmation ${confirmShown}`)
+  if (afterAdd !== beforeAdd + 1 || addedAt !== '') g.push(`Add question below: ${beforeAdd} -> ${afterAdd}, the new one is ${JSON.stringify(addedAt)}`)
+  if (movedTo !== 1) g.push(`Move up did not move the blank question above the typed one (typed one at ${movedTo})`)
+  if (!surveyConfirm || surveyAfter !== surveyBefore - 1) g.push(`survey Delete: ${surveyBefore} -> ${surveyAfter}, confirmation ${surveyConfirm}`)
+  say(11, 'client', 'Each question has the three-dot menu: Move up is off on the first, Add question below, Move up and Delete work in both builders', g,
+    `Screener: ${menus} menus, no bins, Q1's Move up off, Q9 Delete asked "Delete Question?" (${beforeDel} -> ${afterDel}). Survey: Add question below ${beforeAdd} -> ${afterAdd}, Move up put the blank question first, Delete ${surveyBefore} -> ${surveyAfter}`)
 }
 
 // ---- 12: no AutoPay; finishing a study notifies the client and the team, and the team pays by hand

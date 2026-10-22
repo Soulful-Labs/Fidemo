@@ -701,7 +701,7 @@ export function createPlatform(options: Options = {}) {
       if (!diaryReady(study, p)) return no(`At least ${study.diary?.minDays} of ${study.diary?.totalDays} days must be filled`)
       // A survey is its answers: a participant cannot hand in one with a question left out.
       const unanswered = study.type === 'survey' && actor.kind === 'participant' && taskAnswers
-        ? (study.tasks ?? []).findIndex((q) => { const v = taskAnswers[q.id]; return v === undefined || v === '' || (Array.isArray(v) && v.length === 0) }) : -1
+        ? (study.tasks ?? []).findIndex((q) => { const v = taskAnswers[q.id]; return !q.optional && (v === undefined || v === '' || (Array.isArray(v) && v.length === 0)) }) : -1
       if (unanswered >= 0) return no(`Question ${unanswered + 1} has not been answered`)
       const moved = shift(p, 'completed')
       if (!moved.ok) return moved
