@@ -356,7 +356,8 @@ const consent = async (label, on) => {
     })()`)
     const a = await read()
     const visible = (x) => x.cards.filter((c) => c.visible).length
-    if (visible(a) !== 2) g.push(`${visible(a)} cards visible, not 2`)
+    // Since 22 Oct 2026 the carousel shows three cards at least, more on wider screens.
+    if (visible(a) < 3) g.push(`${visible(a)} cards visible, not 3 or more`)
     const before = a.cards.filter((c) => c.visible).map((c) => c.title)
     await C.ev(`document.querySelector('button[aria-label="Next studies"]').click()`); await sleep(400)
     const b = await read()
@@ -378,7 +379,7 @@ const consent = async (label, on) => {
     const reached = new Set(a.cards.map((c) => c.title))
     const bounce = await C.ev(`[...document.querySelectorAll('main *')].filter((el) => { const s = getComputedStyle(el); return s.animationName !== 'none' && s.animationIterationCount === 'infinite' }).length`)
     if (bounce) g.push(`${bounce} elements animate on a loop`)
-    say(6, 'The dashboard carousel moves, and nothing was lost from the screen', g, `Ongoing Studies: ${a.cards.length} cards in the carousel (it showed 3 before), 2 visible, "${a.label}" -> "${b.label}" with a ${a.duration} ${a.easing} slide; Needs Your Attention: ${needRows} rows${totalNeeds ? `, View all lists all ${panelRows}` : ''}; Upcoming Sessions: ${sessionRows} and View All; the four figures, Super Insights and Recommended Respondents unchanged; nothing loops`)
+    say(6, 'The dashboard carousel moves, and nothing was lost from the screen', g, `Ongoing Studies: ${a.cards.length} cards in the carousel (it showed 3 before), ${visible(a)} visible, "${a.label}" -> "${b.label}" with a ${a.duration} ${a.easing} slide; Needs Your Attention: ${needRows} rows${totalNeeds ? `, View all lists all ${panelRows}` : ''}; Upcoming Sessions: ${sessionRows} and View All; the four figures, Super Insights and Recommended Respondents unchanged; nothing loops`)
   } catch (e) { say(6, 'The dashboard carousel moves, and nothing was lost from the screen', [...g, e.message]) }
 }
 
