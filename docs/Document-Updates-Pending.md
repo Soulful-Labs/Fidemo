@@ -250,3 +250,13 @@ A new study state, `billing`, between running and completed (`shared/lifecycle.t
   yellow at 20%. It replaced a native select; the values are unchanged. The
   client's dropdowns were already drawn menus. The respondent's date picker
   keeps a native year list, a phone control.
+
+### A. Icons and graphic assets: outstanding, not built (decided 22 October 2026)
+
+The icons stay as they are for now: each app draws its own, not the Figma
+icons. Counted on 22 October 2026: 84 distinct icons across the three Figma
+pages (console 58, client 58, respondent 51; console and client share 51, and
+24 are in all three). Drawn by hand today: console 54, client 51, respondent
+26 plus a few inline. The other graphic assets (illustrations, badges,
+empty-state pictures) have not been counted. B is confirmed: the respondent's
+bottom sheets are not dialogs and stay at the bottom, as Figma draws them.
