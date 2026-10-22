@@ -1,105 +1,153 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import Pill from '../../components/app/Pill'
-import Button, { IconButton } from '../../components/ui/Button'
-import { Chip } from '../../components/ui/controls'
-import { Select } from '../../components/ui/Input'
-import { Modal } from '../../components/ui/Overlay'
-import { DEDUCTED_EDIT, EARNED, EARNED_STARS, PARAMETERS, POINTS, POINT_NOTES, TIERS_EDIT, TRUST_NOTES, FEE, DEDUCTED_VIEW } from '../../mock/pricing'
-import { Edit, EditShell, Notes, Pencil } from './parts'
+import Button from '../../components/ui/Button'
+import { Modal, SuccessModal } from '../../components/ui/Overlay'
+import { pricingView, sign, usePricing } from '../../mock/pricing'
+import { platform } from '@shared/store'
+import type { SettingsGroup, SettingsValues } from '@shared/types'
+import { TEAM, say } from '../../platform'
+import { AddOns } from './AddOns'
+import { Edit, EditShell, Notes } from './parts'
 
-const Trash = () => (
-  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l.800 11a2 2 0 0 0 2 2h4.400a2 2 0 0 0 2-2L17 7M10.500 11v5M13.500 11v5" /></svg>
-)
 const Box = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section className="rounded-lg border-1 border-stroke-1 bg-bg-1 p-4"><h3 className="border-b-1 border-stroke-input pb-3.5 text-title-s leading-[25px] text-text-title">{title}</h3><div className="flex flex-col gap-4 pt-4">{children}</div></section>
 )
 const Sub = ({ children, note }: { children: string; note?: string }) => <p className="border-t-1 border-stroke-input pt-4 text-body-medium text-text-title">{children}{note && <span className="font-normal text-text-subtitle"> &nbsp;•&nbsp; {note}</span>}</p>
 
-function AddOnRow({ name, amount, pills }: { name: string; amount: string; pills: [string | undefined, string][] }) {
-  return (
-    <div className="flex items-center justify-between rounded-md border-1 border-stroke-1 px-3 py-2.5">
-      <div><p className="text-body-regular text-text-subtitle">{name}</p>
-        <p className="flex items-center gap-2 pt-1.5 text-text-regular text-text-subtitle"><span className="text-title-s text-text-title">{amount}</span><span aria-hidden="true">•</span>For{pills.map(([l, v]) => <Pill key={v} label={l} className="h-7 px-2.5">{v}</Pill>)}</p></div>
-      <div className="flex gap-3"><IconButton label={`Edit ${name}`} className="h-12 w-12 rounded-md"><Pencil /></IconButton><IconButton label={`Delete ${name}`} className="h-12 w-12 rounded-md"><Trash /></IconButton></div>
-    </div>
-  )
+const SCREENS = {
+  'client-fees': { crumb: 'Fees', last: 'Edit Clients Fees', title: 'Edit Clients Fees', note: 'Configure study pricing by industry or other filters, and the charges', back: '/pricing', group: 'fees', name: 'Clients Fees' },
+  'participant-fees': { crumb: 'Fees', last: 'Participants', title: 'Edit Participants Fees', note: 'Manage charges and rewards for participants', back: '/pricing', group: null, name: 'Participants Fees' },
+  tiers: { crumb: 'Gamification', last: 'Edit Tiers', title: 'Tiers', note: 'Set conditions for tiers', back: '/pricing?tab=gamification', group: 'tiers', name: 'Tiers' },
+  'trust-score': { crumb: 'Gamification', last: 'Edit Trust Score', title: 'Trust Score', note: 'Set the score changes for different rules', back: '/pricing?tab=gamification', group: 'trust', name: 'Trust Score values' },
+  'reward-points': { crumb: 'Gamification', last: 'Edit Reward Points', title: 'Reward Points', note: 'Set reward points for different sources to earn them', back: '/pricing?tab=gamification', group: 'points', name: 'Reward Points' },
+} as const
+
+/** What the warning says each change does (22 Oct 2026, policy v2 section 10). */
+const WARNING: Record<SettingsGroup, string> = {
+  fees: 'These fees go live across the whole platform for every client as soon as you save. Studies created from now on are priced with them; a study already created keeps the fees it was created with.',
+  trust: 'These values go live across the whole platform as soon as you save, for everything that happens from now on. Scores already earned keep the values in force when they were earned, so nobody\'s score moves.',
+  tiers: 'These thresholds go live across the whole platform as soon as you save. Every participant\'s tier is read from their score against them from now on; no score moves.',
+  points: 'These values go live across the whole platform as soon as you save, for points earned from now on. Points already earned keep the value they were earned at, so no balance moves.',
 }
 
-const SCREENS = {
-  'client-fees': { crumb: 'Fees', last: 'Edit Clients Fees', title: 'Edit Clients Fees', note: 'Configure study pricing by industry or other filters, and the charges', back: '/pricing' },
-  'participant-fees': { crumb: 'Fees', last: 'Participants', title: 'Edit Participants Fees', note: 'Manage charges and rewards for participants', back: '/pricing' },
-  tiers: { crumb: 'Gamification', last: 'Edit Tiers', title: 'Tiers', note: 'Set conditions for tiers', back: '/pricing?tab=gamification' },
-  'trust-score': { crumb: 'Gamification', last: 'Edit Trust Score', title: 'Trust Score', note: 'Set the score changes for different rules', back: '/pricing?tab=gamification' },
-  'reward-points': { crumb: 'Gamification', last: 'Edit Reward Points', title: 'Reward Points', note: 'Set reward points for different sources to earn them', back: '/pricing?tab=gamification' },
-}
+/** A number typed into a field: "+4", "-2", "$100" and "10" all read as numbers. */
+const num = (s: string) => Number(String(s).replace(/[$,\s]/g, ''))
 
 /**
  * The five edit screens (`/pricing/:what`): Edit Clients Fees 2056:192920,
  * Edit Participants Fees 2058:193936, Edit Tiers 2058:195439, Edit Trust Score
- * 2058:196166, Edit Reward Points 2058:197423. Every field is a free input
- * with no limit drawn. The drawn confirmation, "Clients Fees are updated!"
- * (2058:193905), claimed a save that never happened. These values come from
- * the signed Trust and Rewards policy and the platform's own rules
- * (shared/platform.ts), so this build cannot change them from here: the
- * screen says so up front, and Save Changes says so again and stores nothing.
+ * 2058:196166, Edit Reward Points 2058:197423.
+ *
+ * Since 22 Oct 2026 four of them save (policy v2 section 10): Save Changes asks
+ * first, saying the change goes live for the whole platform, then a master
+ * admin's change is recorded and "Changes are published live!" (2058:193905)
+ * confirms it. A changed value applies from then on and moves nothing already
+ * earned or agreed. The participant fees (withdrawal fee, points value and the
+ * redemption minimum) are the policy's section 4 and are not changed here.
  */
 export default function EditPricing() {
   const { what = 'client-fees' } = useParams()
   const navigate = useNavigate()
   const key = (what in SCREENS ? what : 'client-fees') as keyof typeof SCREENS
   const s = SCREENS[key]
-  const [saved, setSaved] = useState(false)
-  const [creating, setCreating] = useState(true)
-  const [chips, setChips] = useState(['Study Type: Survey', 'Skills', 'Roles'])
+  const { values, FEE, POINT_NOTES } = usePricing()
+  /** The form: every field as typed, starting from the values in force now. */
+  const [draft, setDraft] = useState<SettingsValues>(() => {
+    const d = JSON.parse(JSON.stringify(values)) as SettingsValues
+    // The frame writes every Trust Score value signed: "+50", "+4", "-2".
+    for (const k of Object.keys(d.trust) as (keyof SettingsValues['trust'])[]) if (k !== 'studyCap') (d.trust as unknown as Record<string, string>)[k] = sign(d.trust[k])
+    return d
+  })
+  const [asking, setAsking] = useState(false)
+  const [published, setPublished] = useState(false)
+  const [fixed, setFixed] = useState(false)
+  const put = <G extends SettingsGroup>(g: G, k: keyof SettingsValues[G]) => (v: string) => setDraft((d) => ({ ...d, [g]: { ...d[g], [k]: v as unknown as number } }))
+  const numeric = <G extends SettingsGroup>(g: G): SettingsValues[G] => {
+    const o = { ...draft[g] } as Record<string, unknown>
+    for (const k of Object.keys(o)) if (typeof o[k] === 'string' || typeof o[k] === 'number') o[k] = num(String(o[k]))
+    return o as unknown as SettingsValues[G]
+  }
+  const save = () => {
+    setAsking(false)
+    if (!s.group) return
+    if (say(platform().changeSettings(s.group, numeric(s.group), TEAM))) setPublished(true)
+  }
+  const t = draft.trust
+  const view = pricingView(draft)
   return (
-    <EditShell {...s} onSave={() => setSaved(true)}>
-      <p role="note" className="mb-3 rounded-md border-1 border-stroke-input bg-bg-1 px-4 py-3 text-text-regular text-text-title">These values are set by the signed Trust and Rewards policy and the platform's pricing rules. They cannot be changed from the console in this build, so nothing on this screen is saved.</p>
+    <EditShell crumb={s.crumb} last={s.last} title={s.title} note={s.note} back={s.back} onSave={() => (s.group ? setAsking(true) : setFixed(true))}>
       {key === 'client-fees' && (
         <>
-          <div className="grid grid-cols-2 gap-3"><Edit label="Platform Fees" value={FEE.platform} note="One-time per study" /><Edit label="Moderation Fees" value={FEE.moderation} note="One-time per completed participant" /></div>
+          <div className="grid grid-cols-2 gap-3"><Edit label="Platform Fees" value={String(draft.fees.platform)} unit="USD" onValue={put('fees', 'platform')} note="One-time per study" /><Edit label="Moderation Fees" value={String(draft.fees.moderation)} unit="USD" onValue={put('fees', 'moderation')} note="One-time per completed participant" /></div>
           <section className="mt-3 flex flex-col gap-3 rounded-lg border-1 border-stroke-1 bg-bg-1 p-4">
             <h3 className="text-body-regular text-text-title">Recruitment Fees</h3>
-            <div className="rounded-md bg-bg-2 px-3 pb-3 pt-2.5 [&_label]:text-text-regular [&_label]:text-text-subtitle"><Edit plain label="Base" value={FEE.recruitmentBase} /></div>
-            <AddOnRow name="Add-on 1" amount={FEE.typeAddOn} pills={[['Study Type:', 'Video Call, In-Person, Diary Study'], [undefined, 'Roles']]} />
-            <AddOnRow name="Add-on 2" amount={FEE.skillsAddOn} pills={[[undefined, 'Skills']]} />
-            <Button variant="secondary" size="md" className="self-start px-3" onClick={() => setCreating(true)}>+ Create Add-on</Button>
-            {creating && (
-              <div className="rounded-md border-1 border-stroke-1 bg-bg-0 p-4">
-                <div className="flex items-center justify-between pb-3"><h4 className="text-title-s text-text-title">Create Add-on</h4>
-                  <div className="flex gap-3"><Button size="md" className="px-3" onClick={() => setCreating(false)}>Create</Button><Button variant="secondary" size="md" className="px-3" onClick={() => setCreating(false)}>Cancel</Button></div></div>
-                <div className="grid grid-cols-2 gap-5 [&_label]:text-text-regular [&_label]:text-text-subtitle">
-                  <Edit plain label="Add-on Amount" value={FEE.skillsAddOn.replace('+', '')} />
-                  <div><Select label="For Parameter" placeholder="Choose parameters to add" options={PARAMETERS} onChange={(v) => setChips((c) => c.includes(v) ? c : [...c, v])} />
-                    <div className="flex gap-2 pt-2">{chips.map((c) => <Chip key={c} onRemove={() => setChips((all) => all.filter((x) => x !== c))}>{c}</Chip>)}</div></div>
-                </div>
-              </div>
-            )}
+            <div className="rounded-md bg-bg-2 px-3 pb-3 pt-2.5 [&_label]:text-text-regular [&_label]:text-text-subtitle"><Edit plain label="Base" value={String(draft.fees.recruitmentBase)} unit="USD" onValue={put('fees', 'recruitmentBase')} /></div>
+            <AddOns addOns={draft.fees.addOns} onChange={(addOns) => setDraft((d) => ({ ...d, fees: { ...d.fees, addOns } }))} />
             <p className="text-text-regular text-text-title">One-time per completed participant</p>
           </section>
         </>
       )}
       {key === 'participant-fees' && (
-        <div className="grid grid-cols-3 gap-3"><Edit label="Withdrawal" value={FEE.withdrawal} note="One-time charge per withdrawal" /><Edit label="Reward Points Value" value={FEE.pointValue} note="For = 100 Reward Coins" /><Edit label="Minimum Points To Redeem" value={FEE.minimumRedeem} note="Minimum points required to redeem at a time" /></div>
+        <>
+          <p role="note" className="mb-3 rounded-md border-1 border-stroke-input bg-bg-1 px-4 py-3 text-text-regular text-text-title">The withdrawal fee, the points value and the redemption minimum are set by the Trust and Rewards Policy (section 4). They change only with a new version of the policy, so they are not saved from here.</p>
+          <div className="grid grid-cols-3 gap-3"><Edit label="Withdrawal" value={FEE.withdrawal} note="One-time charge per withdrawal" /><Edit label="Reward Points Value" value={FEE.pointValue} note="For = 100 Reward Coins" /><Edit label="Minimum Points To Redeem" value={FEE.minimumRedeem} note="Minimum points required to redeem at a time" /></div>
+        </>
       )}
-      {key === 'tiers' && <div className="grid grid-cols-3 gap-3">{TIERS_EDIT.map(([l, v]) => <Edit key={l} label={l!} value={v!} unit="Trust Score" note="Equal or above trust score to reach this tier" />)}</div>}
-      {key === 'reward-points' && (
-        <div className="flex flex-col gap-3"><div className="grid grid-cols-3 gap-3">{POINTS.map(([l, v, n]) => <Edit key={l} label={l!} value={v!} unit="Points" note={n} />)}</div><Notes items={POINT_NOTES} /></div>
-      )}
-      {key === 'trust-score' && (
-        <div className="flex flex-col gap-3">
-          <div className="grid grid-cols-2 items-stretch gap-3">
-            <Box title="Earned For"><Edit plain label="Onboarding" value={EARNED[0]![1]!} /><div className="border-t-1 border-stroke-input pt-4"><Edit plain label="Study Completion" value={EARNED[1]![1]!} /></div>
-              <Sub note="Counts For Last 10 studies">Participation Ratings</Sub>{EARNED_STARS.map(([l, v]) => <Edit key={l} plain label={l!} value={v!} />)}</Box>
-            <Box title="Deducted For"><p className="text-body-medium text-text-title">Participation Ratings</p><Edit plain label="2-star rating" value={DEDUCTED_VIEW[0]![1]!} /><Edit plain label="1-star rating" value={DEDUCTED_VIEW[1]![1]!} />
-              <div className="border-t-1 border-stroke-input" />{DEDUCTED_EDIT.map(([l, v]) => <Edit key={l} plain label={l!} value={v!} />)}</Box>
-          </div>
-          <Notes items={TRUST_NOTES} />
+      {key === 'tiers' && (
+        <div className="grid grid-cols-3 gap-3">
+          {(['silver', 'gold', 'platinum'] as const).map((k) => <Edit key={k} label={`${k[0]!.toUpperCase()}${k.slice(1)} Tier`} value={String(draft.tiers[k])} unit="Trust Score" onValue={put('tiers', k)} note="Equal or above trust score to reach this tier" />)}
         </div>
       )}
-      <Modal open={saved} onClose={() => setSaved(false)} layout="titled" title="Changes not saved"
-        footer={<><Button variant="tertiary" onClick={() => setSaved(false)}>Keep Editing</Button><Button onClick={() => { setSaved(false); navigate(s.back) }}>Back to Pricing &amp; Rewards</Button></>}>
-        <p className="text-text-regular leading-5 text-text-title">Nothing was saved. These values come from the signed Trust and Rewards policy and the platform's pricing rules, and this build cannot change them from the console. A change needs the policy updated and a new release of the platform.</p>
+      {key === 'reward-points' && (
+        <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-3 gap-3">
+            {(['referral', 'beingReferred', 'studyCompletion', 'fullProfile', 'streak', 'profilePicture', 'introVideo'] as const).map((k, i) => (
+              <Edit key={k} label={view.POINTS[i]![0]!} value={String(draft.points[k])} unit="Points" onValue={put('points', k)} note={view.POINTS[i]![2]} />
+            ))}
+          </div>
+          <Notes items={POINT_NOTES} />
+        </div>
+      )}
+      {key === 'trust-score' && (
+        /* Edit Trust Score as 2058:196166 draws it (redrawn 22 Oct 2026). No Show is the policy's -4, not the frame's -2. */
+        <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-2 items-stretch gap-3">
+            <Box title="Earned For">
+              <Edit plain label="Onboarding" value={String(t.onboarding)} onValue={put('trust', 'onboarding')} />
+              <div className="grid grid-cols-2 gap-4 border-t-1 border-stroke-input pt-4">
+                <Edit plain label="Per Study Completion" value={String(t.studyCompletion)} unit={`${sign(num(String(t.studyCompletion)) * num(String(t.studyCap)) || 0)} total`} onValue={put('trust', 'studyCompletion')} />
+                <Edit plain label="Max Study per year" value={String(t.studyCap)} onValue={put('trust', 'studyCap')} />
+              </div>
+              <Sub note="Counts For Last 10 studies">Participation Ratings</Sub>
+              <Edit plain label="5-star rating" value={String(t.star5)} onValue={put('trust', 'star5')} />
+              <Edit plain label="4-star rating" value={String(t.star4)} onValue={put('trust', 'star4')} />
+              <Edit plain label="3-star rating" value={String(t.star3)} onValue={put('trust', 'star3')} />
+            </Box>
+            <Box title="Deducted For">
+              <p className="text-body-medium text-text-title">Participation Ratings</p>
+              <Edit plain label="2-star rating" value={String(t.star2)} onValue={put('trust', 'star2')} />
+              <Edit plain label="1-star rating" value={String(t.star1)} onValue={put('trust', 'star1')} />
+              <div className="border-t-1 border-stroke-input" />
+              <Edit plain label="No Show" value={String(t.noShow)} onValue={put('trust', 'noShow')} />
+              <Edit plain label="Late Show Up" value={String(t.lateShowUp)} onValue={put('trust', 'lateShowUp')} />
+              <Edit plain label="Cancelled Session" value={String(t.cancelledSession)} onValue={put('trust', 'cancelledSession')} />
+              <Edit plain label="Fraud" value={String(t.fraud)} onValue={put('trust', 'fraud')} />
+            </Box>
+          </div>
+          <Notes items={pricingView(values).TRUST_NOTES} />
+        </div>
+      )}
+      {s.group && (
+        <Modal open={asking} onClose={() => setAsking(false)} layout="titled" title="Publish these changes live?"
+          footer={<><Button variant="tertiary" onClick={() => setAsking(false)}>Cancel</Button><Button onClick={save}>Yes, Publish Live</Button></>}>
+          <p className="text-text-regular leading-5 text-text-title">{WARNING[s.group]}</p>
+        </Modal>
+      )}
+      <SuccessModal open={published} onClose={() => navigate(s.back)} title="Changes are published live!"
+        body={`The updated ${s.name} are published live and apply from now on.`} action="Done" onAction={() => navigate(s.back)} />
+      <Modal open={fixed} onClose={() => setFixed(false)} layout="titled" title="Changes not saved"
+        footer={<><Button variant="tertiary" onClick={() => setFixed(false)}>Keep Editing</Button><Button onClick={() => { setFixed(false); navigate(s.back) }}>Back to Pricing &amp; Rewards</Button></>}>
+        <p className="text-text-regular leading-5 text-text-title">Nothing was saved. The participant fees are set by the Trust and Rewards Policy (section 4) and change only with a new version of it.</p>
       </Modal>
     </EditShell>
   )

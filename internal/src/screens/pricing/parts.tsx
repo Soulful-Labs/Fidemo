@@ -32,12 +32,15 @@ export function Value({ label, value, note, className, children }: { label: stri
 }
 
 /** A field tile on an edit screen: the label, a 48px (or 38px) box with an optional unit on the right, the note. */
-export function Edit({ label, value, unit, note, size = 'md', plain }: { label: string; value: string; unit?: string; note?: string; size?: 'md' | 'sm'; plain?: boolean }) {
+export function Edit({ label, value, unit, note, size = 'md', plain, onValue, readOnly }: { label: string; value: string; unit?: string; note?: string; size?: 'md' | 'sm'; plain?: boolean
+  /** Typing changes the form's own value (22 Oct 2026: the screens save). Without it the field shows a fixed value. */
+  onValue?: (v: string) => void; readOnly?: boolean }) {
   return (
     <div className={plain ? undefined : 'rounded-lg border-1 border-stroke-1 bg-bg-1 p-4'}>
       <label className="block text-body-regular leading-[22px] text-text-title">{label}
         <span className={cn('mt-2 flex items-center rounded-md border-1 border-stroke-input bg-bg-0 px-3', size === 'md' ? 'h-12' : 'h-[38px] rounded-sm')}>
-          <input defaultValue={value} className={cn('min-w-0 flex-1 bg-transparent text-text-title outline-none', size === 'md' ? 'text-body-regular' : 'text-text-regular')} />
+          <input value={value} readOnly={readOnly || !onValue} onChange={(e) => onValue?.(e.target.value)} inputMode="decimal"
+            className={cn('min-w-0 flex-1 bg-transparent text-text-title outline-none', size === 'md' ? 'text-body-regular' : 'text-text-regular', (readOnly || !onValue) && 'text-text-subtitle')} />
           {unit && <span className="text-label text-text-subtitle">{unit}</span>}
         </span>
       </label>
@@ -57,9 +60,7 @@ export function Notes({ items }: { items: string[] }) {
 
 /**
  * The shell of every edit screen: a two-part breadcrumb, the title and its
- * note, Cancel and Save Changes. Save opens "... are updated!" and both
- * return to the tab the screen came from. No reason, password or approval
- * step is drawn.
+ * note, Cancel and Save Changes. Save asks first, then saves (22 Oct 2026).
  */
 export function EditShell({ crumb, last, title, note, back, onSave, children }: { crumb: string; last: string; title: string; note: string; back: string; onSave: () => void; children: ReactNode }) {
   const navigate = useNavigate()

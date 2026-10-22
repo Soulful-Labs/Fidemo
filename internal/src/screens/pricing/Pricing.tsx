@@ -3,7 +3,7 @@ import AppShell from '../../app/AppShell'
 import Pill from '../../components/app/Pill'
 import { SegmentedTabs } from '../../components/ui/Tabs'
 import { cn } from '../../lib/cn'
-import { DEDUCTED_VIEW, EARNED, EARNED_STARS, POINTS, TIERS_VIEW, FEE } from '../../mock/pricing'
+import { usePricing } from '../../mock/pricing'
 import { Head, Value } from './parts'
 
 const Rows = ({ title, rows, sub }: { title: string; rows: string[][]; sub?: string[][] }) => (
@@ -24,12 +24,14 @@ export const AddOn = ({ amount, pills }: { amount: string; pills: [string | unde
  * Fees: Clients (Platform, Moderation, Recruitment with two add-ons) and
  * Participants (Withdrawal, Reward Points Value).
  * Gamification: Tiers, Trust Score (Earned For, Deducted For), Reward Points.
- * Every figure is as drawn; several disagree with the signed policy.
+ * Every figure is the value in force now (shared/settings.ts).
  */
 export default function Pricing() {
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const gami = params.get('tab') === 'gamification'
+  /** The values in force now: a master admin's saved changes, else the policy's. */
+  const { DEDUCTED_VIEW, EARNED, EARNED_STARS, POINTS, TIERS_VIEW, FEE, ADD_ONS } = usePricing()
   return (
     <AppShell className="pb-8" crumbs={[{ label: 'Pricing & Rewards' }]}>
       <SegmentedTabs className="w-[280px]" segmentClassName="flex-1 min-w-0" value={gami ? 'gamification' : 'fees'} onChange={(k) => setParams(k === 'fees' ? {} : { tab: k }, { replace: true })}
@@ -49,7 +51,7 @@ export default function Pricing() {
             <div className="grid grid-cols-2 gap-3"><Value label="Platform Fees" value={FEE.platform} note="One-time per study" /><Value label="Moderation Fees" value={FEE.moderation} note="One-time per completed participant" /></div>
             <Value className="mt-3" label="Recruitment Fees" note="One-time per completed participant">
               <p className="flex items-baseline gap-2 pt-2 text-title-m leading-7 text-text-title">{FEE.recruitmentBase}<span className="text-text-regular text-text-subtitle">Base</span></p>
-              <div className="flex gap-2 pt-2"><AddOn amount={FEE.typeAddOn} pills={[['Study Type:', 'Video Call, In-Person, Diary Study'], [undefined, 'Roles']]} /><AddOn amount={FEE.skillsAddOn} pills={[[undefined, 'Skills']]} /></div>
+              {ADD_ONS.length > 0 && <div className="flex gap-2 pt-2">{ADD_ONS.map((a) => <AddOn key={a.id} amount={a.amount} pills={a.pills} />)}</div>}
             </Value></section>
           <section><Head title="Participants" note="Manage charges and rewards for participants" action="Edit Fees" onEdit={() => navigate('/pricing/participant-fees')} />
             <div className="grid grid-cols-2 gap-3"><Value label="Withdrawal" value={FEE.withdrawal} note="One-time charge per withdrawal" /><Value label="Reward Points Value" value={FEE.pointValue} note="For 100 Reward Coins" /></div></section>

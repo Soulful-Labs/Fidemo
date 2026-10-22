@@ -363,20 +363,28 @@ async function restrictInConsole(id, statement) {
   say(10, 'Roles and skills targeting is charged the add-ons', g, `a survey's recruitment per participant on Costing Summary: none $${got[0]}, roles $${got[1]}, skills $${got[2]}, both $${got[3]}`)
 }
 
-// ---- 11. A Pricing & Rewards change either saves or says it cannot
+// ---- 11. A Pricing & Rewards change saves, after a warning, or says plainly it cannot (22 Oct 2026: policy v2 section 10)
 {
   const g = []
   await I.open('/internal/pricing/client-fees'); await sleep(500)
-  if (!(await I.has('cannot be changed from the console'))) g.push('the screen does not say up front')
-  await typeIn(I, 'main input', '999')
+  await typeIn(I, 'main input', '150')
   await I.click('Save Changes', 600)
-  const dialog = flat(await I.ev(`[...document.querySelectorAll('[role=dialog]')].map((d) => d.innerText).join(' ')`))
-  if (!/Changes not saved/.test(dialog) || !/Nothing was saved/.test(dialog)) g.push('the dialog: ' + dialog.slice(0, 120))
-  if (/published live|are updated/i.test(dialog)) g.push('it still claims a save')
-  await clickExact(I, 'Back to Pricing & Rewards'); await sleep(500)
-  if (await I.has('$999')) g.push('the typed value appears on the overview')
-  say(11, 'A Pricing & Rewards change either saves or says plainly it cannot', g, `the edit screen says the values cannot be changed here; Save Changes opens "Changes not saved"; the overview keeps the policy's values`)
+  const warn = flat(await I.ev(`[...document.querySelectorAll('[role=dialog]')].map((d) => d.innerText).join(' ')`))
+  if (!/live across the whole platform for every client/.test(warn)) g.push('no live-change warning: ' + warn.slice(0, 120))
+  await clickExact(I, 'Yes, Publish Live'); await sleep(700)
+  const done = flat(await I.ev(`[...document.querySelectorAll('[role=dialog]')].map((d) => d.innerText).join(' ')`))
+  if (!/Changes are published live!/.test(done)) g.push('no published dialog: ' + done.slice(0, 120))
+  await clickExact(I, 'Done'); await sleep(600)
+  if (!(await I.has('$150'))) g.push('the overview does not show the new platform fee')
+  await I.open('/internal/participants'); await I.open('/internal/sub-admin'); await sleep(500)
+  if (!(await I.has('Changed the client fees'))) g.push('the change is not in the activity log')
+  await I.open('/internal/pricing/participant-fees'); await sleep(500)
+  await I.click('Save Changes', 600)
+  const fixed = flat(await I.ev(`[...document.querySelectorAll('[role=dialog]')].map((d) => d.innerText).join(' ')`))
+  if (!/Changes not saved/.test(fixed)) g.push('participant fees claim a save: ' + fixed.slice(0, 120))
+  say(11, 'A Pricing & Rewards change saves after a warning, or says plainly it cannot', g, `client fees: the warning names the whole platform, "Changes are published live!", the overview shows $150 and the activity log records it; participant fees: "Changes not saved"`)
 }
+
 
 // ---- 12. /kitchen-sink and /motion are unreachable
 {
