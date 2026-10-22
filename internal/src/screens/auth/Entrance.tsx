@@ -18,15 +18,16 @@ export default function Entrance() {
       <div className="flex flex-col items-center text-center">
         <p className="flex items-center gap-[14px]">
           <LogoMark className="h-8 w-[26px]" />
-          <span className="text-title-l font-medium"><span className="text-text-subtitle">Admin</span> <span className="text-text-body">Panel</span></span>
+          {/* The HumanLayer lock-up (22 Oct 2026), as in the client and respondent apps: the H mark and the black wordmark. */}
+          <span className="text-title-l text-text-wordmark">HumanLayer</span>
         </p>
-        <h1 className="pt-8 text-title-l leading-[31px] text-text-title">Focus Insite team console</h1>
-        <p className="max-w-[380px] pt-2 text-body-regular text-text-subtitle">Where the Focus Insite team runs the platform: studies, participants, clients, support and finance.</p>
+        <h1 className="pt-8 text-title-l leading-[31px] text-text-title">HumanLayer team console</h1>
+        <p className="max-w-[380px] pt-2 text-body-regular text-text-subtitle">Where the HumanLayer team runs the platform: studies, participants, clients, support and finance.</p>
       </div>
       <div className="flex flex-col gap-3 pt-8">
         <Button fullWidth onClick={() => navigate('/signin')}>Log In</Button>
       </div>
-      <p className="pt-6 text-center text-text-regular text-text-body">Access is for Focus Insite team members only.</p>
+      <p className="pt-6 text-center text-text-regular text-text-body">Access is for HumanLayer team members only.</p>
     </AuthLayout>
   )
 }

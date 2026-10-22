@@ -27,7 +27,9 @@ export default {
         bgAlt: { 0: '#fbfefd', 1: '#f5f9f7', 2: '#edf3f0' },
         // Text/*. The file also carries two capitalised strays, Text/Title #252525
         // and Text/Subtitle #777777, on the Studies and My Account frames.
-        text: { title: '#201e19', subtitle: '#5e5d5b', body: '#9d9d9d', disabled: '#b4b4b4', titleStray: '#252525', subtitleStray: '#777777' },
+        text: { title: '#201e19', subtitle: '#5e5d5b', body: '#9d9d9d', disabled: '#b4b4b4', titleStray: '#252525', subtitleStray: '#777777',
+          /** The HumanLayer wordmark, as the client's (Sidebard 290:15869): black. */
+          wordmark: '#000000' },
         // Stroke/input field and Stroke/stroke-*.
         stroke: { input: '#e9e8e7', 1: '#edf3f0', 2: '#e3edea', 3: '#dae7e1' },
         // CTA/*.
