@@ -314,7 +314,7 @@ const cardsB = await st(C, `s.clients.find((c) => c.id === ${JSON.stringify(idB)
 // The shortest valid study, then Publish
 await C.go('/client/studies/create/about'); await C.ev(FORMS)
 await C.click('Survey'); await C.ev(`__ph('Enter title of your study', 'Ten check B ${tag}')`); await C.click('Continue', 600); await C.ev(FORMS)
-await C.ev(`(() => { __ph('e.g. Product, Engineering, Marketing', 'Engineering'); __ph('e.g. Healthcare, Finance', 'IT'); return true })()`); await sleep(200)
+await C.ev(`(async () => { await (async (list) => { const w = (ms) => new Promise((r) => setTimeout(r, ms)); [...document.querySelectorAll('button')].find((x) => x.textContent.trim() === 'Select work functions...').click(); await w(250); for (const t of list) { [...document.querySelectorAll('[role=menuitemcheckbox]')].find((x) => x.textContent.trim() === t).click(); await w(150) } document.querySelector('button[aria-label=Close]')?.click(); await w(150) })(['Engineering']); __ph('e.g. Healthcare, Finance', 'IT'); return true })()`); await sleep(200)
 await C.click('Continue', 600); await C.ev(FORMS)
 await C.ev(`(() => { const q = [...document.querySelectorAll('input')].filter((e) => e.placeholder === 'Enter question text...')[0]; __type(q, 'Do you write software?'); const root = q.closest('.py-4'); __ph('Enter option', 'Yes', 0, root); __ph('Enter option', 'No', 1, root); return true })()`); await sleep(200)
 await C.click('Continue', 600); await C.ev(FORMS)

@@ -137,7 +137,7 @@ await step(1, 'Client creates and publishes a study', async () => {
   await C.ev(`(() => { __type(document.querySelector('input[placeholder="Enter title of your study"]'), ${JSON.stringify(TITLE)}); __type(document.querySelector('textarea[placeholder="Enter study description"]'), 'How people use sleep trackers week to week.'); return true })()`)
   await C.click('Continue'); expect((await C.path()).endsWith('/audience'), 'Continue did not reach Audience: ' + await C.path())
   // Work Function and Industry are required; Role and Skills are not.
-  await C.ev(`(() => { const f = (ph, v) => __type(document.querySelector('input[placeholder="' + ph + '"]'), v); f('e.g. Product, Engineering, Marketing', 'Consultation, Patient Care, Research'); f('e.g. Healthcare, Finance', 'Healthcare'); return true })()`)
+  await C.ev(`(async () => { const f = (ph, v) => __type(document.querySelector('input[placeholder="' + ph + '"]'), v); await (async (list) => { const w = (ms) => new Promise((r) => setTimeout(r, ms)); [...document.querySelectorAll('button')].find((x) => x.textContent.trim() === 'Select work functions...').click(); await w(250); for (const t of list) { [...document.querySelectorAll('[role=menuitemcheckbox]')].find((x) => x.textContent.trim() === t).click(); await w(150) } document.querySelector('button[aria-label=Close]')?.click(); await w(150) })(['Consultation', 'Patient Care', 'Research']); f('e.g. Healthcare, Finance', 'Healthcare'); return true })()`)
   await C.click('Continue'); expect((await C.path()).endsWith('/screener'), 'Continue did not reach Screener: ' + await C.path())
   // The client's own screener: one eligibility question and two more, in three answer types.
   await C.ev(BUILD_SCREENER)
