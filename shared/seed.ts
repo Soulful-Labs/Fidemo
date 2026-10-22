@@ -10,7 +10,7 @@
  * stale: sessions are always a few days ahead and "paid last month" is
  * always last month.
  */
-import { freshCertificateId } from './derive'
+import { billing, freshCertificateId } from './derive'
 import { avatarFor } from './avatar'
 import { withdrawalExpectedBy } from './platform'
 import { DEMO_SESSION_CODE, depositFor, isSessionType, priceStudy } from './platform'
@@ -26,7 +26,7 @@ import type {
   Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudyReport, StudySetup, StudyType, TeamMember, Ticket,
 } from './types'
 
-export const SEED_VERSION = 12
+export const SEED_VERSION = 13
 export const DEMO_PERSON_ID = 'jonathan'
 export const DEMO_PERSON_EMAIL = 'jonathan.reeve@example.com'
 export const DEMO_CLIENT_ID = 'cl-soulful'
@@ -781,6 +781,10 @@ export function buildSeed(now: Date = new Date()): PlatformState {
     sr('sr-7', 'st-social', 'gen-07', 'Client is offering payment outside', 'Offered a gift card for answering outside the study.', at(-8, 10, 0), settled),
     sr('sr-8', 'st-social', 'gen-11', 'Client is misrepresenting their identity', 'The company name does not match the website.', at(-7, 11, 15), settled),
   ]
+  // Billing (22 Oct 2026): a finished study whose bill is still open has stopped recruiting but is not completed.
+  for (const st of studies) {
+    if (st.state === 'completed' && billing(st).outstanding > 0) { st.state = 'billing'; st.stoppedAt = st.completedAt; st.stoppedBy = 'client'; st.completedAt = undefined }
+  }
   const state: PlatformState = { version: SEED_VERSION, seededAt: now.toISOString(), people, clients, studies, reports, tickets, team, activity, pending: [], teamNotices: [], studyReports }
   /**
    * Certificates issued at verification (policy section 7), each ID generated

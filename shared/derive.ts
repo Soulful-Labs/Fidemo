@@ -13,7 +13,7 @@ import {
   participationOf, recruitingTab, respondentStatus, STUDY_TAG,
 } from './lifecycle'
 import type { ClientTag, RespondentStatus } from './lifecycle'
-import { payoutState } from './lifecycle'
+import { isStopped, payoutState } from './lifecycle'
 import { CERTIFICATE, POINTS, TRUST, pointsToUsd, tierFor, trustForStars, trustScore } from './rules'
 import type { TrustInputs } from './rules'
 import type {
@@ -49,7 +49,7 @@ export const shortName = (name: string): string => {
 }
 
 export const daysRemaining = (study: Study, now: Date = new Date()): number =>
-  study.state === 'completed' || study.state === 'cancelled' ? 0 : Math.max(0, Math.ceil((new Date(study.endsAt).getTime() - now.getTime()) / DAY))
+  isStopped(study.state) || study.state === 'cancelled' ? 0 : Math.max(0, Math.ceil((new Date(study.endsAt).getTime() - now.getTime()) / DAY))
 
 /** "1 hour", "30 minutes", "1 hour 15 minutes". */
 export const durationLabel = (mins: number): string => {
@@ -604,7 +604,7 @@ export function segments(study: Study): [number, number, number] {
 
 /** When anything last happened on a study. */
 export function lastActivity(study: Study): string {
-  const stamps = [study.createdAt, study.submittedAt, study.approvedAt, study.completedAt, ...study.participations.flatMap((p) => p.events.map((e) => e.at))]
+  const stamps = [study.createdAt, study.submittedAt, study.approvedAt, study.stoppedAt, study.completedAt, ...study.participations.flatMap((p) => p.events.map((e) => e.at))]
   return stamps.filter((x): x is string => Boolean(x)).sort().at(-1) ?? study.createdAt
 }
 
@@ -725,11 +725,11 @@ export function billing(study: Study): Billing {
   const total = sum(lines, (l) => l.amount)
   const deposit = depositFor(study.rates, study.required)
   const projected = platformFee + (recruitingPer + incentivePer + moderationPer) * study.required
-  const totalCost = study.state === 'completed' ? total : projected
+  const totalCost = isStopped(study.state) ? total : projected
   const net = total - deposit
   const balancePaid = paidOf(study, 'balance')
   const refundPaid = paidOf(study, 'refund')
-  const closed = study.state === 'completed'
+  const closed = isStopped(study.state)
   return {
     lines, total, deposit, totalCost, due: totalCost - deposit, net, setupFee: Math.round(total * FEES.SETUP_SHARE), delivered,
     balancePaid, outstanding: closed ? Math.max(0, net - balancePaid) : 0,
@@ -752,9 +752,10 @@ export function payoutList(state: PlatformState, study: Study): PayoutLine[] {
 /** What has been taken from the card so far for people, per workflow 33. */
 export const charged = (study: Study): number => study.rates.incentivePer * study.participations.filter((p) => isCharged(p.state)).length
 
-/** The status pill. "Billing" is not a state: it is a completed study that still owes money. */
+/** The status pill. Billing is a state since 22 Oct 2026: recruiting has stopped and the bill is open. */
 export function statusTag(study: Study): { label: string; tone: 'neutral' | 'green' | 'grey' | 'yellow' } {
-  if (study.state === 'completed') return billing(study).outstanding > 0 ? { label: 'Billing', tone: 'neutral' } : { label: 'Completed', tone: 'green' }
+  if (study.state === 'billing') return { label: 'Billing', tone: 'neutral' }
+  if (study.state === 'completed') return { label: 'Completed', tone: 'green' }
   if (study.state === 'paused') return { label: STUDY_TAG.paused, tone: 'yellow' }
   if (study.state === 'draft' || study.state === 'in_review' || study.state === 'cancelled') return { label: STUDY_TAG[study.state], tone: 'grey' }
   return { label: STUDY_TAG[study.state], tone: 'neutral' }
@@ -769,7 +770,7 @@ export function dashboardStats(state: PlatformState, studies: Study[]) {
   const scored = studies.flatMap((s) => recruits(state, s, 'results')).filter((r) => r.participation.state === 'completed')
   const priced = studies.filter((s) => s.required > 0)
   return {
-    ongoing: studies.filter((s) => s.state === 'recruiting' || s.state === 'ongoing' || s.state === 'paused').length,
+    ongoing: studies.filter((s) => s.state === 'recruiting' || s.state === 'ongoing' || s.state === 'paused' || s.state === 'billing').length,
     completed: studies.filter((s) => s.state === 'completed').length,
     hired: sum(studies, (s) => counts(s).delivered),
     avgScore: scored.length === 0 ? 0 : Math.round(sum(scored, (r) => r.score) / scored.length),
@@ -778,7 +779,7 @@ export function dashboardStats(state: PlatformState, studies: Study[]) {
 }
 
 /** Workflow 53: "a red alert on login while incentives are unpaid". */
-export const unpaidStudies = (studies: Study[]): Study[] => studies.filter((s) => s.state === 'completed' && billing(s).outstanding > 0)
+export const unpaidStudies = (studies: Study[]): Study[] => studies.filter((s) => s.state === 'billing' && billing(s).outstanding > 0)
 
 /**
  * The policy guardrail and workflow 57: who a study's repeat rule allows.
@@ -841,10 +842,11 @@ export interface Invoice { number: string; studyId: string; study: string; date:
 export const invoiceNumber = (study: Study): string => `INV-${1024000 + (hash(study.id) % 9000)}`
 
 export function invoices(studies: Study[]): Invoice[] {
-  return studies.filter((s) => s.state === 'completed' && billing(s).net > 0).map((s) => {
+  // The bill opens when recruiting stops (Billing) and stays on record once paid (Completed).
+  return studies.filter((s) => isStopped(s.state) && billing(s).net > 0).map((s) => {
     const b = billing(s)
     return {
-      number: invoiceNumber(s), studyId: s.id, study: s.title, date: s.completedAt ?? s.endsAt, amount: b.net,
+      number: invoiceNumber(s), studyId: s.id, study: s.title, date: s.stoppedAt ?? s.completedAt ?? s.endsAt, amount: b.net,
       paid: b.outstanding <= 0, paidAt: s.payments.find((p) => p.kind === 'balance')?.at,
     }
   })
@@ -982,7 +984,8 @@ export interface RefundCase {
 
 /** Completed studies that underfilled far enough for unused incentive to go back to the client. */
 export function refundCases(state: PlatformState): RefundCase[] {
-  return state.studies.filter((s) => s.state === 'completed').flatMap((s) => {
+  // A refund is due once recruiting stops and the final bill is below the deposit.
+  return state.studies.filter((s) => isStopped(s.state)).flatMap((s) => {
     const b = billing(s)
     if (b.refund <= 0) return []
     return [{
@@ -1010,7 +1013,8 @@ export interface PayoutCase {
   notice?: TeamNotice
 }
 export function payoutsToProcess(state: PlatformState): PayoutCase[] {
-  return state.studies.filter((s) => s.state === 'completed').map((study) => {
+  // Participants are paid from Billing on (22 Oct 2026): their part is done when recruiting stops.
+  return state.studies.filter((s) => isStopped(s.state)).map((study) => {
     const owed = study.participations.filter((p) => p.state === 'completed' && !p.paidAt)
     const ready = owed.filter((p) => !isSessionType(study.type) || Boolean(p.code?.byClient && p.code?.byParticipant))
     return {
@@ -1018,7 +1022,7 @@ export function payoutsToProcess(state: PlatformState): PayoutCase[] {
       notice: (state.teamNotices ?? []).find((n) => n.kind === 'payouts' && n.studyId === study.id),
     }
   }).filter((c) => c.owed.length > 0)
-    .sort((a, b) => (b.notice?.at ?? b.study.completedAt ?? '').localeCompare(a.notice?.at ?? a.study.completedAt ?? ''))
+    .sort((a, b) => (b.notice?.at ?? b.study.stoppedAt ?? b.study.completedAt ?? '').localeCompare(a.notice?.at ?? a.study.stoppedAt ?? a.study.completedAt ?? ''))
 }
 
 /** The console's Finance tiles. */
@@ -1149,8 +1153,11 @@ export function paceOf(s: Study, completed: number, now: Date = new Date()) {
 }
 
 /** When a stopped study's balance falls due: seven days after it was marked completed. Both apps read this one rule. */
-export const balanceDueBy = (study: Study): string | undefined =>
-  study.completedAt ? new Date(new Date(study.completedAt).getTime() + 7 * 86_400_000).toISOString() : undefined
+/** The bill falls due a week after recruiting stops (Billing, 22 Oct 2026). */
+export const balanceDueBy = (study: Study): string | undefined => {
+  const from = study.stoppedAt ?? study.completedAt
+  return from ? new Date(new Date(from).getTime() + 7 * 86_400_000).toISOString() : undefined
+}
 
 export interface WithdrawalRow { person: Person; payout: Payout; state: PayoutStatus; method?: PayoutMethod }
 

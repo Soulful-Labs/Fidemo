@@ -49,9 +49,9 @@ export function useStudyActions(study: ClientStudy | null) {
         if (res.ok) nav(`/studies/${study.id}/paused`); else toast(res.why)
       }} />
       <StopCompleteModal open={dialog === 'stop'} left={left} onClose={close} onConfirm={() => {
-        close(); const res = moveStudy(study.id, 'completed')
-        toast(res.ok ? `${study.title} marked completed` : res.why)
-        // The balance falls due on stopping, and Pay is where it is shown and paid (1645:132608).
+        close(); const res = moveStudy(study.id, 'billing')
+        toast(res.ok ? `${study.title} has stopped recruiting and is in Billing` : res.why)
+        // Stopping moves the study to Billing (22 Oct 2026): its bill is on Pay, where it is paid (2325:220730).
         if (res.ok) nav(`/studies/${study.id}/pay`)
       }} />
       <RepublishModal open={dialog === 'republish'} onClose={close} onConfirm={() => {
@@ -79,7 +79,8 @@ export function StudyMenu({ study, open, onClose, act }: {
   study: ClientStudy; open: boolean; onClose: () => void; act: ReturnType<typeof useStudyActions>['act']
 }) {
   const run = (f: () => void) => () => { onClose(); f() }
-  if (study.state === 'completed' || study.state === 'cancelled') {
+  // Recruiting has stopped (Billing or Completed), or it never ran: the completed menu.
+  if (study.state === 'billing' || study.state === 'completed' || study.state === 'cancelled') {
     return <CompletedMenu open={open} onClose={onClose} onCopy={run(act.copy)} onDuplicate={run(act.duplicate)} />
   }
   return (

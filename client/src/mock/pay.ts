@@ -22,7 +22,9 @@ export function useBill(studyId?: string) {
   const { studies } = useStudies()
   const client = useClient()
   return useMemo(() => {
-    const study = studies.find((x) => x.id === studyId) ?? studies.find((x) => x.state === 'completed') ?? studies[0]
+    const study = studies.find((x) => x.id === studyId) ?? studies.find((x) => x.state === 'billing' || x.state === 'completed') ?? studies[0]
+    // When recruiting stopped (Billing, 22 Oct 2026), or the old completion date.
+    const marked = study?.stoppedAt ?? study?.completedAt
     const b = study ? billing(study) : undefined
     const c = study ? counts(study) : undefined
     const card = client?.cards.find((x) => x.isDefault) ?? client?.cards[0]
@@ -43,7 +45,7 @@ export function useBill(studyId?: string) {
         title: `Invoice Details (${number}) - ${study?.title ?? ''}`,
         number: `Invoice Number: ${number}`,
         study: study?.title ?? '',
-        issued: study?.completedAt ? `Marked completed and invoice issued on ${dayLongMonthYear(study.completedAt)}, ${clockTime(study.completedAt)}` : '',
+        issued: marked ? `Marked completed and invoice issued on ${dayLongMonthYear(marked)}, ${clockTime(marked)}` : '',
         amount: money(due),
         due: dueBy ? `Due on ${monthDayYear(dueBy)}` : '',
         dueBy: dueBy ? dayMonthYear(dueBy) : '',
@@ -59,7 +61,7 @@ export function useBill(studyId?: string) {
         completed: String(c?.completed ?? 0), completedOf: `/${study?.required ?? 0}`,
         qualified: String(c?.everQualified ?? 0), qualifiedOf: `/${c?.everApplied ?? 0}`,
         progress: `${study ? progressPct(study) : 0}%`,
-        markedAt: study?.completedAt ? `Marked completed on ${dayLongMonthYear(study.completedAt)}, ${clockTime(study.completedAt)}` : 'Not marked completed yet',
+        markedAt: marked ? `Marked completed on ${dayLongMonthYear(marked)}, ${clockTime(marked)}` : 'Not marked completed yet',
         card: { ...BILL_COPY.card, name: client?.name ?? '', cta: `Pay ${money(due)}` },
       },
       /** The deposit and the balance as the Transactions list writes them. */

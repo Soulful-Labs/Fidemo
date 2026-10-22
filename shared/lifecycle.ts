@@ -17,23 +17,26 @@ import { isSessionType } from './platform'
 export const STUDY_MOVES: Record<StudyState, StudyState[]> = {
   draft: ['in_review', 'cancelled'],
   in_review: ['recruiting', 'draft', 'cancelled'],
-  recruiting: ['ongoing', 'paused', 'completed', 'cancelled'],
-  ongoing: ['paused', 'completed', 'cancelled'],
-  paused: ['recruiting', 'ongoing', 'completed', 'cancelled'],
-  /** Re-publish and Recruit (19 Oct 2026): only while the balance is unpaid, which the store checks (`canReopen`). */
-  completed: ['recruiting'],
+  recruiting: ['ongoing', 'paused', 'billing', 'cancelled'],
+  ongoing: ['paused', 'billing', 'cancelled'],
+  paused: ['recruiting', 'ongoing', 'billing', 'cancelled'],
+  /**
+   * Billing (22 Oct 2026): Stop-complete, or the study filling its target, ends
+   * recruiting here. Paying the bill completes it; Re-publish and Recruit takes
+   * it back to recruiting. This replaces the 20 Oct reopen of a completed study.
+   */
+  billing: ['completed', 'recruiting'],
+  completed: [],
   cancelled: [],
 }
 
 export const canMoveStudy = (from: StudyState, to: StudyState): boolean => STUDY_MOVES[from].includes(to)
 
-/**
- * A completed study can be re-published to recruit more only while it is
- * unsettled: no balance paid and no refund confirmed. Once either has
- * happened it is closed.
- */
-export const canReopen = (study: { state: StudyState; payments: { kind: string }[] }): boolean =>
-  study.state === 'completed' && !study.payments.some((p) => p.kind === 'balance' || p.kind === 'refund')
+/** Re-publish and Recruit: only a study in Billing, whose bill is still open, goes back to recruiting. */
+export const canRepublish = (study: { state: StudyState }): boolean => study.state === 'billing'
+
+/** Recruiting has stopped: in Billing or completed. Its bill is the final one, at the people delivered. */
+export const isStopped = (s: StudyState): boolean => s === 'billing' || s === 'completed'
 
 /** A study respondents can see and apply to. */
 export const isLive = (s: StudyState): boolean => s === 'recruiting' || s === 'ongoing'
@@ -125,10 +128,17 @@ export const recruitingTab = (s: ParticipationState): 'matched' | 'invited' | 'r
 
 // ------------------------------------------------------------------- labels
 
+/** Who stopped a study in Billing, as its banner says it (2325:220730 draws the client's own line). */
+export const STOPPED_LINE: Record<'client' | 'team' | 'filled', string> = {
+  client: 'This study is stopped by you to mark completed!',
+  team: 'This study is stopped by the team to mark completed!',
+  filled: 'This study has filled its target and stopped recruiting!',
+}
+
 /** Client app: what a frame calls each study state. */
 export const STUDY_TAG: Record<StudyState, string> = {
   draft: 'Draft', in_review: 'In Review', recruiting: 'Recruiting', ongoing: 'Ongoing',
-  paused: 'Paused', completed: 'Completed', cancelled: 'Cancelled',
+  paused: 'Paused', billing: 'Billing', completed: 'Completed', cancelled: 'Cancelled',
 }
 
 /**

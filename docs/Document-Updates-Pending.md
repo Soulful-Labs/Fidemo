@@ -170,3 +170,64 @@ once, as its bin did.
 - ten-check item 11 now checks the menu (was "deletes in one click").
 - For the designer: draw the menu, its Required toggle and the respondent's
   optional marker.
+
+### 10. Stop-complete and Billing (`2372:138874`, `2317:163036`, `2325:220730`, `1645:132608`)
+
+A new study state, `billing`, between running and completed (`shared/lifecycle.ts`):
+
+| From | To | When |
+|---|---|---|
+| recruiting, ongoing, paused | billing | Stop-complete (client or team, after "Stop and Mark Study Completed?"), or the study filling its target on its own (its last completion lands, unless the client chose to recruit more) |
+| billing | completed | the bill is paid (Pay Bill), or nothing was owed when it stopped |
+| billing | recruiting | Re-publish and Recruit |
+| completed | (none) | a completed study is closed |
+
+- Entering Billing finishes the study for participants: sessions not yet run
+  are cancelled free, the client and the team are told, and the team can
+  process payouts from Billing (Finance, Payouts). A participant never waits
+  on the client's invoice.
+- Billing studies sit under Ongoing in both apps and move to Completed when
+  paid. The status tag reads Billing.
+- The client's Pay tab in Billing is `2325:220730`: the banner ("This study is
+  stopped by you to mark completed!", the time it stopped, Re-publish and
+  Recruit), Estimated / Final, the bill to Net Payable, Payment Due with Pay
+  Bill, Deposit Paid, Total Cost, Transactions with Invoice. The console's is
+  the same, read only: no Pay Bill, no Re-publish and Recruit.
+- New copy, not drawn: the banner when the team stopped the study ("This
+  study is stopped by the team to mark completed!") or it filled ("This study
+  has filled its target and stopped recruiting!"), and the console's banner
+  lines, written from the team's side.
+- The highlighted line's count ("Your study has N participants left to fill
+  target") is the study's target less its completions, and is left out when
+  nothing is left.
+- **Replaces the 20 October reopen-while-unpaid move.** Removed:
+  `canReopen` (`shared/lifecycle.ts`), the reopen branch of `moveStudy`
+  (`shared/store.ts`), and the client Pay tab's reading of it. Affected
+  screens: the client Pay tab and its banner; the client study menus (a study
+  in Billing gets the completed menu); the console header menu (Copy Study
+  Link only in Billing); the console Pay tab. Affected checks: verify-shared
+  (the reopen tests are now Billing tests, plus "a study cannot jump straight
+  to Completed" and "a study that fills its target goes to Billing by
+  itself"), demo and ten-check (the console's Stop-complete asks first).
+- Demo data: every completed study that still owed money is in Billing (seed
+  version 13).
+
+| Document | Section | It says | The build now |
+|---|---|---|---|
+| PRD | the study states, and 12.8 (Pay) | States draft, in review, recruiting, ongoing, paused, completed, cancelled; "Billing" is a completed study that owes money; Re-publish and Recruit reopens a completed study while unpaid | Billing is a state of its own, as above |
+| BRD | the client's payment terms | The balance falls due when the study is completed | It falls due when recruiting stops (Billing), a week later |
+
+### Open items, held and not built
+
+- **Changing the incentive on a published study.** The design draws the
+  Incentive Amount as editable after publishing (`2325:214897`). Built today:
+  the money fields of a live study stay locked (PRD D33). Changing them
+  changes what a client is charged after agreeing a price, so it waits for a
+  business decision.
+- **"If not paid, will be auto-debited from the card."** Drawn on the Billing
+  Pay frame (`2325:221180`). Auto-debit was removed on 15 October 2026; the
+  rest of the screen is built and that line is not.
+- **The diary's Minute and Step units, and its frequency list** ("Everyday" to
+  "Every 5 days"), drawn in the client's diary dropdowns. Built today: Hour,
+  Day, Week, and Every day, Every 2 days, Every 3 days, Weekly. A behaviour
+  change, for the designer and the business.

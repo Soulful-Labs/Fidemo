@@ -219,7 +219,7 @@ p.tick()
 check('9a. nothing is paid automatically: an hour on, they are still waiting', status(id) === 'in_process' && !participationOf(st().studies.find((s) => s.id === id)!, DEMO_PERSON_ID)!.paidAt)
 check('9b. the client cannot pay them, and the team cannot before the study finishes', !p.processPayouts(id, client).ok && !p.processPayouts(id, team).ok)
 const clientNote = () => st().clients.find((c) => c.id === DEMO_CLIENT_ID)!.notifications?.[0]
-check('9c. the study finishes: the client is told the participants will now be paid', p.moveStudy(id, 'completed', team).ok && clientNote()?.title === 'Your study has finished' && /will now be paid/.test(clientNote()?.body ?? '') && clientNote()?.studyId === id, clientNote()?.body)
+check('9c. the study finishes: the client is told the participants will now be paid', p.moveStudy(id, 'billing', team).ok && clientNote()?.title === 'Your study has finished' && /will now be paid/.test(clientNote()?.body ?? '') && clientNote()?.studyId === id, clientNote()?.body)
 check('9d. and the team is told the payouts are ready to process; nothing is paid yet', st().teamNotices[0]?.studyId === id && st().teamNotices[0]?.title === 'Payouts ready to process' && status(id) === 'in_process' && payoutsToProcess(st()).some((c) => c.study.id === id && c.ready.length === 1), st().teamNotices[0]?.body)
 check('9e. the team processes them by hand, and it is logged', p.processPayouts(id, team).ok && st().activity[0]!.what.startsWith('Processed 1 payout') && !payoutsToProcess(st()).some((c) => c.study.id === id))
 const after = fig()
@@ -245,17 +245,33 @@ check('withdrawing more than the balance is refused', !p.requestPayout(DEMO_PERS
 // The journey study finished underfilled above, so it has a refund of its own: the count drops by the one confirmed.
 const refundsBefore = refundsPending(st()).length
 check('refund: confirmed once, refused twice', p.confirmRefund('st-uf-1', team).ok && !p.confirmRefund('st-uf-1', team).ok && refundsPending(st()).length === refundsBefore - 1)
-check('a completed study cannot be paused', !p.moveStudy('st-sleep', 'paused', client).ok)
+check('a study in Billing cannot be paused', st().studies.find((s) => s.id === 'st-sleep')!.state === 'billing' && !p.moveStudy('st-sleep', 'paused', client).ok)
 {
-  // Re-publish and Recruit (19 Oct 2026): a completed study reopens only while unsettled, and falls due again on the same rule when stopped again.
+  // Billing (22 Oct 2026): Re-publish and Recruit takes a study in Billing back to recruiting; stopping it again opens the bill again.
   const sleep = () => st().studies.find((s) => s.id === 'st-sleep')!
-  const firstDue = sleep().completedAt
-  const reopened = p.moveStudy('st-sleep', 'recruiting', client).ok && sleep().state === 'recruiting' && !sleep().completedAt && billing(sleep()).outstanding === 0
-  check('an unpaid completed study can be re-published, and nothing is due while it recruits', reopened)
-  check('stopping it again makes the balance due again', p.moveStudy('st-sleep', 'completed', client).ok && Boolean(sleep().completedAt) && sleep().completedAt! >= (firstDue ?? '') && billing(sleep()).outstanding > 0)
+  const firstStop = sleep().stoppedAt
+  check('a study cannot jump from recruiting straight to Completed', !p.moveStudy('st-pay', 'completed', client).ok)
+  const reopened = p.moveStudy('st-sleep', 'recruiting', client).ok && sleep().state === 'recruiting' && !sleep().stoppedAt && billing(sleep()).outstanding === 0
+  check('a study in Billing can be re-published, and nothing is due while it recruits', reopened)
+  check('Stop-complete moves it to Billing, not Completed, and the bill is due again', p.moveStudy('st-sleep', 'billing', client).ok && sleep().state === 'billing' && sleep().stoppedBy === 'client' && (sleep().stoppedAt ?? '') >= (firstStop ?? '') && billing(sleep()).outstanding > 0 && !sleep().completedAt)
 }
-check('paying a balance clears the Billing pill', billing(st().studies.find((s) => s.id === 'st-sleep')!).outstanding > 0 && p.payBalance('st-sleep').ok && billing(st().studies.find((s) => s.id === 'st-sleep')!).outstanding === 0)
-check('a paid study cannot be re-published', !p.moveStudy('st-sleep', 'recruiting', client).ok)
+check('paying the bill completes the study', billing(st().studies.find((s) => s.id === 'st-sleep')!).outstanding > 0 && p.payBalance('st-sleep').ok && billing(st().studies.find((s) => s.id === 'st-sleep')!).outstanding === 0 && st().studies.find((s) => s.id === 'st-sleep')!.state === 'completed')
+check('a completed study cannot be re-published', !p.moveStudy('st-sleep', 'recruiting', client).ok)
+{
+  // A study that fills its target stops recruiting on its own (22 Oct 2026): the last completion moves it to Billing, marked as filled.
+  const ready = (q: { state: string }) => q.state === 'recruited' || q.state === 'qualified' || q.state === 'applied'
+  const live = st().studies.find((x) => (x.state === 'recruiting' || x.state === 'ongoing') && !x.beyondTarget && x.type === 'survey' && x.required > 0
+    && x.participations.filter(ready).length >= x.required - x.participations.filter((q) => q.state === 'completed').length)
+  if (!live) check('a study that fills its target goes to Billing by itself', false, 'no live survey with enough people to fill it')
+  else {
+    const need = live.required - live.participations.filter((q) => q.state === 'completed').length
+    // Applicants are qualified first, as the team would, then each completes.
+    for (const q of live.participations.filter(ready).slice(0, need)) { if (q.state === 'applied') p.decide(live.id, q.personId, 'qualified', team); p.complete(live.id, q.personId, team) }
+    const after = st().studies.find((x) => x.id === live.id)!
+    check('a study that fills its target goes to Billing by itself, marked as filled', after.state === 'billing' || after.state === 'completed', `${live.id} is ${after.state}`)
+    check('and it is finished for participants: the team is told the payouts are ready', after.stoppedBy === 'filled' && (st().teamNotices ?? []).some((n) => n.kind === 'payouts' && n.studyId === live.id))
+  }
+}
 p.reset()
 check('a patch without an email keeps the email', p.updatePerson(DEMO_PERSON_ID, { name: 'Jonathan Reeve', email: undefined }).ok && st().people.find((x) => x.id === DEMO_PERSON_ID)!.email === 'jonathan.reeve@example.com')
 check('reset puts everything back', !st().studies.some((s) => s.id === id) && refundsPending(st()).length === 2)
@@ -278,7 +294,7 @@ p.reset()
   clock += 60 * 60_000; p.tick()
   check('console no-show: never paid, the respondent app shows No Show', !yara().paidAt && respondentStudies(st(), 'yara-m').find((r) => r.id === 'st-28')?.status === 'no_show')
   check('console undo no-show, then complete with the code: not paid on a timer', p.undoNoShow('st-28', 'yara-m', team).ok && p.enterClientCode('st-28', 'yara-m', yara().code!.value).ok && p.complete('st-28', 'yara-m', team).ok && (clock += 60 * 60_000, p.tick(), !yara().paidAt))
-  check('console: once the study finishes, the team processes the payout', p.moveStudy('st-28', 'completed', team).ok && p.processPayouts('st-28', team).ok && Boolean(yara().paidAt))
+  check('console: once the study finishes, the team processes the payout', p.moveStudy('st-28', 'billing', team).ok && p.processPayouts('st-28', team).ok && Boolean(yara().paidAt))
   check('console rating: refused twice (a simulated client rated at payout)', !p.rateParticipant('st-28', 'yara-m', 'dimensions', { expertise: 4, reliability: 4, communication: 3 }, team).ok)
   const unrated = st().studies.find((s) => s.id === 'st-social')!.participations.find((x) => x.state === 'completed' && !x.rating)!
   check('console rating: stored as the mean of the dimensions and logged', p.rateParticipant('st-social', unrated.personId, 'dimensions', { expertise: 4, reliability: 4, communication: 3 }, team).ok && unrated.personId !== undefined
@@ -371,7 +387,7 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   check('no AutoPay: a completed participant is never paid on a timer', mine2().state === 'completed' && !mine2().paidAt && st().pending.length === 0)
   check('no AutoPay: the client cannot release it, nor the team before the study finishes', !p.processPayouts(id2, client).ok && !p.processPayouts(id2, team).ok && !mine2().paidAt)
   const notes = st().teamNotices.length
-  check('study finishes: the client and the team are each notified once, and nothing is paid', p.moveStudy(id2, 'completed', team).ok && st().teamNotices.length === notes + 1 && st().clients.find((c) => c.id === DEMO_CLIENT_ID)!.notifications?.[0]?.studyId === id2 && !mine2().paidAt)
+  check('study finishes: the client and the team are each notified once, and nothing is paid', p.moveStudy(id2, 'billing', team).ok && st().teamNotices.length === notes + 1 && st().clients.find((c) => c.id === DEMO_CLIENT_ID)!.notifications?.[0]?.studyId === id2 && !mine2().paidAt)
   check('the team processes the payout by hand', p.processPayouts(id2, team).ok && Boolean(mine2().paidAt) && !p.processPayouts(id2, team).ok)
   check('the client reads the notification', p.markClientNoticesRead(DEMO_CLIENT_ID).ok && st().clients.find((c) => c.id === DEMO_CLIENT_ID)!.notifications!.every((n) => n.read))
 }

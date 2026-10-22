@@ -41,7 +41,8 @@ export default function StudyHeader({ study, onPause, onComplete, onResume }: { 
   const navigate = useNavigate()
   const copy = () => { void copyText(study.figures.shareLink, 'Study link') }
   /** The common actions on every study type (19 Oct 2026); a paused study offers Resume Study where Pause is. */
-  const items = study.paused ? MENU.map((m) => (m === 'Pause Study' ? 'Resume Study' : m)) : MENU
+  // A study in Billing has stopped recruiting: only its link is left to copy.
+  const items = study.billing ? ['Copy Study Link'] : study.paused ? MENU.map((m) => (m === 'Pause Study' ? 'Resume Study' : m)) : MENU
   const pick = (item: string) => {
     setMenu(false)
     if (item === 'Copy Study Link') copy()

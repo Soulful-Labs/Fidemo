@@ -16,7 +16,11 @@ import type { StudyForm } from './studyForm'
 export type StudyType = 'survey' | 'video_call' | 'group_video_call' | 'in_person' | 'in_person_group' | 'diary'
 
 /** The study's own state (workflow steps 5 to 11, 45, 53). */
-export type StudyState = 'draft' | 'in_review' | 'recruiting' | 'ongoing' | 'paused' | 'completed' | 'cancelled'
+/**
+ * `billing` (22 Oct 2026): recruiting has stopped, by Stop-complete or by the study filling, and the
+ * client's bill is open. It is finished for participants; it becomes `completed` once nothing is owed.
+ */
+export type StudyState = 'draft' | 'in_review' | 'recruiting' | 'ongoing' | 'paused' | 'billing' | 'completed' | 'cancelled'
 
 /** One person's journey through one study (workflow steps 24 to 52). */
 export type ParticipationState =
@@ -202,6 +206,9 @@ export interface Study {
   pausedReason?: string
   /** Recruit more (19 Oct 2026): the target was met and the client chose to keep recruiting, so the "Congrats!" banner is not shown again. */
   beyondTarget?: boolean
+  /** When recruiting stopped and the study went to Billing, and who stopped it: the client, the team, or the study filling its target. */
+  stoppedAt?: string
+  stoppedBy?: 'client' | 'team' | 'filled'
 }
 
 /** One field a round of changes touched: where it sits in the Create steps ("About", "Title"), and what it was and became. */

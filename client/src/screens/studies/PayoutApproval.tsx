@@ -23,7 +23,8 @@ export default function PayoutApproval({ study }: { study: Study }) {
 
   if (rows.length === 0) return null
 
-  const finished = study.state === 'completed'
+  // Participants are paid from Billing on (22 Oct 2026): their part is done once recruiting stops.
+  const finished = study.state === 'billing' || study.state === 'completed'
   const status = (paid: boolean, code: boolean) =>
     paid ? 'Paid' : !code ? 'No code, no payment' : finished ? 'Being paid by the Focus Insite team' : 'Paid by the team when the study finishes'
 

@@ -8,7 +8,7 @@ import { useBill } from '../../mock/pay'
 import { useToast } from '../../components/ui/Toast'
 import { useStudy } from '../../platform'
 import { billing } from '@shared/derive'
-import { canReopen } from '@shared/lifecycle'
+import { STOPPED_LINE, canRepublish, isStopped } from '@shared/lifecycle'
 import { monthDayYear, clockTime } from '@shared/format'
 import BillingCard from '../../components/client/BillingCard'
 import { useStudyActions } from '../../components/client/StudyActions'
@@ -25,12 +25,12 @@ function Figure({ label, value }: { label: string; value: string }) {
 }
 
 /**
- * Pay, 19 Oct 2026 (1645:132259 while running, 1645:132608 once stopped).
+ * Pay (1645:132259 while running; 2325:220730 and 1645:132608 in Billing).
  * Billing on the left, Payment Overview and Transactions on the right.
- * Stopping the study makes the balance due: a banner says so, Payment Due
- * appears with Pay Bill, and the billing card gains Estimated / Final.
- * Re-publish and Recruit is offered only while nothing has been settled
- * (shared/lifecycle.ts canReopen); after that the study is closed.
+ * Once recruiting stops the study is in Billing (22 Oct 2026): a banner says
+ * who stopped it, Payment Due appears with Pay Bill, the billing card gains
+ * Estimated / Final, and Re-publish and Recruit takes it back to recruiting.
+ * Paying the bill completes it. The drawn "auto-debited" line is not built.
  */
 export default function PayTab() {
   const toast = useToast()
@@ -40,16 +40,16 @@ export default function PayTab() {
   const b = billing(s)
   const { INVOICE, transactions } = useBill(s.id)
   const { act, dialogs } = useStudyActions(s)
-  const stopped = s.state === 'completed'
-  const reopen = canReopen(s)
+  const stopped = isStopped(s.state)
+  const open = canRepublish(s)
   const money = (n: number) => `$${Math.abs(n).toLocaleString('en-US')}`
 
-  const banner = stopped && reopen && (
+  const banner = open && (
     <div className="flex items-start justify-between gap-6 rounded-lg border-1 border-yellow-200 bg-yellow-40 px-4 py-[13px]">
       <div className="flex flex-col gap-1">
-        <p className="text-body-medium text-text-title">This study is stopped by you to mark completed!</p>
+        <p className="text-body-medium text-text-title">{STOPPED_LINE[s.stoppedBy ?? 'client']}</p>
         <p className="text-text-regular text-text-subtitle">Complete the study by a payment or get more participants if needed.</p>
-        {s.completedAt && <p className="text-text-regular text-text-body">{monthDayYear(s.completedAt)}, at {clockTime(s.completedAt)}</p>}
+        {s.stoppedAt && <p className="text-text-regular text-text-body">{monthDayYear(s.stoppedAt)}, at {clockTime(s.stoppedAt)}</p>}
       </div>
       <Button variant="tertiary" size="none" className="h-[38px] px-3" leftIcon={<UsersIcon className="h-5 w-5" />} onClick={act.resume}>
         Re-publish and Recruit
@@ -69,7 +69,7 @@ export default function PayTab() {
 
           <div className="flex flex-1 flex-col gap-3">
             <h2 className="text-title-s leading-[22px] text-text-title">Payment Overview</h2>
-            {stopped && (
+            {open && (
               <div className="flex h-[79px] items-center justify-between rounded-md bg-yellow-30 px-3">
                 <span className="flex flex-col gap-1">
                   <span className="text-text-regular text-text-subtitle">{INVOICE.dueBy ? `Payment Due by ${INVOICE.dueBy}` : 'Payment Due'}</span>

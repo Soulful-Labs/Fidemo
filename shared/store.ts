@@ -9,8 +9,8 @@
  * reads and writes the same platform: a change made in one app is picked up
  * by the others through the storage event, without a reload.
  */
-import { applyRepeatRule, barredFrom, billing, diaryReady, freshCertificateId, hasTakenPartWith, sessionNotStarted, openAvailability, personById, personFigures, profileCompletion, referralCode } from './derive'
-import { canEditStudy, canMoveParticipation, canMovePayout, canMoveStudy, canReopen, isLive, participationOf } from './lifecycle'
+import { applyRepeatRule, targetMet, barredFrom, billing, diaryReady, freshCertificateId, hasTakenPartWith, sessionNotStarted, openAvailability, personById, personFigures, profileCompletion, referralCode } from './derive'
+import { canEditStudy, canMoveParticipation, canMovePayout, canMoveStudy, canRepublish, isLive, isStopped, participationOf } from './lifecycle'
 import { DECISION_UNDO_MS, DEMO_SESSION_CODE, REPORT_MAX_CHARS, RESTRICTION_DAYS, TIMINGS, canCancel, canReschedule, canWithdraw, depositFor, isSessionType, priceStudy, targets, withdrawalExpectedBy } from './platform'
 import { POINTS, canRedeem, starsForRating, starsFromDimensions } from './rules'
 import { monthDayYear } from './format'
@@ -230,6 +230,27 @@ export function createPlatform(options: Options = {}) {
     }
   }
 
+  /**
+   * Recruiting stops and the study goes to Billing (22 Oct 2026): by
+   * Stop-complete (the client or the team) or by the study filling its target.
+   * It is finished for participants: sessions not yet run are cancelled, free,
+   * and the client and the team are told the payouts are ready. With nothing
+   * owed on the bill it is completed at once.
+   */
+  const stopRecruiting = (s: PlatformState, study: Study, by: 'client' | 'team' | 'filled', actor: Actor) => {
+    study.state = 'billing'; study.stoppedAt = iso(); study.stoppedBy = by
+    log(s, actor, by === 'filled' ? `${study.title} filled its target and stopped recruiting` : `Stopped ${study.title} to mark it completed`, 'Studies / Manage / Stop-complete')
+    for (const p of study.participations.filter((x) => x.state === 'scheduled' && sessionNotStarted(x.booking, clock()))) cancelFor(s, study, p, by === 'team' ? 'team' : 'client', 'the study has closed')
+    announceFinish(s, study)
+    settleIfPaid(s, study, actor)
+  }
+  /** A study in Billing whose bill owes nothing is completed. */
+  const settleIfPaid = (s: PlatformState, study: Study, actor: Actor) => {
+    if (study.state !== 'billing' || billing(study).outstanding > 0) return
+    study.state = 'completed'; study.completedAt = iso()
+    log(s, actor, `Marked ${study.title} as completed`, 'Studies / Manage / Complete')
+  }
+
   const selected = (s: PlatformState, study: Study, p: Participation) => {
     const session = isSessionType(study.type)
     notify(s, p.personId, {
@@ -370,13 +391,13 @@ export function createPlatform(options: Options = {}) {
       if (!study) return no('No such study')
       if (!canMoveStudy(study.state, to)) return no(`A ${study.state.replace('_', ' ')} study cannot become ${to.replace('_', ' ')}`)
       if (study.state === 'in_review' && to === 'recruiting' && actor.kind !== 'team') return no('Only the team can take a study live')
-      if (study.state === 'completed') {
-        // Re-publish and Recruit: the balance stops being due until the study is stopped again, on the same rule as the first time.
-        if (!canReopen(study)) return no('This study has been paid and is closed')
-        study.completedAt = undefined
-        s.teamNotices = (s.teamNotices ?? []).filter((n) => !(n.kind === 'payouts' && n.studyId === study.id))
+      if (study.state === 'billing' && to === 'recruiting') {
+        // Re-publish and Recruit: the bill stops being due until recruiting stops again. Anyone already owed is still paid.
+        if (!canRepublish(study)) return no('Only a study in Billing can be re-published')
+        study.stoppedAt = undefined; study.stoppedBy = undefined
         log(s, actor, `Re-published ${study.title} to recruit more`, 'Studies / Manage / Re-publish')
       }
+      if (to === 'completed' && billing(study).outstanding > 0) return no('The bill has to be paid before the study is completed')
       if (study.state === 'draft' && to === 'in_review') {
         study.submittedAt = iso()
         if (!study.payments.some((p) => p.kind === 'deposit') && study.required > 0) study.payments.push({ id: `${study.id}-deposit`, kind: 'deposit', amount: depositFor(study.rates, study.required), at: iso() })
@@ -393,12 +414,9 @@ export function createPlatform(options: Options = {}) {
         }
       }
       if (to === 'paused') { study.pausedReason = reason; log(s, actor, `Paused ${study.title}`, 'Studies / Manage / Pause') }
-      if (to === 'completed') {
-        study.completedAt = iso(); log(s, actor, `Marked ${study.title} as completed`, 'Studies / Manage / Complete')
-        // Sessions still booked are cancelled by whoever closed the study: free for the participant, who is told.
-        for (const p of study.participations.filter((x) => x.state === 'scheduled' && sessionNotStarted(x.booking, clock()))) cancelFor(s, study, p, actor.kind === 'team' ? 'team' : 'client', 'the study has closed')
-        announceFinish(s, study)
-      }
+      // Stop-complete: recruiting stops and the study goes to Billing (stopRecruiting), not straight to Completed.
+      if (to === 'billing') { stopRecruiting(s, study, actor.kind === 'team' ? 'team' : 'client', actor); return yes() }
+      if (to === 'completed') { study.completedAt = iso(); log(s, actor, `Marked ${study.title} as completed`, 'Studies / Manage / Complete') }
       study.state = to
       return yes()
     }),
@@ -473,13 +491,15 @@ export function createPlatform(options: Options = {}) {
       return yes()
     }),
 
-    /** Workflow 53: the client pays what a completed study still owes. */
+    /** Workflow 53: the client pays what a study in Billing owes (Pay Bill). */
     payBalance: (studyId: string) => move((s) => {
       const study = s.studies.find((x) => x.id === studyId)
       if (!study) return no('No such study')
       const due = billing(study).outstanding
       if (due <= 0) return no('Nothing is owed on this study')
       study.payments.push({ id: uid(`${study.id}-balance`), kind: 'balance', amount: due, at: iso() })
+      // Paying the bill completes a study in Billing.
+      settleIfPaid(s, study, { kind: 'client', id: study.clientId })
       return yes()
     }),
 
@@ -709,6 +729,8 @@ export function createPlatform(options: Options = {}) {
       p.completedAt = iso()
       p.events.push({ label: actor.kind === 'participant' ? 'Completed' : 'Marked as completed', at: p.completedAt }, { label: 'Earnings credited', at: p.completedAt })
       if (actor.kind !== 'participant') log(s, actor, `Marked ${nameOf(s, personId)} as completed on ${study.title}`, 'Studies / Sessions / Complete')
+      // The last completion a study needs stops its recruiting (22 Oct 2026), unless the client chose to recruit more.
+      if (isLive(study.state) && !study.beyondTarget && targetMet(study)) stopRecruiting(s, study, 'filled', SYSTEM)
       return yes()
     }),
 
@@ -797,7 +819,7 @@ export function createPlatform(options: Options = {}) {
       const study = s.studies.find((x) => x.id === studyId)
       if (!study) return no('No such study')
       if (actor.kind !== 'team') return no('Payouts are processed by the Focus Insite team')
-      if (study.state !== 'completed') return no('Payouts are processed once the study has finished')
+      if (!isStopped(study.state)) return no('Payouts are processed once the study has stopped recruiting')
       const { owed, ready } = owedOn(study)
       if (owed.length === 0) return no('Nobody on this study is waiting to be paid')
       if (ready.length === 0) return no(`${plural(owed.length, 'payout')} cannot be processed yet: no code, no payment`)

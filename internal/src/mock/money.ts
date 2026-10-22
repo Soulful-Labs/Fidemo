@@ -1,3 +1,4 @@
+import { isStopped } from '@shared/lifecycle'
 import { billing, invoiceNumber } from '@shared/derive'
 import { DEPOSIT_RULE } from '@shared/platform'
 import { clockTime, dayLongMonthYear, money, monthDayYear, monthDayYearTime } from '@shared/format'
@@ -22,7 +23,7 @@ export function billView(study: Study, client?: Client) {
   return {
     b, lines, card,
     total: money(b.total), totalCost: money(b.totalCost), depositAmount: money(b.deposit), net: money(b.net),
-    outstanding: money(b.outstanding), due: money(study.state === 'completed' ? b.outstanding : b.due), refund: money(b.refund),
+    outstanding: money(b.outstanding), due: money(isStopped(study.state) ? b.outstanding : b.due), refund: money(b.refund),
     depositLine: { label: 'Less: Deposit', detail: DEPOSIT_RULE, amount: `-${money(b.deposit)}`, info: true } as BillLineView,
     invoice: invoiceNumber(study),
     issued: study.completedAt ? `Marked completed and invoice issued on ${dayLongMonthYear(study.completedAt)}, ${clockTime(study.completedAt)}` : 'Not marked completed yet',

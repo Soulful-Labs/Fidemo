@@ -258,7 +258,9 @@ async function teamProcesses(studyId) {
   await ev(`localStorage.setItem('fi-internal-session', JSON.stringify({ current: 'peter@focusinsite.com' })); true`)
   await open(`/internal/studies/${studyId}`)
   await ev(`document.querySelector('[aria-label="Study options"]').click(); true`); await sleep(300)
-  await ev(`${button('Stop-complete Study')}.click(); true`); await sleep(900)
+  await ev(`${button('Stop-complete Study')}.click(); true`); await sleep(500)
+  // Stop-complete asks first (2372:138874) and moves the study to Billing (22 Oct 2026).
+  await ev(`${button('Yes, Stop-complete')}.click(); true`); await sleep(900)
   await open('/internal/finance/payouts')
   const title = await store(`st.studies.find((x) => x.id === ${JSON.stringify(studyId)}).title`)
   await ev(`(() => { const row = [...document.querySelectorAll('div')].filter((r) => r.innerText?.includes(${JSON.stringify(title)}) && [...r.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Process Payouts')).sort((a, b) => a.innerText.length - b.innerText.length)[0]; if (!row) throw new Error('the study is not on Finance > Payouts'); ${button('Process Payouts', 'row')}.click(); return true })()`); await sleep(400)

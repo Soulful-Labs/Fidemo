@@ -16,6 +16,8 @@ import RecruitedTab from './RecruitedTab'
 import RevisionsTab from './RevisionsTab'
 import ResultsTab from './ResultsTab'
 import StudyHeader from './StudyHeader'
+import StopComplete from './StopComplete'
+import { counts } from '@shared/derive'
 
 /** The strip on every managed study. */
 const TABS = [
@@ -43,6 +45,7 @@ export default function ManageStudy() {
   const { id } = useParams()
   const [params, setParams] = useSearchParams()
   const [pausing, setPausing] = useState(false)
+  const [stopping, setStopping] = useState(false)
   const study = useManagedStudy(id)
   const tab = (TABS.some((t) => t.key === params.get('tab')) ? params.get('tab') : 'overview') as Tab
   /** Paused and completed are the study's own state (shared/store.ts), not the URL. */
@@ -70,9 +73,9 @@ export default function ManageStudy() {
     <AppShell className={study.tight && !paused ? 'flex flex-col gap-3 p-4 pb-6' : 'flex flex-col gap-3 pb-8'}
       crumbs={[{ label: 'Studies', to: '/studies' }, { label: 'Ongoing', to: '/studies?tab=ongoing' }, { label: study.title }]}>
       {congrats && <CongratsBanner required={study.raw.required} />}
-      {paused && <PausedBanner onResume={() => platform().moveStudy(study.id, 'recruiting', TEAM)} onComplete={() => { platform().moveStudy(study.id, 'completed', TEAM); setParams({}, { replace: true }) }} />}
+      {paused && <PausedBanner onResume={() => platform().moveStudy(study.id, 'recruiting', TEAM)} onComplete={() => setStopping(true)} />}
       <StudyHeader study={study} onPause={() => setPausing(true)} onResume={() => say(platform().moveStudy(study.id, 'recruiting', TEAM))}
-        onComplete={() => { if (say(platform().moveStudy(study.id, 'completed', TEAM))) setParams({}, { replace: true }) }} />
+        onComplete={() => setStopping(true)} />
       <section className="flex-1 overflow-hidden rounded-lg border-1 border-stroke-1">
         <PanelTabs tabs={TABS} value={tab} onChange={(k) => go({ tab: k as Tab })} />
         <div role="tabpanel" className="p-4">
@@ -86,6 +89,8 @@ export default function ManageStudy() {
         </div>
       </section>
       <PauseStudy open={pausing} onClose={() => setPausing(false)} onPause={(reason) => { setPausing(false); platform().moveStudy(study.id, 'paused', TEAM, reason) }} />
+      <StopComplete open={stopping} left={Math.max(0, study.raw.required - counts(study.raw).completed)} onClose={() => setStopping(false)}
+        onConfirm={() => { setStopping(false); if (say(platform().moveStudy(study.id, 'billing', TEAM))) go({ tab: 'pay' }) }} />
     </AppShell>
   )
 }

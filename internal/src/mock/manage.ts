@@ -38,6 +38,8 @@ export interface ManagedStudy {
   client: { id: string; name: string; role: string; email: string; avatar: string; rows: [string, string][] }
   audience: { label?: string; value: string; icon?: 'users' | 'pin' }[]
   paused: boolean
+  /** Recruiting has stopped and the bill is open (22 Oct 2026). */
+  billing: boolean
   completed: boolean
   raw: Study
 }
@@ -69,7 +71,7 @@ export function managedStudy(state: PlatformState, s: Study): ManagedStudy {
     audience: (s.setup?.audience ?? [{ value: String(s.required), icon: 'people' }, { label: 'Roles', value: roles }]).map((a) => ({
       label: a.label ? `${a.label}:` : undefined, value: a.value, icon: a.icon === 'people' ? 'users' as const : a.icon === 'pin' ? 'pin' as const : undefined,
     })),
-    paused: s.state === 'paused', completed: s.state === 'completed', raw: s,
+    paused: s.state === 'paused', billing: s.state === 'billing', completed: s.state === 'completed', raw: s,
   }
 }
 

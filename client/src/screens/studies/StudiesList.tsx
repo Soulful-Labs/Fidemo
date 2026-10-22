@@ -285,8 +285,8 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
           const st = stopping
           setStopping(null)
           if (!st) return
-          const res = moveStudy(st.id, 'completed')
-          toast(res.ok ? `${st.title} marked completed` : res.why)
+          const res = moveStudy(st.id, 'billing')
+          toast(res.ok ? `${st.title} has stopped recruiting and is in Billing` : res.why)
         }} />
       <RepublishModal open={resuming !== null} onClose={() => setResuming(null)}
         onConfirm={() => {
