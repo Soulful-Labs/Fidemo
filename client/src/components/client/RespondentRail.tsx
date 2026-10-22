@@ -3,17 +3,17 @@ import IntroVideo from './IntroVideo'
 import { sharedPhoto, sharedVideo } from '@shared/derive'
 import Button from '../ui/Button'
 import TierChip from './TierChip'
-import { Star, VerifiedMark, Info } from '../ui/icons'
+import { ChevronRight, Star, VerifiedMark, Info } from '../ui/icons'
 import { RATE_PROMPT } from '../../mock/respondent'
 import { personById } from '@shared/derive'
 import { usePlatform, useProfile } from '../../platform'
-import { PersonName } from '../../app/ProfileHost'
+import { PersonName, useOpenProfile } from '../../app/ProfileHost'
 
 /** A section of the rail, under the hairline that separates it from the one above. */
-function Block({ title, children }: { title?: string; children: React.ReactNode }) {
+function Block({ title, children, action }: { title?: string; children: React.ReactNode; action?: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-2 border-t-1 border-stroke-1 px-3 pb-[13px] pt-3">
-      {title && <h3 className="text-text-regular text-text-subtitle">{title}</h3>}
+      {title && <h3 className="flex items-center justify-between text-text-regular text-text-subtitle">{title}{action}</h3>}
       {children}
     </section>
   )
@@ -63,6 +63,8 @@ export default function RespondentRail({ rate, onRate, person, onReport }: {
 }) {
   /** Everything the rail says about this person is the platform's record of them. */
   const r = useProfile(person?.id)
+  /** Reviews beside Trust Score (22 Oct 2026, as the console's 2383:135816): the profile host's Reviews page. */
+  const openProfile = useOpenProfile()
   /** The picture and the intro video, each only if the participant consented to share it; otherwise an initial, and no video block. */
   const record = personById(usePlatform(), person?.id ?? '')
   const photo = record && sharedPhoto(record)
@@ -85,7 +87,7 @@ export default function RespondentRail({ rate, onRate, person, onReport }: {
         <p className="text-text-regular text-text-subtitle">{r.cert}</p>
       </div>
 
-      <Block title="Trust Score">
+      <Block title="Trust Score" action={person && <button type="button" onClick={() => openProfile(person.id, 'reviews')} className="inline-flex items-center gap-1 text-text-medium text-text-title hover:text-brand-primary">Reviews <ChevronRight className="h-4 w-4" /></button>}>
         <p className="flex items-center gap-3">
           <span className="text-[26px] font-semibold leading-8 tracking-[-0.02em] text-text-title">{r.trustScore}</span>
           <TierChip tier={r.tier} />

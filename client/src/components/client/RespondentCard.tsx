@@ -5,7 +5,7 @@ import TierChip from './TierChip'
 import { ChevronRight, TrustMark, VerifiedMark } from '../ui/icons'
 import { cn } from '../../lib/cn'
 import type { Tier } from '../../lib/studyTypes'
-import { PersonName } from '../../app/ProfileHost'
+import { PersonName, useOpenProfile } from '../../app/ProfileHost'
 
 export interface Respondent {
   id: string
@@ -57,8 +57,13 @@ export default function RespondentCard({
   onInvite?: () => void
   /** The Pool with its filters open draws View Profile beside it. */
   viewButton?: boolean; className?: string }) {
+  /** The whole card opens the participant's profile (22 Oct 2026), everywhere a card appears; its buttons keep their own clicks. */
+  const openProfile = useOpenProfile()
+  const view = onView ?? (() => openProfile(respondent.id))
   return (
-    <article className={cn('flex flex-col gap-3 rounded-lg bg-bg-1 px-3 pb-3 pt-[14px]', className)}>
+    <article role="button" tabIndex={0} aria-label={`Open ${respondent.name}'s profile`} onClick={view}
+      onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); view() } }}
+      className={cn('flex cursor-pointer flex-col gap-3 rounded-lg bg-bg-1 px-3 pb-3 pt-[14px] hover:bg-bg-2', className)}>
       <div className="flex items-center gap-2">
         <Avatar name={respondent.name} photo={respondent.photo} />
         <div className="flex min-w-0 flex-col">
@@ -76,7 +81,7 @@ export default function RespondentCard({
 
       <RespondentMeta r={respondent} />
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
         {actions ?? (
           <>
             {/* The exports also draw a star here on one Pool frame. It saved a person into a micro-panel, which the design has switched off, so there is nothing for it to do and it is not drawn. */}

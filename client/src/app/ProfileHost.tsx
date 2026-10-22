@@ -10,7 +10,7 @@ import { cn } from '../lib/cn'
 import { usePlatform } from '../platform'
 
 type Page = 'profile' | 'reviews' | 'invite' | 'sent'
-const Open = createContext<(personId: string) => void>(() => undefined)
+const Open = createContext<(personId: string, page?: 'profile' | 'reviews') => void>(() => undefined)
 
 /** The card a profile panel is drawn from, read from the shared platform for any person. */
 export function respondentFor(state: ReturnType<typeof usePlatform>, personId: string): Respondent | null {
@@ -30,7 +30,7 @@ export function ProfileHost({ children }: { children: ReactNode }) {
   const state = usePlatform()
   const [who, setWho] = useState<string | null>(null)
   const [page, setPage] = useState<Page>('profile')
-  const open = useCallback((personId: string) => { setWho(personId); setPage('profile') }, [])
+  const open = useCallback((personId: string, start: 'profile' | 'reviews' = 'profile') => { setWho(personId); setPage(start) }, [])
   const r = useMemo(() => (who ? respondentFor(state, who) : null), [state, who])
   const close = () => setWho(null)
   return (
