@@ -9,12 +9,14 @@ import StudyTypeTag from '../../components/client/StudyTypeTag'
 import ViewToggle from '../../components/client/ViewToggle'
 import Select from '../../components/ui/Select'
 import Tabs from '../../components/ui/Tabs'
-import { MoreVertical } from '../../components/ui/icons'
+import { Edit, MoreVertical } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import type { StudyType } from '../../lib/studyTypes'
 import type { ClientStudy as Study } from '../../platform'
 import { useStudies } from '../../platform'
-import { counts, progressPct } from '@shared/derive'
+import { counts, groupSections, progressPct } from '@shared/derive'
+import type { StudyGroup } from '@shared/types'
+import { GroupDialog } from './GroupDialogs'
 import SessionsTab from './SessionsTab'
 import { upcomingSessions } from '../../lib/insight'
 import { Calendar, Search } from '../../components/ui/icons'
@@ -92,7 +94,9 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
   const [republished, setRepublished] = useState(false)
   const [deleting, setDeleting] = useState<Study | null>(null)
   const [search, setSearch] = useState('')
-  const { studies, moveStudy } = useStudies()
+  const { studies, moveStudy, groups } = useStudies()
+  /** Create Group (no group given) or Edit Group (23 Oct 2026). */
+  const [grouping, setGrouping] = useState<{ group?: StudyGroup } | null>(null)
   /** "4 upcoming video and in-person sessions": the sessions still to come across live studies. */
   const { state: world } = useStudies()
   const upcoming = upcomingSessions(world, studies).length
@@ -162,6 +166,15 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
               <Select value="Study Type" className="w-[200px]" onClick={() => setTypeMenu((m) => !m)} />
               <StudyTypeMenu open={typeMenu} onClose={() => setTypeMenu(false)} value={types} onChange={setTypes} />
             </div>
+            {tab !== 'sessions' && (
+              <button type="button" aria-label="Create Group" title="Create Group" onClick={() => setGrouping({})}
+                className="flex h-input w-input shrink-0 items-center justify-center rounded-lg border-1 border-stroke-input bg-bg-0 text-text-title hover:bg-bg-1">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true">
+                  <path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2.5h7a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H11" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                  <path d="M3.5 7.5V12M6 14v6M3 17h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              </button>
+            )}
             {tab === 'ongoing' && <ViewToggle view={view} onChange={setView} />}
             {tab === 'sessions' && (
               <button type="button" aria-label="Calendar view" onClick={() => toast('A calendar view of sessions has not been designed yet')}
@@ -173,98 +186,120 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
         </div>
 
         {tab === 'sessions' ? <SessionsTab search={search} types={types} /> : tab === 'ongoing' && view === 'grid' ? (
-          <div className="grid grid-cols-3 gap-3">
-            {cards.map((s) => (
-              <StudyCard key={s.id} onOpen={() => open(s)} onMenu={() => setRowMenu(s.id)}
-                menu={<RowMenu tab={tab} row={s} open={rowMenu === s.id} onClose={() => setRowMenu(null)} onPause={() => { setRowMenu(null); if (s.state === 'paused') setResuming(s); else setPausing(s) }} onStop={() => { setRowMenu(null); setStopping(s) }} onDelete={() => { setRowMenu(null); setDeleting(s) }} />}
-                study={s} />
+          <div className="flex flex-col gap-5">
+            {groupSections(groups, cards).map((sec, i, all) => (
+              <section key={sec.group?.id ?? 'others'} className={cn('flex flex-col gap-3', !sec.group && all.length > 1 && 'border-t-1 border-stroke-input pt-5')}>
+                <GroupHeading group={sec.group} named={all.length > 1} onEdit={() => setGrouping({ group: sec.group })} />
+                <div className="grid grid-cols-3 gap-3">
+                  {sec.rows.map((s) => (
+                    <StudyCard key={s.id} onOpen={() => open(s)} onMenu={() => setRowMenu(s.id)}
+                      menu={<RowMenu tab={tab} row={s} open={rowMenu === s.id} onClose={() => setRowMenu(null)} onPause={() => { setRowMenu(null); if (s.state === 'paused') setResuming(s); else setPausing(s) }} onStop={() => { setRowMenu(null); setStopping(s) }} onDelete={() => { setRowMenu(null); setDeleting(s) }} />}
+                      study={s} />
+                  ))}
+                </div>
+                {sec.group && sec.rows.length === 0 && <p className="text-text-regular text-text-subtitle">No studies in this group yet. Add one from a study&rsquo;s options menu, or edit the group.</p>}
+                {!sec.group && sec.rows.length === 0 && i > 0 && <p className="text-text-regular text-text-subtitle">Every study here is in a group.</p>}
+              </section>
             ))}
           </div>
         ) : (
-          <div className="overflow-hidden rounded-lg border-1 border-stroke-1">
-            <table className="w-full table-fixed border-collapse text-left">
-              <thead>
-                <tr className="border-b-1 border-stroke-1 bg-bg-1">
-                  {COLUMNS[tab as Exclude<StudiesTab, 'sessions'>].map((c) => (
-                    <th key={c.key} style={{ width: c.width }} className="h-[52px] px-4 text-text-medium text-text-subtitle">
-                      {c.sortable ? (
-                        <button type="button" onClick={() => toggleSort(c.key)} className="inline-flex items-center gap-1.5 hover:text-text-title">
-                          {c.header}
-                          <SortMark active={sort?.key === c.key} dir={sort?.dir} />
-                        </button>
-                      ) : c.header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.length === 0 && (
-                  <tr>
-                    <td colSpan={COLUMNS[tab as Exclude<StudiesTab, 'sessions'>].length} className="px-[22px] py-16 text-center">
-                      <p className="text-body-medium text-text-title">
-                        {tab === 'drafts' ? 'No drafts yet.'
-                          : tab === 'completed' ? 'Nothing has been completed yet.'
-                            : 'No studies are running yet.'}
-                      </p>
-                      <p className="pt-1 text-text-regular text-text-subtitle">
-                        {tab === 'drafts' ? 'A study you start and leave will wait for you here.'
-                          : tab === 'completed' ? 'A study moves here once every session is done and paid.'
-                            : 'Create a study and our team will review it and take it live.'}
-                      </p>
-                      {tab === 'ongoing' && (
-                        <Button size="row" className="mt-4" onClick={newStudy}>
-                          Create Study
-                        </Button>
-                      )}
-                    </td>
-                  </tr>
-                )}
-                {rows.map((s) => (
-                  <tr key={s.id} className="border-b-1 border-stroke-1 last:border-b-0 hover:bg-bg-1">
-                    {COLUMNS[tab as Exclude<StudiesTab, 'sessions'>].map((c) => (
-                      <td key={c.key} className={cn('h-16 align-middle text-text-regular text-text-title', c.key === 'name' ? 'pl-3 pr-4' : 'px-4')}>
-                        {c.key === 'name' && (
-                          <span className="flex items-center gap-3">
-                            <span className="h-10 w-10 shrink-0 overflow-hidden rounded-sm bg-bg-2">
-                              {s.image && <img src={s.image} alt="" className="h-full w-full object-cover" />}
-                            </span>
-                            <button type="button" onClick={() => open(s)} className="line-clamp-2 text-left text-text-medium hover:text-brand-primary">{s.name}</button>
-                          </span>
-                        )}
-                        {c.key === 'type' && <StudyTypeTag type={s.type} />}
-                        {c.key === 'status' && (s.state === 'in_review'
-                          ? <span className="inline-flex h-7 items-center rounded-full bg-yellow-30 px-[14px] text-text-regular text-brand-primary">In Review</span>
-                          : <span className="inline-flex h-7 items-center rounded-full bg-bg-3 px-[14px] text-text-regular text-text-subtitle">Draft</span>)}
-                        {c.key === 'created' && <span className="whitespace-nowrap text-text-subtitle">{s.created}</span>}
-                        {c.key === 'required' && String(s.required)}
-                        {c.key === 'qualified' && String(counts(s).everQualified)}
-                        {c.key === 'completed' && String(counts(s).completed)}
-                        {c.key === 'progress' && (
-                          <span className="flex w-[108px] flex-col gap-1.5">
-                            <span className="flex h-2 gap-0.5">
-                              {progressPct(s) > 0 && <span className="h-full rounded-full bg-brand-secondary" style={{ width: `${progressPct(s)}%` }} />}
-                              {progressPct(s) < 100 && <span className="h-full flex-1 rounded-full bg-green-100" />}
-                            </span>
-                            <span className="text-text-regular text-text-subtitle">{progressPct(s)}% complete</span>
-                          </span>
-                        )}
-                        {/* The Drafts frame draws the menu on a draft only; a study in review has none. */}
-                        {c.key === 'menu' && !(tab === 'drafts' && s.state === 'in_review') && (
-                          <span className="relative flex justify-end">
-                            <button type="button" aria-label="Study options" onClick={() => setRowMenu(rowMenu === s.id ? null : s.id)}
-                              className="text-text-subtitle hover:text-text-title">
-                              <MoreVertical className="h-5 w-5" />
+          <div className="flex flex-col gap-5">
+            {groupSections(groups, rows).map((sec, k, all) => {
+              const list = sec.rows
+              return (
+                <section key={sec.group?.id ?? 'others'} className={cn('flex flex-col gap-3', !sec.group && all.length > 1 && 'border-t-1 border-stroke-input pt-5')}>
+                  <GroupHeading group={sec.group} named={all.length > 1} onEdit={() => setGrouping({ group: sec.group })} />
+                  {(list.length > 0 || k === all.length - 1) && (
+              <div className="overflow-hidden rounded-lg border-1 border-stroke-1">
+                <table className="w-full table-fixed border-collapse text-left">
+                  <thead>
+                    <tr className="border-b-1 border-stroke-1 bg-bg-1">
+                      {COLUMNS[tab as Exclude<StudiesTab, 'sessions'>].map((c) => (
+                        <th key={c.key} style={{ width: c.width }} className="h-[52px] px-4 text-text-medium text-text-subtitle">
+                          {c.sortable ? (
+                            <button type="button" onClick={() => toggleSort(c.key)} className="inline-flex items-center gap-1.5 hover:text-text-title">
+                              {c.header}
+                              <SortMark active={sort?.key === c.key} dir={sort?.dir} />
                             </button>
-                            <RowMenu tab={tab} row={s} open={rowMenu === s.id} onClose={() => setRowMenu(null)}
-                              onPause={() => { setRowMenu(null); if (s.state === 'paused') setResuming(s); else setPausing(s) }} onStop={() => { setRowMenu(null); setStopping(s) }} onDelete={() => { setRowMenu(null); setDeleting(s) }} />
-                          </span>
-                        )}
-                      </td>
+                          ) : c.header}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {list.length === 0 && rows.length === 0 && (
+                      <tr>
+                        <td colSpan={COLUMNS[tab as Exclude<StudiesTab, 'sessions'>].length} className="px-[22px] py-16 text-center">
+                          <p className="text-body-medium text-text-title">
+                            {tab === 'drafts' ? 'No drafts yet.'
+                              : tab === 'completed' ? 'Nothing has been completed yet.'
+                                : 'No studies are running yet.'}
+                          </p>
+                          <p className="pt-1 text-text-regular text-text-subtitle">
+                            {tab === 'drafts' ? 'A study you start and leave will wait for you here.'
+                              : tab === 'completed' ? 'A study moves here once every session is done and paid.'
+                                : 'Create a study and our team will review it and take it live.'}
+                          </p>
+                          {tab === 'ongoing' && (
+                            <Button size="row" className="mt-4" onClick={newStudy}>
+                              Create Study
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                    {list.map((s) => (
+                      <tr key={s.id} className="border-b-1 border-stroke-1 last:border-b-0 hover:bg-bg-1">
+                        {COLUMNS[tab as Exclude<StudiesTab, 'sessions'>].map((c) => (
+                          <td key={c.key} className={cn('h-16 align-middle text-text-regular text-text-title', c.key === 'name' ? 'pl-3 pr-4' : 'px-4')}>
+                            {c.key === 'name' && (
+                              <span className="flex items-center gap-3">
+                                <span className="h-10 w-10 shrink-0 overflow-hidden rounded-sm bg-bg-2">
+                                  {s.image && <img src={s.image} alt="" className="h-full w-full object-cover" />}
+                                </span>
+                                <button type="button" onClick={() => open(s)} className="line-clamp-2 text-left text-text-medium hover:text-brand-primary">{s.name}</button>
+                              </span>
+                            )}
+                            {c.key === 'type' && <StudyTypeTag type={s.type} />}
+                            {c.key === 'status' && (s.state === 'in_review'
+                              ? <span className="inline-flex h-7 items-center rounded-full bg-yellow-30 px-[14px] text-text-regular text-brand-primary">In Review</span>
+                              : <span className="inline-flex h-7 items-center rounded-full bg-bg-3 px-[14px] text-text-regular text-text-subtitle">Draft</span>)}
+                            {c.key === 'created' && <span className="whitespace-nowrap text-text-subtitle">{s.created}</span>}
+                            {c.key === 'required' && String(s.required)}
+                            {c.key === 'qualified' && String(counts(s).everQualified)}
+                            {c.key === 'completed' && String(counts(s).completed)}
+                            {c.key === 'progress' && (
+                              <span className="flex w-[108px] flex-col gap-1.5">
+                                <span className="flex h-2 gap-0.5">
+                                  {progressPct(s) > 0 && <span className="h-full rounded-full bg-brand-secondary" style={{ width: `${progressPct(s)}%` }} />}
+                                  {progressPct(s) < 100 && <span className="h-full flex-1 rounded-full bg-green-100" />}
+                                </span>
+                                <span className="text-text-regular text-text-subtitle">{progressPct(s)}% complete</span>
+                              </span>
+                            )}
+                            {/* The Drafts frame draws the menu on a draft only; a study in review has none. */}
+                            {c.key === 'menu' && !(tab === 'drafts' && s.state === 'in_review') && (
+                              <span className="relative flex justify-end">
+                                <button type="button" aria-label="Study options" onClick={() => setRowMenu(rowMenu === s.id ? null : s.id)}
+                                  className="text-text-subtitle hover:text-text-title">
+                                  <MoreVertical className="h-5 w-5" />
+                                </button>
+                                <RowMenu tab={tab} row={s} open={rowMenu === s.id} onClose={() => setRowMenu(null)}
+                                  onPause={() => { setRowMenu(null); if (s.state === 'paused') setResuming(s); else setPausing(s) }} onStop={() => { setRowMenu(null); setStopping(s) }} onDelete={() => { setRowMenu(null); setDeleting(s) }} />
+                              </span>
+                            )}
+                          </td>
+                        ))}
+                      </tr>
                     ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                  </tbody>
+                </table>
+              </div>
+                  )}
+                  {sec.group && list.length === 0 && <p className="text-text-regular text-text-subtitle">No studies in this group yet. Add one from a study&rsquo;s options menu, or edit the group.</p>}
+                </section>
+              )
+            })}
           </div>
         )}
       </div>
@@ -297,6 +332,7 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
         }} />
       <DoneModal open={republished} onClose={() => setRepublished(false)} title="Study has been re-published!"
         body="Your study has been published live for participants and you will keep receiving the participants until you stop the study or it expires by validity." />
+      <GroupDialog open={grouping !== null} group={grouping?.group} onClose={() => setGrouping(null)} />
       <DeleteStudyModal open={deleting !== null} onClose={() => setDeleting(null)} name={deleting?.name ?? ''}
         onConfirm={() => {
           const st = deleting
@@ -306,6 +342,21 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
           toast(res.ok ? `${st.name} cancelled` : res.why)
         }} />
     </AppShell>
+  )
+}
+
+/** A group's section heading with its Edit pencil, or Others under the groups (23 Oct 2026). With no groups there is none. */
+function GroupHeading({ group, named, onEdit }: { group?: StudyGroup; named: boolean; onEdit: () => void }) {
+  if (!named) return null
+  if (!group) return <h2 className="text-title-s text-text-title">Others</h2>
+  return (
+    <h2 className="flex items-center gap-2 text-title-s text-text-title">
+      {group.name}
+      <button type="button" aria-label={`Edit ${group.name}`} onClick={onEdit}
+        className="flex h-8 w-8 items-center justify-center rounded-md border-1 border-stroke-input text-text-title hover:bg-bg-1">
+        <Edit className="h-4 w-4" />
+      </button>
+    </h2>
   )
 }
 
@@ -353,6 +404,6 @@ function RowMenu({
   }
   if (tab === 'drafts') return <DraftMenu open={open} onClose={onClose} onDelete={onDelete} onEdit={edit} onDuplicate={duplicate} />
   if (tab === 'completed') return <CompletedMenu open={open} onClose={onClose} onCopy={copy} onDuplicate={duplicate} />
-  return <OngoingMenu open={open} onClose={onClose} onPause={onPause} onCopy={copy} paused={row.state === 'paused'}
+  return <OngoingMenu open={open} onClose={onClose} onPause={onPause} onCopy={copy} paused={row.state === 'paused'} studyId={row.id}
     onComplete={onStop} onDuplicate={duplicate} />
 }

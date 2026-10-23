@@ -11,6 +11,7 @@ import { useToast } from '../../components/ui/Toast'
 import { copyText } from '../../lib/copy'
 import { useStudies } from '../../platform'
 import type { ClientStudy } from '../../platform'
+import { SUPPORT_EMAIL } from '@shared/platform'
 
 /** One row of a study menu, as drawn: plain text, no icon. */
 function Item({ children, onClick }: { children: string; onClick?: () => void }) {
@@ -24,21 +25,41 @@ function Item({ children, onClick }: { children: string; onClick?: () => void })
 
 /**
  * Ongoing study options (1518:90959, again on 19 Oct 2026 for every study
- * type). The frame draws an Edit row under the rule; a live study cannot be
- * edited (shared/lifecycle.ts canEditStudy), so the row is not there. A
- * paused study gets Resume Study in Pause's place (not drawn).
+ * type; redrawn 23 Oct 2026). The frame's Edit row is Contact Us To Edit: a
+ * live study is changed by the team. Add to a Group opens the Available
+ * groups sub-menu (shared/store.ts addStudyToGroup). A paused study gets
+ * Resume Study in Pause's place (not drawn).
  */
-export function OngoingMenu({ open, onClose, onPause, onCopy, onComplete, onDuplicate, paused, width = 206 }: {
+export function OngoingMenu({ open, onClose, onPause, onCopy, onComplete, onDuplicate, paused, width = 206, studyId }: {
   open: boolean; onClose: () => void; onPause: () => void; onCopy: () => void
-  onComplete: () => void; onDuplicate: () => void; paused?: boolean; width?: number
+  onComplete: () => void; onDuplicate: () => void; paused?: boolean; width?: number; studyId?: string
 }) {
+  const toast = useToast()
+  const { groups, addToGroup, study } = useStudies()
+  const [picking, setPicking] = useState(false)
+  const row = study(studyId)
+  const close = () => { setPicking(false); onClose() }
+  const contact = () => { close(); if (row) window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Changes to ${row.title}`)}` }
+  const add = (groupId: string, name: string) => { close(); const res = addToGroup(groupId, studyId ?? ''); toast(res.ok ? `Added to ${name}` : res.why) }
   return (
-    <Popover open={open} onClose={onClose} width={width} className="rounded-md py-1.5">
-      <Item onClick={onCopy}>Copy Study Link</Item>
-      <Item onClick={onPause}>{paused ? 'Resume Study' : 'Pause Study'}</Item>
-      <Item onClick={onComplete}>Stop-complete Study</Item>
-      <div className="mx-2 my-1 border-t-1 border-stroke-input" />
-      <Item onClick={onDuplicate}>Duplicate to Drafts</Item>
+    <Popover open={open} onClose={close} width={width} className="rounded-md py-1.5">
+      {picking ? (
+        <>
+          <p className="px-5 py-2 text-body-regular text-text-body">Available groups</p>
+          {groups.map((g) => <Item key={g.id} onClick={() => add(g.id, g.name)}>{g.name}</Item>)}
+          {groups.length === 0 && <p className="px-5 py-2 text-text-regular text-text-subtitle">No groups yet. Create one on My Studies.</p>}
+        </>
+      ) : (
+        <>
+          <Item onClick={onCopy}>Copy Study Link</Item>
+          <Item onClick={onPause}>{paused ? 'Resume Study' : 'Pause Study'}</Item>
+          <Item onClick={onComplete}>Stop-complete Study</Item>
+          <div className="mx-2 my-1 border-t-1 border-stroke-input" />
+          {row && <Item onClick={contact}>Contact Us To Edit</Item>}
+          <Item onClick={onDuplicate}>Duplicate to Drafts</Item>
+          {row && <Item onClick={() => setPicking(true)}>Add to a Group</Item>}
+        </>
+      )}
     </Popover>
   )
 }
@@ -198,7 +219,7 @@ export function StudyCardMenu({ study, open, onClose }: { study: ClientStudy; op
   const move = (to: Parameters<typeof moveStudy>[1], done: string) => { setAsk(null); const res = moveStudy(study.id, to); toast(res.ok ? done : res.why) }
   return (
     <>
-      <OngoingMenu open={open} onClose={onClose} paused={paused} onCopy={copy} onDuplicate={duplicate}
+      <OngoingMenu open={open} onClose={onClose} paused={paused} onCopy={copy} onDuplicate={duplicate} studyId={study.id}
         onPause={() => { onClose(); setAsk(paused ? 'resume' : 'pause') }} onComplete={() => { onClose(); setAsk('stop') }} />
       <PauseStudyModal open={ask === 'pause'} onClose={() => setAsk(null)} onConfirm={() => { setAsk(null); const res = moveStudy(study.id, 'paused'); if (res.ok) navigate(`/studies/${study.id}/paused`); else toast(res.why) }} />
       <StopCompleteModal open={ask === 'stop'} left={Math.max(0, study.required - counts(study).completed)} onClose={() => setAsk(null)}

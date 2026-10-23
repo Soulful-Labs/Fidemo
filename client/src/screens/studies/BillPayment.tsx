@@ -3,32 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import StudyTypeTag from '../../components/client/StudyTypeTag'
-import { Clock, DiaryBookIcon, Info, PaymentsIcon } from '../../components/ui/icons'
+import { Clock, DiaryBookIcon, PaymentsIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { useBill } from '../../mock/pay'
 import { useStudies } from '../../platform'
 import { useWorkspace } from '../../mock/workspace'
 import { invoices } from '@shared/derive'
 import { PaidModal } from '../payments/PaymentPanels'
-import type { BillingRow } from '../../mock/pay'
+import BillingCard from '../../components/client/BillingCard'
+import { CardFeeNote } from '../create/PaymentSummary'
 import { useToast } from '../../components/ui/Toast'
 import { useStudy } from '../../platform'
-
-/** One invoice line, on the white card this screen draws it in. */
-function Line({ r, last }: { r: BillingRow; last?: boolean }) {
-  return (
-    <div className={cn('flex items-start justify-between gap-4 px-4',
-      r.sub ? 'py-3' : 'h-12 items-center', !last && 'border-b-1 border-bgAlt-2')}>
-      <span className="flex flex-col gap-1">
-        <span className="inline-flex items-center gap-1 text-text-regular leading-5 text-text-title">
-          {r.label}{r.info && <Info className="h-4 w-4 text-text-body" />}
-        </span>
-        {r.sub && <span className="text-text-regular leading-5 text-text-subtitle">{r.sub}</span>}
-      </span>
-      <span className="text-text-regular leading-5 text-text-title">{r.amount}</span>
-    </div>
-  )
-}
 
 /** A labelled field of the card form. */
 function Field({ label, value, className }: { label: string; value: string; className?: string }) {
@@ -67,7 +52,8 @@ export default function BillPayment() {
   const { studies } = useStudies()
   const { payInvoice, paidInvoices } = useWorkspace()
   const [paid, setPaid] = useState(false)
-  const { BILL, BILLING, BILLING_TOTAL } = useBill(s.id)
+  const { BILL } = useBill(s.id)
+  const raw = studies.find((x) => x.id === s.id)!
   const c = BILL.card
 
   /** The invoice this study's balance settles, and whether it is already paid. */
@@ -120,24 +106,7 @@ export default function BillPayment() {
             </div>
 
             <h2 className="pt-[18px] text-title-s text-text-title">{BILL.heading}</h2>
-            <div className="mt-3 overflow-hidden rounded-lg border-1 border-bgAlt-2">
-              {BILLING.map((r) => <Line key={r.label} r={r} />)}
-              <div className="flex flex-col gap-2 border-b-1 border-bgAlt-2 px-4 py-[14px]">
-                <span className="flex items-center justify-between gap-4 text-text-regular leading-5 text-text-title">
-                  {BILLING_TOTAL.total.label}<span>{BILLING_TOTAL.total.amount}</span>
-                </span>
-                <span className="flex items-start justify-between gap-4">
-                  <span className="flex flex-col gap-1">
-                    <span className="inline-flex items-center gap-1 text-text-regular leading-5 text-text-title">
-                      {BILLING_TOTAL.less.label}<Info className="h-4 w-4 text-text-body" />
-                    </span>
-                    <span className="text-text-regular leading-5 text-text-subtitle">{BILLING_TOTAL.less.sub}</span>
-                  </span>
-                  <span className="text-text-regular leading-5 text-text-title">{BILLING_TOTAL.less.amount}</span>
-                </span>
-              </div>
-              <Line r={BILLING_TOTAL.net} last />
-            </div>
+            <div className="mt-3"><BillingCard study={raw} stopped fixed /></div>
           </div>
 
           <div className="flex h-fit w-[567px] flex-col rounded-lg bg-bg-1 p-4">
@@ -159,7 +128,8 @@ export default function BillPayment() {
             <Button size="none" className="mt-[15px] h-12 w-full" disabled={already}
               title={already ? 'This invoice is already paid' : undefined}
               onClick={pay}><span className="text-body-medium">{already ? 'Paid' : c.cta}</span></Button>
-            <ul className="flex flex-col pt-4">
+            <div className="pt-4"><CardFeeNote /></div>
+            <ul className="flex flex-col">
               {BILL.notes.map((n) => (
                 <li key={n.text} className="flex gap-2 text-text-regular leading-5 text-text-subtitle">
                   <span>&bull;</span>

@@ -84,7 +84,7 @@ export function StudyMenu({ study, open, onClose, act }: {
     return <CompletedMenu open={open} onClose={onClose} onCopy={run(act.copy)} onDuplicate={run(act.duplicate)} />
   }
   return (
-    <OngoingMenu open={open} onClose={onClose} paused={study.state === 'paused'}
+    <OngoingMenu open={open} onClose={onClose} paused={study.state === 'paused'} studyId={study.id}
       onPause={run(study.state === 'paused' ? act.resume : act.pause)} onCopy={run(act.copy)}
       onComplete={run(act.stop)} onDuplicate={run(act.duplicate)} />
   )

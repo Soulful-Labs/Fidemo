@@ -2,47 +2,44 @@ import { billing } from '@shared/derive'
 import type { Study } from '@shared/types'
 import { useState } from 'react'
 import { cn } from '../../lib/cn'
-import { Info } from '../ui/icons'
 
 /**
- * The Billing card on Pay (1645:132259, 1645:132608) in the three states of
- * Billing States (2317:163459). While a study runs it is the bill so far.
- * Once it is stopped it gains Estimated / Final: Estimated is the quote at the
- * required number of participants, Final is what was delivered, which is
- * what the client is billed for. Every figure is shared/derive.ts `billing`.
+ * The Billing card on Pay in the three states of Billing States 2.0 (23 Oct
+ * 2026). While a study runs it is the plain card: Total Recruiting Cost at the
+ * rate and the required participants, less the deposits taken, Payable. Once
+ * it is stopped it gains Estimated / Final: Estimated is that same bill, Final
+ * is the participants who completed, each at the rate agreed when they
+ * completed, which is what the client is billed for. Every figure is
+ * shared/derive.ts `billing`.
  */
 const usd = (n: number) => `${n < 0 ? '-' : ''}$${Math.abs(n).toLocaleString('en-US')}`
 
-function Line({ label, amount, sub, info, strong, last, tall }: {
-  label: string; amount: string; sub?: string; info?: boolean; strong?: boolean; last?: boolean; tall?: boolean
-}) {
+function Row({ label, note, amount, strong, rule = true, muted }: { label: string; note?: string; amount: string; strong?: boolean; rule?: boolean; muted?: boolean }) {
   return (
-    <div className={cn('flex justify-between gap-4 px-4 text-text-regular leading-5 text-text-title',
-      sub ? 'h-[68px] pt-[13px]' : tall ? 'h-12 items-center' : 'h-11 items-center', !last && 'border-b-1 border-stroke-1', strong && 'font-medium')}>
-      <span className="flex flex-col gap-1">
-        <span className="inline-flex items-center gap-1">{label}{info && <Info className="h-4 w-4 text-text-body" />}</span>
-        {sub && <span className="text-text-subtitle">{sub}</span>}
-      </span>
-      <span>{amount}</span>
+    <div className={cn('flex items-center justify-between gap-4 py-3 text-text-regular leading-5', rule && 'border-t-1 border-stroke-input', strong && 'font-medium', muted ? 'text-text-subtitle' : 'text-text-title')}>
+      <span>{label}{note && <span className="text-text-body"> &bull; {note}</span>}</span>
+      <span className="text-text-title">{amount}</span>
     </div>
   )
 }
 
-export default function BillingCard({ study, stopped }: { study: Study; stopped: boolean }) {
+/** `fixed`: the Final bill alone, with no Estimated / Final switch (Payment's Invoice Breakdown, Invoice Details). */
+export default function BillingCard({ study, stopped, fixed }: { study: Study; stopped: boolean; fixed?: boolean }) {
   const b = billing(study)
   const [side, setSide] = useState<'estimated' | 'final'>('final')
-  const estimated = stopped && side === 'estimated'
-  const lines = estimated ? b.estimate.lines : b.lines
-  const total = estimated ? b.estimate.total : b.total
-  const net = estimated ? b.estimate.net : b.net
-  /** A credit only exists once the study is stopped; while it runs, the deposit simply covers the bill so far. */
-  const credited = stopped && !estimated && net < 0
-  const payable = credited ? 'Credited to your next study' : stopped && !estimated ? 'Net Payable' : 'Payable'
+  const final = fixed || (stopped && side === 'final')
+  const total = final ? b.total : b.estimate.total
+  const net = final ? b.net : b.estimate.net
+  const paidUp = final && study.state === 'completed' && b.balancePaid > 0
+  /** A credit only exists once the study is stopped; while it runs, the deposits simply cover the bill so far. */
+  const credited = final && net < 0
+  const last = credited ? 'Credited to your next study' : paidUp ? 'Net Paid' : final ? 'Net Payable' : 'Payable'
+  const lastAmount = credited ? Math.abs(net) : paidUp ? b.balancePaid : Math.max(0, net)
 
   return (
-    <div className={cn('overflow-hidden rounded-lg border-1 border-stroke-1', stopped ? 'bg-bg-0' : 'bg-bg-1')}>
-      {stopped && (
-        <div className="px-4 pt-4">
+    <div className={cn('overflow-hidden rounded-lg border-1 border-stroke-1 px-4', stopped ? 'bg-bg-0' : 'bg-bg-1')}>
+      {stopped && !fixed && (
+        <div className="pt-4">
           <div role="tablist" className="flex h-12 rounded-md bg-bgAlt-2 p-1">
             {(['estimated', 'final'] as const).map((k) => (
               <button key={k} type="button" role="tab" aria-selected={side === k} onClick={() => setSide(k)}
@@ -54,12 +51,18 @@ export default function BillingCard({ study, stopped }: { study: Study; stopped:
           </div>
         </div>
       )}
-      {lines.map((l, i) => (
-        <Line key={l.label} label={l.label} amount={usd(l.amount)} sub={l.sub} tall={i === 0} />
-      ))}
-      <Line label="Total cost" amount={usd(total)} />
-      <Line label="Less: Incentive Deposit" amount={usd(-b.deposit)} info={estimated} />
-      <Line label={payable} amount={usd(credited ? Math.abs(net) : Math.max(0, net))} strong last tall />
+      <div className="flex flex-col gap-2 py-3 text-text-regular leading-5 text-text-title">
+        <span className="flex justify-between gap-4"><span>Total Recruiting Cost</span><span>{usd(total)}</span></span>
+        {final
+          ? b.lines.map((l) => (
+            <span key={l.label + l.sub} className="flex justify-between gap-4 text-text-subtitle">
+              <span>{l.label}{l.sub && <span className="text-text-body"> &bull; {l.sub}</span>}</span><span>{usd(l.amount)}</span>
+            </span>
+          ))
+          : <span className="text-text-subtitle">{b.estimate.lines[0]?.label}</span>}
+      </div>
+      {b.less.map((l) => <Row key={l.label} label={l.label} note={l.sub} amount={usd(l.amount)} />)}
+      <Row label={last} amount={usd(lastAmount)} strong />
     </div>
   )
 }

@@ -3,9 +3,10 @@ import SidePanel from '../../components/ui/SidePanel'
 import Modal from '../../components/ui/Modal'
 import Button from '../../components/ui/Button'
 import StudyTypeTag from '../../components/client/StudyTypeTag'
-import { Check, ChevronDown, ChevronRight, DiaryBookIcon, Download, Info, LinkIcon } from '../../components/ui/icons'
+import { Check, ChevronDown, ChevronRight, DiaryBookIcon, Download, LinkIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 import { useBill } from '../../mock/pay'
+import BillingCard from '../../components/client/BillingCard'
 import { ADD_CARD, removeCardCopy } from '../../mock/payments'
 import { useToast } from '../../components/ui/Toast'
 import { useState } from 'react'
@@ -41,6 +42,7 @@ export function InvoiceDetailsPanel({
   const nav = useNavigate()
   const toast = useToast()
   const { BILLING, BILLING_TOTAL, INVOICE, study, card } = useBill(studyId)
+  const raw = study
   return (
     <SidePanel placement="sheet" open={open} onClose={onClose} title={INVOICE.title} headerClassName="h-14"
       bodyClassName="flex flex-col gap-3 px-4 pb-4 pt-4"
@@ -85,36 +87,7 @@ export function InvoiceDetailsPanel({
           <span className="text-text-medium text-text-title">Invoice Breakdown</span>
           <ChevronDown className="h-5 w-5 rotate-180 text-text-subtitle" />
         </div>
-        {BILLING.map((r) => (
-          <div key={r.label} className={cn('flex items-start justify-between gap-4 border-b-1 border-stroke-1 px-4',
-            r.sub ? 'py-3' : 'h-12 items-center')}>
-            <span className="flex flex-col gap-1">
-              <span className="inline-flex items-center gap-1 text-text-regular leading-5 text-text-title">
-                {r.label}{r.info && <Info className="h-4 w-4 text-text-body" />}
-              </span>
-              {r.sub && <span className="text-text-regular leading-5 text-text-subtitle">{r.sub}</span>}
-            </span>
-            <span className="text-text-regular leading-5 text-text-title">{r.amount}</span>
-          </div>
-        ))}
-        <div className="flex flex-col gap-2 border-b-1 border-stroke-1 px-4 py-[14px]">
-          <span className="flex items-center justify-between gap-4 text-text-regular leading-5 text-text-title">
-            {BILLING_TOTAL.total.label}<span>{BILLING_TOTAL.total.amount}</span>
-          </span>
-          <span className="flex items-start justify-between gap-4">
-            <span className="flex flex-col gap-1">
-              <span className="inline-flex items-center gap-1 text-text-regular leading-5 text-text-title">
-                {BILLING_TOTAL.less.label}<Info className="h-4 w-4 text-text-body" />
-              </span>
-              <span className="text-text-regular leading-5 text-text-subtitle">{BILLING_TOTAL.less.sub}</span>
-            </span>
-            <span className="text-text-regular leading-5 text-text-title">{BILLING_TOTAL.less.amount}</span>
-          </span>
-        </div>
-        <div className="flex h-12 items-center justify-between gap-4 px-4">
-          <span className="text-body-medium text-text-title">{INVOICE.net.label}</span>
-          <span className="text-body-medium text-text-title">{INVOICE.net.amount}</span>
-        </div>
+        {raw && <div className="p-3"><BillingCard study={raw} stopped fixed /></div>}
       </div>
     </SidePanel>
   )

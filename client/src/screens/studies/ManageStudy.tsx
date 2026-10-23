@@ -5,6 +5,7 @@ import { StudyFrame } from '../../components/client/StudyFrame'
 import { Edit, Info, PoolIcon, StudiesIcon } from '../../components/ui/icons'
 import { useParams } from 'react-router-dom'
 import { canEditStudy } from '@shared/lifecycle'
+import { SUPPORT_EMAIL } from '@shared/platform'
 import { useDraft } from '../../mock/createStore'
 import { useStudy } from '../../platform'
 import SubmittedStudy from './SubmittedStudy'
@@ -98,6 +99,19 @@ export default function ManageStudy() {
     <AppShell hideCreate crumbs={[{ label: 'Studies', to: '/studies' }, { label: s.breadcrumb }]}>
       <StudyFrame study={s} active="manage" minH="min-h-[1315px]" bodyMinH="min-h-[1057px]">
         <div className="flex flex-col gap-4 p-4">
+          {/* Manage Study (23 Oct 2026): a live study is changed by the team, so the client is asked to write in. */}
+          {!canEditStudy(s.state) && (
+            <div className="flex items-center justify-between gap-6 rounded-lg border-1 border-stroke-input bg-bg-0 px-4 py-3">
+              <span className="flex flex-col gap-1">
+                <span className="text-body-medium text-text-title">Want to make any changes?</span>
+                <span className="text-text-regular text-text-title">Please contact us to modify and update your study with any changes you need.</span>
+              </span>
+              <Button size="none" className="h-10 shrink-0 px-4"
+                onClick={() => { window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Changes to ${s.title}`)}` }}>
+                <span className="text-text-medium">Contact Us</span>
+              </Button>
+            </div>
+          )}
           <Step icon={<Info className="h-5 w-5" />} title="About" onEdit={edit('about')}>
             <div className="flex flex-col gap-3.5">
               <Read label="Title" value={s.title} />

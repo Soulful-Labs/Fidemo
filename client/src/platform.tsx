@@ -2,7 +2,7 @@ import { screenerOutline, tasksOutline } from '@shared/questions'
 import { studyDetails } from '@shared/studyForm'
 import type { StudyForm } from '@shared/studyForm'
 import { useEffect, useMemo, useSyncExternalStore } from 'react'
-import { clientById, daysRemaining, durationLabel, profileCard, shareLink, studiesOf, studyById } from '@shared/derive'
+import { clientById, daysRemaining, durationLabel, groupsOf, profileCard, shareLink, studiesOf, studyById } from '@shared/derive'
 import { dayMonthYear, longDateTime, money, monthDay, slotDay } from '@shared/format'
 import { platform } from '@shared/store'
 import type { Actor } from '@shared/store'
@@ -192,6 +192,12 @@ export function useStudies() {
       submitStudy: (form: StudyForm, draftId?: string) => p.submitStudy(clientId, form, draftId),
       /** Save Draft & Exit: the form as it stands, kept whole on a draft. */
       saveStudyDraft: (form: StudyForm, draftId?: string) => p.saveStudyDraft(clientId, form, draftId),
+      /** Study groups (23 Oct 2026): the client's groups, and the four things done to them (shared/store.ts). */
+      groups: groupsOf(state, clientId),
+      createGroup: (name: string, studyIds: string[]) => p.createStudyGroup(clientId, name, studyIds),
+      updateGroup: (groupId: string, name: string, studyIds: string[]): Result => p.updateStudyGroup(groupId, name, studyIds),
+      ungroup: (groupId: string): Result => p.ungroupStudyGroup(groupId),
+      addToGroup: (groupId: string, studyId: string): Result => p.addStudyToGroup(groupId, studyId),
     }
   }, [state, clientId, actor])
 }

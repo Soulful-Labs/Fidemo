@@ -11,8 +11,7 @@ import RevisionsTimeline from '../../components/client/RevisionsTimeline'
 import { usePlatform } from '../../platform'
 import { CardMark } from '../payments/PaymentPanels'
 import type { ClientStudy as Study } from '../../platform'
-import { DEPOSIT_RULE } from '@shared/platform'
-import { durationLabel } from '@shared/derive'
+import { billing, depositLabel, durationLabel } from '@shared/derive'
 import { money, monthDayYearTime } from '@shared/format'
 import { fileName, pdf, save } from '@shared/files'
 import { canEditStudy } from '@shared/lifecycle'
@@ -90,10 +89,8 @@ export default function SubmittedStudy({ s }: { s: Study }) {
   const work = pills.filter((p) => p.label && ['Work Functions', 'Roles', 'Industry', 'Skills'].includes(p.label))
   const conditions = pills.filter((p) => p.label && ['Condition', 'Profile Tiers'].includes(p.label))
   const preMarks = (q: Study['preScreener'][number]) => Object.fromEntries(q.options.map((o) => [o, q.passing.includes(o) ? 'Correct' : 'Incorrect']))
-  const { platformFee, recruitingPer, incentivePer, moderationPer } = s.rates
-  const n = s.required
-  const total = platformFee + (recruitingPer + incentivePer + moderationPer) * n
-  const deposit = s.payments.filter((p) => p.kind === 'deposit').reduce((a, p) => a + p.amount, 0)
+  /** Pricing of 23 Oct 2026 (Manage Study-1): the bill at the rate and the required participants, less the deposits taken. */
+  const b = billing(s)
   const edit = () => { open(s); nav('/studies/create/about') }
   const editable = canEditStudy(s.state)
 
@@ -187,41 +184,44 @@ export default function SubmittedStudy({ s }: { s: Study }) {
             )}
 
             {tab === 'payment' && (
-              <div className="grid grid-cols-2 gap-x-6 pt-4">
-                <h2 className="col-span-2 pb-3 text-title-s text-text-title">Payment Overview</h2>
+              <div className="flex flex-col gap-6 pt-4">
                 <div className="flex flex-col gap-3">
-                  <span className="flex h-[58px] items-center justify-between rounded-md border-1 border-stroke-1 px-4"><span className="text-body-regular text-text-subtitle">Total Cost</span><span className="text-title-m text-text-title">{money(total)}</span></span>
-                  <span className="flex h-[58px] items-center justify-between rounded-md bg-bg-1 px-4"><span className="text-body-regular text-text-subtitle">Deposit Paid</span><span className="text-title-m text-text-title">{money(deposit)}</span></span>
-                </div>
-                <div className="flex flex-col rounded-md border-1 border-stroke-1 px-3 text-text-regular">
-                  <span className="flex h-[48px] items-center justify-between border-b-1 border-stroke-1"><span className="text-text-subtitle">Incentive</span><span className="text-green-ok">{money(incentivePer)}</span></span>
-                  <span className="flex h-[48px] items-center justify-between"><span className="text-text-subtitle">Card on File</span>
-                    <span className="flex items-center gap-2 text-text-title">{card ? <><CardMark brand={card.brand} />•••• {card.last4}</> : 'None'}</span></span>
-                </div>
-                <div className="pt-6">
-                  <h2 className="pb-3 text-title-s text-text-title">Billing</h2>
-                  <div className="flex flex-col gap-3 rounded-lg bg-bg-1 p-4 text-text-regular">
-                    {[['Platform Fee', platformFee, ''], ['Recruiting Fee', recruitingPer * n, `${money(recruitingPer)} x ${n} participants`], ['Incentives', incentivePer * n, `${money(incentivePer)} x ${n} participants`], ['Moderation Fee', moderationPer * n, `${money(moderationPer)} x ${n} participants`]].map(([l, a, d]) => (
-                      <span key={l as string} className="flex justify-between border-b-1 border-stroke-input pb-3"><span className="flex flex-col text-text-title">{l as string}{d && <span className="text-text-subtitle">{d as string}</span>}</span><span className="text-text-title">{money(a as number)}</span></span>
-                    ))}
-                    <span className="flex justify-between"><span className="text-text-title">Total cost</span><span>{money(total)}</span></span>
-                    <span className="flex justify-between border-b-1 border-stroke-input pb-3"><span className="flex flex-col text-text-title">Less: Deposit<span className="text-text-subtitle">{DEPOSIT_RULE}</span></span><span>-{money(deposit)}</span></span>
-                    <span className="flex justify-between text-body-medium text-text-title"><span>Net payable cost</span><span>{money(Math.max(0, total - deposit))}</span></span>
+                  <h2 className="text-title-s text-text-title">Payment Overview</h2>
+                  <div className="grid grid-cols-3 gap-3">
+                    <span className="flex h-[58px] items-center justify-between rounded-md border-1 border-stroke-1 px-4"><span className="text-body-regular text-text-subtitle">Total Cost</span><span className="text-title-m text-text-title">{money(b.totalCost)}</span></span>
+                    <span className="flex h-[58px] items-center justify-between rounded-md bg-bg-1 px-4"><span className="text-body-regular text-text-subtitle">Total Paid</span><span className="text-title-m text-text-title">{money(b.paid)}</span></span>
+                    <span className="flex h-[58px] items-center justify-between rounded-md bg-bg-1 px-4"><span className="text-body-regular text-text-subtitle">Card on File</span>
+                      <span className="flex items-center gap-2 text-text-title">{card ? <><CardMark brand={card.brand} />•••• {card.last4}</> : 'None'}</span></span>
                   </div>
                 </div>
-                <div className="pt-6">
-                  <h2 className="pb-3 text-title-s text-text-title">Transactions</h2>
-                  {s.payments.filter((p) => p.kind === 'deposit').map((p) => (
-                    <div key={p.id} className="flex flex-col gap-1 rounded-md border-1 border-stroke-1 p-3 text-text-regular">
-                      <span className="flex justify-between text-text-title"><span>Deposit Paid</span><span>{money(p.amount)}</span></span>
-                      <span className="flex items-center justify-between text-text-subtitle">
-                        <span className="flex flex-col gap-1"><span>{monthDayYearTime(p.at)}</span><span>{DEPOSIT_RULE}</span></span>
-                        <button type="button" onClick={() => toast(`Saved ${save(fileName(`receipt deposit ${s.title}`, 'pdf'), pdf(`Receipt: Deposit for ${s.title}`, [monthDayYearTime(p.at), DEPOSIT_RULE, '', `Amount: ${money(p.amount)}`]))}`)}
-                          className="flex h-[38px] items-center gap-2 rounded-md border-1 border-stroke-input px-3 text-text-title hover:bg-bg-1"><Download className="h-4 w-4" />Receipt</button>
-                      </span>
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="flex flex-col gap-3">
+                    <h2 className="text-title-s text-text-title">Billing</h2>
+                    <div className="flex flex-col rounded-lg bg-bg-1 px-4 text-text-regular text-text-title">
+                      <span className="flex justify-between gap-4 py-3"><span className="flex flex-col gap-1">Total Recruiting Cost<span className="text-text-subtitle">{b.estimate.lines[0]?.label}</span></span><span>{money(b.plan.total)}</span></span>
+                      {b.less.map((l) => (
+                        <span key={l.label} className="flex justify-between gap-4 border-t-1 border-stroke-input py-3"><span>{l.label}{l.sub && <span className="text-text-body"> &bull; {l.sub}</span>}</span><span>-{money(-l.amount)}</span></span>
+                      ))}
+                      <span className="flex justify-between gap-4 border-t-1 border-stroke-input py-3 font-medium"><span>Net payable cost</span><span>{money(Math.max(0, b.estimate.net))}</span></span>
                     </div>
-                  ))}
-                  {deposit === 0 && <p className="text-text-subtitle">Nothing has been paid on this study yet.</p>}
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <h2 className="text-title-s text-text-title">Transactions</h2>
+                    {s.payments.filter((p) => p.kind === 'deposit').map((p) => {
+                      const label = depositLabel(p.stage ?? 'upfront')
+                      return (
+                        <div key={p.id} className="flex flex-col gap-2 rounded-md border-1 border-stroke-1 p-3 text-text-regular">
+                          <span className="flex justify-between text-text-title"><span>{label}</span><span>{money(p.amount)}</span></span>
+                          <span className="flex items-center justify-between text-text-subtitle">
+                            <span>{monthDayYearTime(p.at)}</span>
+                            <button type="button" onClick={() => toast(`Saved ${save(fileName(`invoice ${label} ${s.title}`, 'pdf'), pdf(`Invoice: ${label} for ${s.title}`, [monthDayYearTime(p.at), '', `Amount: ${money(p.amount)}`]))}`)}
+                              className="flex items-center gap-2 text-text-title hover:text-brand-primary"><Download className="h-4 w-4" />Invoice</button>
+                          </span>
+                        </div>
+                      )
+                    })}
+                    {b.deposit === 0 && <p className="text-text-subtitle">Nothing has been paid on this study yet.</p>}
+                  </div>
                 </div>
               </div>
             )}

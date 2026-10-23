@@ -2,15 +2,14 @@ import { useToast } from '../../components/ui/Toast'
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Button from '../../components/ui/Button'
-import { Clock, DiaryBookIcon, InPersonIcon, Info, PaymentsIcon, PoolIcon, StudiesIcon, SurveyIcon, VideoIcon } from '../../components/ui/icons'
+import { CheckCircle, Clock, DiaryBookIcon, InPersonIcon, Info, PaymentsIcon, PoolIcon, StudiesIcon, SurveyIcon, VideoIcon } from '../../components/ui/icons'
 import { summarise } from '@shared/studyForm'
 import { useDraft } from '../../mock/createStore'
 import CreateShell, { SaveDraftButton } from './CreateShell'
 import BreakdownPanel from './BreakdownPanel'
-import { cash, laterLine, useQuote } from './StudyBits'
-import { money } from '@shared/format'
+import { CardFeeNote, PaymentSummaryCard, PriceNotes } from './PaymentSummary'
 import { useStudies } from '../../platform'
-import { AddCardPanel, CardMark } from '../payments/PaymentPanels'
+import { CardMark } from '../payments/PaymentPanels'
 import { useWorkspace } from '../../mock/workspace'
 
 const FORM = (
@@ -76,12 +75,13 @@ export default function Publish() {
   const built = summarise(state, form())
   const TypeIcon = draft.type === 'survey' ? SurveyIcon : draft.type === 'video_call' ? VideoIcon : draft.type === 'in_person' ? InPersonIcon : DiaryBookIcon
   const toast = useToast()
-  const { cards, addCard: saveCardToAccount } = useWorkspace()
+  const { cards, addCard: saveCardToAccount, setDefaultCard } = useWorkspace()
   const [breakdown, setBreakdown] = useState(false)
-  const quote = useQuote()
-  const [addCard, setAddCard] = useState(false)
   const [card, setCard] = useState<Record<string, string>>({})
-  const cardField = (k: string) => ({ value: card[k], onChange: (v: string) => setCard((c) => ({ ...c, [k]: v })) })
+  /** Card Added to Publish (23 Oct 2026): Add Card to Publish checks the typed card; changing a field asks again. */
+  const [verified, setVerified] = useState(false)
+  const [saveCard, setSaveCard] = useState(false)
+  const cardField = (k: string) => ({ value: card[k], onChange: (v: string) => { setVerified(false); setCard((c) => ({ ...c, [k]: v })) } })
   /**
    * The card this study is charged to. A card saved at onboarding or on the
    * account is already selected (the default one), so nothing is typed again.
@@ -103,7 +103,11 @@ export default function Publish() {
     && /\d{2}\s*\/\s*\d{2,4}/.test(card['Expiry Date'] ?? '')
     && (card['CVV'] ?? '').length >= 3
     && (card['Name on Card'] ?? '').trim().length > 0
-  const ready = params.get('state') === 'ready' || Boolean(chosen) || typed || resubmitting
+  const ready = params.get('state') === 'ready' || Boolean(chosen) || (typed && verified) || resubmitting
+  const addTyped = () => {
+    if (!typed) { toast('Enter the card number, expiry date, CVV and name on card'); return }
+    setVerified(true)
+  }
 
   /**
    * Workflow steps 7 and 11, which the frame already agrees with: Publish
@@ -112,11 +116,15 @@ export default function Publish() {
    * created `in_review` and the team takes it to recruiting.
    */
   const publish = () => {
-    if (!chosen && !typed && !resubmitting && params.get('state') !== 'ready') { toast('Add a card to publish this study'); return }
-    // A card typed here is kept on the account for future payments, as the note under the form says.
-    if (!chosen && typed && !cards.some((c) => c.last4 === digits.slice(-4))) {
-      const [mm, yy] = (card['Expiry Date'] ?? '').replace(/\s/g, '').split('/')
-      saveCardToAccount({ brand: digits.startsWith('4') ? 'VISA' : 'Mastercard', last4: digits.slice(-4), expires: `Expires ${mm}/${(yy ?? '').slice(-2)}` })
+    if (!chosen && !(typed && verified) && !resubmitting && params.get('state') !== 'ready') { toast('Add a card to publish this study'); return }
+    // A card added here is kept on the account for future invoice payments, as the last note says; Save this card makes it the default.
+    if (!chosen && typed && verified) {
+      const last4 = digits.slice(-4)
+      if (!cards.some((c) => c.last4 === last4)) {
+        const [mm, yy] = (card['Expiry Date'] ?? '').replace(/\s/g, '').split('/')
+        saveCardToAccount({ brand: digits.startsWith('4') ? 'VISA' : 'Mastercard', last4, expires: `Expires ${mm}/${(yy ?? '').slice(-2)}` })
+      }
+      if (saveCard) setDefaultCard(last4)
     }
     /** The store refuses a study it cannot ask the screener of, and says which question. Nothing is created then. */
     const made = submitStudy(form(), draftId)
@@ -167,27 +175,8 @@ export default function Publish() {
         </div>
 
         <aside className="sticky top-[88px] flex w-[488px] shrink-0 flex-col gap-2.5 rounded-lg bg-bg-1 p-4">
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="flex items-center gap-3 text-body-medium text-text-title">
-              <span className="text-brand-secondary">{FORM}</span>Payment Summary
-            </h2>
-            <button type="button" onClick={() => setBreakdown(true)}
-              className="flex items-center gap-1 text-text-medium text-text-title hover:text-brand-primary">
-              View Breakdown
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
-                <path d="m9 5 7 7-7 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          </div>
-
-          <div className="flex flex-col rounded-md bg-bg-0 px-3 py-1">
-            {[['Total Study Cost', money(quote.total)], ['To pay upfront', cash(quote.deposit)]].map(([k, v]) => (
-              <div key={k} className="flex items-center justify-between gap-4 border-b-1 border-stroke-input py-2 last:border-b-0">
-                <span className="text-text-regular text-text-title">{k}</span>
-                <span className="text-text-regular text-text-title">{v}</span>
-              </div>
-            ))}
-          </div>
+          <PaymentSummaryCard onBreakdown={() => setBreakdown(true)} />
+          <hr className="border-stroke-input" />
 
           <h2 className="flex items-center gap-3 text-body-medium text-text-title">
             <PaymentsIcon className="h-5 w-5 text-brand-secondary" />Payment Method
@@ -226,26 +215,30 @@ export default function Publish() {
               <CardField label="Billing Address" placeholder="Enter street or area" {...cardField('Billing Address')} />
               <CardField label="Zip Code" placeholder="Enter zip code" {...cardField('Zip Code')} />
             </div>
+            <label className="flex items-center gap-2 text-body-regular text-text-title">
+              <input type="checkbox" checked={saveCard} onChange={(e) => setSaveCard(e.target.checked)} className="h-5 w-5 accent-cta-primary" />Save this card
+            </label>
             {cards.length > 0 && (
               <button type="button" onClick={() => setTyping(false)} className="self-start text-text-medium text-text-title underline hover:text-brand-primary">Use a saved card</button>
             )}
           </div>
           )}
 
-          {!chosen && <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" onClick={() => setAddCard(true)}>Add Card to Publish</Button>}
+          {chosen || (typed && verified) ? (
+            <p className="flex h-12 items-center justify-center gap-2 rounded-md bg-green-50 text-body-medium text-green-ok" role="status">
+              <CheckCircle className="h-5 w-5" />Card is verified to pay
+            </p>
+          ) : (
+            <Button variant="secondary" size="none" className="h-12 w-full text-body-medium" onClick={addTyped}>Add Card to Publish</Button>
+          )}
 
-          {/* The frame's first note, a 3% card processing fee, is not here: no fee table holds it and nothing charges it. */}
-          <ul className="flex list-disc flex-col gap-1 pl-4 text-text-regular text-text-subtitle marker:text-text-body">
-            <li>{laterLine(quote)}</li>
-            <li>You are only charged for participants that complete your research. If available, add the estimated recruitment and incentives credits to &ldquo;study deposits&rdquo; upon publishing.</li>
-            <li>Studies recruits until filled or till defined deadline or <span className="text-text-title">max 60 days from publish.</span></li>
-            <li>This card will be added to your team for future payments.</li>
-          </ul>
+          <CardFeeNote />
+          <hr className="border-stroke-input" />
+          <PriceNotes />
         </aside>
       </div>
 
       <BreakdownPanel open={breakdown || params.get('panel') === 'breakdown'} onClose={() => setBreakdown(false)} />
-      <AddCardPanel open={addCard} onClose={() => setAddCard(false)} />
     </CreateShell>
   )
 }

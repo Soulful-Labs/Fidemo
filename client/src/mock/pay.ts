@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { balanceDueBy, billing, counts, invoiceNumber, progressPct } from '@shared/derive'
+import { balanceDueBy, billing, counts, depositLabel, invoiceNumber, progressPct } from '@shared/derive'
 import { clockTime, dayLongMonthYear, dayMonthYear, money, monthDayYear, monthDayYearTime } from '@shared/format'
 import { useClient, useStudies } from '../platform'
 import { DEPOSIT_RULE } from '@shared/platform'
@@ -37,9 +37,9 @@ export function useBill(studyId?: string) {
       study, card,
       BILLING,
       BILLING_TOTAL: {
-        total: { label: 'Total cost', amount: money(b?.total ?? 0) },
-        less: { label: 'Less: Deposit', amount: `-${money(b?.deposit ?? 0)}`, sub: DEPOSIT_RULE, info: true },
-        net: { label: 'Net payable cost', amount: money(b?.net ?? 0) },
+        total: { label: 'Total Recruiting Cost', amount: money(b?.total ?? 0) },
+        less: { label: (b?.less ?? []).map((l) => l.label).join(', ') || 'Less: Deposits', amount: `-${money(b?.deposit ?? 0)}`, sub: DEPOSIT_RULE, info: true },
+        net: { label: 'Net Payable', amount: money(b?.net ?? 0) },
       },
       INVOICE: {
         title: `Invoice Details (${number}) - ${study?.title ?? ''}`,
@@ -63,11 +63,11 @@ export function useBill(studyId?: string) {
         markedAt: marked ? `Marked completed on ${dayLongMonthYear(marked)}, ${clockTime(marked)}` : 'Not marked completed yet',
         card: { ...BILL_COPY.card, name: client?.name ?? '', cta: `Pay ${money(due)}` },
       },
-      /** The deposit and the balance as the Transactions list writes them. */
-      transactions: (study?.payments ?? []).map((x) => ({
-        label: x.kind === 'deposit' ? 'Incentive Deposit Paid' : x.kind === 'balance' ? 'Balance Paid' : 'Refund Received',
+      /** The deposits, the bill and any refund as the Transactions list writes them (23 Oct 2026), newest first. */
+      transactions: [...(study?.payments ?? [])].sort((x, y) => y.at.localeCompare(x.at)).map((x) => ({
+        label: x.kind === 'deposit' ? depositLabel(x.stage ?? 'upfront') : x.kind === 'balance' ? 'Net Payable Bill' : 'Refund Received',
         amount: money(x.amount), at: monthDayYearTime(x.at),
-        sub: x.kind === 'deposit' && study ? DEPOSIT_RULE : `Invoice ${number}`,
+        sub: x.kind === 'deposit' ? '' : `Invoice ${number}`,
       })),
     }
   }, [studies, studyId, client])
