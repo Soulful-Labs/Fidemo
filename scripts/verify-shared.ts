@@ -515,6 +515,9 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   check('audience: a study for physicians in healthcare is listed and open', see('st-01').fits && p.startApplication('st-01', DEMO_PERSON_ID).ok)
   check('audience: a study with no audience is open to everyone', !st().studies.find((x) => x.id === 'st-05')!.audience && see('st-05').fits && see('st-05').matchScore === undefined)
   check('audience: one value within a category is enough (Nurse, Physician or Clinician)', see('st-04').audienceMisses.length === 0)
+  { const cl = st().studies.find((x) => x.id === 'st-02')!.clientId
+    const invited = p.invite('st-02', DEMO_PERSON_ID, { kind: 'client', id: cl }).ok
+    check('audience: a client\'s personal invitation lets someone outside the audience see the study and apply', invited && see('st-02').fits && p.startApplication('st-02', DEMO_PERSON_ID).ok) }
 
   // 23 Oct 2026: a real participant fills a diary entry only once its date has come; demo accounts are exempt.
   p.reset(); clock = now.getTime()
@@ -534,6 +537,32 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
     clock = now.getTime()
     const demo = respondentStudies(st(), DEMO_PERSON_ID).find((x) => x.id === 'st-31')!
     check('diary: a demo account has every entry open at once', demo.diary!.locks.every((x) => x === null) && p.completeDiaryDay('st-31', DEMO_PERSON_ID, 5).ok)
+  }
+
+  // 23 Oct 2026: the seed's "today" is counted from the moment it is built, so whatever the hour, what has happened is in the past
+  // and a session whose code was entered has started.
+  for (const hour of [6, 23]) {
+    const built = new Date(now); built.setHours(hour, 5, 0, 0)
+    const seed = buildSeed(built)
+    const t = built.getTime()
+    const future: string[] = []
+    for (const study of seed.studies) for (const x of study.participations) {
+      for (const e of x.events) if (new Date(e.at).getTime() > t) future.push(`${study.id} ${x.personId} ${e.label}`)
+      if (x.code?.byParticipant && x.booking && sessionStart(x.booking).getTime() > t) future.push(`${study.id} ${x.personId} code entered before its session`)
+    }
+    for (const tk of seed.tickets) for (const m of tk.messages) if (new Date(m.at).getTime() > t) future.push(`${tk.id} message`)
+    for (const person of seed.people) if (new Date(person.lastActiveAt).getTime() > t) future.push(`${person.id} last active`)
+    // Every field that records something that has already happened, anywhere in the seed.
+    const PAST = new Set(['at', 'createdAt', 'submittedAt', 'firstSubmittedAt', 'approvedAt', 'completedAt', 'paidAt', 'decidedAt', 'flaggedAt', 'joinedAt', 'lastActiveAt', 'releasedAt', 'stoppedAt', 'lastActivityAt', 'pictureAddedAt', 'videoAddedAt', 'fullProfileAt', 'readAt'])
+    const walk = (v: unknown, path: string) => {
+      if (Array.isArray(v)) v.forEach((x, i) => walk(x, `${path}[${i}]`))
+      else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) {
+        if (PAST.has(k) && typeof x === 'string' && x && new Date(x).getTime() > t + 1000) future.push(`${path}.${k}`)
+        walk(x, `${path}.${k}`)
+      }
+    }
+    walk(seed, 'seed')
+    check(`seed: built at ${hour}:05, nothing that happened is dated after it, and every entered code's session has started`, future.length === 0, future.slice(0, 4).join('; '))
   }
 
   // Participant passwords: a front-end stand-in, but every screen that asks for one is checked against it.

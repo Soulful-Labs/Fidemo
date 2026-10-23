@@ -489,7 +489,12 @@ to the dashboard, or back to the onboarding step they left.
   Log In is the quiet button beside it each time.
 - Every picture is a capture of this app with its demo data, in
   `public/img/landing/` (dashboard, create, matched, sessions, results). Retake
-  them with `npm run shot` when those screens change.
+  them with `npm run shot` when those screens change. create, matched and
+  sessions carry dates, so they are taken with the clock pinned and the demo
+  data built at that moment: retake those three with
+  `node --experimental-websocket scripts/card-check.mjs --reshoot` (repo root,
+  against the one-origin build), which writes its own renders as the pictures
+  and so can never drift from its check (23 Oct 2026).
 - Every claim is a screen that exists. **No customer names, counts, logos or
   quotes: none are real yet.** Do not add any that are not.
 - The section headlines use `text-heading` (32, Semibold): the Figma

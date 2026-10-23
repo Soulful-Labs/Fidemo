@@ -26,7 +26,7 @@ import type {
   Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudyReport, StudySetup, StudyType, TeamMember, Ticket,
 } from './types'
 
-export const SEED_VERSION = 17
+export const SEED_VERSION = 18
 export const DEMO_PERSON_ID = 'jonathan'
 export const DEMO_PERSON_EMAIL = 'jonathan.reeve@example.com'
 /** The respondent app's demo login (README). A front-end stand-in for real authentication, see Person.password. Every seeded participant has it. */
@@ -172,6 +172,19 @@ export function buildSeed(now: Date = new Date()): PlatformState {
     return d.toISOString()
   }
   const plus = (iso: string, days: number) => new Date(new Date(iso).getTime() + days * DAY).toISOString()
+  /**
+   * Times on the day the demo is built are counted back from the moment it is
+   * built, never written as a fixed hour: "today at 9:00" is in the past or the
+   * future depending on when the seed runs, and a session that "ran earlier
+   * today" must have started before now whatever the hour (23 Oct 2026).
+   */
+  const minsAgo = (mins: number): string => new Date(t0 - mins * 60_000).toISOString()
+  /** A session that started about `mins` ago, on a half hour: the booking's date and its slot. */
+  const startedAgo = (mins: number): { date: string; slot: string } => {
+    const d = new Date(t0 - mins * 60_000)
+    d.setMinutes(d.getMinutes() < 30 ? 0 : 30, 0, 0)
+    return { date: d.toISOString(), slot: d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) }
+  }
 
   /** Availability that differs per study: some are wide open and some nearly full. */
   const availabilityFor = (n: number): Study['availability'] => {
@@ -181,13 +194,13 @@ export function buildSeed(now: Date = new Date()): PlatformState {
 
   // ----------------------------------------------------------------- people
 
-  const pool = buildPool({ at })
+  const pool = buildPool({ at, minsAgo })
   const byId = new Map(pool.map((p) => [p.id, p]))
 
   const jonathan: Person = {
     // The demo participant starts with no picture, so adding one (and the consent to show it) can be shown from the start.
     id: DEMO_PERSON_ID, name: 'Jonathan Reeve', photoConsent: false, email: DEMO_PERSON_EMAIL, phone: '+1 555 0142 889',
-    joinedAt: at(-420, 9, 0), lastActiveAt: at(0, 8, 30), status: 'active', location: 'New York, US',
+    joinedAt: at(-420, 9, 0), lastActiveAt: minsAgo(45), status: 'active', location: 'New York, US',
     profile: {
       gender: 'Male', address: 'Brooklyn, New York', areaType: 'Urban', aboutMe: '', languages: ['English'],
       nationality: 'American', income: '', ethnicity: '', pets: ['Dog', 'Bird'], homeOwner: 'Yes',
@@ -276,12 +289,12 @@ export function buildSeed(now: Date = new Date()): PlatformState {
     id, name, role, company, industry, location,
     email: `${name.toLowerCase().split(' ')[0]}@${company.toLowerCase().replace(/[^a-z]+/g, '').slice(0, 14)}.com`,
     taxId: `${String(12 + (n % 80)).padStart(2, '0')}-${String(3456789 + n * 7919).slice(-7)}`, website: `https://www.${company.toLowerCase().replace(/[^a-z]+/g, '').slice(0, 14)}.com`,
-    joinedAt: at(-(500 - n * 31), 9, 0), lastActiveAt: at(-(n % 9), 10 + (n % 6), 15), status: 'active',
+    joinedAt: at(-(500 - n * 31), 9, 0), lastActiveAt: n % 9 === 0 ? minsAgo(40 + n * 13) : at(-(n % 9), 10 + (n % 6), 15), status: 'active',
     business: { state: 'verified' }, earlierReviews: EARLIER[id] ?? [], cards: [], simulated: true, ...extra,
   })
   const clients: Client[] = [
     client(DEMO_CLIENT_ID, 'Jennifer Lee', 'Product Manager', 'Soulful Labs', 'IT & Consultation', 'New York, US', 0, {
-      email: DEMO_CLIENT_EMAIL, taxId: '84-2931459', website: 'https://www.soulfullabs.ai', simulated: false, lastActiveAt: at(0, 9, 10),
+      email: DEMO_CLIENT_EMAIL, taxId: '84-2931459', website: 'https://www.soulfullabs.ai', simulated: false, lastActiveAt: minsAgo(20),
       cards: [{ brand: 'Mastercard', last4: '4242', expires: 'Expires 08/28', isDefault: true }, { brand: 'VISA', last4: '6080', expires: 'Expires 08/28' }],
     }),
     client('cl-rjp', 'Helen Marlow', 'Research Director', 'RJP Pharma Ltd.', 'Pharma', 'Boston, US', 1),
@@ -363,12 +376,12 @@ export function buildSeed(now: Date = new Date()): PlatformState {
       events: [{ label: 'Applied', at: applied(k) }, { label: 'Qualified', at: plus(applied(k), 2) }, { label: 'No Show', at: doneAt(k, 3) }],
     }))
     take(counts.scheduled, (p, k) => {
-      /** The first three sessions ran earlier today, so their participants have entered the code; the rest are ahead. */
-      const ran = k < 3
-      const date = ran ? at(0, 8 + k, 0) : at(1 + (k % 5), 10, 0)
+      /** The first three sessions ran in the hours before the demo was built, so their participants have entered the code; the rest are ahead, from tomorrow. */
+      const ran = k < 3 && !group
+      const when = ran ? startedAgo(60 * (3 - k) + 30) : { date: at(1 + (k % 5), 10, 0), slot: group ? '10:00 AM' : ALL_SLOTS[k % ALL_SLOTS.length]! }
       return {
         personId: p.id, state: 'scheduled', prescreener: 'passed',
-        booking: { date, slot: group ? '10:00 AM' : ALL_SLOTS[k % ALL_SLOTS.length]!, sessionId: group ? 's2' : undefined, locationId: study.locations?.[k % study.locations.length]?.id, rescheduleCount: 0 },
+        booking: { date: when.date, slot: when.slot, sessionId: group ? 's2' : undefined, locationId: study.locations?.[k % study.locations.length]?.id, rescheduleCount: 0 },
         code: { value: DEMO_SESSION_CODE, byParticipant: ran, byClient: false },
         events: [{ label: 'Applied', at: applied(k) }, { label: 'Qualified', at: plus(applied(k), 2) }, { label: 'Scheduled', at: plus(applied(k), 3) }],
       }
@@ -538,7 +551,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
   }
   const PAYOUT_STEPS = ['Awaiting payout', 'Payout processed by the team', 'Paid']
 
-  const others = catalogue({ at, CLIENTS: CLIENT_KEYS }).map((e): Study => {
+  const others = catalogue({ at, minsAgo, startedAgo, CLIENTS: CLIENT_KEYS }).map((e): Study => {
     const n = Number(e.id.replace(/\D/g, ''))
     const daysLeft = e.daysLeft ?? 6 + (n % 17)
     const timeline = e.timeline ?? []
@@ -706,8 +719,8 @@ export function buildSeed(now: Date = new Date()): PlatformState {
       ['user', 'Perfect, thanks.', at(-60, 10, 0)],
     ]),
     ticket('FI-S562611', { kind: 'participant', id: 'sarah-j' }, 'Session link did not open', 'general', 'open', [
-      ['user', 'The Join Call button for my Fitness tracker group session opens a blank page.', at(0, 7, 40)],
-      ['auto', 'Session links open ten minutes before the start time. If yours is within that window, try a different browser while we look into it.', at(0, 7, 41)],
+      ['user', 'The Join Call button for my Fitness tracker group session opens a blank page.', minsAgo(95)],
+      ['auto', 'Session links open ten minutes before the start time. If yours is within that window, try a different browser while we look into it.', minsAgo(94)],
     ], 'Fitness tracker apps experience'),
     ticket('FI-S562612', { kind: 'client', id: 'cl-lumen' }, 'Refund for an underfilled study', 'money', 'open', [
       ['user', 'Our remote monitoring panel closed two people short. When is the unused incentive returned?', at(-1, 13, 10)],

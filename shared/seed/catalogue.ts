@@ -24,10 +24,14 @@ export interface CatalogueEntry {
 
 export interface CatalogueHelpers {
   at: (offsetDays: number, hour?: number, minute?: number) => string
+  /** A moment this many minutes before the seed is built (seed.ts): for anything that happened "today". */
+  minsAgo: (mins: number) => string
+  /** A session that started about this many minutes before the seed is built: its booking date and slot. */
+  startedAgo: (mins: number) => { date: string; slot: string }
   CLIENTS: Record<string, string>
 }
 
-export function catalogue({ at, CLIENTS }: CatalogueHelpers): CatalogueEntry[] {
+export function catalogue({ at, minsAgo, startedAgo, CLIENTS }: CatalogueHelpers): CatalogueEntry[] {
   const IMG = (name: string, ext: 'svg' | 'jpg' = 'svg') => `/img/${name}.${ext}`
   const mk = (e: CatalogueEntry) => e
   const review = (stars: number, comment: string, e: number, r: number, c: number) => ({ stars, comment, expertise: e, reliability: r, communication: c })
@@ -106,8 +110,9 @@ export function catalogue({ at, CLIENTS }: CatalogueHelpers): CatalogueEntry[] {
   mk({ id: 'st-11', audience: { countries: ['United States of America'], ageRanges: ['21–29', '30–39', '40–54', '50–59'] }, title: 'Flagship store shopper study', type: 'in_person', status: 'pin_confirmed', reward: 210, durationMins: 60, industry: 'Retail', city: 'New York',
     description: 'Shop the flagship store with a researcher alongside you and talk through every decision.',
     targetProfession: 'Shoppers who visit a flagship store monthly', image: IMG('store'), screenerSet: 'shopping', client: CLIENTS.procto, daysLeft: 2,
-    booking: { date: at(0, 14, 0), slot: '02:30 PM', locationId: 'nyc-ts', rescheduleCount: 1 }, pinConfirmed: true,
-    timeline: [{ label: 'Applied', at: at(-9, 10, 36) }, { label: 'Invited to schedule', at: at(-6, 12, 0) }, { label: 'Scheduled', at: at(-5, 9, 0) }, { label: 'Rescheduled', at: at(-3, 18, 0) }, { label: 'Session code confirmed', at: at(0, 15, 5) }] }),
+    // Started an hour before the demo was built, and the code was entered half an hour in, whatever the hour.
+    booking: { ...startedAgo(60), locationId: 'nyc-ts', rescheduleCount: 1 }, pinConfirmed: true,
+    timeline: [{ label: 'Applied', at: at(-9, 10, 36) }, { label: 'Invited to schedule', at: at(-6, 12, 0) }, { label: 'Scheduled', at: at(-5, 9, 0) }, { label: 'Rescheduled', at: at(-3, 18, 0) }, { label: 'Session code confirmed', at: minsAgo(30) }] }),
   mk({ id: 'st-12', title: 'Sleep routine diary', type: 'diary', status: 'in_process', reward: 240, durationMins: 15, industry: 'Wellness',
     description: 'Five days of short entries about your wind-down routine, interruptions and how you feel waking.',
     targetProfession: 'Adults, 18+', image: IMG('moon'), screenerSet: 'sleep', tasksSet: 'sleepDiary', client: CLIENTS.lumen, daysLeft: 1,

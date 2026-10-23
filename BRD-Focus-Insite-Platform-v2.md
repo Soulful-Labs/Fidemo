@@ -283,7 +283,7 @@ A master admin may change the Trust Score values, tier thresholds, reward point 
 | Rule | Detail |
 |---|---|
 | A participant must be identity-verified before taking part | Enforced at application. A person on the team verifies every ID |
-| A participant only sees and applies to studies whose audience they fit | Every category the study sets must match, any one option within it. A study with no audience is open to everyone. A client's invitation waives it (PRD D38) |
+| A participant only sees and applies to studies whose audience they fit | Every category the study sets must match, any one option within it. A study with no audience is open to everyone. A client's personal invitation overrides it, as it overrides the repeat rule (confirmed 23 October 2026; policy v2 section 8; PRD D38) |
 | Every participant has a password | Checked at sign in, change password and deactivation. A wrong one is refused and nothing else happens. An email already registered cannot sign up again |
 | A participant can close their own account | With their password. They cannot sign in afterwards; the team can reactivate it within 30 days |
 | A no-show is not paid for that study | Stated in the dialog that marks one |

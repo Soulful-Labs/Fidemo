@@ -156,14 +156,18 @@ export function workOf(industry: string, n: number): { workFunctions: string[]; 
   return { workFunctions: two(w.functions), skills: two(w.skills) }
 }
 
-export interface PeopleClock { at: (offsetDays: number, hour?: number, minute?: number) => string }
+export interface PeopleClock {
+  at: (offsetDays: number, hour?: number, minute?: number) => string
+  /** A moment this many minutes before the seed is built: for anything that happened "today" (seed.ts). */
+  minsAgo: (mins: number) => string
+}
 
 const slugEmail = (name: string) => `${name.toLowerCase().replace(/[^a-z]+/g, '.')}@example.com`
 
 function fromRow([id, name, role, industry, location, gender, studies, score, verified, language]: Row, n: number, clock: PeopleClock): Person {
   return {
     id, name, photo: avatarFor(id, gender), photoConsent: true, email: slugEmail(name), phone: `+1 555 01${String(10 + n).padStart(2, '0')} ${String(100 + ((n * 37) % 900))}`,
-    joinedAt: clock.at(-(120 + ((n * 23) % 400)), 9, 0), lastActiveAt: clock.at(-((n * 5) % 60), 8 + (n % 10), (n * 7) % 60),
+    joinedAt: clock.at(-(120 + ((n * 23) % 400)), 9, 0), lastActiveAt: (n * 5) % 60 === 0 ? clock.minsAgo(30 + (n * 7) % 300) : clock.at(-((n * 5) % 60), 8 + (n % 10), (n * 7) % 60),
     status: 'active', location,
     profile: {
       ...EMPTY_PROFILE, gender, address: location, areaType: AREA_TYPES[n % AREA_TYPES.length]!, languages: [language ?? 'English'], nationality: 'American',

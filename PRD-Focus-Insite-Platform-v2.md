@@ -641,6 +641,14 @@ Charged to clients, not participants. These are the current values. A master adm
 
 The withdrawal fee charged to participants is $2 flat (6.4). The console shows it, with the points value and the redemption minimum, and says they are set by the policy and not saved from there.
 
+**Who a study is for.**
+
+| Rule | Meaning |
+|---|---|
+| The audience | A participant sees and may apply to a study only if they fit its audience: every category the client set must match, and any one option within a category is enough. A category the client did not set is ignored. A participant who has not given what a category asks about does not fit it. A study with no audience is open to everyone |
+| Outside the audience | Applying is refused, and the participant is told which categories they do not match |
+| A client's personal invitation | Overrides the audience: a participant the client invites may apply even outside it. It overrides "Never with this client" below in the same way |
+
 **Who may take part again.** A study sets one of two conditions.
 
 | Condition | Meaning |
@@ -2251,7 +2259,8 @@ BRD Section 9a has the full requirement.
 |---|---|
 | The rule | One rule everywhere (`audienceChecks` in `shared/studyForm.ts`): every category the study's audience sets must match; any one value within a category is enough; a category the study has not set is ignored; a participant who has not given what a category asks about does not meet it. A study with no audience is open to everyone |
 | Explore and Recommended | List only open studies whose audience the participant matches, or that the client invited them to |
-| Applying | Refused, with the categories not met: "This study is for a different audience. [Client] set who this study is for, and your profile does not match its role, industry." with Update Profile. Opening the screener by its address shows the same. The platform refuses it too (`startApplication`). A client's invitation waives the audience, as it waives the repeat rule |
+| Applying | Refused, with the categories not met: "This study is for a different audience. [Client] set who this study is for, and your profile does not match its role, industry." with Update Profile. Opening the screener by its address shows the same. The platform refuses it too (`startApplication`) |
+| A client's personal invitation | Confirmed 23 October 2026: it overrides the audience, as it already overrides the repeat rule. Recorded in the policy v2, section 8, "Who a study is for" |
 | Seeded studies | Carry real criteria (`Study.audience`): the clinical studies their industry and roles, the education study teachers, the airport and flagship store studies a country (and an age range), the social media study its roles, the rest none. Manage and Review read the audience pills from these criteria; a study with none reads "Open to everyone" |
 | Match score | The share of those categories met. A study open to everyone shows no score |
 | What a demo shows | Jonathan (physician, healthcare, New York) sees 8 of the 13 studies open to him; a new nurse in the US sees 18 of 21; a new teacher in London 10 of 21; a new account with no work details 9 of 21 |

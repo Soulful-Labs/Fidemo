@@ -5,7 +5,7 @@
 //   BASE_URL=https://fidemo-lyart.vercel.app node --experimental-websocket scripts/card-check.mjs
 import { resolve } from 'node:path'
 import { spawn } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const base = process.env.BASE_URL ?? 'http://localhost:5180'
@@ -266,16 +266,33 @@ const touch = (t, type, p) => send('Input.dispatchTouchEvent', { type, touchPoin
 }
 
 // ---- 6. the three re-shot screenshots match the current build
+/**
+ * The landing pictures carry dates (sessions, "days left"), so they are taken,
+ * and checked, with the page's clock pinned to one moment and the demo data
+ * built fresh at that moment: a picture never drifts with the calendar
+ * (23 Oct 2026). `--reshoot` writes this check's own renders as the pictures,
+ * so a picture and its check are the same render by construction.
+ */
+const LANDING_CLOCK = '2026-10-23T10:00:00-04:00'
+const RESHOOT = process.argv.includes('--reshoot')
+const pinClock = `(() => { const T = new Date(${JSON.stringify(LANDING_CLOCK)}).getTime(); const D = Date; const real = D.now();
+  const now = () => T + (D.now() - real)
+  class Pinned extends D { constructor(...a) { if (a.length) super(...a); else super(now()) } static now() { return now() } }
+  window.Date = Pinned })()`
 {
   const g = []
   const C = await tab('client', 1440, 900, false)
   // The screenshots are taken with scrollbars hidden (scripts/shot.mjs); a visible one narrows the page by its width.
   await send('Emulation.setScrollbarsHidden', { hidden: true }, C.sid)
+  await send('Page.addScriptToEvaluateOnNewDocument', { source: pinClock }, C.sid)
+  // The demo data built afresh at the pinned moment (the respondent app's ?reset=1 resets the shared platform).
+  await C.open('/?reset=1')
   await C.open('/client/dashboard', `localStorage.setItem('fi-client-session', JSON.stringify({ accounts: [], current: 'jennifer@soulfullabs.com' }))`)
   const notes = []
   for (const [file, path] of [['create', '/client/studies/create/about?reset=1'], ['matched', '/client/studies/st-pay/matched'], ['sessions', '/client/studies/st-goal/recruited']]) {
     await send('Page.navigate', { url: base + path }, C.sid); await sleep(2200)
     const { data } = await send('Page.captureScreenshot', { format: 'png' }, C.sid)
+    if (RESHOOT) writeFileSync(resolve('client/public/img/landing', `${file}.png`), Buffer.from(data, 'base64'))
     const shipped = (await (await fetch(`${base}/client/img/landing/${file}.png`)).arrayBuffer())
     const b64 = Buffer.from(shipped).toString('base64')
     const diff = await C.ev(`(async () => {
@@ -291,7 +308,7 @@ const touch = (t, type, p) => send('Input.dispatchTouchEvent', { type, touchPoin
     else if (diff.pct > 0.5) g.push(`${file}: ${diff.pct.toFixed(2)}% of pixels differ from the current build`)
     notes.push(`${file}.png ${diff.pct?.toFixed(2)}% different`)
   }
-  say(6, 'The three re-shot screenshots match the current build', g, `each shipped screenshot against the same screen rendered now at 1440x900: ${notes.join(', ')}`)
+  say(6, 'The three re-shot screenshots match the current build', g, `each shipped screenshot against the same screen rendered now at 1440x900, the clock pinned to ${LANDING_CLOCK} and the demo data built then: ${notes.join(', ')}`)
 }
 
 console.log(`\n${[1, 2, 3, 4, 5, 6].filter((n) => results[n]).length} of 6 yes`)
