@@ -20,13 +20,13 @@ import type { CatalogueEntry } from './seed/catalogue'
 import { buildPool, starsSumming, targetScore } from './seed/people'
 import { trustInputs } from './derive'
 import { TRUST, starsForRating, trustForStars } from './rules'
-import type { Answers } from './types'
+import type { Answers, AudienceCriteria } from './types'
 import type {
   Activity, Client, EarlierReview, Location, Participation, ParticipationState, Person, PlatformState,
   Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudyReport, StudySetup, StudyType, TeamMember, Ticket,
 } from './types'
 
-export const SEED_VERSION = 16
+export const SEED_VERSION = 17
 export const DEMO_PERSON_ID = 'jonathan'
 export const DEMO_PERSON_EMAIL = 'jonathan.reeve@example.com'
 /** The respondent app's demo login (README). A front-end stand-in for real authentication, see Person.password. Every seeded participant has it. */
@@ -131,17 +131,22 @@ const SURVEY_SOCIAL: Question[] = [
   { id: 't4', kind: 'text', prompt: 'What slows you down most when designing a post?', placeholder: 'Type your answer here..' },
 ]
 
-const AUDIENCE = [
-  { value: '10', icon: 'people' }, { value: 'Worldwide', icon: 'pin' }, { label: 'Gender', value: 'All' },
-  { label: 'Education', value: 'High school graduate' }, { label: 'Age', value: '18-22, 31-40' },
-  { label: 'Work Functions', value: 'Consultation' },
-  { label: 'Roles', value: 'Physician, General Doctor, Nutritionist, Therapist, Medical Practitioner' },
-  { label: 'Industry', value: 'Healthcare, Pharma' }, { label: 'Organization Size', value: 'Self employed, 1-10, 10-50' },
-]
 
-const setup = (studySummary: { label: string; value: string }, roles?: string, screenerSummary = '8 inputs'): StudySetup => ({
+/** A seeded study's audience as the read-back pills: each category it sets, or one pill saying it is open to everyone. */
+function audiencePills(c: AudienceCriteria | undefined, required: number): StudySetup['audience'] {
+  const pills: StudySetup['audience'] = [{ value: String(required), icon: 'people' }, { value: c?.countries?.join(', ') || 'Worldwide', icon: 'pin' }]
+  if (!c || !Object.values(c).some((v) => Array.isArray(v) && v.length)) return [...pills, { label: 'Audience', value: 'Open to everyone' }]
+  const add = (label: string, v?: string[]) => { if (v?.length) pills.push({ label, value: v.join(', ') }) }
+  add('Gender', c.genders); add('Education', c.education); add('Age', c.ageRanges); add('Work Functions', c.functions)
+  add('Roles', c.roles); add('Skills', c.skills); add('Industry', c.industries); add('Experience', c.experience)
+  add('Household Income', c.income); add('Ethnicity', c.ethnicity); add('Area Type', c.areaTypes); add('Tiers', c.tiers)
+  return pills
+}
+
+const setup = (studySummary: { label: string; value: string }, _roles?: string, screenerSummary = '8 inputs'): StudySetup => ({
   estimatedAudience: '1K',
-  audience: roles ? AUDIENCE.map((a) => (a.label === 'Roles' ? { ...a, value: roles } : a)) : AUDIENCE,
+  // Filled from the study's own audience once the seed is built (audiencePills).
+  audience: [],
   screenerSummary, studySummary,
 })
 
@@ -252,6 +257,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
   const people = [jonathan, ...pool]
   for (const p of people) {
     p.password = DEMO_PERSON_PASSWORD
+    p.demo = true
     // Seeded demo files for every ID already submitted: the name the ID type gives and a plausible size.
     if (p.identity.state !== 'not_started' && !p.identity.documents) {
       const kind = p.profile.idType || 'Passport'
@@ -462,7 +468,8 @@ export function buildSeed(now: Date = new Date()): PlatformState {
   const social = live('st-social', 'Social media posts designing apps', 'survey', 'recruiting', 'Consumer', 30,
     'How do you design social media posts and what tools do you use for it',
     'canva.jpg', 30, 36, 94, 'exclude', 'design', 'Marketers, Small business owners, Content creators', {}, SURVEY_SOCIAL)
-  social.setup = setup(SUMMARY.survey, 'Social Media Influencer, Creator, Digital Marketer, Graphic Designer', `${social.preScreener.length + social.screener.length} inputs`)
+  social.audience = { roles: ['Influencer', 'Creator', 'Marketer', 'Designer', 'Business Owner'] }
+  social.setup = setup(SUMMARY.survey, undefined, `${social.preScreener.length + social.screener.length} inputs`)
   // Revisions History (client 2322:211934): the team asked for changes and edited the description, then the client resubmitted.
   const sent = social.submittedAt!
   const after = (hours: number) => new Date(new Date(sent).getTime() + hours * 3_600_000).toISOString()
@@ -547,7 +554,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
       id: e.id, clientId: e.client ?? 'cl-rjp', title: e.title, description: e.description, type: e.type, state, industry: e.industry,
       durationMins: e.durationMins, image: e.image, required, endsAt, completedAt: ended ? endsAt : undefined,
       createdAt: plus(approvedAt, -2), submittedAt: plus(approvedAt, -1), approvedAt,
-      targetProfession: e.targetProfession, premium: e.premium, city: e.city,
+      targetProfession: e.targetProfession, premium: e.premium, city: e.city, audience: e.audience,
       repeatRule: e.repeatRule ?? (['allow', 'allow', 'exclude'] as const)[n % 3]!,
     }, e.reward, e.screenerSet, e.tasksSet ? TASKS[e.tasksSet] : undefined)
     study.linkCode = `HL-${String(n).padStart(3, '0')}-${['A', 'B', 'C', 'D'][n % 4]}`
@@ -821,6 +828,8 @@ Group ${i + 1}: most book travel on a phone, but pay on a laptop.
       }
     }
   }
+  // The audience pills Manage and Review read back are the study's own criteria (D38), not a sample list.
+  for (const study of studies) if (!study.form && study.setup) study.setup = { ...study.setup, audience: audiencePills(study.audience, study.required) }
   const state: PlatformState = { version: SEED_VERSION, seededAt: now.toISOString(), people, clients, studies, reports, tickets, team, activity, pending: [], teamNotices: [], studyReports }
   /**
    * Certificates issued at verification (policy section 7), each ID generated

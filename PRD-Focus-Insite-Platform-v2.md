@@ -5,7 +5,7 @@
 
 **The front end for all three apps is built, deployed and working. The job is to put a real back end behind it.** Section 23 is written for that.
 
-**This document and the BRD are self-contained.** The workflow is in Section 15, every policy value is in Section 6, and every decision is in Section 16. Seven decisions are open, and are recorded as open in Section 16 (D32 to D38), and one built rule waits for confirmation (D39). Nothing else is left open.
+**This document and the BRD are self-contained.** The workflow is in Section 15, every policy value is in Section 6, and every decision is in Section 16. Five decisions are open, and are recorded as open in Section 16 (D32 to D36). Nothing else is left open.
 
 ---
 
@@ -528,7 +528,7 @@ A ticket carries: a number (FI-S562357), a subject, a status (Open / Closed), th
 | Upheld fraud | −20 |
 | Ratings counted | The last 10 studies |
 
-**How the score is worked out.** The starting 50 plus everything earned and deducted since, kept within 50 and 100. A deduction that would take the score below 50 still counts: the score shows 50, and the deduction comes off later gains before the score rises again. A participant at 50 who cancels a session stays at 50, and their next completed study leaves them at 50. The cancel toast says which happened: "2 Trust Score deducted" when the score fell by the full amount, and otherwise that the 2 is recorded, the score stays at the floor and the 2 comes off what is earned next. The amount is read from the value the console set at the time, not written into the toast. Score history shows each change in points ("+1", "−2"), never as a percentage.
+**How the score is worked out** (confirmed, D39). The starting 50 plus everything earned and deducted since, kept within 50 and 100. A deduction that would take the score below 50 still counts: the score shows 50, and the deduction comes off later gains before the score rises again. A participant at 50 who cancels a session stays at 50, and their next completed study leaves them at 50. The cancel toast says which happened: "2 Trust Score deducted" when the score fell by the full amount, and otherwise that the 2 is recorded, the score stays at the floor and the 2 comes off what is earned next. The amount is read from the value the console set at the time, not written into the toast. Score history shows each change in points ("+1", "−2"), never as a percentage.
 
 ### 6.2 Tiers
 
@@ -540,7 +540,7 @@ A ticket carries: a number (FI-S562357), a subject, a status (Open / Closed), th
 
 Tier is **derived** from the Trust Score. It is never set independently and never stored as its own fact.
 
-**"In Top N%"** under each tier is derived too: the share of active, ID-verified participants at that tier or above (`topShareOf`, the same count the client app's Profile Tiers lines use). Silver always reads "In Top 100%".
+**"In Top N%"** under Gold and Platinum is derived too: the share of active, ID-verified participants at that tier or above (`topShareOf`, the same count the client app's Profile Tiers lines use). **Silver has no percentile line** (decided 23 October 2026): it is where everyone starts, so a percentile there means nothing, and no replacement text is shown.
 
 ### 6.3 Reward points
 
@@ -577,6 +577,7 @@ The profile picture and the intro video each earn their points once. Removing ei
 | Cancel a session | A participant may cancel more than 24 hours before the session, at 2 Trust Score points. Inside 24 hours they cannot cancel, and not attending is a no show at 4 points |
 | Cancelled by the client or the team | Costs the participant nothing. A reason must be given; the participant is told it, and it is kept against the booking |
 | Diary completion | At least 4 of 5 days |
+| Diary entries | One entry a day. Entry 1 opens on the day the participant is invited to complete, each later entry on its own date after that (a day apart, or at the frequency the client set). Earlier entries stay open to catch up on; later ones are locked until their date, and a locked one says the date it opens. The demonstration accounts are exempt, so a demo can run every entry in one sitting |
 
 ### 6.6 The certificate
 
@@ -879,8 +880,9 @@ This is the functional specification for the app. Build to it exactly.
 | Study card body | `/studies/:id` |
 | Study card, bookmark | Toggles saved. The Saved tab updates immediately |
 | Accept and Apply | Status → `applying`, then `/studies/:id/screener` |
+| Apply, outside the study's audience | Refused: "This study is for a different audience", naming the categories not met, with Update Profile. The screener's address says the same. Explore never lists such a study (D38) |
 | Reject on a card | Opens Reject Invitation; on confirm, removes it from Invites |
-| Match score badge | Opens the match score explainer. The score is the share of the study's own criteria the profile meets: every criterion a client's audience sets, or a catalogue study's industry and target profession. When nothing can be compared the card and the study show no score at all |
+| Match score badge | Opens the match score explainer ("Study matching score / It shows how much this study is relevant to your profile for you."; the drawn tip "Higher the score, faster you get qualified" is removed because the build does not do it). The score is the share of the categories the study's audience sets that the profile meets. A study open to everyone shows no score |
 | Client name and rating | `/clients/:clientId/ratings` |
 | Get Support | `/support/contact` with the study prefilled in the subject |
 | View Directions | Opens a map |
@@ -950,7 +952,8 @@ This is the functional specification for the app. Build to it exactly.
 | Submit on the last question | `/studies/:id/applied` or `/studies/:id/survey/done` |
 | Diary, Submit Progress | Marks the day complete, returns to the diary overview |
 | Diary, a completed day | Opens that day read only, with the answers as sent, and Back to Diary |
-| Diary, Resume Study Day N | `/studies/:id/diary/:day` |
+| Diary, Resume Study Day N | `/studies/:id/diary/:day`, the first open entry not yet filled. When every open entry is filled and the next is locked, the button reads "Day N opens Oct 25", disabled, and says the full date on tap |
+| Diary, a locked day | Reads "Opens Oct 25"; tapping it says "Day N opens on Oct 25, 2026". Its address shows the same. The platform refuses an early entry too (`completeDiaryDay`, `diaryLocks`) |
 | Diary, Complete | **Only enabled once at least 4 of 5 days are filled** |
 
 Each diary day asks its own questions, as the client set them for that entry. A question marked optional shows "(optional)" after its prompt and may be left blank: Continue, Submit and Submit Progress allow it.
@@ -2230,9 +2233,9 @@ BRD Section 9a has the full requirement.
 | What the designs draw | The client's diary dropdowns also draw Minute and Step units, and a frequency list from "Everyday" to "Every 5 days" |
 | Who decides | Not yet assigned. A change in behaviour, for the designer and the business |
 
-### D37: A diary entry per calendar day (open)
+### D37: A diary entry per calendar day
 
-**Not decided.**
+**Decided and built, 23 October 2026.** One entry a day. Entry 1 opens on the day the participant is invited to complete, each later entry on its own date after that (a day apart, or at the frequency the client set). Earlier entries stay open to catch up on; later ones are locked until their date, and a locked one says the date it opens. The demonstration accounts are exempt, so a demo can run every entry in one sitting. Demonstration accounts are every seeded participant (`Person.demo`); an account made by signing up never is. The record of the question:
 
 | | |
 |---|---|
@@ -2240,9 +2243,23 @@ BRD Section 9a has the full requirement.
 | The question | Whether entry N should open only on day N (or at the client's frequency), so a five day diary takes five days |
 | Who decides | The product owner. Not built until decided |
 
-### D38: Audience fit before applying (open)
+### D38: Audience fit before applying
 
-**Not decided.** Found in the 23 October 2026 audit: a nurse saw, and passed the screener of, a survey looking for teachers.
+**Decided and built, 23 October 2026.** Found in that day's audit: a nurse saw, and passed the screener of, a survey looking for teachers.
+
+| | |
+|---|---|
+| The rule | One rule everywhere (`audienceChecks` in `shared/studyForm.ts`): every category the study's audience sets must match; any one value within a category is enough; a category the study has not set is ignored; a participant who has not given what a category asks about does not meet it. A study with no audience is open to everyone |
+| Explore and Recommended | List only open studies whose audience the participant matches, or that the client invited them to |
+| Applying | Refused, with the categories not met: "This study is for a different audience. [Client] set who this study is for, and your profile does not match its role, industry." with Update Profile. Opening the screener by its address shows the same. The platform refuses it too (`startApplication`). A client's invitation waives the audience, as it waives the repeat rule |
+| Seeded studies | Carry real criteria (`Study.audience`): the clinical studies their industry and roles, the education study teachers, the airport and flagship store studies a country (and an age range), the social media study its roles, the rest none. Manage and Review read the audience pills from these criteria; a study with none reads "Open to everyone" |
+| Match score | The share of those categories met. A study open to everyone shows no score |
+| What a demo shows | Jonathan (physician, healthcare, New York) sees 8 of the 13 studies open to him; a new nurse in the US sees 18 of 21; a new teacher in London 10 of 21; a new account with no work details 9 of 21 |
+
+The record of the question:
+
+| | |
+|---|---|
 
 | | |
 |---|---|
@@ -2251,9 +2268,9 @@ BRD Section 9a has the full requirement.
 | The question | Whether Explore should show only studies whose audience the participant fits, and whether applying should refuse someone outside it; and what to do for studies with no audience |
 | Who decides | The product owner. An audience-matching gap, not a screener one. Not fixed in this round |
 
-### D39: Deductions at the Trust Score floor (to confirm)
+### D39: Deductions at the Trust Score floor
 
-**Built, and written into the policy v2 (section 1), for the product owner to confirm.**
+**Confirmed, 23 October 2026.** Someone sitting at 50 does not get free no-shows.
 
 | | |
 |---|---|
@@ -2709,7 +2726,7 @@ Every one of these appeared in two or more places saying different things. These
 | Screener decision | 3 to 5 days | `WAITS.REVIEW` in `shared/platform.ts` |
 | Withdrawal credited | 2 to 3 working days | The policy. "Expected in bank" is three working days after the request |
 | Client refund | 5 to 7 working days | The policy |
-| "In Top N%" under a tier | Derived: the share of verified participants at that tier or above (Section 6.2) | `topShareOf` in `shared/derive.ts`, everywhere a tier is shown |
+| "In Top N%" under Gold and Platinum | Derived: the share of verified participants at that tier or above (Section 6.2). Silver has none | `topShareOf` in `shared/derive.ts`, everywhere a tier is shown |
 | Points redeemed | In the wallet at once | Redeem and its success screen |
 | Money not yet paid | "Awaiting payout. The team processes it when the study finishes." | Every screen that shows it (Section 9.4) |
 | Ticket status | Open or Closed. Never "Solved" | All three apps |
@@ -2923,7 +2940,8 @@ Each screen behaves correctly against the shared data layer, which stands in for
 | ID upload | The two sides' names and sizes are kept on the account (`Check.documents`); the files themselves are not sent anywhere | Receive and store the files privately, for the team to open in Verifications |
 | ID and credential checks | Submitted checks are `in_review` until the team decides in the console; the participant is told the outcome | Same, with the automatic register check where one exists (workflow 16 and 17) feeding the team's decision |
 | Session code | Refused before the session starts | Check the time server side |
-| Match score | The share of the study's own criteria the profile meets (the audience a client set; for a catalogue study, its industry and target profession). No score when nothing can be compared | Compute it server side from the same criteria |
+| Match score | The share of the categories the study's audience sets that the profile meets. No score for a study open to everyone | Compute it server side from the same criteria |
+| Audience fit (D38) | Explore lists only studies the participant fits; applying outside the audience is refused with the categories not met; an invitation waives it | Filter and refuse on the server too: never send a participant a study they may not apply to, and refuse the application whatever the client sends |
 | Places left | The study's target less everyone qualified, booked or done | Same |
 | Sign-up ticker | The most recent study payout: first name, amount, study type, how long ago | A public endpoint giving only those four things. Whether a first name may be shown publicly needs a decision |
 | "In Top N%" | The share of active, ID-verified participants at that tier or above | Compute it server side |

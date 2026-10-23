@@ -9,9 +9,9 @@
  * reads and writes the same platform: a change made in one app is picked up
  * by the others through the storage event, without a reload.
  */
-import { applyRepeatRule, targetMet, barredFrom, billing, diaryReady, freshCertificateId, hasTakenPartWith, sessionNotStarted, openAvailability, personById, personFigures, profileCompletion, referralCode } from './derive'
+import { applyRepeatRule, targetMet, barredFrom, billing, diaryLocks, diaryReady, freshCertificateId, hasTakenPartWith, sessionNotStarted, openAvailability, personById, personFigures, profileCompletion, referralCode } from './derive'
 import { CLOSED_BY_PARTICIPANT, canEditStudy, canMoveParticipation, canMovePayout, canMoveStudy, canRepublish, closedByOwner, isLive, isStopped, participationOf } from './lifecycle'
-import { DECISION_UNDO_MS, DEMO_SESSION_CODE, REPORT_MAX_CHARS, RESTRICTION_DAYS, TIMINGS, canCancel, canReschedule, canWithdraw, depositFor, isSessionType, priceStudy, targets, withdrawalExpectedBy } from './platform'
+import { DECISION_UNDO_MS, DEMO_SESSION_CODE, REPORT_MAX_CHARS, RESTRICTION_DAYS, TIMINGS, canCancel, canReschedule, canWithdraw, depositFor, diaryWords, isSessionType, priceStudy, targets, withdrawalExpectedBy } from './platform'
 import { POINTS, canRedeem, starsForRating, starsFromDimensions } from './rules'
 import { monthDayYear } from './format'
 import { sessionStartOf as sessionStart } from './derive'
@@ -19,7 +19,7 @@ import { clientDeactivationRefusal } from './derive'
 import { applyCurrentSettings, settingsAt, settingsFault } from './settings'
 import type { SettingsGroup, SettingsValues } from './types'
 import { EMPTY_PROFILE } from './seed/people'
-import { MAX_RUN_DAYS, audienceFault, buildStudy, fitsStudy, formFromStudy, liveEditFault, studyTypeOf, summarise } from './studyForm'
+import { MAX_RUN_DAYS, audienceFault, audienceMisses, buildStudy, fitsStudy, formFromStudy, liveEditFault, studyTypeOf, summarise } from './studyForm'
 import { buildScreener, buildTasks } from './questions'
 import type { StudyForm } from './studyForm'
 import { editOf } from './revisions'
@@ -553,6 +553,10 @@ export function createPlatform(options: Options = {}) {
       if (!study || !person) return no('No such study')
       if (!isLive(study.state)) return no('This study is not open for applications')
       const bar = barred(person); if (bar) return no(bar)
+      { // D38: outside the study's audience, applying is refused with the categories not met, unless the client invited them.
+        const misses = participationOf(study, personId)?.state === 'invited' ? [] : audienceMisses(s, study, person, clock())
+        if (misses.length) return no(`This study is for a different audience: your profile does not match its ${misses.join(', ')}`)
+      }
       if (person.identity.state === 'in_review' || person.identity.state === 'flagged') return no('Your ID is in review. You can apply once it is verified')
       if (!person.onboarded || person.identity.state !== 'verified') return no('Finish verification to apply')
       if (study.premium && person.profession.state !== 'verified') return no('Premium studies need a verified professional credential')
@@ -808,6 +812,10 @@ export function createPlatform(options: Options = {}) {
       if (!hit || !hit.study.diary) return no('This is not a diary study')
       { const bar = barred(personById(s, personId)!); if (bar) return no(bar) }
       if (day < 1 || day > hit.study.diary.totalDays) return no('No such diary day')
+      { // 23 Oct 2026: an entry opens on its own date (demo accounts excepted).
+        const opens = diaryLocks(hit.study, personById(s, personId)!, clock())[day - 1]
+        if (opens) return no(`${diaryWords(hit.study.diary.unit).Unit} ${day} opens on ${monthDayYear(opens)}`)
+      }
       hit.p.diaryDays = [...new Set([...(hit.p.diaryDays ?? []), day])].sort((a, b) => a - b)
       if (answers) hit.p.diaryAnswers = { ...hit.p.diaryAnswers, [String(day)]: tidyAnswers(hit.study, answers) }
       return yes()

@@ -151,6 +151,28 @@ export interface StudyPayment {
   confirmedBy?: string
 }
 
+/**
+ * Who a study is for (D38, 23 Oct 2026). Each set category must match; any
+ * one value within a category is enough; a category left out is ignored.
+ * A study built in the Create flow reads these off its form; a seeded study
+ * carries them here. A study with none is open to everyone.
+ */
+export interface AudienceCriteria {
+  industries?: string[]
+  roles?: string[]
+  functions?: string[]
+  skills?: string[]
+  countries?: string[]
+  genders?: string[]
+  education?: string[]
+  ageRanges?: string[]
+  ethnicity?: string[]
+  areaTypes?: string[]
+  experience?: string[]
+  income?: string[]
+  tiers?: Tier[]
+}
+
 /** The Create flow's four steps as the Manage and Review screens read them back. */
 export interface StudySetup {
   estimatedAudience: string
@@ -205,6 +227,8 @@ export interface Study {
   schedule?: { bufferMins: number; noticeMins: number }
   /** Everything the client entered in the Create flow, kept whole (shared/studyForm.ts). */
   form?: StudyForm
+  /** Who it is for, on a study not built in the Create flow (a built one reads its form). Read through studyForm.ts audienceOf. */
+  audience?: AudienceCriteria
   participations: Participation[]
   payments: StudyPayment[]
   /** Workflow 7: changes the team asked for before approving. */
@@ -391,6 +415,12 @@ export interface Person {
    * sees it. Absent on an account that has none (it cannot sign in).
    */
   password?: string
+  /**
+   * A demo account (every seeded participant). Demo accounts may fill a
+   * diary's entries ahead of their dates, so a demo can run a whole diary in
+   * one sitting (23 Oct 2026). Real accounts never carry it.
+   */
+  demo?: boolean
 }
 
 export interface Restriction { at: string; until: string; category: string; reason: string; by: string }

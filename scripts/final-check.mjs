@@ -127,18 +127,19 @@ const buildScreener = (qs) => `(() => {
   }
   return true })()`
 
-const AUDIENCE = { participants: '', roles: 'Oncologist, Nurse', functions: 'Consultation', skills: 'Triage', industries: 'Healthcare' }
+// D38: applying checks the audience, and the respondent in these checks is Jonathan (a male physician, 38, Gold), so every field targets him.
+const AUDIENCE = { participants: '', roles: 'Physician, Nurse', functions: 'Consultation', skills: 'Triage', industries: 'Healthcare' }
 const fillAudience = (participants) => `(async () => {
   __type(__all('main input')[0], ${JSON.stringify(participants)})
-  await __choose(__btn('All Genders'), 'Female')
+  await __choose(__btn('All Genders'), 'Male')
   await __choose(__btn('2 range selected'), '18–20', '21–29', '30–39', '40–54')
   __ph('e.g. Product Manager', ${JSON.stringify(AUDIENCE.roles)}); await __choose(__btn('Select work functions...'), ...${JSON.stringify(AUDIENCE.functions)}.split(', '))
   __ph('e.g. SQL, Figma', ${JSON.stringify(AUDIENCE.skills)}); __ph('e.g. Healthcare, Finance', ${JSON.stringify(AUDIENCE.industries)})
   __all('[role=radio]')[0].click(); await __wait()
-  await __choose(__btn('Any tier'), 'Silver Tier')
+  await __choose(__btn('Any tier'), 'Gold Tier')
   return true })()`
 /** Education is left as the step opens with it; the pool holds one level of education, so any other would estimate an audience of none. */
-const AUDIENCE_SHOWN = ['United States of America', 'Female', "Graduate or Bachelor's", '30–39, 40–54', 'Oncologist, Nurse', 'Consultation', 'Triage', 'Healthcare', 'Silver']
+const AUDIENCE_SHOWN = ['United States of America', 'Male', "Graduate or Bachelor's", '30–39, 40–54', 'Physician, Nurse', 'Consultation', 'Triage', 'Healthcare', 'Gold']
 
 const hours = (from, to) => `await __time('Monday from', ${JSON.stringify(from)}); await __time('Monday to', ${JSON.stringify(to)}); __al('Copy Monday').click(); await __wait(); __al('Saturday').click(); await __wait(); __al('Sunday').click(); await __wait();`
 const address = (street, city, zip) => `__ph('Office number, Building/Street name, Area', ${JSON.stringify(street)}); __ph('City, State', ${JSON.stringify(city)}); __ph('Zip Code', ${JSON.stringify(zip)}); await __wait(); __all('button').filter((b) => b.textContent.trim() === 'Add Address').pop().click(); await __wait();`
@@ -199,10 +200,10 @@ await send('DOM.setFileInputFiles', { nodeId, files: [picture] }, C.sid); await 
 await C.ev(`(() => { __type(__al('Duration'), '20'); __ph('Enter title of your study', ${JSON.stringify(S.title)}); __ph('Enter study description', ${JSON.stringify(S.description)}); return true })()`)
 const chosen = await C.ev(`({ shown: Boolean(document.querySelector('main img[src^="data:image/jpeg"]')), name: document.body.innerText.includes('create.png') })`)
 await C.click('Continue')
-// Women in healthcare, anywhere, any age: countries and age ranges cleared, gender and industry set.
+// Men in healthcare, anywhere, any age (D38: Jonathan, who applies below, has to fit): countries and age ranges cleared, gender and industry set.
 await C.ev(`(async () => {
   __type(__all('main input')[0], ${JSON.stringify(S.participants)})
-  await __choose(__btn('All Genders'), 'Female')
+  await __choose(__btn('All Genders'), 'Male')
   await __choose(__btn('2 range selected'), '18–20', '21–29')
   __ph('e.g. Healthcare, Finance', 'Healthcare'); await __choose(__btn('Select work functions...'), 'Consultation', 'Patient Care', 'Research')
   return true })()`); await sleep(300)
@@ -242,11 +243,11 @@ await I.go(`/internal/studies/review/${S.id}`); await I.click('Approve to Publis
 // ---- 5. Matched is the people who fit the audience
 const g5 = []
 const people = await C.ev(`(() => { const st = __st(); const s = st.studies.find((x) => x.id === ${JSON.stringify(S.id)}); const of = (id) => st.people.find((p) => p.id === id); const pool = st.people.filter((p) => p.status === 'active' && p.identity.state === 'verified')
-  return { pool: pool.length, matched: s.participations.filter((x) => x.state === 'matched').map((x) => { const p = of(x.personId); return { name: p.name, gender: p.profile.gender, industry: p.profile.industry } }), outsiders: pool.filter((p) => p.profile.gender !== 'Female' || !p.profile.industry.toLowerCase().includes('healthcare')).map((p) => p.name),
-    fitting: pool.filter((p) => p.profile.gender === 'Female' && p.profile.industry.toLowerCase().includes('healthcare') && /bachelor/i.test(p.profile.education)).length } })()`)
+  return { pool: pool.length, matched: s.participations.filter((x) => x.state === 'matched').map((x) => { const p = of(x.personId); return { name: p.name, gender: p.profile.gender, industry: p.profile.industry } }), outsiders: pool.filter((p) => p.profile.gender !== 'Male' || !p.profile.industry.toLowerCase().includes('healthcare')).map((p) => p.name),
+    fitting: pool.filter((p) => p.profile.gender === 'Male' && p.profile.industry.toLowerCase().includes('healthcare') && /bachelor/i.test(p.profile.education)).length } })()`)
 if (people.matched.length === 0) g5.push('nobody was matched')
 if (people.matched.length !== people.fitting) g5.push(`${people.matched.length} matched, but ${people.fitting} people in the pool fit`)
-for (const m of people.matched) if (m.gender !== 'Female' || !/healthcare/i.test(m.industry)) g5.push(`${m.name} is matched and does not fit (${m.gender}, ${m.industry})`)
+for (const m of people.matched) if (m.gender !== 'Male' || !/healthcare/i.test(m.industry)) g5.push(`${m.name} is matched and does not fit (${m.gender}, ${m.industry})`)
 await C.go(`/client/studies/${S.id}/matched`); await sleep(600)
 for (let i = 0; i < 12 && await C.ev(`Boolean(__q('Load more'))`); i++) await C.click('Load more', 300)
 const clientText = await C.ev(`document.querySelector('main').innerText`)
@@ -261,7 +262,7 @@ const consoleStrangers = people.outsiders.filter((n) => !people.matched.some((m)
 if (!people.matched.slice(0, 3).every((m) => consoleText.includes(m.name) || consoleText.includes(short(m.name)))) g5.push('console Matched does not list the matched people')
 if (consoleStrangers.length) g5.push('console Matched shows people who do not fit: ' + consoleStrangers.slice(0, 5).join(', '))
 if (String(people.matched.length) !== audienceChip) g5.push(`Publish estimated ${audienceChip}; ${people.matched.length} were matched`)
-say(5, 'With a narrow audience, Matched only shows people who fit it', g5, `audience: women in healthcare. ${people.matched.length} of the ${people.pool} people in the pool fit; Publish estimated ${audienceChip}, and Matched lists those ${people.matched.length} in the client app and the console`)
+say(5, 'With a narrow audience, Matched only shows people who fit it', g5, `audience: men in healthcare. ${people.matched.length} of the ${people.pool} people in the pool fit; Publish estimated ${audienceChip}, and Matched lists those ${people.matched.length} in the client app and the console`)
 
 // ---- 1. a live study has no Edit anywhere
 const g1 = []

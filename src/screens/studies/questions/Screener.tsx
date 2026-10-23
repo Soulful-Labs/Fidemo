@@ -21,7 +21,7 @@ import { ExitScreenerModal, WhyScreenerModal } from './ScreenerModals'
 export default function Screener() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
-  const { studyById, answers, dispatch, saveDraft, submitScreener, applyToStudy, toast, user } = useStore()
+  const { studyById, answers, dispatch, saveDraft, submitScreener, applyToStudy, applyBlocker, toast, user } = useStore()
   const [exit, setExit] = useState(false)
   const [why, setWhy] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -30,6 +30,12 @@ export default function Screener() {
   const study = studyById(id)
   if (!study) {
     return <EmptyState title="Study not found" actionLabel="Back to Explore" onAction={() => navigate('/studies')} />
+  }
+
+  // Reached by address while applying is not open to this person (their audience, verification, premium, repeat): say why, ask nothing.
+  const blocker = study.status === 'available' || study.status === 'invited_to_apply' ? applyBlocker(study.id) : null
+  if (blocker) {
+    return <EmptyState title={blocker.title} body={blocker.body} actionLabel="Back to the study" onAction={() => navigate(`/studies/${study.id}`, { replace: true })} />
   }
 
   // A draft, or a screener already in progress, skips straight to the full screener.

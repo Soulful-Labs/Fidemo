@@ -86,18 +86,27 @@ export function isExplorable(status: StudyStatus): boolean {
   return status === 'available' || status === 'invited_to_apply'
 }
 
+/** D38: what Explore and Recommended list: open to apply, and the person is in its audience (or was invited). */
+export const isListed = (s: Pick<Study, 'status' | 'fits'>): boolean => isExplorable(s.status) && s.fits
+
 /** Why a person cannot apply to a study right now, and what to do about it. */
 export interface ApplyBlocker {
-  kind: 'verify' | 'id_review' | 'premium' | 'credential_review' | 'repeat'
+  kind: 'audience' | 'verify' | 'id_review' | 'premium' | 'credential_review' | 'repeat'
   title: string
   body: string
   action?: { label: string; to: string }
 }
 
 /** The words for each verdict shared/derive.ts applyBlocker can give. */
-export function applyBlockerCopy(kind: ApplyBlocker['kind'] | null, clientName: string): ApplyBlocker | null {
+export function applyBlockerCopy(kind: ApplyBlocker['kind'] | null, clientName: string, misses: string[] = []): ApplyBlocker | null {
   switch (kind) {
     case null: return null
+    // D38: the study's audience, in the categories the profile does not meet.
+    case 'audience': return {
+      kind, title: 'This study is for a different audience',
+      body: `${clientName} set who this study is for, and your profile does not match its ${misses.length ? misses.join(', ') : 'audience'}. Studies that fit your profile are in Explore.`,
+      action: { label: 'Update Profile', to: '/profile/edit' },
+    }
     case 'verify': return {
       kind, title: 'Finish verification to apply',
       body: 'Applying needs a completed profile and a verified government ID. It takes about 2 minutes and is done once, then reused for every study.',

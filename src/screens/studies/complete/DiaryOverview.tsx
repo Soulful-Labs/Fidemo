@@ -11,17 +11,30 @@ import { cn } from '../../../lib/cn'
 import { diaryComplete } from '@shared/platform'
 import { useStore } from '../../../mock/store'
 import { TIMINGS } from '../../../mock/timings'
+import { dateLong, dateShort } from '../../../lib/format'
 
-/** The next day to fill in, or undefined when every day is done. */
-export function nextDiaryDay(completed: number[], total: number): number | undefined {
-  for (let d = 1; d <= total; d++) if (!completed.includes(d)) return d
+/**
+ * The next day to fill in: the first one not done whose date has come
+ * (`locks`, shared/derive.ts diaryLocks; earlier days stay open to catch up
+ * on). Undefined when every open day is done.
+ */
+export function nextDiaryDay(completed: number[], total: number, locks: (string | null)[] = []): number | undefined {
+  for (let d = 1; d <= total; d++) if (!completed.includes(d) && !locks[d - 1]) return d
+  return undefined
+}
+
+/** The first day not done that is still locked, and the date it opens, when nothing open is left to fill. */
+export function nextLockedDay(completed: number[], total: number, locks: (string | null)[] = []): { day: number; opens: string } | undefined {
+  for (let d = 1; d <= total; d++) { const opens = locks[d - 1]; if (!completed.includes(d) && opens) return { day: d, opens } }
   return undefined
 }
 
 /** "Resume Study Day 2" per PRD 6.13, in the unit the diary counts its entries in. */
-export function resumeLabel(completed: number[], total: number, w: ReturnType<typeof diaryWords> = diaryWords()): string {
-  const next = nextDiaryDay(completed, total)
-  return next ? `Resume Study ${w.Unit} ${next}` : `All ${w.units} completed`
+export function resumeLabel(completed: number[], total: number, w: ReturnType<typeof diaryWords> = diaryWords(), locks: (string | null)[] = []): string {
+  const next = nextDiaryDay(completed, total, locks)
+  if (next) return `Resume Study ${w.Unit} ${next}`
+  const locked = nextLockedDay(completed, total, locks)
+  return locked ? `${w.Unit} ${locked.day} opens ${dateShort(locked.opens)}` : `All ${w.units} completed`
 }
 
 /**
@@ -42,7 +55,10 @@ export default function DiaryOverview() {
   const { totalDays, minDays, completedDays } = study.diary
   /** An entry is an hour, a day or a week, whichever the client chose (shared/platform.ts). */
   const w = diaryWords(study.diary.unit)
-  const next = nextDiaryDay(completedDays, totalDays)
+  // 23 Oct 2026: each entry opens on its own date; earlier ones stay open to catch up on (demo accounts have every one open).
+  const locks = study.diary.locks ?? []
+  const next = nextDiaryDay(completedDays, totalDays, locks)
+  const locked = next ? undefined : nextLockedDay(completedDays, totalDays, locks)
   const canFinish = diaryComplete(completedDays, minDays)
   const finished = study.status === 'in_process' || study.status === 'paid'
 
@@ -70,25 +86,26 @@ export default function DiaryOverview() {
         <ol className="flex flex-col gap-2">
           {Array.from({ length: totalDays }, (_, i) => i + 1).map((day) => {
             const done = completedDays.includes(day)
+            const opens = done ? null : locks[day - 1] ?? null
             const isNext = day === next && !finished
+            const open = !done && !opens && !finished
             return (
               <li key={day}>
                 <button
                   type="button"
-                  aria-disabled={!done && !isNext}
-                  onClick={() => (done ? navigate(`/studies/${id}/diary/${day}`)
-                    : isNext ? navigate(`/studies/${id}/diary/${day}`)
-                      : toast(finished ? 'This diary is complete' : `${w.Unit} ${day} unlocks after ${w.unit} ${next}`))}
+                  aria-disabled={!done && !open}
+                  onClick={() => (done || open ? navigate(`/studies/${id}/diary/${day}`)
+                    : toast(finished ? 'This diary is complete' : `${w.Unit} ${day} opens on ${dateLong(opens!)}`))}
                   className={cn(
                     'flex h-btn w-full items-center gap-3 rounded-md px-4 text-left text-body-regular',
-                    done ? 'bg-bg-1 text-text-title' : isNext ? 'border-1 border-yellow-700 bg-yellow-1000/40 text-brand-primary' : 'bg-bg-1 text-text-disabled',
+                    done ? 'bg-bg-1 text-text-title' : isNext ? 'border-1 border-yellow-700 bg-yellow-1000/40 text-brand-primary' : open ? 'bg-bg-1 text-text-title' : 'bg-bg-1 text-text-disabled',
                   )}
                 >
                   <span className={cn('flex h-6 w-6 items-center justify-center rounded-full border-1', done ? 'border-brand-secondary bg-brand-secondary text-bg-0' : 'border-current')}>
                     {done ? <Check className="h-4 w-4" /> : <span className="text-label">{day}</span>}
                   </span>
                   {w.Unit} {day} of {totalDays}
-                  <span className="ml-auto text-text-regular">{done ? 'Completed' : isNext ? 'Up next' : 'Locked'}</span>
+                  <span className="ml-auto text-text-regular">{done ? 'Completed' : isNext ? 'Up next' : open ? 'Open' : opens ? `Opens ${dateShort(opens)}` : 'Locked'}</span>
                   {isNext && <ChevronRight className="h-5 w-5" />}
                 </button>
               </li>
@@ -102,7 +119,11 @@ export default function DiaryOverview() {
           <Button fullWidth variant="secondary" onClick={() => navigate(`/studies/${id}`)}>View Study</Button>
         ) : next ? (
           <Button fullWidth onClick={() => navigate(`/studies/${id}/diary/${next}`)} rightIcon={<ChevronRight className="h-5 w-5" />}>
-            {resumeLabel(completedDays, totalDays, w)}
+            {resumeLabel(completedDays, totalDays, w, locks)}
+          </Button>
+        ) : locked ? (
+          <Button fullWidth disabled onBlocked={() => toast(`${w.Unit} ${locked.day} opens on ${dateLong(locked.opens)}`)}>
+            {resumeLabel(completedDays, totalDays, w, locks)}
           </Button>
         ) : null}
         {!finished && canFinish && (

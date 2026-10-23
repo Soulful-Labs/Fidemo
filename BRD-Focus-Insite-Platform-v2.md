@@ -112,9 +112,6 @@ The paid-participation market is the mechanism: people give their time and opini
 | The live domain, the support address, and whether the certificate prefix changes from FI- | Not yet assigned. PRD D35. A prefix change needs a new version of the policy |
 | The diary's Minute and Step units and a longer frequency list, as drawn | Not yet assigned. PRD D36 |
 | Whether a client may change the incentive after publishing, as drawn | Jim, with PRD D33 |
-| Whether a diary entry opens only on its own day | Not yet assigned. PRD D37 |
-| Whether Explore and applying check a study's audience | Not yet assigned. PRD D38 |
-| Whether a deduction at the Trust Score floor is carried or dropped (built: carried) | To confirm. PRD D39 |
 
 ---
 
@@ -244,7 +241,7 @@ These are authoritative. The Trust and Rewards policy, version 2, is the source 
 
 ### 7.1 Trust Score
 
-Range 50 to 100. A participant starts at 50, which is what completing onboarding earns: it is the starting score, not something added on top. 50 is also the floor: a deduction that would take the score below it still counts, and comes off later gains before the score rises again (PRD D39, to confirm).
+Range 50 to 100. A participant starts at 50, which is what completing onboarding earns: it is the starting score, not something added on top. 50 is also the floor: a deduction that would take the score below it still counts, and comes off later gains before the score rises again, so nobody at 50 gets a free no-show (PRD D39, confirmed).
 
 | Event | Change |
 |---|---|
@@ -261,7 +258,7 @@ Only the last 10 studies' ratings count.
 
 ### 7.2 Tiers
 
-Silver from 50, Gold from 70, Platinum from 90. Always derived from the Trust Score. "In Top N%" under a tier is the real share of verified participants at that tier or above.
+Silver from 50, Gold from 70, Platinum from 90. Always derived from the Trust Score. "In Top N%" under Gold and Platinum is the real share of verified participants at that tier or above; Silver, where everyone starts, has no such line.
 
 ### 7.3 Reward points
 
@@ -279,12 +276,14 @@ A master admin may change the Trust Score values, tier thresholds, reward point 
 | Reschedule limit | Twice, and never within 24 hours of the session |
 | Session cancelled by the client or the team | Costs the participant nothing. A reason is required, and the participant is told it |
 | Diary completion | At least 4 of 5 days |
+| Diary entries | One a day: each opens on its own date, earlier ones stay open to catch up on, later ones are locked until their date. Demo accounts are exempt (PRD D37) |
 
 ### 7.5 Account rules
 
 | Rule | Detail |
 |---|---|
 | A participant must be identity-verified before taking part | Enforced at application. A person on the team verifies every ID |
+| A participant only sees and applies to studies whose audience they fit | Every category the study sets must match, any one option within it. A study with no audience is open to everyone. A client's invitation waives it (PRD D38) |
 | Every participant has a password | Checked at sign in, change password and deactivation. A wrong one is refused and nothing else happens. An email already registered cannot sign up again |
 | A participant can close their own account | With their password. They cannot sign in afterwards; the team can reactivate it within 30 days |
 | A no-show is not paid for that study | Stated in the dialog that marks one |

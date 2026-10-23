@@ -6,7 +6,7 @@
  *
  * Everything is a pure function of the PlatformState (and the clock).
  */
-import { audienceChecks } from './studyForm'
+import { audienceChecks, audienceMisses, audienceOf } from './studyForm'
 import {
   DIARY, FEES, PAGE_SIZE, STREAK_TARGET, TAX_FORM_THRESHOLD, isSessionType, depositFor } from './platform'
 import {
@@ -445,10 +445,13 @@ export function clientRating(state: PlatformState, clientId: string): { rating: 
  * workflow applies it. Null when the person can go straight to the screener.
  * shared/store.ts startApplication enforces the same three.
  */
-export function applyBlocker(state: PlatformState, studyId: string, personId: string): 'verify' | 'id_review' | 'premium' | 'credential_review' | 'repeat' | null {
+export function applyBlocker(state: PlatformState, studyId: string, personId: string): 'audience' | 'verify' | 'id_review' | 'premium' | 'credential_review' | 'repeat' | null {
   const study = studyById(state, studyId)
   const person = personById(state, personId)
   if (!study || !person) return null
+  const invited = participationOf(study, personId)?.state === 'invited'
+  // D38: someone outside a study's audience cannot apply, unless the client invited them.
+  if (!invited && audienceMisses(state, study, person).length) return 'audience'
   // Submitted and waiting for the team: nothing to do but wait (23 Oct 2026).
   if (person.onboarded && (person.identity.state === 'in_review' || person.identity.state === 'flagged')) return 'id_review'
   if (!person.onboarded || person.identity.state !== 'verified') return 'verify'
@@ -483,24 +486,16 @@ export const hasTakenPartWith = (state: PlatformState, personId: string, clientI
 // ------------------------------------------------- the respondent's view of a study
 
 /**
- * How well a study fits a person, 0 to 100: the share of the study's own
- * criteria the person's profile meets. A study built in the Create flow is
- * read against every criterion its audience sets (the same test Matched uses,
- * studyForm.ts audienceChecks). A catalogue study names an industry and a
- * target profession, and is read against those two. Undefined when there is
- * nothing real to compare: no criteria, or a profile that has not said
- * anything they ask about. The screens then show no score at all.
+ * How well a study fits a person, 0 to 100: the share of the categories its
+ * audience sets that the person's profile meets (studyForm.ts audienceChecks,
+ * the same test Explore, applying and Matched use). Undefined for a study
+ * open to everyone: there is nothing real to compare, so no score is shown.
  */
-export function matchScore(study: Study, person: Person, state?: PlatformState, now: Date = new Date()): number | undefined {
-  if (study.form && state) {
-    const checks = audienceChecks(state, study.form, person, now)
-    return checks.length ? Math.round((100 * checks.filter(Boolean).length) / checks.length) : undefined
-  }
-  const checks: boolean[] = []
-  if (study.industry && person.profile.industry) checks.push(study.industry.toLowerCase() === person.profile.industry.toLowerCase())
-  const words = (person.profile.occupation ?? '').toLowerCase().split(/[^a-z]+/).filter((w) => w.length >= 4)
-  if (study.targetProfession && words.length) checks.push(words.some((w) => study.targetProfession.toLowerCase().includes(w)))
-  return checks.length ? Math.round((100 * checks.filter(Boolean).length) / checks.length) : undefined
+export function matchScore(study: Study, person: Person, state: PlatformState, now: Date = new Date()): number | undefined {
+  const c = audienceOf(study)
+  if (!c) return undefined
+  const checks = audienceChecks(state, c, person, now)
+  return checks.length ? Math.round((100 * checks.filter((x) => x.pass).length) / checks.length) : undefined
 }
 
 /**
@@ -534,6 +529,10 @@ export interface RespondentStudy {
   matchScore?: number
   /** Places still open: the target less everyone already qualified, booked or done. */
   placesLeft: number
+  /** D38: the person is in the study's audience (or it is open to everyone, or they were invited). Explore lists only these. */
+  fits: boolean
+  /** The audience categories the person does not meet, for the refusal's reason. */
+  audienceMisses: string[]
   reward: number
   durationMins: number
   endsAt: string
@@ -551,7 +550,8 @@ export interface RespondentStudy {
   preScreener: PreScreenQuestion[]
   screener: Question[]
   tasks?: Question[]
-  diary?: { totalDays: number; minDays: number; completedDays: number[]; unit?: string; frequency?: string }
+  /** `locks[i]`: when entry i + 1 opens, or null when it is open now (diaryLocks). */
+  diary?: { totalDays: number; minDays: number; completedDays: number[]; unit?: string; frequency?: string; locks: (string | null)[] }
   booking?: Booking
   pinConfirmed?: boolean
   /** The client (interviewer) has entered the session code too: attendance is on record on both sides (workflow 42). */
@@ -567,15 +567,17 @@ export function respondentStudy(state: PlatformState, study: Study, person: Pers
   const p = participationOf(study, person.id)
   const client = clientById(state, study.clientId)
   const status = respondentStatus(study.type, p)
+  const misses = audienceMisses(state, study, person, now)
   return {
     id: study.id, title: study.title, description: study.description, image: study.image ?? '', type: study.type, industry: study.industry,
-    matchScore: matchScore(study, person, state), placesLeft: placesLeft(study), reward: study.rates.incentivePer, durationMins: study.durationMins,
+    matchScore: matchScore(study, person, state, now), placesLeft: placesLeft(study),
+    audienceMisses: misses, fits: misses.length === 0 || p?.state === 'invited', reward: study.rates.incentivePer, durationMins: study.durationMins,
     endsAt: study.endsAt, daysLeft: daysRemaining(study, now), targetProfession: study.targetProfession,
     client: { id: study.clientId, name: client?.company ?? '', ...clientRating(state, study.clientId) },
     locations: study.locations, availability: isSessionType(study.type) ? openAvailability(study, person.id, now) : undefined,
     status, saved: person.savedStudyIds.includes(study.id), premium: study.premium, repeatRule: study.repeatRule, city: study.city,
     linkCode: study.linkCode, preScreener: study.preScreener, screener: study.screener, tasks: study.tasks,
-    diary: study.diary ? { ...study.diary, completedDays: p?.diaryDays ?? [] } : undefined,
+    diary: study.diary ? { ...study.diary, completedDays: p?.diaryDays ?? [], locks: diaryLocks(study, person, now) } : undefined,
     booking: status === 'available' ? undefined : p?.booking, pinConfirmed: Boolean(p?.code?.byParticipant), codeByClient: Boolean(p?.code?.byClient),
     timeline: status === 'available' ? [] : p?.events ?? [],
     clientReview: p?.rating ? {
@@ -1297,3 +1299,31 @@ export function tierShare(state: PlatformState, tiers: Tier[], now: Date = new D
 /** "In Top N%" under a tier: the share of participants at that tier or above (the real ranking, by tier). */
 export const topShareOf = (state: PlatformState, tier: Tier, now: Date = new Date()): number =>
   tierShare(state, tier === 'platinum' ? ['platinum'] : tier === 'gold' ? ['gold', 'platinum'] : ['silver', 'gold', 'platinum'], now)
+
+/** Days between a diary's entries: one a day unless the client set a wider frequency, a week when an entry is a week. */
+const diaryStep = (diary: NonNullable<Study['diary']>): number => {
+  if ((diary.unit ?? 'Day') === 'Week') return 7
+  return { 'Every 2 days': 2, 'Every 3 days': 3, Weekly: 7 }[diary.frequency ?? ''] ?? 1
+}
+
+/**
+ * When each diary entry opens for a participant (23 Oct 2026): entry 1 on the
+ * day they were invited to complete, each later one a step on (a day, or the
+ * client's frequency), from the start of that day. Entries whose day has come
+ * stay open to catch up on; later ones are locked until their date. A demo
+ * account is exempt: every entry is open at once. Null where an entry is open
+ * now, the opening date where it is not.
+ */
+export function diaryLocks(study: Study, person: Pick<Person, 'id' | 'demo'>, now: Date = new Date()): (string | null)[] {
+  const diary = study.diary
+  if (!diary) return []
+  const p = participationOf(study, person.id)
+  const invited = p?.events.find((e) => e.label === 'Invited to complete')?.at ?? p?.decidedAt
+  if (person.demo || !invited) return Array.from({ length: diary.totalDays }, () => null)
+  const start = new Date(invited); start.setHours(0, 0, 0, 0)
+  const step = diaryStep(diary)
+  return Array.from({ length: diary.totalDays }, (_, i) => {
+    const opens = new Date(start); opens.setDate(opens.getDate() + i * step)
+    return opens.getTime() > now.getTime() ? opens.toISOString() : null
+  })
+}

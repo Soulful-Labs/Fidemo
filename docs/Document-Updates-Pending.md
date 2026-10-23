@@ -6,12 +6,12 @@ rounds of 21 and 22 October 2026, including the client round finished
 overnight, and PRD Section 6 reproduces
 `docs/Trust-and-Rewards-Policy-v2.html`. The originals are unchanged.
 
-Seven decisions are open and recorded as open in PRD Section 16: the deposit
+Five decisions are open and recorded as open in PRD Section 16: the deposit
 (D32), the team re-pricing a live study (D33), the Audience forecast (D34), the
 domain, support address and certificate prefix (D35), the diary's units
-and frequency (D36), a diary entry per calendar day (D37) and audience fit
-before applying (D38). One built rule waits for confirmation: a deduction at
-the Trust Score floor is carried (D39). The BRD lists them in Section 4.3.
+and frequency (D36). A diary entry per calendar day (D37) and audience fit
+(D38) are decided and built, and the Trust Score floor rule (D39) is
+confirmed. The BRD lists the open ones in Section 4.3.
 
 The full list that was applied is in this file's history in git.
 
@@ -106,13 +106,20 @@ Work that is not built, so there is nothing to describe yet.
     "Expected in bank by" date. Not drawn.
   - In Process reads "$N reward" over "Awaiting payout. The team processes
     it when the study finishes."
-  - "In Top N%" is derived; Silver always reads "In Top 100%", which looks
-    odd under the chip. Please decide how Silver's line should read.
+  - "In Top N%" is derived, and shown under Gold and Platinum only. Silver
+    has no percentile line at all (decided 23 Oct 2026): every frame that
+    draws "In Top 50%" under Silver needs it taken out.
   - The schedule invitation is titled "You're invited to schedule your
     session!" where it read "You've been selected to complete!".
   - A completed diary day opens read only. Not drawn.
+  - A locked diary day reads "Opens Oct 25" in the day list, and its own
+    screen says "Day N opens on Oct 25, 2026"; when nothing open is left,
+    the resume button reads "Day N opens Oct 25". Not drawn.
   - The match score explainer's "Tip: Higher the score, faster you get
-    qualified and earn!" is a promise the build does not keep. Kept as
-    drawn; please review.
+    qualified and earn!" is removed (the build does not do it); the frame
+    needs it taken out. A study open to everyone shows no match score.
+  - Not drawn: "This study is for a different audience" (the refusal when
+    someone outside a study's audience applies, with Update Profile), and
+    the "Open to everyone" audience pill on Manage and Review.
   - Console: "Submitted for review" and "Waiting for your decision" on a
     verification waiting for the team. Not drawn.

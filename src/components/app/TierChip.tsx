@@ -75,7 +75,7 @@ export default function TierChip({
           {name}
           {card && <ChevronRight className="h-4 w-4" />}
         </span>
-        <span className={cn(card ? 'text-text-regular text-text-subtitle' : 'text-label text-text-body')}>{top}</span>
+        {top && <span className={cn(card ? 'text-text-regular text-text-subtitle' : 'text-label text-text-body')}>{top}</span>}
       </span>
     </Tag>
   )

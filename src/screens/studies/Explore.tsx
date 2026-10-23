@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import EmptyState from '../../components/app/EmptyState'
 import { activeFilterCount, applyFilters } from '../../lib/studyFilters'
-import { isExplorable } from '../../lib/labels'
+import { isListed } from '../../lib/labels'
 import { useStore } from '../../mock/store'
 import type { StudyFilters } from '../../mock/storeTypes'
 import ActiveFilters from './ActiveFilters'
@@ -20,7 +20,7 @@ export default function Explore() {
   const [filtersOpen, setFiltersOpen] = useState(false)
 
   const visible = useMemo(
-    () => applyFilters(studies.filter((s) => isExplorable(s.status)), filters),
+    () => applyFilters(studies.filter(isListed), filters),
     [studies, filters],
   )
 

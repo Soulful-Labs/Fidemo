@@ -37,7 +37,6 @@ export default function ModalHost() {
       footer={<Button fullWidth onClick={closeMatchScore}>Got It!</Button>}>
       <div className="flex flex-col gap-2">
         <p className="text-text-regular text-text-subtitle">It shows how much this study is relevant to your profile for you.</p>
-        <p className="text-text-regular text-brand-primary">Tip: Higher the score, faster you get qualified and earn!</p>
       </div>
     </Modal>
     <BottomSheet

@@ -2,7 +2,7 @@ import { ageFrom, tierOf } from './derive'
 import { AREA_TYPES, TARGET_ETHNICITIES, diaryMinimumFor, diaryWords, priceStudy, targets } from './platform'
 import { buildScreener, buildTasks } from './questions'
 import type { AuthoredKind } from './questions'
-import type { Location, Person, PlatformState, PreScreenQuestion, Question, RepeatRule, Session, Study, StudySetup, StudyType, Tier } from './types'
+import type { AudienceCriteria, Location, Person, PlatformState, PreScreenQuestion, Question, RepeatRule, Session, Study, StudySetup, StudyType, Tier } from './types'
 
 /**
  * Everything a client enters in the Create flow, in one record.
@@ -320,36 +320,55 @@ const overlaps = (mine: Band, wanted: Band[]): boolean => !!mine && wanted.some(
  * active, and matching every criterion the audience sets, work functions and
  * skills included.
  */
+/** The audience a Create-flow form sets, as criteria. */
+export function criteriaOf(f: StudyForm): AudienceCriteria {
+  return {
+    industries: list(f.industries), roles: list(f.roles), functions: list(f.functions), skills: list(f.skills),
+    countries: f.countries, genders: gendersOf(f), education: educationOf(f), ageRanges: f.ageRanges,
+    ethnicity: f.ethnicity, areaTypes: f.areaTypes, experience: f.experience, income: f.income, tiers: tiersOf(f.tiers),
+  }
+}
+
+/** A study's audience, wherever it is kept: its form when it was built in the Create flow, otherwise its own criteria. Undefined: open to everyone. */
+export const audienceOf = (study: Pick<Study, 'form' | 'audience'>): AudienceCriteria | undefined =>
+  study.form ? criteriaOf(study.form) : study.audience
+
 /**
- * One verdict per criterion the audience sets, for one person: pass or fail.
- * A criterion the audience leaves open is not in the list. Every
- * audience test (who fits, and how well) reads this one list.
+ * One verdict per category the audience sets, for one person: the category's
+ * name and whether the person meets it. Any one value within a category is
+ * enough; a category left empty is not in the list. A participant who has not
+ * given what a category asks about does not meet it. Every audience test
+ * (who fits, who may apply, how well) reads this one list.
  */
-export function audienceChecks(state: PlatformState, f: StudyForm, p: Person, now: Date = new Date()): boolean[] {
-  const roles = list(f.roles).map((r) => r.toLowerCase())
-  const industries = list(f.industries).map((r) => r.toLowerCase())
-  const functions = list(f.functions).map((r) => r.toLowerCase())
-  const skills = list(f.skills).map((r) => r.toLowerCase())
+export function audienceChecks(state: PlatformState, c: AudienceCriteria, p: Person, now: Date = new Date()): { category: string; pass: boolean }[] {
+  const lower = (xs?: string[]) => (xs ?? []).map((x) => x.toLowerCase()).filter(Boolean)
+  const roles = lower(c.roles), industries = lower(c.industries), functions = lower(c.functions), skills = lower(c.skills)
   const has = (mine: string[], wanted: string[]) => wanted.some((w) => mine.some((m) => m.toLowerCase().includes(w) || w.includes(m.toLowerCase())))
-  const codes = f.countries.map((c) => COUNTRY_CODE[c] ?? c)
-  const edu = educationOf(f).map((e) => EDUCATION_WORDS.find((w) => e.toLowerCase().includes(w))).filter((w): w is string => Boolean(w))
-  const tiers = tiersOf(f.tiers)
-  const genders = gendersOf(f)
-  const checks: boolean[] = []
-  if (codes.length) checks.push(codes.some((c) => p.location.endsWith(`, ${c}`) || p.location.includes(c)))
-  if (genders.length) checks.push(genders.includes(p.profile.gender))
-  if (edu.length) checks.push(edu.some((w) => p.profile.education.toLowerCase().includes(w)))
-  if (f.ageRanges.length) { const age = ageFrom(p.profile.dob, now); checks.push(age !== undefined && f.ageRanges.some((r) => inRange(age, r))) }
-  if (f.ethnicity?.length) checks.push(f.ethnicity.includes(p.profile.ethnicity))
-  if (f.areaTypes?.length) checks.push(f.areaTypes.includes(p.profile.areaType))
-  if (roles.length) checks.push(roles.some((r) => p.profile.occupation.toLowerCase().includes(r)))
-  if (industries.length) checks.push(industries.some((r) => p.profile.industry.toLowerCase().includes(r)))
-  if (functions.length) checks.push(has(p.profile.workFunctions ?? [], functions))
-  if (skills.length) checks.push(has(p.profile.skills ?? [], skills))
-  if (f.experience?.length) checks.push(overlaps(band(p.profile.experience, EXPERIENCE_BANDS), f.experience.map((r) => EXPERIENCE_RANGES[r])))
-  if (f.income?.length) checks.push(overlaps(band(p.profile.income, INCOME_BANDS), f.income.map((r) => INCOME_RANGES[r])))
-  if (tiers) checks.push(tiers.includes(tierOf(state, p.id, now)))
+  const codes = (c.countries ?? []).map((x) => COUNTRY_CODE[x] ?? x)
+  const edu = (c.education ?? []).map((e) => EDUCATION_WORDS.find((w) => e.toLowerCase().includes(w))).filter((w): w is string => Boolean(w))
+  const genders = (c.genders ?? []).filter((g) => g !== 'All Genders')
+  const checks: { category: string; pass: boolean }[] = []
+  const check = (category: string, pass: boolean) => { checks.push({ category, pass }) }
+  if (codes.length) check('location', codes.some((x) => p.location.endsWith(`, ${x}`) || p.location.includes(x)) || (c.countries ?? []).some((name) => p.location.includes(name)))
+  if (genders.length) check('gender', genders.includes(p.profile.gender))
+  if (edu.length) check('education', edu.some((w) => p.profile.education.toLowerCase().includes(w)))
+  if (c.ageRanges?.length) { const age = ageFrom(p.profile.dob, now); check('age', age !== undefined && c.ageRanges.some((r) => inRange(age, r))) }
+  if (c.ethnicity?.length) check('ethnicity', c.ethnicity.includes(p.profile.ethnicity))
+  if (c.areaTypes?.length) check('area type', c.areaTypes.includes(p.profile.areaType))
+  if (roles.length) check('role', roles.some((r) => p.profile.occupation.toLowerCase().includes(r)))
+  if (industries.length) check('industry', industries.some((r) => p.profile.industry.toLowerCase().includes(r)))
+  if (functions.length) check('work function', has(p.profile.workFunctions ?? [], functions))
+  if (skills.length) check('skills', has(p.profile.skills ?? [], skills))
+  if (c.experience?.length) check('experience', overlaps(band(p.profile.experience, EXPERIENCE_BANDS), c.experience.map((r) => EXPERIENCE_RANGES[r])))
+  if (c.income?.length) check('household income', overlaps(band(p.profile.income, INCOME_BANDS), c.income.map((r) => INCOME_RANGES[r])))
+  if (c.tiers?.length) check('tier', c.tiers.includes(tierOf(state, p.id, now)))
   return checks
+}
+
+/** The categories of a study's audience a person does not meet; empty when they fit, or when the study is open to everyone. */
+export function audienceMisses(state: PlatformState, study: Pick<Study, 'form' | 'audience'>, p: Person, now: Date = new Date()): string[] {
+  const c = audienceOf(study)
+  return c ? audienceChecks(state, c, p, now).filter((x) => !x.pass).map((x) => x.category) : []
 }
 
 /**
@@ -358,10 +377,14 @@ export function audienceChecks(state: PlatformState, f: StudyForm, p: Person, no
  * skills included.
  */
 export function audiencePeople(state: PlatformState, f: StudyForm, now: Date = new Date()): Person[] {
-  return state.people.filter((p) => p.status === 'active' && p.identity.state === 'verified' && audienceChecks(state, f, p, now).every(Boolean))
+  const c = criteriaOf(f)
+  return state.people.filter((p) => p.status === 'active' && p.identity.state === 'verified' && audienceChecks(state, c, p, now).every((x) => x.pass))
 }
 /** The same test for a study: the people its audience describes. A study that was not built in the Create flow has no audience to test. */
-export const fitsStudy = (state: PlatformState, study: Study, now: Date = new Date()): Person[] => (study.form ? audiencePeople(state, study.form, now) : [])
+export const fitsStudy = (state: PlatformState, study: Study, now: Date = new Date()): Person[] => {
+  const c = audienceOf(study)
+  return c ? state.people.filter((p) => p.status === 'active' && p.identity.state === 'verified' && audienceChecks(state, c, p, now).every((x) => x.pass)) : []
+}
 export const estimateAudience = (state: PlatformState, f: StudyForm, now: Date = new Date()): number => audiencePeople(state, f, now).length
 
 const CONDITIONS: Record<StudyForm['condition'], { rule: RepeatRule; label?: string }> = {

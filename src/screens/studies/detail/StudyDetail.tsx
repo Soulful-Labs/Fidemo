@@ -108,7 +108,7 @@ export default function StudyDetail() {
           <StateBanner content={diaryBanner}>
             {study.diary && study.status === 'invited_to_complete' && (
               <Button variant="tertiary" fullWidth rightIcon={<ChevronRight className="h-5 w-5" />} onClick={() => navigate(`/studies/${study.id}/diary`)}>
-                {resumeLabel(study.diary.completedDays, study.diary.totalDays, diaryWords(study.diary.unit))}
+                {resumeLabel(study.diary.completedDays, study.diary.totalDays, diaryWords(study.diary.unit), study.diary.locks)}
               </Button>
             )}
           </StateBanner>

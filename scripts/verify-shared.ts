@@ -103,9 +103,10 @@ const asForm = (qs: AuthoredQuestion[], marks: string[] = []): FormQuestion[] =>
   min: q.min, max: q.max, gap: q.gap, rows: q.rows, columns: q.columns,
 }))
 const NINE_TO_FIVE = Object.fromEntries(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map((d) => [d, [{ from: '09:00 AM', to: '05:00 PM' }]]))
-const formOf = (over: Partial<StudyForm>): StudyForm => ({ ...blankForm(), type: 'video_call', description: 'Created by the verify script.', functions: 'Engineering', industries: 'IT', questions: asForm(BUILT), hours: NINE_TO_FIVE, availabilitySet: true, ...over })
+const formOf = (over: Partial<StudyForm>): StudyForm => ({ ...blankForm(), type: 'video_call', description: 'Created by the verify script.', functions: 'Consultation', industries: 'Healthcare', ageRanges: ['30–39'], questions: asForm(BUILT), hours: NINE_TO_FIVE, availabilitySet: true, ...over })
 const SURVEY: Partial<StudyForm> = { type: 'survey', tasks: asForm([{ kind: 'Multi-line input', text: 'What would you change first?' }]), tasksSubmitted: true }
-const made = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Journey study', type: 'video_call', participants: '5', incentive: 120, duration: 45 }))
+// An audience Jonathan is in (D38: applying checks it): a physician in healthcare, 38, in the US.
+const made = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Journey study', type: 'video_call', participants: '5', incentive: 120, duration: 45, functions: 'Consultation', industries: 'Healthcare', ageRanges: ['30–39'] }))
 {
   const mine = made.ok ? p.getState().studies.find((x) => x.id === made.id)! : undefined
   const outline = mine ? screenerOutline(mine) : []
@@ -368,7 +369,7 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   const me: Actor = { kind: 'participant', id: DEMO_PERSON_ID }
   const narrow = formOf({ type: 'survey', title: 'Narrow audience', ...SURVEY, countries: [], gender: ['Female'], education: [], ageRanges: [], roles: '', functions: 'Consultation, Patient Care, Research', industries: 'Healthcare', tiers: '', image: 'data:image/jpeg;base64,AAAA', thumbnail: 'cover.jpg' })
   const made2 = p.submitStudy(DEMO_CLIENT_ID, narrow)
-  const id2 = (made2 as { id: string }).id
+  let id2 = (made2 as { id: string }).id
   const study2 = () => st().studies.find((x) => x.id === id2)!
   check('picture: the image that was read is the study\'s image', made2.ok && study2().image === 'data:image/jpeg;base64,AAAA' && study2().form?.thumbnail === 'cover.jpg')
   check('matching: nobody is matched while the study waits on the team', study2().participations.length === 0)
@@ -379,6 +380,13 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   check('matching: going live matches exactly the people who fit the audience', fit.length > 0 && fit.length < everyone && JSON.stringify(matched) === JSON.stringify(fit), `${matched.length} matched, ${fit.length} fit, ${everyone} in the pool`)
   check('matching: every one of them is a woman in healthcare, as the audience says', matched.every((pid) => { const x = st().people.find((y) => y.id === pid)!; return x.profile.gender === 'Female' && x.profile.industry.toLowerCase().includes('healthcare') }))
 
+  // D38: Jonathan is a man, so this women-only study is not listed for him and his application is refused, naming gender.
+  { const seen = respondentStudies(st(), DEMO_PERSON_ID).find((x) => x.id === id2)!
+    check('audience: a man cannot apply to a study for women, and is told it is the gender', !seen.fits && seen.audienceMisses.join() === 'gender' && !p.startApplication(id2, DEMO_PERSON_ID).ok && !participationOf(study2(), DEMO_PERSON_ID)) }
+  // The eligibility checks run on the same study opened to every gender.
+  const wide = p.submitStudy(DEMO_CLIENT_ID, { ...narrow, gender: ['All Genders'], title: 'Narrow audience, any gender' })
+  id2 = (wide as { id: string }).id
+  p.moveStudy(id2, 'recruiting', team)
   const pre = study2().preScreener[0]!
   check('eligibility: the answers they passed with are kept', p.startApplication(id2, DEMO_PERSON_ID, { [pre.id]: pre.passing[0]!, stray: 'x' }).ok
     && JSON.stringify(participationOf(study2(), DEMO_PERSON_ID)!.preAnswers) === JSON.stringify({ [pre.id]: pre.passing[0] }) && participationOf(study2(), DEMO_PERSON_ID)!.prescreener === 'passed')
@@ -499,6 +507,34 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   const ptsBefore = fig().points
   p.signUpPerson('a.friend@example.com', 'Friend123!', referralCode(meP().name, meP().email))
   check('referral: the referrer earns 200 the moment the friend joins', fig().points === ptsBefore + POINTS.REFERRAL && meP().referrals[0]?.status === 'joined', `${ptsBefore} -> ${fig().points}`)
+
+  // D38: Explore and applying follow the study's audience; every set category must match, any one value within it.
+  p.reset(); clock = now.getTime()
+  const see = (id: string) => respondentStudies(st(), DEMO_PERSON_ID).find((x) => x.id === id)!
+  check('audience: a study for teachers is not listed for a physician, and applying is refused with the category', !see('st-02').fits && see('st-02').audienceMisses.includes('role') && !p.startApplication('st-02', DEMO_PERSON_ID).ok)
+  check('audience: a study for physicians in healthcare is listed and open', see('st-01').fits && p.startApplication('st-01', DEMO_PERSON_ID).ok)
+  check('audience: a study with no audience is open to everyone', !st().studies.find((x) => x.id === 'st-05')!.audience && see('st-05').fits && see('st-05').matchScore === undefined)
+  check('audience: one value within a category is enough (Nurse, Physician or Clinician)', see('st-04').audienceMisses.length === 0)
+
+  // 23 Oct 2026: a real participant fills a diary entry only once its date has come; demo accounts are exempt.
+  p.reset(); clock = now.getTime()
+  {
+    const made = p.signUpPerson('diary.person@example.com', 'Diary123!') as { id: string }
+    p.updatePerson(made.id, { name: 'Dee Arry', onboarded: true, profile: { occupation: 'Nurse', industry: 'Healthcare', education: 'Bachelors Degree', gender: 'Female', dob: '06 / 05 / 1990' } })
+    p.submitIdentity(made.id, 'Passport', { front: { name: 'f.jpg', bytes: 1 }, back: { name: 'b.jpg', bytes: 1 } })
+    p.decideCheck(made.id, 'identity', 'verified', 'Checked.', team)
+    const ok = p.startApplication('st-05', made.id).ok && p.submitScreener('st-05', made.id, { q1: 'Under 3 months', q2: 'Busy days' }).ok && p.decide('st-05', made.id, 'qualified', team).ok
+    const day1 = p.completeDiaryDay('st-05', made.id, 1)
+    const day2 = p.completeDiaryDay('st-05', made.id, 2)
+    check('diary: a real participant can fill entry 1 on the day they are invited, not entry 2', ok && day1.ok && !day2.ok && /Day 2 opens on/.test((day2 as { why: string }).why), JSON.stringify(day2))
+    const mine = respondentStudies(st(), made.id).find((x) => x.id === 'st-05')!
+    check('diary: the locked entries carry the date they open', mine.diary!.locks[0] === null && Boolean(mine.diary!.locks[1]) && Boolean(mine.diary!.locks[4]))
+    clock = now.getTime() + 3 * 86_400_000
+    check('diary: once the dates have come, missed entries stay open to catch up on', p.completeDiaryDay('st-05', made.id, 3).ok && p.completeDiaryDay('st-05', made.id, 2).ok && !p.completeDiaryDay('st-05', made.id, 5).ok)
+    clock = now.getTime()
+    const demo = respondentStudies(st(), DEMO_PERSON_ID).find((x) => x.id === 'st-31')!
+    check('diary: a demo account has every entry open at once', demo.diary!.locks.every((x) => x === null) && p.completeDiaryDay('st-31', DEMO_PERSON_ID, 5).ok)
+  }
 
   // Participant passwords: a front-end stand-in, but every screen that asks for one is checked against it.
   p.reset(); clock = now.getTime()

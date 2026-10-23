@@ -82,7 +82,7 @@ Reject Invitation? (1433:48849) and Remove Bank Account? (1327:86970) do have fr
 ### Match score explainer
 - **Reached by:** the green match-score badge on any card or detail.
 - **Modelled on:** What these details are for? (the drawn info modal).
-- **Copy:** "Study matching score" / "It shows how much this study is relevant to your profile for you." / "Tip: Higher the score, faster you get qualified and earn!" / "Got It!".
+- **Copy:** "Study matching score" / "It shows how much this study is relevant to your profile for you." / "Got It!". (The tip "Higher the score, faster you get qualified and earn!" was removed on 23 Oct 2026: the build does not do it.)
 - **Code:** `src/app/ModalHost.tsx`
 
 ---

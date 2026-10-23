@@ -9,6 +9,7 @@ import { Close, Info } from '../../../components/ui/icons'
 import { cn } from '../../../lib/cn'
 import { useStore } from '../../../mock/store'
 import { TIMINGS } from '../../../mock/timings'
+import { dateLong } from '../../../lib/format'
 import QuestionInput, { isAnswered } from '../questions/QuestionInput'
 import Modal from '../../../components/ui/Modal'
 
@@ -39,6 +40,8 @@ export default function DiaryDay() {
   const complete = questions.every((q) => q.optional || isAnswered(q, current[q.id]))
   // A submitted entry opens to be read, not changed.
   const submitted = completedDays.includes(day)
+  // 23 Oct 2026: an entry opens on its own date. Reached by address before then, say when.
+  const opens = submitted ? null : study.diary.locks?.[day - 1] ?? null
   const overview = `/studies/${id}/diary`
 
   const submit = () => {
@@ -48,6 +51,10 @@ export default function DiaryDay() {
       toast(`${w.Unit} ${day} submitted`)
       navigate(overview, { replace: true })
     }, TIMINGS.fakeServer)
+  }
+
+  if (opens) {
+    return <EmptyState title={`${w.Unit} ${day} opens on ${dateLong(opens)}`} body={`Each ${w.unit} of this diary opens on its own date. Earlier ones stay open to catch up on.`} actionLabel="Back to Diary" onAction={() => navigate(overview, { replace: true })} />
   }
 
   return (

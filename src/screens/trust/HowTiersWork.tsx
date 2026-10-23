@@ -54,7 +54,7 @@ export default function HowTiersWork() {
                 <span className="flex flex-col gap-0.5">
                   <span className="flex items-center gap-2">
                     <span className={cn('text-title-s', t.text)}>{name}</span>
-                    <Tag tone={t.key === 'platinum' ? 'purple' : t.key === 'gold' ? 'yellow' : 'neutral'}>{tierTop(t.key as 'platinum' | 'gold' | 'silver')}</Tag>
+                    {t.key !== 'silver' && <Tag tone={t.key === 'platinum' ? 'purple' : 'yellow'}>{tierTop(t.key as 'platinum' | 'gold')}</Tag>}
                   </span>
                   <span className="text-text-regular text-text-title">Trust Score {TIERS[t.key]}+</span>
                   <span className="text-label text-text-body">{t.line}</span>

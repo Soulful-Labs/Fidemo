@@ -295,11 +295,14 @@ export function useStoreValue() {
     studyById: (id?: string) => v.studies.find((s) => s.id === id),
     /** The sign-up ticker: the platform's most recent study payout. */
     latestPayout: () => latestPayout(world),
-    /** "In Top N%" under a tier, from the platform's real spread of participants. */
-    tierTop: (tier: User['tier']) => `In Top ${topShareOf(world, tier)}%`,
+    /**
+     * "In Top N%" under Gold and Platinum, from the platform's real spread of
+     * participants. Silver is where everyone starts, so it has no line (23 Oct 2026): undefined.
+     */
+    tierTop: (tier: User['tier']): string | undefined => (tier === 'silver' ? undefined : `In Top ${topShareOf(world, tier)}%`),
     /** Workflow 15, 17, 57: the shared rule's verdict, in this app's words. */
     applyBlocker: (id: string): ApplyBlocker | null =>
-      applyBlockerCopy(applyBlocker(world, id, me), v.studies.find((s) => s.id === id)?.client.name ?? 'This client'),
+      applyBlockerCopy(applyBlocker(world, id, me), v.studies.find((s) => s.id === id)?.client.name ?? 'This client', v.studies.find((s) => s.id === id)?.audienceMisses),
     clientReviews: (clientId: string): ClientReviewRow[] => clientReviews(world, clientId),
     toggleSaved: (id: string) => run(p.toggleSaved(me, id)),
     applyToStudy: (id: string, preAnswers?: Answers) => run(p.startApplication(id, me, preAnswers)),

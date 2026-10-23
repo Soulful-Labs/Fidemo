@@ -13,7 +13,7 @@ export const SAMPLE: Study = {
   image: IMG,
   type: 'video_call',
   industry: 'Healthcare',
-  matchScore: 96, placesLeft: 4,
+  matchScore: 96, placesLeft: 4, fits: true, audienceMisses: [],
   reward: 150,
   durationMins: 45,
   endsAt: '2026-09-30T17:00:00Z',

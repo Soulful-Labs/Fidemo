@@ -132,11 +132,11 @@ export function buildNotifications(src: Sources): AppNotification[] {
         break
     }
     // The real count of open places (shared/derive.ts placesLeft); a full study sends no such update.
-    if (s.status === 'available' && s.saved && s.placesLeft > 0) add({ id: `nt-${s.id}-saved`, kind: 'study', title: 'Update on a saved study',
+    if (s.status === 'available' && s.fits && s.saved && s.placesLeft > 0) add({ id: `nt-${s.id}-saved`, kind: 'study', title: 'Update on a saved study',
       body: `The ${s.title} study you saved now has ${s.placesLeft} ${s.placesLeft === 1 ? 'spot' : 'spots'} remaining. Apply soon!`, at: shift(listedAt(s), 3 * 24 * 60), actionLabel: 'Apply Now', to: `/studies/${s.id}` })
   }
 
-  const best = [...src.studies].filter((s) => s.status === 'available' && !s.premium).sort((a, b) => (b.matchScore ?? -1) - (a.matchScore ?? -1))[0]
+  const best = [...src.studies].filter((s) => s.status === 'available' && s.fits && !s.premium).sort((a, b) => (b.matchScore ?? -1) - (a.matchScore ?? -1))[0]
   if (best) add({ id: `nt-${best.id}-match`, kind: 'study', title: 'New study match!',
     body: `A ${best.title} study (${money(best.reward)}) matches your profile. Apply before spots fill up!`,
     at: listedAt(best), to: `/studies/${best.id}` })

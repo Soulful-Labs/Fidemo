@@ -194,3 +194,8 @@ export function bookingLong(iso: string, slot: string): string {
 
 
 export { fileSize } from '@shared/format'
+
+/** "Oct 25", for a date this year written where space is short. */
+export function dateShort(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}

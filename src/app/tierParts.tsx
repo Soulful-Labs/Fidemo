@@ -85,7 +85,7 @@ export function TierPill({ tier, label }: { tier: Tier; label: { name: string } 
       </span>
       <span className="flex flex-col items-start whitespace-nowrap">
         <span className={cn('text-title-s leading-tight', ACCENT[tier])}>{label.name}</span>
-        <span className="text-text-regular text-text-subtitle">You are in {top.replace('In ', '')}</span>
+        {top && <span className="text-text-regular text-text-subtitle">You are in {top.replace('In ', '')}</span>}
       </span>
     </span>
   )

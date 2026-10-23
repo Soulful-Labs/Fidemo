@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import StudyCard from '../../components/app/StudyCard'
-import { isExplorable } from '../../lib/labels'
+import { isListed } from '../../lib/labels'
 import { useStore } from '../../mock/store'
 import { useUI } from '../../app/ui'
 import SectionHeader, { ViewAll } from './SectionHeader'
@@ -17,7 +17,7 @@ export default function RecommendedStudies({
   const { openMatchScore } = useUI()
 
   const recommended = studies
-    .filter((s) => isExplorable(s.status))
+    .filter(isListed)
     .sort((a, b) => (b.matchScore ?? -1) - (a.matchScore ?? -1))
     .slice(0, limit)
 
