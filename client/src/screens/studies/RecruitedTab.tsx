@@ -81,7 +81,7 @@ export default function RecruitedTab() {
         minH={session ? 'min-h-[1186px]' : 'min-h-[1090px]'}
         bodyMinH={session ? 'min-h-[928px]' : 'min-h-[832px]'}>
         <div className="flex flex-col px-4 pt-4">
-          <h2 className="text-title-s leading-[22px] text-text-title">Recruited Respondents</h2>
+          <h2 className="text-title-s text-text-title">Recruited Respondents</h2>
           <p className="pt-2 text-text-regular text-text-subtitle">List of respondents applied on this study and track their statuses</p>
 
           <div className="flex items-center justify-between gap-4 pt-[22px]">
@@ -104,7 +104,7 @@ export default function RecruitedTab() {
               {sessions.map((g, gi) => (
                 <div key={g.key} className="flex justify-between gap-4 rounded-lg bg-bg-1 p-4">
                   <div className="flex flex-col gap-3.5">
-                    <p className="text-title-s leading-[22px] text-text-title">Session {gi + 1}</p>
+                    <p className="text-title-s text-text-title">Session {gi + 1}</p>
                     <p className="flex h-5 items-center gap-2 text-text-regular text-text-title">
                       <Calendar className="h-4 w-4 text-brand-primary" />{g.day}
                     </p>

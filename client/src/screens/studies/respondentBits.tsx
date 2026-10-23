@@ -125,8 +125,9 @@ export function PinCard({ variant, pin, name, onShared, text }: {
   /** The code on this participation, from the platform. There is none until a session is booked. */
   const code = pin ?? '——'
   const first = name?.split(' ')[0]
+  // Without a person to name, the frame's "John M." is not printed (23 Oct 2026): the line says "the participant".
   const body = text ?? (wide ? VERIFICATION_PIN.activityBody : VERIFICATION_PIN.sessionBody)
-    .replace('John M.', first ? `${first}.` : 'John M.')
+    .replace('John M.', first ? `${first}.` : 'the participant')
 
   /** The frame draws a copy glyph, so it copies, and records that it was used. */
   const share = async () => {
@@ -138,7 +139,7 @@ export function PinCard({ variant, pin, name, onShared, text }: {
   return (
     <div className={cn('rounded-lg bg-bg-1 p-4', wide ? 'flex items-center justify-between gap-4' : 'flex flex-col gap-3')}>
       <div className="flex flex-col gap-1">
-        <p className="text-body-large text-text-title">{VERIFICATION_PIN.title}</p>
+        <p className="text-body-medium text-text-title">{VERIFICATION_PIN.title}</p>
         <p className={cn('text-text-regular text-text-subtitle', !wide && 'max-w-[344px]')}>{body}</p>
       </div>
       <button type="button" onClick={share} aria-label={`Copy the verification PIN for ${name ?? 'this respondent'}`}
@@ -186,7 +187,7 @@ export function SessionCard({ state, session, onStart, onFinish, since, cta, onC
     <div className={cn('flex justify-between gap-4 rounded-lg bg-yellow-30 p-4', state === 'booked' && 'flex-col')}>
       <div className="flex flex-col gap-2">
         <div className="flex items-start justify-between gap-3">
-          <p className="text-body-large text-text-title">{session?.title ?? ''}</p>
+          <p className="text-body-medium text-text-title">{session?.title ?? ''}</p>
           {aside}
         </div>
         <p className={cn('flex h-5 items-center gap-2 text-text-regular', meta)}>
@@ -230,7 +231,7 @@ export function VideoResult({ title, who, when, length }: { title: string; who: 
   const notYet = () => toast('The recording and transcript appear here once the video provider is connected')
   return (
     <div className="flex flex-col gap-2 rounded-lg bg-yellow-30 p-4">
-      <p className="text-body-large text-text-title">Video Result</p>
+      <p className="text-body-medium text-text-title">Video Result</p>
       <div className="flex gap-4">
         <div className="flex h-[104px] w-[140px] shrink-0 flex-col items-center justify-center rounded-md border-1 border-stroke-1 bg-bg-0">
           <VideoIcon className="h-6 w-6 text-brand-primary" />
@@ -311,7 +312,7 @@ export function NotesCard({ className, value, onSave, file }: {
         ))}
       </div>
       <textarea ref={box} value={text} onChange={(e) => setText(e.target.value)} aria-label="Interview notes"
-        placeholder={`${NOTES.heading}\n${NOTES.body}\n• ${NOTES.bullet}`}
+        placeholder={NOTES.prompt}
         className="min-h-[180px] flex-1 resize-none bg-transparent px-4 py-4 text-text-regular text-text-title outline-none placeholder:text-text-body" />
     </div>
   )
@@ -324,7 +325,7 @@ export function ActivityList({ events }: {
 }) {
   return (
     <>
-      <h2 className="pt-[18px] text-title-s leading-[22px] text-text-title">Study activity</h2>
+      <h2 className="pt-[18px] text-title-s text-text-title">Study activity</h2>
       <ol className="flex flex-col gap-4 pt-[9px]">
         {events.map((a, i) => (
           <li key={i} className="flex gap-3">

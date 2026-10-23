@@ -1,5 +1,6 @@
-import { copyText } from '../../../components/app/Notice'
-import { Fragment } from 'react'
+import { copyText, notice } from '../../../components/app/Notice'
+import { Fragment, useEffect, useRef, useState } from 'react'
+import { fileName, save, text as textFile } from '@shared/files'
 import type { ReactNode } from 'react'
 import Button from '../../../components/ui/Button'
 import { CalendarIcon, ClockIcon, CopyIcon, DownloadIcon, ExternalIcon, EyeIcon, ListIcon, PinIcon, PlayIcon, StarIcon, VerifiedIcon, VideoUserIcon } from '../../../components/ui/icons'
@@ -134,7 +135,8 @@ export function SessionCard({ title, date, time, address, aside, phase, children
 export const JoinNow = () => <Button fullWidth className="mt-3" leftIcon={<VideoUserIcon className="h-5 w-5" />}>Join Now</Button>
 
 /** "Video Result": the recording's tile, its length and date, and links to the recording and the transcript. */
-export function VideoResult({ title, who, when }: { title: string; who: string; when: string }) {
+export function VideoResult({ title, who, when, length }: { title: string; who: string; when: string; length: string }) {
+  const notYet = () => notice('The recording and transcript appear here once the video provider is connected')
   return (
     <section className="rounded-lg border-1 border-yellow-50 bg-yellow-30 p-4">
       <h3 className="text-body-medium leading-[22px] text-text-title">Video Result</h3>
@@ -145,10 +147,10 @@ export function VideoResult({ title, who, when }: { title: string; who: string; 
         </div>
         <div>
           <p className="pt-1 text-body-regular leading-[22px] text-text-title">{title}</p>
-          <p className="flex items-center gap-1 pt-1.5 text-text-regular leading-5 text-text-subtitle"><ClockIcon className="h-4 w-4 text-state-success" />42:16<CalendarIcon className="ml-3 h-4 w-4 text-state-success" />{when}</p>
+          <p className="flex items-center gap-1 pt-1.5 text-text-regular leading-5 text-text-subtitle"><ClockIcon className="h-4 w-4 text-state-success" />{length}<CalendarIcon className="ml-3 h-4 w-4 text-state-success" />{when}</p>
           <div className="flex gap-4 pt-3">
-            <Button variant="secondary" size="md" className="px-3" rightIcon={<ExternalIcon className="h-4 w-4" />}>View Video Recording</Button>
-            <Button variant="tertiary" size="md" className="px-3" rightIcon={<ExternalIcon className="h-4 w-4" />}>Transcript</Button>
+            <Button variant="secondary" size="md" className="px-3" rightIcon={<ExternalIcon className="h-4 w-4" />} onClick={notYet}>View Video Recording</Button>
+            <Button variant="tertiary" size="md" className="px-3" rightIcon={<ExternalIcon className="h-4 w-4" />} onClick={notYet}>Transcript</Button>
           </div>
         </div>
       </div>
@@ -156,25 +158,64 @@ export function VideoResult({ title, who, when }: { title: string; who: string; 
   )
 }
 
-/** Interview notes: a bg-2 head ("Notes" or "Add Notes", "Auto-saved", download), an optional formatting row, and the notes as written. */
-export function Notes({ editor, download = true, tall }: { editor?: boolean; download?: boolean; tall: string }) {
+/** The formatting row (1961:187259): each mark wraps the selected words, or starts the line, in plain text. */
+const MARKS: { label: string; text?: ReactNode; className?: string; wrap?: [string, string]; line?: string }[] = [
+  { label: 'B', text: 'B', wrap: ['**', '**'] }, { label: 'I', text: 'I', className: 'italic', wrap: ['_', '_'] },
+  { label: 'U', text: 'U', className: 'underline', wrap: ['<u>', '</u>'] }, { label: 'S', text: 'S', className: 'line-through', wrap: ['~~', '~~'] },
+  { label: 'H1', text: <>H<sub>1</sub></>, line: '# ' }, { label: 'H2', text: <>H<sub>2</sub></>, line: '## ' },
+  { label: 'H3', text: <>H<sub>3</sub></>, line: '### ' }, { label: 'H4', text: <>H<sub>4</sub></>, line: '#### ' },
+  { label: 'list', line: '• ' }, { label: 'circle', line: '○ ' },
+]
+
+/**
+ * Interview notes: a bg-2 head ("Notes" or "Add Notes", "Auto-saved", download), an optional formatting row,
+ * and the notes as written (23 Oct 2026). They were the frame's sample text on every study; now they are the
+ * notes kept on the booking or the group session (shared/store.ts setSessionNotes), the same ones the client
+ * writes. The editor saves as it is typed; the download gives the notes as a text file.
+ */
+export function Notes({ editor, download = true, tall, value, onSave, file }: {
+  editor?: boolean; download?: boolean; tall: string
+  value: string; onSave?: (text: string) => void; file?: string
+}) {
+  const [text, setText] = useState(value)
+  const box = useRef<HTMLTextAreaElement>(null)
+  useEffect(() => { setText(value) }, [value])
+  useEffect(() => {
+    if (!onSave || text === value) return
+    const t = window.setTimeout(() => onSave(text), 400)
+    return () => window.clearTimeout(t)
+  }, [text, value, onSave])
   return (
-    <section className={cn('overflow-hidden rounded-lg border-1 border-stroke-1', tall)}>
-      <header className="flex h-[52px] items-center justify-between bg-bg-2 px-4">
-        <p className="text-body-medium text-text-title">{editor ? 'Add Notes' : 'Notes'} <span className="text-text-regular text-text-subtitle">&nbsp;•&nbsp; Auto-saved</span></p>
-        {download && <button type="button" aria-label="Download notes" className="flex h-7 w-7 items-center justify-center rounded-sm border-1 border-cta-tertiaryStroke bg-bg-0"><DownloadIcon className="h-4 w-4" /></button>}
+    <section className={cn('flex flex-col overflow-hidden rounded-lg border-1 border-stroke-1', tall)}>
+      <header className="flex h-[52px] shrink-0 items-center justify-between bg-bg-2 px-4">
+        <p className="text-body-medium text-text-title">{editor ? 'Add Notes' : 'Notes'} <span className="text-text-regular text-text-subtitle">&nbsp;•&nbsp; {text === value ? 'Auto-saved' : 'Saving...'}</span></p>
+        {download && (
+          <button type="button" aria-label="Download notes"
+            onClick={() => notice(text.trim() ? `Saved ${save(fileName(`${file ?? 'session'} notes`, 'txt'), textFile(text))}` : 'There are no notes to download yet')}
+            className="flex h-7 w-7 items-center justify-center rounded-sm border-1 border-cta-tertiaryStroke bg-bg-0"><DownloadIcon className="h-4 w-4" /></button>
+        )}
       </header>
       {editor && (
-        <div className="flex h-11 items-center gap-6 border-b-1 border-stroke-1 px-4 text-body-medium text-text-title">
-          <span>B</span><span className="italic">I</span><span className="underline">U</span><span className="line-through">S</span>
-          <span>H<sub>1</sub></span><span>H<sub>2</sub></span><span>H<sub>3</sub></span><span>H<sub>4</sub></span><ListIcon className="h-5 w-5" /><span className="h-4 w-4 rounded-full border-1.5 border-text-title" />
+        <div className="flex h-11 shrink-0 items-center gap-6 border-b-1 border-stroke-1 px-4 text-body-medium text-text-title">
+          {MARKS.map((m) => (
+            <button key={m.label} type="button" aria-label={`Format: ${m.label}`} onMouseDown={(e) => e.preventDefault()}
+              onClick={() => { const el = box.current; if (!el) return; const { selectionStart: a, selectionEnd: b } = el
+                setText(m.wrap ? text.slice(0, a) + m.wrap[0] + text.slice(a, b) + m.wrap[1] + text.slice(b) : (() => { const at = text.lastIndexOf(String.fromCharCode(10), a - 1) + 1; return text.slice(0, at) + m.line + text.slice(at) })())
+                requestAnimationFrame(() => el.focus()) }}
+              className={cn('hover:text-brand-primary', m.className)}>
+              {m.label === 'list' ? <ListIcon className="h-5 w-5" /> : m.label === 'circle' ? <span className="block h-4 w-4 rounded-full border-1.5 border-current" /> : m.text}
+            </button>
+          ))}
         </div>
       )}
-      <div className="p-4 text-text-regular leading-5 text-text-title">
-        <p className="text-body-medium leading-[22px]">Interview Notes</p>
-        <p className="pt-1.5">This is how to be written notes</p>
-        <ul className="list-disc pl-[22px] pt-1.5"><li>Point 1</li></ul>
-      </div>
+      {editor ? (
+        <textarea ref={box} value={text} onChange={(e) => setText(e.target.value)} aria-label="Interview notes" placeholder="Write the interview notes here"
+          className="flex-1 resize-none bg-transparent p-4 text-text-regular leading-5 text-text-title outline-none placeholder:text-text-body" />
+      ) : (
+        <div className="whitespace-pre-wrap p-4 text-text-regular leading-5 text-text-title">
+          {value.trim() ? value : <span className="text-text-subtitle">No notes have been written for this session yet.</span>}
+        </div>
+      )}
     </section>
   )
 }

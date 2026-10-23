@@ -122,7 +122,7 @@ export default function Help() {
             </div>
 
             <div className="mt-6 overflow-hidden rounded-lg border-1 border-stroke-input">
-              <div className="flex h-[52px] items-center border-b-1 border-stroke-input text-text-regular text-text-subtitle">
+              <div className="flex h-[52px] items-center border-b-1 border-stroke-input text-text-medium text-text-subtitle">
                 <span className="w-[594px] px-4">Support Ticket</span>
                 <span className="w-[120px] px-4">Status</span>
                 <span className="w-[120px] px-4">Last Activity</span>

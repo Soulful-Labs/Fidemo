@@ -186,7 +186,7 @@ export default function StudiesList({ tab }: { tab: StudiesTab }) {
               <thead>
                 <tr className="border-b-1 border-stroke-1 bg-bg-1">
                   {COLUMNS[tab as Exclude<StudiesTab, 'sessions'>].map((c) => (
-                    <th key={c.key} style={{ width: c.width }} className="h-[52px] px-4 text-text-regular font-normal text-text-subtitle">
+                    <th key={c.key} style={{ width: c.width }} className="h-[52px] px-4 text-text-medium text-text-subtitle">
                       {c.sortable ? (
                         <button type="button" onClick={() => toggleSort(c.key)} className="inline-flex items-center gap-1.5 hover:text-text-title">
                           {c.header}

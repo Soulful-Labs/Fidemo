@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom'
+import { useParams, Navigate } from 'react-router-dom'
 import AppShell from '../../app/AppShell'
 import Button from '../../components/ui/Button'
 import { StudyFrame } from '../../components/client/StudyFrame'
@@ -16,6 +16,8 @@ export default function PausedStudy() {
   const { id = 'st-goal' } = useParams()
   const s = useStudy(id)
   const { act, dialogs } = useStudyActions(s)
+  // The paused banner is only shown on a paused study (23 Oct 2026); any other opens its own overview.
+  if (s.state !== 'paused') return <Navigate to={`/studies/${s.id}`} replace />
 
   return (
     <AppShell hideCreate crumbs={[{ label: 'My Studies', to: '/studies' }, { label: s.breadcrumb }]}>

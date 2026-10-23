@@ -26,7 +26,7 @@ function CardTile({ c, onRemove, onDefault, onEdit }: { c: SavedCard; onRemove: 
       <span className="flex items-center gap-3">
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-bg-0"><CardMark brand={c.brand} /></span>
         <span className="flex flex-col gap-0.5 pl-2">
-          <span className="text-body-regular text-text-title">
+          <span className="text-body-medium text-text-title">
             {c.brand} <span className="px-1.5">&bull;</span> •••• {c.last4}
           </span>
           <span className="text-text-regular text-text-subtitle">{c.expires}</span>
@@ -148,7 +148,7 @@ export default function Payments() {
                   <span className="text-text-regular text-text-title">{s.label}</span>
                   <span className="flex items-baseline justify-between gap-2">
                     <span className="text-title-l leading-7 text-text-title">{s.value}</span>
-                    <span className="text-text-regular text-text-subtitle">{s.suffix}</span>
+                    <span className={s.tint ? 'text-text-medium text-text-subtitle' : 'text-text-medium text-text-body'}>{s.suffix}</span>
                   </span>
                 </span>
               </div>
@@ -165,7 +165,7 @@ export default function Payments() {
             <SpendChart data={spend} />
           </section>
           <section className="flex flex-col rounded-lg bg-gradient-to-b from-green-50 to-bgAlt-1 px-4 pt-[17px]">
-            <h2 className="flex items-center gap-2 text-title-s font-normal text-brand-secondary">{SPARKLE}Super Insight</h2>
+            <h2 className="flex items-center gap-2 text-title-s text-brand-secondary">{SPARKLE}Super Insight</h2>
             {/* Said from the invoices themselves: how many are pending, what they come to and when the first falls due. */}
             <p className="max-w-[480px] pt-[19px] text-title-s leading-[25px] text-text-title">
               {pending.length === 0 ? 'Nothing is due. Every completed study is settled.'
@@ -203,7 +203,7 @@ export default function Payments() {
                 {/* The export heads this "Due Date (auto-debit)". Nothing debits a card on its own, so the column says only what it is. */}
                 {[['Invoice Number', 'w-[12.2%]'], ['Study Invoice', 'w-[39.1%]'],
                   [done ? 'Date' : 'Due Date', 'w-[15.6%]'], ['Amount', 'w-[11%]'], ['', 'w-[22.1%]']].map(([l, w], i) => (
-                  <th key={i} className={cn('h-[52px] px-[16px] text-left text-text-regular font-normal text-text-subtitle', w)}>{l}</th>
+                  <th key={i} className={cn('h-[52px] px-[16px] text-left text-text-medium text-text-subtitle', w)}>{l}</th>
                 ))}
               </tr>
             </thead>

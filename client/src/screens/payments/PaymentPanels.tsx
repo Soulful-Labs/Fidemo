@@ -72,7 +72,7 @@ export function InvoiceDetailsPanel({
           </>
         ) : (
           <>
-            <p className="text-title-s leading-[22px] text-text-title">{INVOICE.amount}</p>
+            <p className="text-title-s text-text-title">{INVOICE.amount}</p>
             <p className="text-text-regular text-brand-primary">{INVOICE.due}</p>
             {/* The frame's "If not paid manually, will be auto-debited from [card]" is not shown: nothing is
                 debited without the client paying (decided 15 Oct 2026). */}
@@ -82,7 +82,7 @@ export function InvoiceDetailsPanel({
 
       <div className="overflow-hidden rounded-lg border-1 border-stroke-input">
         <div className="flex h-12 items-center justify-between gap-3 border-b-1 border-stroke-1 bg-bg-1 px-4">
-          <span className="text-body-medium text-text-title">Invoice Breakdown</span>
+          <span className="text-text-medium text-text-title">Invoice Breakdown</span>
           <ChevronDown className="h-5 w-5 rotate-180 text-text-subtitle" />
         </div>
         {BILLING.map((r) => (
@@ -141,7 +141,7 @@ export function MakePaymentPanel({
       <div className="flex items-center justify-between gap-4 rounded-lg border-1 border-stroke-input p-4">
         <span className="flex flex-col gap-1">
           <span className="text-text-regular text-text-body">{MAKE_PAYMENT.toPay}</span>
-          <span className="text-title-s leading-[22px] text-text-title">{MAKE_PAYMENT.amount}</span>
+          <span className="text-title-s text-text-title">{MAKE_PAYMENT.amount}</span>
         </span>
         <Button variant="tertiary" size="row" onClick={onInvoice} rightIcon={<ChevronRight className="h-4 w-4" />}>
           {MAKE_PAYMENT.link}

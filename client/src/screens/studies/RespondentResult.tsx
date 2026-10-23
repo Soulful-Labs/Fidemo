@@ -30,11 +30,11 @@ export function StudyStrip({ s }: { s: Study }) {
     <div className="flex h-[102px] items-center gap-4 rounded-lg bg-bgAlt-1 p-4">
       {s.image ? <img src={s.image} alt="" className="h-[70px] w-[92px] shrink-0 rounded-md object-cover" /> : <span className="h-[70px] w-[92px] shrink-0 rounded-md bg-bg-2" />}
       <div className="flex flex-col gap-3">
-        <p className="text-title-s leading-[22px] text-text-title">{s.title}</p>
+        <p className="text-title-s text-text-title">{s.title}</p>
         {/* The duration and industry are plain text beside the type tag in the 13 Oct 2026 export, not pills of their own. */}
         <div className="flex items-center gap-3">
           <StudyTypeTag type={s.type} className="h-8 px-3" icon={s.type === 'diary' ? <DiaryBookIcon className="h-4 w-4" /> : undefined} />
-          <span className="flex items-center gap-1 text-text-regular text-text-subtitle">
+          <span className="flex items-center gap-1 text-body-regular text-text-subtitle">
             <Clock className="h-[18px] w-[18px] text-text-title" />{s.duration}
             {s.industry && <><span className="px-1.5 text-text-title">&bull;</span>{s.industry}</>}
           </span>
@@ -134,6 +134,15 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
   // every tab switch to the same respondent whoever you had opened.
   const to = (t: Tab) => `/studies/${s.id}/respondent/${person?.id ?? rid ?? ''}${t === 'screener' ? '' : `/${t}`}`
     + (done ? '' : '?state=recruited')
+
+  // Someone who is not on this study gets a plain line, not an empty page (23 Oct 2026).
+  if (!person) {
+    return (
+      <AppShell hideCreate crumbs={[{ label: 'Studies', to: '/studies' }, { label: 'Not found' }]}>
+        <div className="rounded-lg bg-bg-0 p-6 text-body-regular text-text-subtitle">This participant is not on this study.</div>
+      </AppShell>
+    )
+  }
 
   return (
     <AppShell hideCreate crumbs={[
@@ -271,7 +280,7 @@ export default function RespondentResult({ tab = 'screener' }: { tab?: Tab }) {
                   {done && !session && (
                     <>
                       <p className="flex flex-col">
-                        <span className="text-text-medium text-brand-secondary">Marked as completed!</span>
+                        <span className="text-text-regular text-brand-secondary">Marked as completed!</span>
                         <span className="text-text-regular text-text-subtitle">The {STUDY_TYPE[s.type].label.toLowerCase()} study has been successfully completed by {person?.name.split(' ')[0] ?? 'the respondent'}.</span>
                       </p>
                       <span className="flex h-11 items-center gap-2 rounded-sm bg-green-50 px-4 text-text-medium text-brand-secondary">

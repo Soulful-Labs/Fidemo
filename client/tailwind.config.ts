@@ -20,9 +20,7 @@ export default {
         // BG/primary/* and BG/secondary/*: the warm page greys and the green-tinted surfaces.
         bg: { DEFAULT: '#ffffff', 0: '#fdfdfc', 1: '#f8f8f7', 2: '#f3f2f1', 3: '#eeedec', 4: '#e9e8e7' },
         bgAlt: { 0: '#fbfefd', 1: '#f5f9f7', 2: '#edf3f0' },
-        text: { title: '#201e19', subtitle: '#5e5d5b', body: '#9d9d9d', disabled: '#b4b4b4',
-          /** The HumanLayer wordmark (Sidebard 290:15869): sampled #000000, no variable bound. */
-          wordmark: '#000000' },
+        text: { title: '#201e19', subtitle: '#5e5d5b', body: '#9d9d9d', disabled: '#b4b4b4' },
         // `warm` is the rule between the navigation, the top bar and the page, sampled off the 13 Oct 2026 exports.
         stroke: { input: '#e9e8e7', 1: '#edf3f0', 2: '#e3edea', 3: '#dae7e1', warm: '#e8e0d4' },
         cta: {

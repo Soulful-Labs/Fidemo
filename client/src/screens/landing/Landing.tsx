@@ -69,7 +69,7 @@ export default function Landing() {
       {/* 1. Sticky at every scroll position: nothing on the page is allowed to cover or move it. */}
       <header className="sticky top-0 z-40 border-b-1 border-stroke-input bg-yellow-20">
         <div className="mx-auto flex h-topbar w-[1120px] items-center justify-between">
-          <Link to="/" className="flex items-center gap-[14px] text-title-l text-text-wordmark" aria-label="HumanLayer, home"><LogoMark className="h-8 w-[26px]" />HumanLayer</Link>
+          <Link to="/" className="flex items-center gap-[14px] text-title-l text-text-body" aria-label="HumanLayer, home"><LogoMark className="h-8 w-[26px]" />HumanLayer</Link>
           <nav className="flex items-center gap-3" aria-label="Account">
             <Button variant="tertiary" onClick={logIn}>Log In</Button>
             <Button onClick={signUp}>Sign Up</Button>
@@ -164,7 +164,7 @@ export default function Landing() {
       {/* 8. Footer: only links that go somewhere. */}
       <footer className="border-t-1 border-stroke-input bg-yellow-20 px-6">
         <div className="mx-auto flex h-20 w-[1120px] items-center justify-between text-text-regular text-text-subtitle">
-          <p className="flex items-center gap-4"><span className="flex items-center gap-[14px] text-title-l text-text-wordmark"><LogoMark className="h-8 w-[26px]" />HumanLayer</span><span>Research with verified participants.</span></p>
+          <p className="flex items-center gap-4"><span className="flex items-center gap-[14px] text-title-l text-text-body"><LogoMark className="h-8 w-[26px]" />HumanLayer</span><span>Research with verified participants.</span></p>
           <nav className="flex items-center gap-6" aria-label="Footer">
             <Link to="/signin" className="hover:text-text-title">Log In</Link>
             <Link to="/signup" className="hover:text-text-title">Sign Up</Link>

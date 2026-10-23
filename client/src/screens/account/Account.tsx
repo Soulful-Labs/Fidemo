@@ -98,9 +98,9 @@ export default function Account() {
     role: account?.role ?? '',
     company: account?.company ?? '',
     taxId: account?.taxId ?? '',
-    website: account?.website || PROFILE_FIELDS.workspace.fields[2].value,
-    industry: account?.industry ?? PROFILE_FIELDS.workspace.fields[3].value,
-    location: account?.location ?? PROFILE_FIELDS.workspace.fields[4].value,
+    website: account?.website ?? '',
+    industry: account?.industry ?? '',
+    location: account?.location ?? '',
   })
   const [modal, setModal] = useState(params.get('modal') ?? '')
   /** The card on file: edited or replaced from here at any time (Payments lists every card). */
@@ -141,13 +141,13 @@ export default function Account() {
                     back to it, so what is typed here shows in the navigation
                     and survives a refresh. */}
                 <div className="flex flex-col gap-3">
-                  <p className="text-title-s leading-[22px] text-text-title">{PROFILE_FIELDS.about.label}</p>
+                  <p className="text-title-s text-text-title">{PROFILE_FIELDS.about.label}</p>
                   <Field label="Full Name" value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
                   <Field label="Work Email" value={form.email} locked />
                   <Field label="Your Role" value={form.role} onChange={(v) => setForm({ ...form, role: v })} />
                 </div>
                 <div className="flex flex-col gap-3 pt-8">
-                  <p className="text-title-s leading-[22px] text-text-title">{PROFILE_FIELDS.workspace.label}</p>
+                  <p className="text-title-s text-text-title">{PROFILE_FIELDS.workspace.label}</p>
                   <Field label="Company Name" value={form.company} onChange={(v) => setForm({ ...form, company: v })} />
                   <Field label="Tax ID (optional)" value={form.taxId} onChange={(v) => setForm({ ...form, taxId: v })} />
                   <Field label="Company Website" value={form.website} locked verified />
@@ -161,7 +161,7 @@ export default function Account() {
                 }}>Save Changes</Button>
 
                 <div className="flex flex-col gap-3 pt-8">
-                  <p className="text-title-s leading-[22px] text-text-title">Payment Method</p>
+                  <p className="text-title-s text-text-title">Payment Method</p>
                   {card ? (
                     <div className="flex h-[72px] items-center justify-between gap-3 rounded-lg border-1 border-stroke-input px-4">
                       <span className="flex items-center gap-3">
@@ -200,14 +200,14 @@ export default function Account() {
                     <p className="text-body-medium text-text-title">{r.study}</p>
                     <p className="flex items-center gap-2">
                       <Stars n={r.stars} />
-                      <span className="text-text-medium text-text-title">{r.rating}</span>
+                      <span className="text-text-large text-text-title">{r.rating}</span>
                       <span className="text-text-body">&bull;</span>
-                      <span className="text-text-regular text-text-subtitle">{r.at}</span>
+                      <span className="text-text-regular text-text-body">{r.at}</span>
                     </p>
                     {r.body && <p className="text-text-regular leading-5 text-text-subtitle">{r.body}</p>}
                     <p className="flex items-center gap-2 truncate">
                       <span className="shrink-0 text-text-regular text-text-subtitle">To participant:</span>
-                      {r.toId ? <PersonName id={r.toId} className="shrink-0 text-text-medium text-text-title">{r.to}</PersonName> : <span className="shrink-0 text-text-medium text-text-title">{r.to}</span>}
+                      {r.toId ? <PersonName id={r.toId} className="shrink-0 text-text-large text-text-subtitle">{r.to}</PersonName> : <span className="shrink-0 text-text-large text-text-subtitle">{r.to}</span>}
                       <Stars n={r.toStars} />
                       <span className="shrink-0 text-text-medium text-text-title">{r.toRating}</span>
                       {r.toBody && <span className="truncate text-text-regular text-text-body">{r.toBody}</span>}
@@ -240,13 +240,13 @@ export default function Account() {
                   </span>
                 </div>
                 <div className="mt-3 flex flex-col gap-4 rounded-lg bg-bgAlt-1 p-4">
-                  <p className="text-title-s leading-[22px] text-text-title">{CERTIFICATE.title}</p>
+                  <p className="text-title-s text-text-title">{CERTIFICATE.title}</p>
                   <span className="flex flex-col gap-1">
-                    <span className="text-text-regular text-text-subtitle">{CERTIFICATE.idLabel}</span>
+                    <span className="text-body-medium text-text-subtitle">{CERTIFICATE.idLabel}</span>
                     <span className="text-body-large text-text-title">{client.certificateId}</span>
                   </span>
                   <span className="flex flex-col gap-3">
-                    <span className="text-text-regular text-text-subtitle">{CERTIFICATE.verifiedLabel}</span>
+                    <span className="text-body-medium text-text-subtitle">{CERTIFICATE.verifiedLabel}</span>
                     {[CERTIFICATE.registration, ...(client.cards.length > 0 ? [CERTIFICATE.billing] : [])].map((v) => (
                       <span key={v} className="inline-flex items-center gap-2 text-text-regular text-text-title">
                         <CheckCircle className="h-[18px] w-[18px] text-brand-secondary" />{v}
@@ -259,7 +259,7 @@ export default function Account() {
 
             {tab === 'settings' && (
               <>
-                <p className="text-title-s leading-[22px] text-text-title">Email Notifications</p>
+                <p className="text-title-s text-text-title">Email Notifications</p>
                 {EMAIL_PREFS.map((p) => (
                   <div key={p.label} className="flex items-center justify-between gap-4 border-b-1 border-stroke-1 py-3">
                     <span className="flex flex-col gap-1">
@@ -270,7 +270,7 @@ export default function Account() {
                       onChange={(v) => setEmailOff((o) => (v ? o.filter((x) => x !== p.label) : [...o, p.label]))} />
                   </div>
                 ))}
-                <p className="pt-6 text-title-s leading-[22px] text-text-subtitle">Manage Account</p>
+                <p className="pt-6 text-title-s text-text-subtitle">Manage Account</p>
                 {[['Change Password', 'password'], ['Deactivate Account', 'deactivate']].map(([label, key]) => (
                   <button key={key} type="button" onClick={() => setModal(key)}
                     className="mt-3 flex h-14 w-full items-center gap-3 rounded-lg bg-bg-1 px-4 text-body-regular text-text-title hover:bg-bg-2">

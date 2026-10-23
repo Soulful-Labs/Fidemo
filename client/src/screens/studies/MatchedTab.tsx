@@ -66,7 +66,7 @@ export default function MatchedTab() {
         <div className="flex flex-col px-4 pt-4">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h2 className="text-title-s leading-[22px] text-text-title">Matched Respondents</h2>
+              <h2 className="text-title-s text-text-title">Matched Respondents</h2>
               <p className="pt-2 text-text-regular text-text-subtitle">
                 Surfaced from the Pool who are matching with target audience criteria. Invite those who you like to get insights from.
               </p>

@@ -16,7 +16,7 @@ function Card({ title, action, children }: { title: string; action?: React.React
   return (
     <div className="flex flex-col gap-3 rounded-md bg-bg-1 p-4">
       <div className="flex items-center justify-between gap-4">
-        <p className="text-title-s leading-[22px] text-text-title">{title}</p>
+        <p className="text-title-s text-text-title">{title}</p>
         {action}
       </div>
       {children}

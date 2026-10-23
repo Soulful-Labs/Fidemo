@@ -92,12 +92,12 @@ export const VERIFICATION_PIN = {
 }
 
 /** The session card's own words. Who, when and where come from the booking. */
-export const SESSION = { cta: 'Start Interview', running: '0:25:16' }
+export const SESSION = { cta: 'Start Interview' }
 
 export const NOTES = {
   title: 'Add Notes',
   saved: 'Auto-saved',
   heading: 'Interview Notes',
-  body: 'This is how to be written notes',
-  bullet: 'Point 1',
+  /** The empty box's prompt. The frame's sample notes were shown as if written; they are demo data in the seed now. */
+  prompt: 'Write your interview notes here',
 }

@@ -102,7 +102,7 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
                 {sessions.map((r) => (
                   <button key={r.key} type="button" onClick={() => navigate(r.details)}
                     className="flex h-[59px] items-center gap-0 border-t-1 border-stroke-1 text-left first-of-type:border-t-0">
-                    <span className="flex w-[76px] shrink-0 flex-col gap-0.5 text-text-regular text-text-title">
+                    <span className="flex w-[76px] shrink-0 flex-col gap-0.5 text-text-medium text-text-title">
                       <span>{r.at.toDateString() === today ? 'Today' : r.at.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                       <span>{r.at.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
                     </span>
@@ -116,7 +116,7 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
 
               <section className="flex flex-col rounded-lg bg-gradient-to-b from-green-50 to-bgAlt-1 px-4 pt-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="flex items-center gap-2 text-body-regular text-brand-secondary">{SPARKLE}Super Insights</h2>
+                  <h2 className="flex items-center gap-2 text-body-medium text-brand-secondary">{SPARKLE}Super Insights</h2>
                   <span className="flex items-center gap-1.5">
                     <StepArrow dir={-1} label="Previous insight" disabled={insightAt <= 0} onClick={() => setInsightAt(insightAt - 1)} />
                     <StepArrow dir={1} label="Next insight" disabled={insightAt + 1 >= needs.length} onClick={() => setInsightAt(insightAt + 1)} />
@@ -166,7 +166,7 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
 
         <section className="pt-[26px]">
           <div className="flex items-center justify-between pb-2.5">
-            <h2 className="text-body-medium text-text-title">Recommended Respondents</h2>
+            <h2 className="text-body-large text-text-title">Recommended Respondents</h2>
             <ViewAll to="/pool" />
           </div>
           {recommended.length === 0 ? (

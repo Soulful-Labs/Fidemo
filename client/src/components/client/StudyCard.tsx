@@ -68,7 +68,7 @@ export default function StudyCard({ study, onOpen, onMenu, menu, className }: { 
         {([['Completed', c.completed, 'text-brand-secondary'], ['Screening', c.applied + c.qualified + c.recruited + c.scheduled, 'text-brand-primary'], ['Remaining', remaining, 'text-text-body']] as const).map(([label, n, tone]) => (
           <div key={label} className="flex w-[120px] flex-col-reverse">
             <dt className="text-text-regular text-text-body">{label}</dt>
-            <dd className={cn('text-body-medium', tone)}>{n}</dd>
+            <dd className={cn('text-body-large', tone)}>{n}</dd>
           </div>
         ))}
       </dl>

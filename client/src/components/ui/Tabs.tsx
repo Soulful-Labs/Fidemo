@@ -24,7 +24,7 @@ export default function Tabs({
       <div className={cn('inline-flex items-center rounded-lg bg-bgAlt-2 p-1', className)} role="tablist">
         {items.map((t) => {
           const on = t.key === value
-          const inner = cn('flex h-10 flex-1 items-center justify-center whitespace-nowrap rounded-md px-2 text-body-regular transition-colors', on ? 'bg-green-200 text-text-title' : 'text-text-subtitle hover:text-text-title')
+          const inner = cn('flex h-10 flex-1 items-center justify-center whitespace-nowrap rounded-md px-2 text-body-medium transition-colors', on ? 'bg-green-200 text-text-title' : 'text-text-subtitle hover:text-text-title')
           /* The tab you are on is the current one, not a link back to itself. */
           if (on) return <span key={t.key} role="tab" aria-selected aria-current="page" className={inner}>{t.label}</span>
           return t.to

@@ -89,15 +89,15 @@ export default function RespondentPage() {
             <SessionCard title={sessionTitle} date={r.session.date} time={r.session.time} address={r.session.address}>{!inPerson && <JoinNow />}</SessionCard>
             <PinCard code={r.code} text={pinFor(inPerson ? 'completion' : 'joining')} />
           </div>
-          {inPerson && <Notes tall="h-[667px]" />}
+          {inPerson && <Notes tall="h-[667px]" value={p.notes ?? ''} file={`${study.title} ${r.name}`} />}
         </div>
       )}
       {tab === 'result' && session && finished && r.session && (
         <div className="flex flex-col gap-3">
           {inPerson
             ? <SessionCard title={sessionTitle} date={r.session.date} time={r.session.time} address={r.session.address} />
-            : <VideoResult title={`Video Recording of ${r.name} and You`} who={r.name} when={r.session.at} />}
-          {inPerson && <Notes tall="h-[580px]" />}
+            : <VideoResult title={`Video Recording of ${r.name} and You`} who={r.name} when={r.session.at} length={study.time} />}
+          {inPerson && <Notes tall="h-[580px]" value={p.notes ?? ''} file={`${study.title} ${r.name}`} />}
           <PinCard wide code={r.code} text={pinFor('completion')} />
         </div>
       )}

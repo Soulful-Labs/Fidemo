@@ -71,7 +71,7 @@ export default function RespondentPanel({
       <div className="flex items-stretch gap-3">
         <div className="flex w-[278px] shrink-0 flex-col items-center gap-4 rounded-lg bg-bgAlt-1 p-4">
           <div className="flex w-full items-center justify-between">
-            <span className="text-text-regular text-text-subtitle">Trust Score</span>
+            <span className="text-text-medium text-text-subtitle">Trust Score</span>
             <button type="button" onClick={onReviews} className="inline-flex items-center gap-1 text-text-medium text-text-title hover:text-brand-primary">
               Reviews <ChevronRight className="h-4 w-4" />
             </button>
@@ -80,7 +80,7 @@ export default function RespondentPanel({
             <Gauge score={d.trustScore} />
             <span className="absolute flex flex-col items-center">
               <span className="text-[40px] font-semibold leading-none text-brand-primary">{d.trustScore}</span>
-              <span className="pt-1 text-text-regular text-text-subtitle">/100</span>
+              <span className="pt-1 text-text-medium text-text-subtitle">/100</span>
             </span>
           </span>
           <span className="pt-2.5"><TierChip tier={respondent.tier} /></span>
@@ -94,7 +94,7 @@ export default function RespondentPanel({
             return (
               <div key={r.label} className="flex flex-col gap-1">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="inline-flex items-center gap-1 text-text-regular text-text-subtitle">
+                  <span className="inline-flex items-center gap-1 text-text-regular text-text-title">
                     {r.label} <Info className="h-4 w-4 text-text-body" />
                   </span>
                   <span className={`text-text-medium ${text}`}>{r.value}</span>

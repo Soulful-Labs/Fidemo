@@ -151,7 +151,7 @@ The earlier workflow said there was no self-serve option at all. The designs dra
 
 **There is no desktop version of the respondent app and none is planned.** On a laptop it renders as a centred phone-width column inside a frame, with background either side. Every overlay, modal, sheet, confetti and glow is clipped by that frame. Do not build a wide layout for it.
 
-**Brand.** All three apps carry the HumanLayer name, spelt as one word with a capital H and L, as the logo spells it. The client app's sidebar and landing page carry the H mark beside the black wordmark, as the console and the respondent app do. The console's browser tab reads "HumanLayer Admin Panel", its sidebar reads "Admin Panel" beside the HumanLayer mark, and its entrance reads "HumanLayer team console". Each app's browser tab shows the HumanLayer H with its green dot. Focus Insite is the operating company: the client's terms agreement keeps its name. See D11.
+**Brand.** All three apps carry the HumanLayer name, spelt as one word with a capital H and L, as the logo spells it. The client app's sidebar and landing page carry the H mark beside the wordmark, as the console and the respondent app do. The console's browser tab reads "HumanLayer Admin Panel", its sidebar reads "Admin Panel" beside the HumanLayer mark, and its entrance reads "HumanLayer team console". Each app's browser tab shows the HumanLayer H with its green dot. Focus Insite is the operating company: the client's terms agreement keeps its name. See D11. The wordmark is the same grey in all three apps: each app's Text/body (#9d9d9d in the client app and the console, #9e9e9e in the respondent app).
 
 ### 4.2 Design tokens
 
@@ -1088,7 +1088,7 @@ Desktop only, 1440px, no mobile version. One primary action, Sign Up, in a heade
 
 **No customer logos, no customer counts, no testimonials.** None exist, and inventing them would put untrue claims on a public page.
 
-The header and the footer carry the HumanLayer lock-up: the H mark and the black wordmark.
+The header and the footer carry the HumanLayer lock-up: the H mark and the wordmark, in the same grey as the sidebar.
 
 ### 12.1 Onboarding
 
@@ -1253,7 +1253,7 @@ Status offers All, then each status its pills show (Applied, Qualified, Schedule
 
 **The video result.** The platform holds no recordings until a video provider is connected. The card is drawn as the frames draw it, with the session's length and date; View Video Recording and Transcript say that the recording and transcript appear there once the provider is connected.
 
-**The interview notes** are typed into the notes card, saved as they are typed on the one-to-one booking or the group session, and downloaded as a text file. The formatting row (bold, italic, underline, strike, four heading levels, list, circle) inserts plain-text marks.
+**The interview notes** are typed into the notes card, saved as they are typed on the one-to-one booking or the group session, and downloaded as a text file. The client app and the console read and write the same notes: the console's one-to-one result shows them, and its group session page edits them. The formatting row (bold, italic, underline, strike, four heading levels, list, circle) inserts plain-text marks. A study starts with no notes; only the seeded demo studies carry sample notes, so the demo reads as used. An empty notes box shows a plain prompt, never sample notes.
 
 **The group session page** (`/studies/:id/sessions/:sid`), opened by View Participants on Recruited and View Result on Results, has Study Result and Activity tabs.
 
@@ -2518,7 +2518,7 @@ The build is not done until each of these runs end to end without a dead control
 | Four screener question types asked in the nearest available form: tap scale, tick in order, picture upload, one question per row | Respondent app |
 | Scheduled Sessions, Pay All Due Invoices, and the paid confirmation | Client app. Drawn by the designer and built, now live |
 | The question menu, its Required toggle, and the respondent's "(optional)" marker | All three apps. **Need drawing** |
-| The notes card as a working editor with plain-text formatting marks and a download | Client app |
+| The notes card as a working editor with plain-text formatting marks and a download | Client app and console |
 | What the Video Result buttons say while there is no recording | Client app |
 | The Billing banners for a study stopped by the team or filled on its own, and the console's Billing banners | Client app and console |
 | "Publish these changes live?" on Pricing & Rewards, and the client deactivation refusal in the console | Console |
@@ -2732,6 +2732,10 @@ A tax form banner also appears, from the workflow's step 49.
 | Get Started overview tiles | Not built |
 | "Welcome back" notification | There is no reactivation path for a participant |
 | Address autocomplete | The address list is sample data. A real autocomplete is a build task |
+
+### Nothing typed in for a new account
+
+A client who signs up fresh sees only their own data and empty states. Sample content lives only in the seeded demo data (studies, notes, notifications, tickets, reviews). Where something cannot be found, the screen says so: a ticket that is not on the account, a participant who is not on the study, and a study that is not paused opened on the paused screen (which goes to its overview).
 
 ### Lists that are sample data
 

@@ -13,7 +13,7 @@ import { PersonName, useOpenProfile } from '../../app/ProfileHost'
 function Block({ title, children, action }: { title?: string; children: React.ReactNode; action?: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-2 border-t-1 border-stroke-1 px-3 pb-[13px] pt-3">
-      {title && <h3 className="flex items-center justify-between text-text-regular text-text-subtitle">{title}{action}</h3>}
+      {title && <h3 className="flex items-center justify-between text-text-medium text-text-subtitle">{title}{action}</h3>}
       {children}
     </section>
   )
@@ -92,7 +92,7 @@ export default function RespondentRail({ rate, onRate, person, onReport }: {
           <span className="text-[26px] font-semibold leading-8 tracking-[-0.02em] text-text-title">{r.trustScore}</span>
           <TierChip tier={r.tier} />
         </p>
-        <h3 className="pt-1 text-text-regular text-text-subtitle">Performance Ratings</h3>
+        <h3 className="pt-1 text-text-medium text-text-subtitle">Performance Ratings</h3>
         <div className="flex flex-col gap-3">
           {r.ratingRows.map((x) => {
             const [bar, text] = x.tone.split(' ')

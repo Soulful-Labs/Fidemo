@@ -51,8 +51,8 @@ export default function RatePanel({
   const [review, setReview] = useState('')
 
   const r = personId ? recruit(world, study, personId) : undefined
-  const name = r?.name ?? 'Ferry L.'
-  const role = r?.role ?? 'Physiology Therapist, Orthopedic'
+  const name = r?.name ?? 'this participant'
+  const role = r?.role ?? ''
   /** The rating already given, read back. Older ratings may carry only stars. */
   const given = r?.participation.rating
 

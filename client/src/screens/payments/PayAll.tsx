@@ -50,7 +50,7 @@ export function PayAllPanel({ open, onClose, invoices, onPaid }: {
           <span className="text-body-large text-brand-primary">{money(total)}</span>
         </p>
         <p className="flex h-[65px] items-center justify-between border-t-1 border-stroke-input">
-          <span className="flex items-center gap-2 text-body-regular text-text-title">
+          <span className="flex items-center gap-2 text-text-regular text-text-title">
             From
             {card ? (
               <span className="inline-flex h-8 items-center gap-3 rounded-full bg-bgAlt-2 px-3 text-body-regular text-text-title">

@@ -96,7 +96,7 @@ export default function SessionPage() {
 
             {x && when && tab === 'result' && (
               <div className="flex flex-col gap-4 px-4 pb-4 pt-5">
-                <h2 className="text-title-s leading-[22px] text-text-title">{name}</h2>
+                <h2 className="text-title-s text-text-title">{name}</h2>
                 {!done && (
                   <div className="grid grid-cols-2 gap-3">
                     {inPerson

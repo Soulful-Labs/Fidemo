@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { platform } from '@shared/store'
+import { notice } from '../../../components/app/Notice'
 import { useParams, useSearchParams } from 'react-router-dom'
 import TierTag from '../../../components/app/TierTag'
 import Button from '../../../components/ui/Button'
@@ -113,10 +115,10 @@ export default function SessionPage() {
           {!done && <div className="grid grid-cols-2 gap-3">{scheduled}<PinCard code={x.code} text={PIN_TEXT} /></div>}
           {done && (inPerson
             ? <SessionCard title="In-person Group interview of all participants and You" date={x.date} time={x.time} address={x.address} />
-            : <VideoResult title="Video Recording of all participants and Client" who={x.name} when={`${x.date}, ${x.time}`} />)}
-          {done && inPerson && <Notes editor tall="h-[586px]" />}
+            : <VideoResult title="Video Recording of all participants and Client" who={x.name} when={`${x.date}, ${x.time}`} length={study.time} />)}
+          {done && inPerson && <Notes editor tall="h-[586px]" value={x.notes} file={`${study.title} ${x.name}`} onSave={(t) => { const res = platform().setSessionNotes(study.id, { sessionId: x.id }, t); if (!res.ok) notice(res.why) }} />}
           {table}
-          {!done && inPerson && <Notes editor download={false} tall="h-[588px]" />}
+          {!done && inPerson && <Notes editor download={false} tall="h-[588px]" value={x.notes} onSave={(t) => { const res = platform().setSessionNotes(study.id, { sessionId: x.id }, t); if (!res.ok) notice(res.why) }} />}
           {done && <PinCard wide code={x.code} text={PIN_TEXT} />}
         </div>
       )}

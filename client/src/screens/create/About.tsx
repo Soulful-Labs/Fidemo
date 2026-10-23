@@ -36,7 +36,7 @@ function TypeCard({ t }: { t: (typeof TYPES)[number] }) {
           <t.Icon />
         </span>
         <span className="flex flex-col">
-          <span className={cn('text-text-medium', on ? 'text-brand-primary' : 'text-text-title')}>{t.label}</span>
+          <span className={cn(on ? 'text-text-large text-brand-primary' : 'text-text-medium text-text-title')}>{t.label}</span>
           <span className="text-text-regular text-text-subtitle">{t.sub}</span>
         </span>
       </button>

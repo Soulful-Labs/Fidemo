@@ -26,7 +26,7 @@ import type {
   Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudyReport, StudySetup, StudyType, TeamMember, Ticket,
 } from './types'
 
-export const SEED_VERSION = 14
+export const SEED_VERSION = 15
 export const DEMO_PERSON_ID = 'jonathan'
 export const DEMO_PERSON_EMAIL = 'jonathan.reeve@example.com'
 export const DEMO_CLIENT_ID = 'cl-soulful'
@@ -784,6 +784,31 @@ export function buildSeed(now: Date = new Date()): PlatformState {
   // Billing (22 Oct 2026): a finished study whose bill is still open has stopped recruiting but is not completed.
   for (const st of studies) {
     if (st.state === 'completed' && billing(st).outstanding > 0) { st.state = 'billing'; st.stoppedAt = st.completedAt; st.stoppedBy = 'client'; st.completedAt = undefined }
+  }
+  /**
+   * Interview notes (23 Oct 2026): demo data only, on the seeded in-person studies, so the demo's finished
+   * interviews read as written. A study made after sign-up starts with no notes; the client and the team
+   * write them on the booking or the group session (shared/store.ts setSessionNotes).
+   */
+  const DEMO_NOTES = [
+    ['Interview Notes', 'Wakes twice most nights; blames the phone by the bed.', '• Tried a sleep app for two weeks, stopped when it asked to pay.', '• Would share sleep data with a doctor, not with an insurer.'],
+    ['Interview Notes', 'Tracks bedtime in a paper diary, not an app.', '• Caffeine after 4 PM is the main thing they would change.', '• Wants a weekly summary, not a daily score.'],
+    ['Interview Notes', 'Shift worker; sleep moves with the rota.', '• Blackout blinds made the biggest difference.', '• Finds wearables uncomfortable at night.'],
+  ].map((lines) => lines.join('\n'))
+  for (const st of studies) {
+    if (st.type === 'in_person') {
+      st.participations.filter((x) => x.state === 'completed' && x.booking).forEach((x, i) => { x.notes = DEMO_NOTES[i % DEMO_NOTES.length] })
+    }
+    if (st.type === 'in_person_group') {
+      for (const [i, session] of (st.sessions ?? []).entries()) {
+        if (st.participations.some((x) => x.booking?.sessionId === session.id && x.state === 'completed')) {
+          session.notes = `Interview Notes
+Group ${i + 1}: most book travel on a phone, but pay on a laptop.
+• Price alerts are the feature everyone uses.
+• Two people had been charged twice by a booking site; trust came up often.`
+        }
+      }
+    }
   }
   const state: PlatformState = { version: SEED_VERSION, seededAt: now.toISOString(), people, clients, studies, reports, tickets, team, activity, pending: [], teamNotices: [], studyReports }
   /**

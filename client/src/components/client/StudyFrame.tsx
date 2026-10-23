@@ -29,7 +29,7 @@ export function HeadStat({ label, value, suffix }: { label: string; value: strin
     <div className="flex flex-col gap-1">
       <span className="text-text-regular text-text-body">{label}</span>
       <span className="flex items-baseline gap-1 text-title-m leading-[26px] text-text-title">
-        {value}{suffix && <span className="text-body-regular">{suffix}</span>}
+        {value}{suffix && <span className="text-body-medium text-text-subtitle">{suffix}</span>}
       </span>
     </div>
   )
@@ -83,7 +83,7 @@ export function StudyHeader({ study }: { study: Study }) {
           </div>
 
           <div className="flex flex-col gap-1.5 pt-[13px]">
-            <h1 className="text-title-l font-medium text-text-title">{study.title}</h1>
+            <h1 className="text-title-l text-text-title">{study.title}</h1>
             <p className="flex items-center gap-1 text-body-regular text-text-subtitle">
               <Clock className="h-5 w-5 text-text-title" />{study.duration}
               {study.industry && <><span className="px-2 text-text-title">&bull;</span>{study.industry}</>}

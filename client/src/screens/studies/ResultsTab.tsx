@@ -110,7 +110,7 @@ export default function ResultsTab() {
             <div className="flex items-center justify-between gap-4 rounded-md bg-bgAlt-1 px-4 py-4">
               <div className="flex flex-col gap-1">
                 {/* 1643:130046: a 22px box, so 16px text, not the 18 it was drawn with. */}
-                <p className="text-body-medium text-text-title">{summary.title}</p>
+                <p className="text-body-regular text-text-title">{summary.title}</p>
                 <p className="text-text-regular text-text-subtitle">{summary.body}</p>
               </div>
               <Button variant="secondary" size="none" className="h-12 px-6" onClick={() => {
@@ -125,7 +125,7 @@ export default function ResultsTab() {
           </div>
 
           <div className="mt-6 flex h-[38px] items-center justify-between gap-4">
-            <h2 className="text-title-s leading-[22px] text-text-title">Completed Study Respondents</h2>
+            <h2 className="text-title-s text-text-title">Completed Study Respondents</h2>
             <Picker value={`Tier: ${tier}`} h="h-[38px]" className="w-[220px] text-text-regular" options={TIER_MENU.map((m) => m.label)}
               onPick={(v) => { const t = tierFromMenu(v); setTier(t ? t[0]!.toUpperCase() + t.slice(1) : 'All') }} />
           </div>
@@ -199,7 +199,7 @@ export default function ResultsTab() {
               <Seal />
               <div className="flex flex-col gap-1">
                 <p className="text-label uppercase tracking-[0.04em] text-text-subtitle">{CERTIFICATE.label}</p>
-                <p className="text-title-s leading-[22px] text-text-title">
+                <p className="text-title-s text-text-title">
                   {cert.verified} of {cert.total} completions verified human
                 </p>
                 <p className="max-w-[816px] text-text-regular text-text-subtitle">{CERTIFICATE.body}</p>

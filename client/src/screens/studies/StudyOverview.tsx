@@ -15,7 +15,7 @@ export function OverviewTile({ label, value, suffix, ring }: { label: string; va
       <div className="flex flex-col gap-0.5">
         <span className="text-text-regular text-text-subtitle">{label}</span>
         <span className="flex items-baseline gap-1 text-title-l text-text-title">
-          {value}{suffix && <span className="text-body-regular text-text-subtitle">{suffix}</span>}
+          {value}{suffix && <span className="text-body-medium text-text-subtitle">{suffix}</span>}
         </span>
       </div>
       {ring != null && (
@@ -159,7 +159,7 @@ export function OverviewBody({ s, daysRow }: { s: ClientStudy; daysRow?: boolean
           <div key={t.label} className="flex h-[71px] flex-col justify-center gap-1 rounded-md border-1 border-stroke-1 px-[11px]">
             <dt className="text-text-regular text-text-subtitle">{t.label}</dt>
             <dd className={cn('flex items-baseline gap-1', t.empty ? 'text-body-regular text-text-body' : 'text-title-s leading-[25px] text-text-title')}>
-              {t.value}{t.suffix && <span className="text-body-regular text-text-subtitle">{t.suffix}</span>}
+              {t.value}{t.suffix && <span className="text-body-medium text-text-subtitle">{t.suffix}</span>}
             </dd>
           </div>
         ))}

@@ -19,7 +19,7 @@ function Person({ respondent }: { respondent: Respondent }) {
       <Avatar name={respondent.name} photo={respondent.photo} size={64} />
       <span className="flex flex-col">
         <span className="text-text-regular text-text-subtitle">{respondent.name}</span>
-        <span className="text-title-s leading-[22px] text-text-title">{respondent.role}</span>
+        <span className="text-title-s text-text-title">{respondent.role}</span>
         {d && (
           <span className="pt-1 text-text-regular text-text-subtitle">
             {d.location} <span className="px-1 text-text-body">&bull;</span> {d.cert}
@@ -67,7 +67,7 @@ export function ReviewsPanel({ open, onClose, onBack, onInvite, respondent }: {
       <Person respondent={respondent} />
       <div className="mx-4 flex flex-col rounded-lg border-1 border-stroke-input">
         <button type="button" onClick={onBack}
-          className="flex items-center gap-4 border-b-1 border-stroke-1 px-4 py-4 text-title-s leading-[22px] text-text-title">
+          className="flex items-center gap-4 border-b-1 border-stroke-1 px-4 py-4 text-title-s text-text-title">
           <ChevronLeft className="h-5 w-5 text-text-subtitle" />Reviews
         </button>
         {rows.length === 0 && <p className="px-4 py-4 text-text-regular text-text-subtitle">No client has rated them yet.</p>}
@@ -124,7 +124,7 @@ export function InvitePanel({ open, onClose, name = 'Roma', personId, onSent }: 
         </div>
       }>
       <div className="flex flex-col gap-1">
-        <p className="text-title-s leading-[22px] text-text-title">Select active studies</p>
+        <p className="text-title-s text-text-title">Select active studies</p>
         <p className="text-text-regular text-text-subtitle">An invitation will be sent to apply for selected studies</p>
       </div>
       {INVITE_STUDIES.map((s) => (

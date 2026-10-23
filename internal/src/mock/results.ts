@@ -136,6 +136,8 @@ export function session(state: PlatformState, study: Study, sessionId?: string) 
     id: x.id, name: `Session ${i + 1}`, startsAt: x.date, slot: x.slot, date: longDay(x.date), time: isInPerson(study) ? slotRange(x.slot, study.durationMins) : x.slot,
     address: isInPerson(study) ? addressOf(study, x.locationId) : undefined, seats: `${x.taken} / ${x.seats} Seats`,
     code: codeOf(first), people,
+    /** The notes written on this session, by the client or the team (23 Oct 2026). */
+    notes: x.notes ?? '',
   }
 }
 export type SessionView = NonNullable<ReturnType<typeof session>>

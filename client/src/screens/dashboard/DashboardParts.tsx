@@ -98,7 +98,7 @@ export function NeedRow({ n }: { n: Need }) {
   return (
     <button type="button" onClick={() => navigate(n.to)}
       className="flex h-[69px] w-full items-center border-t-1 border-stroke-input pl-1 text-left first-of-type:border-t-0">
-      <span className="flex w-[100px] shrink-0 items-baseline gap-0.5 text-title-l font-medium text-text-title">
+      <span className="flex w-[100px] shrink-0 items-baseline gap-0.5 text-title-l text-text-title">
         {n.figure}{n.suffix && <span className="text-text-regular text-text-body">{n.suffix}</span>}
       </span>
       <span className="flex min-w-0 flex-col gap-1">

@@ -45,7 +45,7 @@ export function AskSupportPanel({
         </div>
       }>
       <div className="flex flex-col">
-        <p className="text-title-s leading-[22px] text-text-title">{ASK_SUPPORT.heading}</p>
+        <p className="text-title-s text-text-title">{ASK_SUPPORT.heading}</p>
         <p className="pt-1 text-text-regular leading-5 text-text-title">{ASK_SUPPORT.sub}</p>
       </div>
       <label className="flex flex-col gap-2">

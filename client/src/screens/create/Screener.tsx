@@ -245,7 +245,7 @@ export function QuestionBlock({ q, index, write, actions, marksFor = MARKS_FOR, 
             ))}
             <span className="flex h-[38px] shrink-0 items-center gap-2">
               <Toggle checked={q.showGap ?? true} onChange={(v) => write({ ...q, showGap: v })} label="Show Gap" />
-              <span className="text-text-regular text-text-title">Show Gap</span>
+              <span className="text-text-regular text-text-subtitle">Show Gap</span>
             </span>
           </div>
         )}
@@ -328,7 +328,7 @@ export default function Screener() {
             <span className="w-5 shrink-0 text-brand-secondary">{LIST}</span>
             <div className="flex flex-1 items-start justify-between gap-4">
               <div className="flex max-w-[440px] flex-col">
-                <h2 className="text-title-s text-text-title">Screening questions</h2>
+                <h2 className="text-body-medium text-text-title">Screening questions</h2>
                 <p className="text-text-regular text-text-subtitle">
                   Use these questions to filter participants and identify who qualifies for this study. Click Preview to see how it will appear to participants.
                 </p>

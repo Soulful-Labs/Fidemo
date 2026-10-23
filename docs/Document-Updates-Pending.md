@@ -33,12 +33,15 @@ Work that is not built, so there is nothing to describe yet.
   (amber Disqualified and No-show pills, the orange account alert, the
   success disc on Published, the dark attachment placeholder in chat, the
   pink paused banner) are left as measured.
-- **The console's interview notes** still show sample text; the client's are
-  now kept (`setSessionNotes`). The console should read and write the same
-  notes.
-- **The dashboard picture on the client landing page** was not retaken this
-  round (it needs the settled demo state); its sidebar shows Studies
-  expanded.
+- **Fonts**: matched against Figma's own text properties (family, weight,
+  size, letter spacing, line height, colour) on 35 client screens and panels.
+  What is left: the Payments chart labels, which Figma sets in Inter, a font
+  outside the system (the build keeps Geist), and texts whose words appear
+  in more than one place, which the automatic match cannot pair. Screens
+  whose text is mostly seeded content were matched only on their labels.
+- **The dashboard picture on the client landing page** was not retaken (it
+  needs the settled demo state); its sidebar shows Studies expanded and the
+  older black wordmark.
 - **The respondent's own reviews.** The respondent app has no screen for the
   reviews clients wrote about them.
 
@@ -68,6 +71,9 @@ Work that is not built, so there is nothing to describe yet.
   buttons say so. Needs a drawn empty state.
 - The notes editor's formatting row inserts plain-text marks.
 - Help's reply-time lines come from the workflow; no frame draws them.
+- The HumanLayer wordmark is Text/body grey in all three apps by decision
+  (23 Oct 2026); Figma draws the client's black.
+- The Payments chart labels are drawn in Inter, outside the Geist system.
 - Red for a neutral state: the Paused study banner (1704:143783) is drawn
   pink-red, though pausing is not an error. Built as drawn; please review.
 - Payments' paid-all dialog keeps the frame's typos ("and and", "has been

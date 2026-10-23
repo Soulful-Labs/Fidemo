@@ -16,7 +16,6 @@ studies/st-social
 studies/st-pay/manage
 studies/st-social/manage
 studies/st-pay/matched
-studies/st-goal/paused
 studies/st-pay/recruited
 studies/st-sleep/recruited
 studies/st-fitness/recruited

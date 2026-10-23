@@ -36,7 +36,7 @@ export function Th({ label, sortable, className, dir, onSort }: {
   onSort?: () => void
 }) {
   return (
-    <th className={cn('h-row px-[18px] text-left text-text-regular font-normal text-text-subtitle', className)}
+    <th className={cn('h-row px-[18px] text-left text-text-medium text-text-subtitle', className)}
       aria-sort={dir === -1 ? 'descending' : dir === 1 ? 'ascending' : undefined}>
       {sortable && onSort ? (
         <button type="button" onClick={onSort} className="inline-flex items-center gap-1.5 hover:text-text-title">

@@ -18,8 +18,8 @@ export default function Entrance() {
       <div className="flex flex-col items-center text-center">
         <p className="flex items-center gap-[14px]">
           <LogoMark className="h-8 w-[26px]" />
-          {/* The HumanLayer lock-up (22 Oct 2026), as in the client and respondent apps: the H mark and the black wordmark. */}
-          <span className="text-title-l text-text-wordmark">HumanLayer</span>
+          {/* The HumanLayer lock-up (22 Oct 2026), as in the client and respondent apps: the H mark and the wordmark in Text/body grey, as the client and respondent apps. */}
+          <span className="text-title-l text-text-body">HumanLayer</span>
         </p>
         <h1 className="pt-8 text-title-l leading-[31px] text-text-title">HumanLayer team console</h1>
         <p className="max-w-[380px] pt-2 text-body-regular text-text-subtitle">Where the HumanLayer team runs the platform: studies, participants, clients, support and finance.</p>

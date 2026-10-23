@@ -62,12 +62,12 @@ export default function PayTab() {
         minH={stopped ? 'min-h-[1062px]' : 'min-h-[897px]'} bodyMinH="min-h-[655px]">
         <div className="flex gap-6 px-4 pb-6 pt-4">
           <div className="flex w-[547px] shrink-0 flex-col gap-3">
-            <h2 className="text-title-s leading-[22px] text-text-title">Billing</h2>
+            <h2 className="text-title-s text-text-title">Billing</h2>
             <BillingCard study={s} stopped={stopped} />
           </div>
 
           <div className="flex flex-1 flex-col gap-3">
-            <h2 className="text-title-s leading-[22px] text-text-title">Payment Overview</h2>
+            <h2 className="text-title-s text-text-title">Payment Overview</h2>
             {open && (
               <div className="flex h-[79px] items-center justify-between rounded-md bg-yellow-30 px-3">
                 <span className="flex flex-col gap-1">
@@ -85,7 +85,7 @@ export default function PayTab() {
               <Figure label="Total Cost" value={money(b.totalCost)} />
             </div>
 
-            <h2 className="pt-[25px] text-title-s leading-[22px] text-text-title">Transactions</h2>
+            <h2 className="pt-[25px] text-title-s text-text-title">Transactions</h2>
             <div className="flex flex-col gap-3">
               {transactions.map((t) => (
                 <div key={t.label + t.at} className="flex justify-between gap-4 rounded-md border-1 border-stroke-1 px-3 py-[14px]">

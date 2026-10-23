@@ -102,7 +102,7 @@ export default function BillPayment() {
                   {BILL.status}
                 </span>
               </div>
-              <p className="text-title-s leading-[22px] text-text-title">{s.title}</p>
+              <p className="text-title-s text-text-title">{s.title}</p>
               <div className="flex items-center gap-2">
                 <span className="flex h-8 items-center gap-2 rounded-full border-1 border-stroke-input px-3 text-text-regular text-text-subtitle">
                   <Clock className="h-4 w-4" />{s.duration}
@@ -119,7 +119,7 @@ export default function BillPayment() {
               <p className="text-text-regular text-text-body">{BILL.markedAt}</p>
             </div>
 
-            <h2 className="pt-[18px] text-title-s leading-[22px] text-text-title">{BILL.heading}</h2>
+            <h2 className="pt-[18px] text-title-s text-text-title">{BILL.heading}</h2>
             <div className="mt-3 overflow-hidden rounded-lg border-1 border-bgAlt-2">
               {BILLING.map((r) => <Line key={r.label} r={r} />)}
               <div className="flex flex-col gap-2 border-b-1 border-bgAlt-2 px-4 py-[14px]">
@@ -141,7 +141,7 @@ export default function BillPayment() {
           </div>
 
           <div className="flex h-fit w-[567px] flex-col rounded-lg bg-bg-1 p-4">
-            <p className="inline-flex items-center gap-2 text-title-s leading-[22px] text-text-title">
+            <p className="inline-flex items-center gap-2 text-title-s text-text-title">
               <PaymentsIcon className="h-5 w-5 text-brand-secondary" />{c.title}
             </p>
             <div className="flex flex-col gap-[11px] pt-[15px]">

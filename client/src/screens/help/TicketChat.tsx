@@ -38,7 +38,7 @@ export default function TicketChat() {
   const nav = useNavigate()
   const [params] = useSearchParams()
   const { id: ticketId } = useParams()
-  const record = tickets.find((x) => x.id === ticketId) ?? tickets[0]
+  const record = tickets.find((x) => x.id === ticketId)
   const send = () => {
     if (!record) return
     // An empty Send said nothing (22 Oct 2026 sweep); now it says why nothing was sent.
@@ -55,7 +55,7 @@ export default function TicketChat() {
     <AppShell hideCreate crumbs={[
       { label: 'Help', to: '/help' },
       { label: 'Support Ticket', to: '/help?tab=tickets' },
-      { label: (record?.subject ?? t.subject).slice(0, 22) + '…' },
+      { label: record ? record.subject.slice(0, 22) + '…' : 'Not found' },
     ]}>
       <div className="min-h-[939px] rounded-lg bg-bg-0 p-4">
         <section className="flex min-h-[916px] flex-col overflow-hidden rounded-lg border-1 border-stroke-input">
@@ -65,10 +65,10 @@ export default function TicketChat() {
                 className="flex h-8 w-8 items-center justify-center text-text-subtitle hover:text-text-title">
                 <ChevronLeft className="h-5 w-5" />
               </button>
-              <span className="text-title-s leading-[25px] text-text-title">{record?.subject ?? t.subject}</span>
+              <span className="text-title-s leading-[25px] text-text-title">{record?.subject ?? 'Ticket not found'}</span>
             </span>
             <span className="flex items-center gap-4">
-              <span className="text-body-regular text-text-subtitle">#{record?.number ?? t.number}</span>
+              <span className="text-body-regular text-text-subtitle">{(record?.number ?? '').startsWith('#') ? record?.number : `#${record?.number ?? ''}`}</span>
               <Tag tone="grey" className={cn('h-7 px-2.5',
                 solved ? 'bg-green-50 text-brand-secondary' : 'bg-yellow-30 text-brand-primary')}>
                 {solved ? 'Closed' : 'Open'}
@@ -81,7 +81,7 @@ export default function TicketChat() {
           </header>
 
           <div className="flex flex-1 flex-col gap-3 px-4 pb-4 pt-4">
-            <p className="pb-2 text-center text-text-regular text-text-subtitle">{record?.day ?? t.day}</p>
+            <p className="pb-2 text-center text-text-regular text-text-subtitle">{record ? record.day : 'This ticket is not on your account.'}</p>
 
             {/* The thread is the ticket's own messages, from the shared platform:
                 what the client wrote, the automatic first answer, and the team's
@@ -90,7 +90,7 @@ export default function TicketChat() {
             {(record?.messages ?? []).map((m, i) => (i === 0 && m.from === 'client' ? (
               <Bubble key={m.id} mine at={m.at}
                 after={m.attachment ? <span className="mt-1 h-[128px] w-[170px] rounded-md bg-[#20242c]" aria-label={m.attachment} /> : undefined}>
-                <p className="inline-flex items-center gap-2 text-text-regular text-text-subtitle">
+                <p className="inline-flex items-center gap-2 text-text-medium text-text-subtitle">
                   <Info className="h-5 w-5" />{t.info.heading}
                 </p>
                 <p className="pt-3 text-text-regular leading-5 text-text-subtitle">{t.info.subjectLabel}</p>

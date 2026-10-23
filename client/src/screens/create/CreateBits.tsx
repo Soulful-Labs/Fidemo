@@ -16,7 +16,7 @@ export function Section({ icon, title, sub, children, className, headPad = 'pb-2
       <div className="flex-1 pr-[10px]">
         <div className={cn('flex flex-col gap-0.5', headPad)}>
           <h2 className={cn('text-body-medium text-text-title', titleLead)}>{title}</h2>
-          {sub && <p className="text-text-regular text-text-subtitle">{sub}</p>}
+          {sub && <p className="text-text-regular text-text-body">{sub}</p>}
         </div>
         {children}
       </div>
