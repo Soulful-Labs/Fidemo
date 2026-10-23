@@ -13,6 +13,7 @@ import { Money, StoppedBill, Transaction } from './PayTab'
 import { billing } from '@shared/derive'
 import { money, monthDayYearTime } from '@shared/format'
 import { DEPOSIT_RULE } from '@shared/platform'
+import { depositLabel } from '@shared/derive'
 import { usePlatform } from '../../../platform'
 import ResultsTab from './ResultsTab'
 
@@ -131,7 +132,7 @@ function CompletedPayments({ studyId }: { studyId: string }) {
         <h2 className="pt-6 text-title-s leading-[25px] text-text-title">Transactions</h2>
         <div className="flex flex-col gap-2">
           {paid.map((x) => (
-            <Transaction key={x.id} action="Invoice" of={real.title} title={x.kind === 'deposit' ? 'Incentive Deposit Paid' : 'Final Settlement Due Paid'}
+            <Transaction key={x.id} action="Invoice" of={real.title} title={x.kind === 'deposit' ? depositLabel(x.stage ?? 'upfront') : 'Net Payable Bill'}
               amount={money(x.amount)} at={monthDayYearTime(x.at)} detail={x.kind === 'deposit' ? DEPOSIT_RULE : 'Billed on delivery'} />
           ))}
           {paid.length === 0 && <p className="text-text-regular text-text-subtitle">Nothing has been paid on this study yet.</p>}

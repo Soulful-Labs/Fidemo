@@ -1,6 +1,7 @@
 import { isStopped } from '@shared/lifecycle'
 import { billing, invoiceNumber } from '@shared/derive'
 import { DEPOSIT_RULE } from '@shared/platform'
+import { depositLabel } from '@shared/derive'
 import { clockTime, dayLongMonthYear, money, monthDayYear, monthDayYearTime } from '@shared/format'
 import type { Client, Study } from '@shared/types'
 
@@ -24,13 +25,13 @@ export function billView(study: Study, client?: Client) {
     b, lines, card,
     total: money(b.total), totalCost: money(b.totalCost), depositAmount: money(b.deposit), net: money(b.net),
     outstanding: money(b.outstanding), due: money(isStopped(study.state) ? b.outstanding : b.due), refund: money(b.refund),
-    depositLine: { label: 'Less: Deposit', detail: DEPOSIT_RULE, amount: `-${money(b.deposit)}`, info: true } as BillLineView,
+    depositLine: { label: 'Less: Deposits', detail: DEPOSIT_RULE, amount: `-${money(b.deposit)}`, info: true } as BillLineView,
     invoice: invoiceNumber(study),
     issued: study.completedAt ? `Marked completed and invoice issued on ${dayLongMonthYear(study.completedAt)}, ${clockTime(study.completedAt)}` : 'Not marked completed yet',
     dueBy: dueBy ? monthDayYear(dueBy) : '',
     paidAt: monthDayYearTime(balance?.at), paidAmount: money(balance?.amount ?? 0),
     transactions: [deposit, balance, refund].filter((p): p is NonNullable<typeof p> => Boolean(p)).map((p) => ({
-      label: p.kind === 'deposit' ? 'Deposit Paid' : p.kind === 'balance' ? 'Balance Paid' : 'Refund Paid', amount: money(p.amount), at: monthDayYearTime(p.at),
+      label: p.kind === 'deposit' ? depositLabel(p.stage ?? 'upfront') : p.kind === 'balance' ? 'Net Payable Bill' : 'Refund Paid', amount: money(p.amount), at: monthDayYearTime(p.at),
       detail: p.kind === 'deposit' ? DEPOSIT_RULE : `Invoice ${invoiceNumber(study)}`,
     })),
   }

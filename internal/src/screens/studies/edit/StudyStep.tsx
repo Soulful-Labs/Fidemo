@@ -1,7 +1,6 @@
 import { billing } from '@shared/derive'
 import { money } from '@shared/format'
 import { questionLines, surveyFromPrompt } from '@shared/fromPrompt'
-import { depositParts } from '@shared/platform'
 import { TASK_MARKS, blankQuestion, studyDetails } from '@shared/studyForm'
 import type { StudyForm } from '@shared/studyForm'
 import type { Study } from '@shared/types'
@@ -72,7 +71,6 @@ export default function StudyStep({ study, form, setForm, composing, setComposin
   const label = (i: number) => (study.type === 'diary' ? `Q${i + 1}` : `SQ ${i + 1}`)
   const b = billing(study)
   const paid = study.payments.filter((x) => x.kind === 'deposit').reduce((s, x) => s + x.amount, 0)
-  const part = depositParts(study.rates, study.required)
   const incentive = study.rates.incentivePer
   if (composing && survey) return <SurveyComposer form={form} setForm={setForm} label={label} onDone={() => setComposing(false)} />
   return (
@@ -110,12 +108,12 @@ export default function StudyStep({ study, form, setForm, composing, setComposin
       <Section icon={<ReceiptIcon />} title="Payment">
         <p className="text-text-regular text-text-title">This payment contributes towards the total project cost. <Link to={`/studies/${study.id}?tab=pay`} className="underline">See how costs are calculated.</Link></p>
         <div className="flex flex-col gap-2 rounded-md bg-bg-1 p-3 text-text-regular text-text-title">
-          <p className="flex justify-between"><span>Incentive deposit paid</span><span>{money(paid)}</span></p>
+          <p className="flex justify-between"><span>Deposits paid</span><span>{money(paid)}</span></p>
           <p className="flex justify-between text-text-medium"><span>To Pay</span><span>{money(0)}</span></p>
         </div>
         <ul className="flex list-disc flex-col gap-1 pl-5 text-text-regular text-text-subtitle">
           <li>Editing a live study changes no amount and takes no payment.</li>
-          <li>The remaining project costs ({money(Math.max(0, incentive * study.required - part.incentive))} for incentives and {money(Math.max(0, study.rates.recruitingPer * study.required - part.recruitment))} for recruitment) are billed as participants complete their sessions.</li>
+          <li>The rest ({money(Math.max(0, b.estimate.total - paid))} at the full sample) is billed on the participants who complete, at {money(b.rate)} each.</li>
           <li>Studies recruit until filled, or till the end date, or at most 60 days from publish.</li>
         </ul>
       </Section>

@@ -3,6 +3,7 @@ import { billing, clientById, durationLabel, paymentStats, sessionSeats, studies
 import { monthDayYear, monthDayYearTime, money } from '@shared/format'
 import { WEEKDAYS as FORM_DAYS, dayOf } from '@shared/studyForm'
 import { DEPOSIT_RULE, diaryWords } from '@shared/platform'
+import { depositLabel } from '@shared/derive'
 import type { PlatformState, PreScreenQuestion, Question as SharedQuestion, Study } from '@shared/types'
 import { consoleType, studyPictures, usePlatform } from '../platform'
 import { clientPhoto } from './clients'
@@ -119,10 +120,10 @@ export function review(state: PlatformState, s: Study) {
       ],
       totals: [
         { label: 'Total cost', amount: money(bill.totalCost) },
-        { label: 'Less: Deposit', detail: DEPOSIT_RULE, amount: `-${money(depositPaid)}`, info: true },
+        { label: 'Less: Deposits', detail: DEPOSIT_RULE, amount: `-${money(depositPaid)}`, info: true },
       ],
       net: { label: 'Net payable cost', amount: money(Math.max(0, bill.totalCost - depositPaid)) },
-      transactions: deposit.map((p) => ({ title: 'Deposit Paid', amount: money(p.amount), when: monthDayYearTime(p.at), detail: DEPOSIT_RULE })),
+      transactions: deposit.map((p) => ({ title: depositLabel(p.stage ?? 'upfront'), amount: money(p.amount), when: monthDayYearTime(p.at), detail: DEPOSIT_RULE })),
     },
     REVISIONS: {
       requested: [...s.revisions].reverse().map((r) => ({ title: 'Requested changes.', by: teamById(state, r.by)?.name, greeting: `Hey ${client?.name.split(' ')[0] ?? ''},`, text: r.text, when: monthDayYearTime(r.at) })),

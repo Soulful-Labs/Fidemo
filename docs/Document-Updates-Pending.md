@@ -47,6 +47,32 @@ Work that is not built, so there is nothing to describe yet.
 - **The respondent's own reviews.** The respondent app has no screen for the
   reviews clients wrote about them.
 
+## Difference list, client round of 23 October 2026
+
+Built as the PNGs draw it, and different from what was decided before:
+
+- **Reversal: the 3% merchant processing fee line** is back on Payment &
+  Publish and Payment ("3% merchant processing fee applies when using a
+  credit card. Learn about payment options"). It was removed on 13 October
+  2026. It is shown only; nothing charges it.
+- **Reversal: "To be auto-debited by [date] by [card] **** 4242"** is back on
+  the Pay tab in Billing. It was left out on 13 and 15 October 2026 because
+  nothing debits a card on its own. It is shown only; Pay Bill is the payment.
+- **The old and new pricing are both on screen.** The Create flow's Study step
+  (left exactly as it was) still draws Incentive Payments, Costing Summary and
+  Payment from the old fee schedule; Payment & Publish, one step later, draws
+  the new rate x participants. The console's Pricing & Rewards still sets the
+  old fees. To be decided what comes out.
+- **When the 30% is taken** is the build's choice: when the team takes the
+  study live. The frames say only "As on [date]".
+- **A second rate period** ($250, then $350) appears only in the seed (on
+  Travel preferences and experiences). Nothing in the app changes a rate until
+  the rate sheet exists.
+- **Save this card** makes the added card the default. A card used to publish
+  is always kept for invoices, as the fourth note says.
+- **A client with a saved card** still sees it selected on Payment & Publish
+  (decision of 15 October); the drawn form is behind "Use a different card".
+
 ## For the designer
 
 - No Show is −4, not the −2 drawn on Edit Trust Score (`2058:196166`).
@@ -78,6 +104,14 @@ Work that is not built, so there is nothing to describe yet.
 - The Payments chart labels are drawn in Inter, outside the Geist system.
 - Red for a neutral state: the Paused study banner (1704:143783) is drawn
   pink-red, though pausing is not an error. Built as drawn; please review.
+- The 30% stage is "Incentive deposit" on Payment Breakdown and "Recruitment
+  Cost" on the Pay screens. Each keeps its own word; one name would be
+  clearer.
+- The frames' money figures are placeholders that do not add up ($1,800 is not
+  30% of $5,000; Deposit Paid $2,800). The build derives every figure.
+- Not drawn, built: an empty group's line ("No studies in this group yet"),
+  the "Available groups" empty line ("No groups yet"), the Create Group error
+  for a blank or repeated name, and Contact Us To Edit opening an email.
 - Payments' paid-all dialog keeps the frame's typos ("and and", "has been
   cleared").
 - Needed: a Cancel Session control for a one-to-one booking in the console,

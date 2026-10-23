@@ -1729,3 +1729,17 @@ is where each lives in the code.
 - **Needs Your Attention has no panel** (23 Oct 2026). View All was removed
   from the dashboard earlier, so the panel could not be opened; Super
   Insights pages through every item, and each row opens its own place. Studies' sub-items fold away outside Studies.
+
+## Client round, 23 Oct 2026 (PNGs)
+
+- **Pricing**: Total Recruiting Cost is the rate per participant
+  (`rateFor`, `RATE_PER_PARTICIPANT` in `shared/platform.ts`, one place for the
+  rate sheet) times the participants, incentive included; 20% at publish, 30%
+  when the team takes it live, the rest on the bill (`paymentPlan`,
+  `billing`). The Study step still draws the old fee schedule, on instruction.
+- `create/PaymentSummary.tsx` holds Payment Summary, Payment Breakdown's body,
+  the four notes and the card fee line; `BillingCard` has `fixed` for the
+  Final bill alone (Payment, Invoice Details).
+- **Study groups**: `screens/studies/GroupDialogs.tsx`, sections in
+  `StudiesList` through `groupSections`; Add to a Group and Contact Us To Edit
+  are in `OngoingMenu` (pass `studyId`).

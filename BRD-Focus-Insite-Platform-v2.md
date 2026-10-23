@@ -106,7 +106,9 @@ The paid-participation market is the mechanism: people give their time and opini
 | Deferred | Blocked on |
 |---|---|
 | Pricing plans | Decision D11 |
-| How much the deposit is | Jim. PRD D32. The policy may need re-signing |
+| When the 30% incentive deposit is taken | Built as when the team takes the study live; to be confirmed. PRD D32 |
+| What changes a study's rate, and the rate sheet | The rate sheet is to come. PRD 6.10 |
+| Whether the incentive may exceed the rate | Not yet assigned |
 | Whether the team may re-price a live study | Jim. PRD D33 |
 | What the Audience forecast shows | Not yet assigned. PRD D34 |
 | The live domain, the support address, and whether the certificate prefix changes from FI- | Not yet assigned. PRD D35. A prefix change needs a new version of the policy |
@@ -121,8 +123,9 @@ The paid-participation market is the mechanism: people give their time and opini
 
 | Flow | From | To | When |
 |---|---|---|---|
-| Deposit | Client | Platform | When a study is published |
-| Balance invoice | Client | Platform | By the client. It falls due when the study stops recruiting and enters Billing, and is due 7 days later |
+| Upfront deposit, 20% | Client | Platform | When a study is published |
+| Incentive deposit, 30% | Client | Platform | When the team takes the study live |
+| Balance invoice | Client | Platform | By the client. The completed participants at their agreed rate, less both deposits. It falls due when the study stops recruiting and enters Billing, and is due 7 days later |
 | Incentive | Platform | Participant | When the team processes the study's payouts, once the participation is completed. It never waits on the client's invoice |
 | Payout | Platform | Participant | When a participant withdraws and the team releases it, less a $2 fee |
 | Redemption | Platform | Participant's wallet | When points are converted, at 100 points to $1, minimum 1,000 |
@@ -132,20 +135,16 @@ The paid-participation market is the mechanism: people give their time and opini
 
 | Revenue line | Rate | Basis |
 |---|---|---|
-| Platform fee | $100 | Once per study |
-| Moderation fee | $10 | Per completed participant |
-| Recruitment fee | $25 base | Per completed participant |
-| Recruitment add-on | +$25 | Video Call, In-Person or Diary type; or Roles targeting |
-| Recruitment add-on | +$20 | Skills targeting |
+| Rate per participant | $250 | Per completed participant, incentive included. From the team's rate sheet when it exists; one configurable rate until then |
 | Withdrawal fee | $2 |
 | Study payout | Within 14 days after the study ends, paid into the wallet by the team |
 | Withdrawal to the bank | 2 to 3 working days | Per participant withdrawal |
 
-The client fees are the current values. A master admin sets them in the console; each change is confirmed and recorded, and a study keeps the fees it was created with. The withdrawal fee is set by the policy.
+Pricing changed on 23 October 2026: a client pays Total Recruiting Cost, the rate per participant times the participants, with the incentive included. Revenue on a study is the rate less the incentive, per completed participant. A study keeps the rate it was published at. The earlier fee schedule (platform, moderation and recruitment fees) is no longer charged; it is still drawn on the Create flow's Study step and set on the console's Pricing & Rewards. The withdrawal fee is set by the policy.
 
-The incentive itself is pass-through: the client pays it and the participant receives it. Revenue is the fees around it.
+The incentive is paid out of the rate. Nothing yet stops a client setting an incentive above the rate; that is a decision to take.
 
-**A worked example, the shape the designs draw.** A thirty-participant study at $100 incentive: platform fee $100, recruitment $500, incentives $2,500, moderation $250, giving a billed total of $3,350, settled against the deposit taken at submission. How much that deposit is, is open (PRD D32).
+**A worked example, the shape the designs draw (23 October 2026).** Twenty participants at $250: Total Recruiting Cost $5,000; $1,000 upfront at publish, $1,500 when it goes live, $2,500 on completion if all twenty complete. If ten complete at $250 and ten after a change at $350, the final bill is $6,000, less the $2,500 of deposits, $3,500 to pay. The frames' own figures ($1,800 for the 30%, $3,200 net) are placeholders and do not add up; the build derives every figure.
 
 > **Caution.** That example is taken from the designs, and the designs do not add up: the same study is drawn with totals of $3,350, $3,850, $12,960, $15,085 and $16,510 on five different screens, and a $3,000 deposit is captioned "$20 × 30 participants", which is $600. **No financial model should be built from the drawn figures.** Finance must restate the fee model and worked examples before build. See Decision D13.
 
@@ -304,7 +303,8 @@ Each of these first appeared in a design rather than a signed document. Each is 
 | R3 | Study completion capped at 10 a year | Console, applied to points | The cap is on the Trust Score, not points |
 | R4 | Client refunds paid within 5 to 7 working days | Console confirmation dialog | In the policy, section 8 |
 | R5 | Participant payouts credited within 2 to 3 working days | The respondent app's landing page | In the policy, section 4 |
-| R6 | 3% merchant processing fee on credit card payments | Client checkout | Not charged, and not shown |
+| R6 | 3% merchant processing fee on credit card payments | Client checkout | Not charged. Shown again since 23 October 2026, as the frames draw it: a reversal of 13 October, on the difference list |
+| R7 | "To be auto-debited by [date] by [card]" on a bill in Billing | Client Pay tab | Not debited. Shown since 23 October 2026, as drawn: a reversal of 13 and 15 October, on the difference list |
 
 ---
 

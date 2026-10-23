@@ -626,19 +626,22 @@ A changed value applies only to what happens after the change. Every Trust Score
 
 Redemption and payouts (6.4), scheduling (6.5), client ratings, the certificate (6.6) and restriction (6.8) are not changed from the console. They change only by a new version of the policy.
 
-### 6.10 Platform fees, as the console sets them
+### 6.10 What a client pays (23 October 2026)
 
-Charged to clients, not participants. These are the current values. A master admin sets them in the console (6.9); they are not fixed by the policy.
+Charged to clients, not participants. A client pays one price per participant.
 
-| Fee | Current value | Charged |
+| Item | Current value | Charged |
 |---|---|---|
-| Platform fee | $100 | Once per study |
-| Moderation fee | $10 | Per completed participant |
-| Recruitment fee | $25 base | Per completed participant |
-| Recruitment add-on | +$25 | For Video Call, In-Person or Diary study type, or for Roles targeting |
-| Recruitment add-on | +$20 | For Skills targeting |
-| Deposit | Open. The previous policy says the incentives for the full sample, taken at submission; the build takes 25% of recruitment plus 25% of incentives | At submission. See D32 |
+| Rate per participant | $250 | Held by the platform, never typed by the client: `rateFor` in `shared/platform.ts`, the one place a study is priced. It will come from the team's rate sheet |
+| Total Recruiting Cost | Rate x participants | The incentive is included in the rate |
+| Upfront deposit | 20% | At publish, of the total at the required number of participants |
+| Incentive deposit | 30% | When the team takes the study live. The Pay screens call it "Recruitment Cost" |
+| Completion due | 50% | The rest, on the bill once recruiting stops: the participants who completed, each at the rate agreed when they completed, less both deposits |
 | Client refunds | Paid within 5 to 7 working days | |
+
+A study keeps the rate it was published at (`Study.ratePeriods`). A change to its requirements can agree a new rate; the people who complete after it are billed at the new one, which is why a Final bill can have two lines ("$250 x 10 participants • Oct 1, 2026", "$350 x 10 participants • Oct 10, 2026"). Nothing in the build changes a rate today: with one rate, a live edit agrees the same rate. The seed shows two periods on one study.
+
+**The earlier fee schedule is no longer charged.** A $100 platform fee, a $10 moderation fee, a $25 recruitment fee with +$25 and +$20 add-ons, and a deposit of 25% of recruitment plus 25% of incentives. It is still drawn on the Create flow's Study step (left unchanged on instruction, 23 October 2026) and set on the console's Pricing & Rewards, so a client sees the old figures on the Study step and the new ones one step later on Payment & Publish, until it is decided what comes out of those screens.
 
 The withdrawal fee charged to participants is $2 flat (6.4). The console shows it, with the points value and the redemption minimum, and says they are set by the policy and not saved from there.
 
@@ -679,7 +682,7 @@ Version 2 of the policy also makes two corrections to the original:
 1. **The certificate's "unlocks at 40" is withdrawn.** The Trust Score floor is 50, so 40 cannot be a Trust Score threshold. The certificate is issued on identity verification. See 6.6 and D12.
 2. **Client ratings are five stars on three dimensions**, not three states: Expertise, Reliability and Communication, plus an optional written review. See D16.
 
-One value stated in the designs is **not** applied: a 3% merchant processing fee on client card payments. Nothing charges it and the line has been removed from the app. The cap of 10 a year applies to Trust Score, not to points.
+A value stated in the designs is shown but **not** charged: a 3% merchant processing fee on client card payments. It was removed on 13 October 2026; the 23 October frames draw it again on Payment & Publish and on Payment, and it is built as drawn, with nothing charging it. That reversal is recorded on the difference list. The cap of 10 a year applies to Trust Score, not to points.
 
 ---
 
@@ -1306,13 +1309,13 @@ Every row opens that participant's result. The Score heading sorts. Results Summ
 
 **Rate (a panel)** asks for three things and no arithmetic: Expertise, Reliability and Communication at five stars each, plus an optional written review. The frame shows no weighting, no resulting score and nothing about the Trust Score. The Trust Score takes the rounded mean of the three as the study's star rating. See D16.
 
-**The Pay tab is a statement, not an approval.** It has no list of respondent payouts. It reads Payment Due, Deposit Paid and Total Cost, itemises the billing and lists the transactions already settled; the deposit reads "Incentive Deposit Paid". Nothing on it approves a respondent's earnings. Its only payment action is **Pay Bill**, unpayable while the study is recruiting and payable once it is in Billing, which opens Bill Payment: a card checkout against the invoice, with the deposit netted off. The balance is due 7 days after the study enters Billing.
+**The Pay tab is a statement, not an approval.** It has no list of respondent payouts. While the study runs the Billing card reads Total Recruiting Cost ($rate x the required participants), Less: 20% Upfront Deposit, Less: 30% Recruitment Cost "As on" the day it was taken, and Payable; Payment Overview reads Deposit Paid and Total Cost; Transactions list each deposit ("20% Upfront Deposit", "30% Recruitment Cost") and the bill ("Net Payable Bill"), newest first, each with Invoice. A completed study's Payment Overview is one figure, Total Paid. Nothing on it approves a respondent's earnings. Its only payment action is **Pay Bill**, unpayable while the study is recruiting and payable once it is in Billing, which opens Bill Payment: a card checkout against the invoice, with the deposit netted off. The balance is due 7 days after the study enters Billing.
 
-**In Billing** the tab opens with a banner: "This study is stopped by you to mark completed!" (or "This study is stopped by the team to mark completed!", or "This study has filled its target and stopped recruiting!"), the time it stopped, and **Re-publish and Recruit** (see 5.1). Its highlighted line reads "Your study has N participants left to fill target", the target less the completions, and is left out when nothing is left. The billing card shows two figures: **Estimated**, the quote at the required number of participants, and **Final**, what was delivered, down to Net Payable. Where the deposit is more than the final bill, the difference reads "Credited to your next study". Then Payment Due with Pay Bill, Deposit Paid, Total Cost, and Transactions, each with Invoice.
+**In Billing** the tab opens with a banner: "This study is stopped by you to mark completed!" (or "This study is stopped by the team to mark completed!", or "This study has filled its target and stopped recruiting!"), the time it stopped, and **Re-publish and Recruit** (see 5.1). Its highlighted line reads "Your study has N participants left to fill target", the target less the completions, and is left out when nothing is left. The billing card (Billing States 2.0) shows two figures: **Estimated**, the rate at the required number of participants, down to Payable, and **Final**, one line per rate period of the participants who completed, down to Net Payable (Net Paid once paid). Where the deposits are more than the final bill, the difference reads "Credited to your next study". Then Net Payable with Pay Bill and the drawn line "To be auto-debited by [due date] by [card] **** 4242", Deposit Paid, Total Cost, and Transactions. **The auto-debit line reverses an earlier removal** (13 and 15 October 2026) and is on the difference list: it is shown as drawn, and nothing debits a card on its own; Pay Bill is the payment.
 
 **Revisions History** lists every round of changes to the study since it was first submitted, newest first: when, who made it (the client, or the team after a live edit), and field by field what changed, named by Create step ("Audience / Ethnicity: added Asian").
 
-**The study menu** in the header: Copy Study Link, Pause Study (Resume Study while paused), Stop-complete Study, which asks "Stop and Mark Study Completed?" and moves the study to Billing, and Duplicate to Drafts. A study in Billing gets the completed study's menu. The client has no Edit on a live study.
+**The study menu** in the header, and on every Ongoing card and row: Copy Study Link, Pause Study (Resume Study while paused), Stop-complete Study, which asks "Stop and Mark Study Completed?" and moves the study to Billing, then Contact Us To Edit (an email to support naming the study), Duplicate to Drafts and Add to a Group, which opens "Available groups". A study in Billing gets the completed study's menu. The client has no Edit on a live study.
 
 **Recruit more.** When a running study meets its target, a "Congrats!" banner offers Recruit more (see 5.1).
 
@@ -1356,6 +1359,34 @@ Nothing replaces them. A client recruits from the pool directly, one person at a
 **Pay All Due Invoices** lists every unpaid invoice with a tick against each, the saved card with "Change method", and a total. **A client may untick an invoice** and pay only some. There is no single charge across studies, so each selected invoice is paid in turn and the confirmation states the total paid and how many invoices it cleared.
 
 **Make Payment is not the study checkout.** Bill Payment is a full screen with a card form, reached from a study's Pay tab. Make Payment is a 375px panel with **no form**: the amount, a link back to Invoice Details, the saved card already chosen with "Change method", and a pay button.
+
+### 12.7a Payment and Publish, and study groups (23 October 2026)
+
+**Payment & Publish** (Proceed to Publish on the Study step) reviews About, Audience, Screener and Study on the left, with Edit Study Details. On the right: **Payment Summary** with View Breakdown, Total Recruiting Cost with its "$250 x 20 participants" chip, and "To pay upfront • 20%"; then **Payment Method**. A client with a saved card has it selected (the decision of 15 October); "Use a different card" opens the card form (Card Number, Expiry Date, CVV, Name on Card, Billing Address, Zip Code, Save this card) and **Add Card to Publish**, which checks the card and shows "Card is verified to pay" (Card Added to Publish). Only then is Publish Study enabled. A card added here is kept on the account for future invoice payments, as the last note says; Save this card makes it the default. Then the card fee line, "3% merchant processing fee applies when using a credit card. Learn about payment options" (Learn opens Help; nothing charges the fee), and four notes:
+
+- Cost is subject to change based upon modification in study requirements.
+- You are only charged for participants that completes the study.
+- Studies recruits until filled or till defined deadline or max 60 days from publish.
+- This card will be used for future invoice payments.
+
+**Payment Breakdown** (View Breakdown) is the Costing Summary (Total Recruiting Cost, $rate x participants) and the Payment Structure (Upfront deposit • 20%, Incentive deposit • 30%, Completion Due • 50%, Total Est. Cost), with the same four notes.
+
+**Payment** (Pay Bill) is the study card, the Invoice Breakdown (the Final bill) and the card form, with "Pay $N", the card fee line and "You are only charged for participants that complete your research." Invoice Details shows the same Final bill.
+
+**A study in review** (Manage Study-1) has a Payment tab: Total Cost, Total Paid, Card on File; Billing (Total Recruiting Cost, Less: 20% Upfront Deposit, Net payable cost); and Transactions.
+
+**Manage Study on a live study** opens with "Want to make any changes? Please contact us to modify and update your study with any changes you need." and Contact Us, an email to support naming the study. A draft or a study in review keeps its Edit buttons instead.
+
+**Study groups.** A client can group their studies (`StudyGroup` in `shared/types.ts`; `createStudyGroup`, `updateStudyGroup`, `ungroupStudyGroup`, `addStudyToGroup` in `shared/store.ts`).
+
+| Control | Does |
+|---|---|
+| Create Group (the folder button beside Study Type) | A name, required and not one the client already has, and optionally studies to add (Select Study). Submit creates it |
+| A group's pencil | Edit Group: rename it, change its studies ("2 studies selected"), or Ungroup |
+| Ungroup | Asks "Remove and ungroup the studies?" ("The studies of the group will be ungrouped to others and this group will be removed."). Cancel or Ungroup |
+| Add to a Group, in a study's options | "Available groups", one row each; picking one adds the study |
+
+My Studies shows each group as a named section with its studies on that tab, then **Others** under a rule. With no groups there are no headings (Studies - No groups). A study is in one group at most: adding it to another moves it. Drafts cannot be grouped. A group with no studies yet is shown on every tab with a line saying how to fill it; a group whose studies are all on other tabs is not shown. Groups work in the table view too.
 
 ### 12.8 Help and support
 
@@ -2077,9 +2108,9 @@ Every value is checked before it saves: no tier threshold may be set below the o
 
 ### D22: The deposit
 
-**One rule everywhere.** A deposit is taken when the study is submitted, and everything it does not cover is billed on delivery. How much the deposit is, is open; see D32. Whatever it is, every money screen reads the same rule.
+**One rule everywhere (23 October 2026).** Two deposits: 20% of Total Recruiting Cost when the study is published, and 30% when the team takes it live. The 50% left is billed on the participants who complete, less both. Every money screen reads `paymentPlan` and `billing`.
 
-Costing Summary, Payment, the Breakdown panel and Payment Summary all price from the fee table in Section 6.10 and from the study as actually built. No figure on any of them is fixed.
+Payment Summary, Payment Breakdown, the Pay tab, Payment and Invoice Details all price from the rate in Section 6.10. The Create flow's Study step still draws its Costing Summary and Payment from the earlier fee schedule (see 6.10).
 
 **Editing a study that is waiting on the team retakes the deposit at the new figures**, replacing the old one. Whether a change the team makes to a live study takes any payment depends on D33.
 
@@ -2190,9 +2221,9 @@ The client app today has one person per account, no way to add anyone, and no no
 
 BRD Section 9a has the full requirement.
 
-### D32: The deposit (open)
+### D32: The deposit (superseded 23 October 2026)
 
-**Not decided.**
+**Superseded by the pricing of 23 October 2026 (6.10, D22): 20% at publish, 30% when the study goes live.** When the 30% is taken (the frames say only "As on" a date) was chosen by the build as the moment the team takes the study live; that is to be confirmed. What follows is the record of the question as it stood.
 
 | | |
 |---|---|

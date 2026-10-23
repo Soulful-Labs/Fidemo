@@ -12,6 +12,7 @@ import { dayMonthYear, money, monthDayYearTime } from '@shared/format'
 import { fileName, pdf, save } from '@shared/files'
 import { notice } from '../../../components/app/Notice'
 import { DEPOSIT_RULE } from '@shared/platform'
+import { depositLabel } from '@shared/derive'
 import type { Study } from '@shared/types'
 import { usePlatform } from '../../../platform'
 
@@ -115,7 +116,7 @@ export default function PayTab({ study }: { study: ManagedStudy }) {
         <div className="flex gap-3"><Money short label="Deposit Paid" value={money(b.deposit)} /><Money short label="Total Cost" value={money(b.totalCost)} /></div>
         <h2 className="pt-6 text-title-s leading-[25px] text-text-title">Transactions</h2>
         <div className="flex flex-col gap-2">
-          {paid.map((x) => <Transaction key={x.id} action="Invoice" of={real.title} title={x.kind === 'deposit' ? 'Incentive Deposit Paid' : 'Balance Paid'} amount={money(x.amount)} at={monthDayYearTime(x.at)} detail={x.kind === 'deposit' ? DEPOSIT_RULE : 'Billed on delivery'} />)}
+          {paid.map((x) => <Transaction key={x.id} action="Invoice" of={real.title} title={x.kind === 'deposit' ? depositLabel(x.stage ?? 'upfront') : 'Net Payable Bill'} amount={money(x.amount)} at={monthDayYearTime(x.at)} detail={x.kind === 'deposit' ? DEPOSIT_RULE : 'Billed on delivery'} />)}
           {paid.length === 0 && <p className="text-text-regular text-text-subtitle">Nothing has been paid on this study yet.</p>}
         </div>
       </div>
