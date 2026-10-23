@@ -565,6 +565,25 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
     check(`seed: built at ${hour}:05, nothing that happened is dated after it, and every entered code's session has started`, future.length === 0, future.slice(0, 4).join('; '))
   }
 
+  // 23 Oct 2026: the 14 day payout promise, derived: days left from when the study ended, overdue past them, overdue first.
+  p.reset(); clock = now.getTime()
+  {
+    const cases = payoutsToProcess(st(), now)
+    if (cases.length >= 2) {
+      // A copy of the state with two waiting studies' end dates moved: one ended 20 days ago, one 3 days ago.
+      const state = structuredClone(st())
+      const [a, b] = [cases[0]!.study.id, cases[1]!.study.id]
+      const at = (days: number) => new Date(now.getTime() - days * 86_400_000).toISOString()
+      for (const x of state.studies) { if (x.id === a) { x.stoppedAt = at(20) } if (x.id === b) { x.stoppedAt = at(3) } }
+      const after = payoutsToProcess(state, now)
+      const late = after.find((c) => c.study.id === a)!, fresh = after.find((c) => c.study.id === b)!
+      check('payouts: days left counts the 14 from when the study ended, and past them it is overdue', fresh.daysLeft === 11 && !fresh.overdue && late.daysLeft === -6 && late.overdue, `${fresh.daysLeft} / ${late.daysLeft}`)
+      check('payouts: overdue sorts to the top', after[0]!.study.id === a)
+      const dash = consoleDashboard(state)
+      check('payouts: the dashboard counts overdue ones once, in their own group, and the queue total is unchanged', dash.payoutsOverdue.some((c) => c.study.id === a) && !dash.payoutsDue.some((c) => c.study.id === a) && dash.payoutsOverdue.length + dash.payoutsDue.length === dash.payouts.length && dash.tabs.manage === dash.noShows.length + dash.reports.length + dash.payouts.length)
+    } else check('payouts: the seed has studies waiting to be paid', false, String(cases.length))
+  }
+
   // Participant passwords: a front-end stand-in, but every screen that asks for one is checked against it.
   p.reset(); clock = now.getTime()
   const dup = p.signUpPerson(DEMO_PERSON_EMAIL.toUpperCase(), 'Other123!')

@@ -12,6 +12,10 @@ import { TEAM, say, usePlatform } from '../../platform'
 
 type Row = ReturnType<typeof payoutsToProcess>[number]
 
+/** The payout promise on a row: days left of the 14, or how far past them (derived, shared/derive.ts payoutDaysLeft). */
+export const payoutDue = (r: Pick<Row, 'daysLeft' | 'overdue'>): string =>
+  r.overdue ? `Overdue by ${-r.daysLeft} day${r.daysLeft === -1 ? '' : 's'}` : r.daysLeft === 0 ? 'Due today' : `${r.daysLeft} day${r.daysLeft === 1 ? '' : 's'} left`
+
 /**
  * Payouts (`/finance/payouts`). Not drawn in the exports. Nothing on the
  * platform pays a participant automatically: when a study finishes, the team
@@ -30,6 +34,7 @@ export default function Payouts() {
   const asking = rows.find((r) => r.study.id === askingId) ?? null
   const setAsking = (r: Row | null) => setAskingId(r?.study.id ?? null)
   const total = rows.reduce((n, r) => n + r.amount, 0)
+  const overdue = rows.filter((r) => r.overdue).length
 
   const process = () => {
     if (!asking) return
@@ -39,7 +44,9 @@ export default function Payouts() {
   }
 
   const cols: Column<Row>[] = [
-    { key: 'f', header: 'Finished', width: 130, render: (r) => monthDayYear(r.study.completedAt) },
+    { key: 'f', header: 'Finished', width: 130, render: (r) => monthDayYear(r.endedAt) },
+    // Policy v2 section 4: paid within 14 days after the study ends. Overdue rows sort to the top (payoutsToProcess).
+    { key: 'd', header: 'Pay within 14 days', width: 160, render: (r) => <span className={r.overdue ? 'text-state-danger' : 'text-text-title'}>{payoutDue(r)}</span> },
     { key: 's', header: 'Study', width: '1fr', render: (r) => <button type="button" className="truncate text-left hover:underline" onClick={(e) => { e.stopPropagation(); navigate(`/studies/${r.study.id}`) }}>{r.study.title}</button> },
     { key: 'c', header: 'Client', width: 170, render: (r) => r.client?.company ?? '' },
     { key: 'p', header: 'To pay', width: 90, render: (r) => String(r.ready.length) },
@@ -51,9 +58,12 @@ export default function Payouts() {
   return (
     <>
       <h2 className="pt-6 text-title-s leading-[25px] text-text-title">Payouts to Process</h2>
-      <p className="pt-1 text-text-regular leading-5 text-text-body">Studies that have finished. Nothing is paid automatically: process each study&rsquo;s payouts here once you have checked them.</p>
+      <p className="pt-1 text-text-regular leading-5 text-text-body">Studies that have finished. Nothing is paid automatically: process each study&rsquo;s payouts here once you have checked them. Participants are told they are paid within 14 days after the study ends.</p>
       <div className="mt-3 flex h-[84px] items-center justify-between rounded-lg border-1 border-stroke-1 bg-bgAlt-1 px-4">
-        <div><p className="text-text-regular text-text-title">Studies waiting</p><p className="pt-1 text-title-l text-text-title">{rows.length}</p></div>
+        <div className="flex gap-10">
+          <div><p className="text-text-regular text-text-title">Studies waiting</p><p className="pt-1 text-title-l text-text-title">{rows.length}</p></div>
+          <div><p className="text-text-regular text-text-title">Overdue</p><p className={`pt-1 text-title-l ${overdue ? 'text-state-danger' : 'text-text-title'}`}>{overdue}</p></div>
+        </div>
         <div className="text-right"><p className="text-text-regular text-text-title">Ready to pay out</p><p className="pt-1 text-title-l text-text-title">{money(total)}</p></div>
       </div>
       <Table empty="When a study finishes, its participants' payouts will appear here to be processed." className="mt-4" rowHeight={56} rows={rows} rowKey={(r) => r.study.id} columns={cols} />
@@ -62,7 +72,7 @@ export default function Payouts() {
         footer={<><Button variant="tertiary" onClick={() => setAsking(null)}>Cancel</Button><Button disabled={(asking?.ready.length ?? 0) === 0} onClick={process}>Process {asking?.ready.length ?? 0} &middot; {money(asking?.amount ?? 0)}</Button></>}>
         {asking && (
           <div className="flex flex-col gap-3 text-text-regular leading-5 text-text-title">
-            <p>{asking.study.title} finished {ago(asking.study.completedAt, new Date())}. These participants will be paid {money(asking.study.rates.incentivePer)} each, into their wallets, now.</p>
+            <p>{asking.study.title} finished {ago(asking.endedAt, new Date())} ({payoutDue(asking).toLowerCase()}). These participants will be paid {money(asking.study.rates.incentivePer)} each, into their wallets, now.</p>
             <ul className="flex max-h-[220px] flex-col gap-1 overflow-y-auto rounded-md bg-bg-1 p-3">
               {asking.owed.map((p) => {
                 const held = !asking.ready.includes(p)

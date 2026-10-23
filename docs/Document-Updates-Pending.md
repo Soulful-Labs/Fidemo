@@ -132,3 +132,8 @@ Work that is not built, so there is nothing to describe yet.
     no entrance screen (/internal is sign in).
   - The How It Works copy on Study Details is as given; its "14 days after
     the study ends" is the policy's payout window.
+  - Not drawn: Finance > Payouts' "Pay within 14 days" column (days left,
+    Due today, Overdue by N days in red), its Overdue count, and the console
+    dashboard's "Payouts overdue" group.
+  - The client's Needs Your Attention panel is removed: View All was taken
+    off the dashboard earlier, and Super Insights pages through every item.

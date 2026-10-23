@@ -26,7 +26,7 @@ import type {
   Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudyReport, StudySetup, StudyType, TeamMember, Ticket,
 } from './types'
 
-export const SEED_VERSION = 18
+export const SEED_VERSION = 19
 export const DEMO_PERSON_ID = 'jonathan'
 export const DEMO_PERSON_EMAIL = 'jonathan.reeve@example.com'
 /** The respondent app's demo login (README). A front-end stand-in for real authentication, see Person.password. Every seeded participant has it. */
@@ -464,7 +464,8 @@ export function buildSeed(now: Date = new Date()): PlatformState {
   const sleep = live('st-sleep', 'Share about your sleep cycle', 'in_person', 'completed', 'Healthcare', 60,
     'Share about your sleep cycle, how you track it and what changes it through the week.',
     'sleep.svg', 60, 6, 89, 'allow', 'sleep', 'Adults who have tried to improve their sleep this year', { city: 'Boston' })
-  sleep.participations = fill(sleep, { rated: 12, completed: 48, noShow: 3, disqualified: 8 }, { doneFrom: -70, doneTo: -8 })
+  // Two completed and not yet paid: the study ended 6 days ago, so Finance > Payouts shows 8 of the 14 days left (23 Oct 2026).
+  sleep.participations = fill(sleep, { rated: 12, completed: 46, unpaid: 2, noShow: 3, disqualified: 8 }, { doneFrom: -70, doneTo: -8 })
 
   const fitness = live('st-fitness', 'Fitness tracker apps experience', 'group_video_call', 'ongoing', 'Health', 60,
     'Talk through the fitness tracker apps you use and what keeps you coming back to them.',
@@ -474,9 +475,10 @@ export function buildSeed(now: Date = new Date()): PlatformState {
 
   const travel = live('st-travel', 'Travel preferences and experiences', 'in_person_group', 'completed', 'Travel', 60,
     'Talk through how you plan and book travel, and what changes your mind at the last minute.',
-    'travel.svg', 45, 12, 94, 'allow', 'travel', 'Frequent flyers who book their own travel', { city: 'Chicago' })
+    'travel.svg', 45, 18, 94, 'allow', 'travel', 'Frequent flyers who book their own travel', { city: 'Chicago' })
   travel.sessions = sessionsFor(travel, 40, -20)
-  travel.participations = fill(travel, { rated: 6, completed: 34, noShow: 2, disqualified: 5 }, { doneFrom: -60, doneTo: -14 })
+  // Three completed and not yet paid on a study that ended 18 days ago: past the 14 days, so overdue in Finance > Payouts and on the console dashboard.
+  travel.participations = fill(travel, { rated: 6, completed: 31, unpaid: 3, noShow: 2, disqualified: 5 }, { doneFrom: -60, doneTo: -19 })
 
   const social = live('st-social', 'Social media posts designing apps', 'survey', 'recruiting', 'Consumer', 30,
     'How do you design social media posts and what tools do you use for it',

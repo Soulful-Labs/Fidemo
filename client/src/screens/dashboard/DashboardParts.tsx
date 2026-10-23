@@ -2,7 +2,6 @@ import { useLayoutEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import StudyCard from '../../components/client/StudyCard'
-import SidePanel from '../../components/ui/SidePanel'
 import { ChevronLeft, ChevronRight } from '../../components/ui/icons'
 import type { attention } from '../../lib/insight'
 import { cn } from '../../lib/cn'
@@ -106,14 +105,5 @@ export function NeedRow({ n }: { n: Need }) {
         <span className="truncate text-text-regular text-text-body">{n.sub}</span>
       </span>
     </button>
-  )
-}
-
-/** Every row, for "View all": the dashboard shows the top three. */
-export function AttentionPanel({ open, onClose, needs }: { open: boolean; onClose: () => void; needs: Need[] }) {
-  return (
-    <SidePanel placement="sheet" open={open} onClose={onClose} title="Needs Your Attention" headerClassName="h-14" bodyClassName="flex flex-col px-4 py-2">
-      {needs.map((n) => <NeedRow key={n.key} n={n} />)}
-    </SidePanel>
   )
 }

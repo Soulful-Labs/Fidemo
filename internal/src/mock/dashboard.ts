@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { billing, clientById, consoleDashboard, counts, personById, shortName, ticketOwnerName } from '@shared/derive'
 import { ago, count, money } from '@shared/format'
 import { studyPictures, usePlatform } from '../platform'
+import { payoutDue } from '../screens/finance/Payouts'
 
 /**
  * The Dashboard's pending actions, read from the shared platform. Every tile,
@@ -89,13 +90,19 @@ export function useDashboard() {
       })),
     }
     // The team notification raised when a study finishes: its payouts are ready, and are processed by hand on Finance, Payouts.
+    // Past the 14 days participants are promised (policy v2 section 4), a payout is in its own group, first; each payout is counted once.
+    const payoutRow = (c: (typeof d.payouts)[number]): ActionRow => ({
+      id: c.study.id, title: c.study.title, meta: c.client?.company,
+      detail: [payoutDue(c), c.notice?.body ?? `${c.owed.length} participant${c.owed.length === 1 ? '' : 's'} to be paid, ${money(c.owed.length * c.study.rates.incentivePer)} in all.`],
+      when: ago(c.notice?.at ?? c.endedAt, now), to: '/finance/payouts',
+    })
+    const overdue: ActionGroup = {
+      key: 'payouts-overdue', title: 'Payouts overdue', count: String(d.payoutsOverdue.length), viewAll: '/finance/payouts',
+      rows: d.payoutsOverdue.slice(0, FIRST).map(payoutRow),
+    }
     const payouts: ActionGroup = {
-      key: 'payouts', title: 'Payouts ready to process', count: String(d.payouts.length), viewAll: '/finance/payouts',
-      rows: d.payouts.slice(0, FIRST).map((c) => ({
-        id: c.study.id, title: c.study.title, meta: c.client?.company,
-        detail: [c.notice?.body ?? `${c.owed.length} participant${c.owed.length === 1 ? '' : 's'} to be paid, ${money(c.owed.length * c.study.rates.incentivePer)} in all.`],
-        when: ago(c.notice?.at ?? c.study.completedAt, now), to: '/finance/payouts',
-      })),
+      key: 'payouts', title: 'Payouts ready to process', count: String(d.payoutsDue.length), viewAll: '/finance/payouts',
+      rows: d.payoutsDue.slice(0, FIRST).map(payoutRow),
     }
     const flagged: ActionGroup = {
       key: 'flagged', title: 'Flagged/reported accounts', count: String(d.reports.length), viewAll: '/participants/verifications?tab=reported',
@@ -109,7 +116,7 @@ export function useDashboard() {
     const clientTickets = d.tickets.filter((t) => t.owner.kind === 'client')
 
     const GROUPS: Record<TabKey, ActionGroup[]> = {
-      all: [payouts, identity, business, screeners, tickets, noShows, refunds, flagged],
+      all: [overdue, payouts, identity, business, screeners, tickets, noShows, refunds, flagged],
       onboarding: [identity, business],
       studies: [screeners, refunds],
       support: [
@@ -117,7 +124,7 @@ export function useDashboard() {
         { key: 'tickets-clients', title: 'Client', count: String(clientTickets.length), viewAll: '/support', rows: clientTickets.slice(0, FIRST).map(ticketRow) },
       ],
       // Payouts sit under Manage (22 Oct 2026): processing them is the team's own work, not a study's.
-      manage: [noShows, flagged, payouts],
+      manage: [overdue, noShows, flagged, payouts],
     }
     const KPIS: Kpi[] = [
       { value: count(d.tiles.screenersToReview), label: 'Screeners To Review' },

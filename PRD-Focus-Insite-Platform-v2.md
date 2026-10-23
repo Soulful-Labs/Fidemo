@@ -243,7 +243,7 @@ Measured specifics worth copying exactly (console, and the client is near-identi
 - **Toggle**: 40 × 24 track, 18px knob, 3px inset. Off: stroke-input track, subtitle knob. On: brand-primary track, bg-1 knob.
 - **Underline tabs**: 42 tall, 16px sides, brand-primary text and a 1px underline when active over a 1px baseline, 24px count pill.
 - **Segmented tabs**: 48 track, 4px padding, active pill 40 tall.
-- **Side panel**: 600 wide, an 18px title in a 56px title bar, footer of two 48px buttons 16 apart. In the client app (23 October 2026) it has two placements. A **pop-up** (the default) opens in the centre of the screen, as tall as its content, every corner rounded: Rate, Ask Support, Invite To Study, Add New Card, Edit Card, Make Payment, Pay All Due Invoices, Download Sessions Results, Payment Breakdown, Add an override. A **sheet** is a full-height overlay anchored to the right edge, top to bottom, rounded left corners, for long scrollable content: a participant's profile (with its Reviews page), Notifications, Invoice Details, and Needs Your Attention (built, opened from nowhere today). The 460px dialogs were already centred.
+- **Side panel**: 600 wide, an 18px title in a 56px title bar, footer of two 48px buttons 16 apart. In the client app (23 October 2026) it has two placements. A **pop-up** (the default) opens in the centre of the screen, as tall as its content, every corner rounded: Rate, Ask Support, Invite To Study, Add New Card, Edit Card, Make Payment, Pay All Due Invoices, Download Sessions Results, Payment Breakdown, Add an override. A **sheet** is a full-height overlay anchored to the right edge, top to bottom, rounded left corners, for long scrollable content: a participant's profile (with its Reviews page), Notifications, Invoice Details. The 460px dialogs were already centred.
 - **Modal**: 460 wide. Centred variant: title, body max 310px, 40px above and below. Titled variant: 56px title bar, blocks 24 apart. Bottom bar 80px.
 - **Success modal**: a 160px disc, a 92px badge with a 4px rim, a white tick, one 48px button.
 
@@ -1455,7 +1455,8 @@ Below them, grouped queues of things waiting. Each group has a count, a collapse
 | Refunds for unfilled studies | Finance > Refunds (rows to the refund) |
 | No-show verifications | Studies (rows to the study). A row reads "[participant] • [study title]" |
 | Flagged/reported accounts | Participants > Verifications, Reported segment |
-| Payouts ready to process | Finance > Payouts. It sits under Manage and counts in Manage's tab number |
+| Payouts overdue | Studies whose participants are past the 14 day payout promise. First under All and Manage, and counted in their tab numbers like every other group |
+| Payouts ready to process | Finance > Payouts: the rest, still within the 14 days. It sits under Manage and counts in Manage's tab number. Each payout is in exactly one of the two groups |
 
 **The four tiles are not links.** There is no chart anywhere in the console; nothing needs a charting library.
 
@@ -1666,6 +1667,8 @@ The ticket screen and its states are in Section 5.8. Actions: reply with attachm
 A row opens a Transaction Details panel: who, how much, the date, a transaction id, the method, and a Download. A participant payout row opens Payout Details instead. Pagers count the real rows.
 
 **Payouts** (`/finance/payouts`) holds two lists. **Withdrawals** comes first, with columns Participant, Date, Reference ID, To Bank Account and Withdrawal Payout. A row opens the withdrawal (`/finance/payouts/:personId/:payoutId`): the participant, the amount, Date Requested, Reference ID, and the payout account (Bank Name, Account Number, Account Type), with **Release Payout**. It asks "Release [amount] Payout?" first, then reads "Payout Released!" and confirms "The transaction of [amount] has been initiated for withdrawal payout to [name]. Participant will receive the funds within 2-3 working days." Approve, Hold and Retry have no screen; see D2. Below it, the study payouts: studies in Billing or completed with participants still to be paid, and Process Payouts. A participant is paid here, never on the client's invoice.
+
+**The 14 day promise is shown here** (23 October 2026). Participants are told they are paid within 14 days after the study ends (6.4). Each study waiting to be paid shows when it ended and **Pay within 14 days**: "8 days left", "Due today", or, past the 14, "Overdue by 4 days" in red. Overdue studies sort to the top, the longest waiting first, and the header counts them beside Studies waiting. It is derived from when the study ended (recruiting stopped, or it completed), never stored, and there is no new status (`payoutsToProcess`, `payoutDaysLeft`).
 
 **Refunds** is its own screen: "Pending Refund Confirmations", with Date, Study, Client, Target, Shortfall, Billed, Refund and a Review button.
 

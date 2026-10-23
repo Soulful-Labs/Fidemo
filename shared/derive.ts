@@ -8,7 +8,7 @@
  */
 import { audienceChecks, audienceMisses, audienceOf } from './studyForm'
 import {
-  DIARY, FEES, PAGE_SIZE, STREAK_TARGET, TAX_FORM_THRESHOLD, isSessionType, depositFor } from './platform'
+  DIARY, FEES, PAGE_SIZE, STREAK_TARGET, TAX_FORM_THRESHOLD, WAITS, isSessionType, depositFor } from './platform'
 import {
   clientTag, consoleStudyTab, hasApplied, hasQualified, isApproved, isCharged, isLive, isPayable,
   participationOf, recruitingTab, respondentStatus, STUDY_TAG,
@@ -1061,18 +1061,41 @@ export interface PayoutCase {
   amount: number
   /** The team notification raised when the study finished, when there is one. */
   notice?: TeamNotice
+  /**
+   * The payout promise (policy v2 section 4): paid within 14 days after the
+   * study ends. Derived, never stored: when the study ended (recruiting
+   * stopped, or it completed), the whole days left of the 14, and whether it
+   * is past them.
+   */
+  endedAt?: string
+  daysLeft: number
+  overdue: boolean
 }
-export function payoutsToProcess(state: PlatformState): PayoutCase[] {
+
+/** When a study ended, for the payout promise: recruiting stopped (Billing), or it completed. */
+export const studyEndedAt = (study: Study): string | undefined => study.stoppedAt ?? study.completedAt
+
+/** Whole days left of the payout window, counted from when the study ended; negative once it is past. */
+export function payoutDaysLeft(endedAt: string | undefined, now: Date = new Date()): number {
+  if (!endedAt) return WAITS.PAYOUT_AFTER_STUDY_ENDS_DAYS
+  const passed = Math.floor((now.getTime() - new Date(endedAt).getTime()) / DAY)
+  return WAITS.PAYOUT_AFTER_STUDY_ENDS_DAYS - passed
+}
+export function payoutsToProcess(state: PlatformState, now: Date = new Date()): PayoutCase[] {
   // Participants are paid from Billing on (22 Oct 2026): their part is done when recruiting stops.
   return state.studies.filter((s) => isStopped(s.state)).map((study) => {
     const owed = study.participations.filter((p) => p.state === 'completed' && !p.paidAt)
     const ready = owed.filter((p) => !isSessionType(study.type) || Boolean(p.code?.byClient && p.code?.byParticipant))
+    const endedAt = studyEndedAt(study)
+    const daysLeft = payoutDaysLeft(endedAt, now)
     return {
       study, client: state.clients.find((c) => c.id === study.clientId), owed, ready, amount: ready.length * study.rates.incentivePer,
       notice: (state.teamNotices ?? []).find((n) => n.kind === 'payouts' && n.studyId === study.id),
+      endedAt, daysLeft, overdue: daysLeft < 0,
     }
   }).filter((c) => c.owed.length > 0)
-    .sort((a, b) => (b.notice?.at ?? b.study.stoppedAt ?? b.study.completedAt ?? '').localeCompare(a.notice?.at ?? a.study.stoppedAt ?? a.study.completedAt ?? ''))
+    // The longest waiting first, so anything overdue sorts to the top.
+    .sort((a, b) => a.daysLeft - b.daysLeft)
 }
 
 /** The console's Finance tiles. */
@@ -1106,6 +1129,8 @@ export function consoleDashboard(state: PlatformState) {
   return {
     screeners, checks, identity: checks.filter((c) => c.kind === 'identity'), profession: checks.filter((c) => c.kind === 'profession'),
     business, reports, tickets: fresh, refunds, noShows, payouts,
+    /** Payouts past the 14 days, and the rest: each payout is in exactly one, so the counts still add up to the queue. */
+    payoutsOverdue: payouts.filter((c) => c.overdue), payoutsDue: payouts.filter((c) => !c.overdue),
     tiles: {
       screenersToReview: screeners.length,
       onboardingToVerify: checks.length + business.length,

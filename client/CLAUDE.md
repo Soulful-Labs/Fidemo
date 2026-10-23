@@ -1725,4 +1725,7 @@ is where each lives in the code.
   long scrollable panels, a participant's profile, Notifications, Invoice
   Details, are `placement="sheet"`, full height on the right edge.)
 - **Account has no Payment Method section** (23 Oct 2026); cards live on
-  Payments, Saved Payment Methods. Studies' sub-items fold away outside Studies.
+  Payments, Saved Payment Methods.
+- **Needs Your Attention has no panel** (23 Oct 2026). View All was removed
+  from the dashboard earlier, so the panel could not be opened; Super
+  Insights pages through every item, and each row opens its own place. Studies' sub-items fold away outside Studies.
