@@ -9,11 +9,9 @@ import { UnderlineTabs } from '../../../components/ui/Tabs'
 import type { ManagedStudy } from '../../../mock/manage'
 import { AudiencePills, Block, EstimatedAudience } from './ManageTab'
 import { ClientCard } from './OverviewTab'
-import { Money, StoppedBill, Transaction } from './PayTab'
+import { Money, StoppedBill, Transaction, transactionsOf } from './PayTab'
 import { billing } from '@shared/derive'
-import { money, monthDayYearTime } from '@shared/format'
-import { DEPOSIT_RULE } from '@shared/platform'
-import { depositLabel } from '@shared/derive'
+import { money } from '@shared/format'
 import { usePlatform } from '../../../platform'
 import ResultsTab from './ResultsTab'
 
@@ -119,7 +117,7 @@ function CompletedPayments({ studyId }: { studyId: string }) {
   const real = usePlatform().studies.find((x) => x.id === studyId)
   if (!real) return null
   const b = billing(real)
-  const paid = real.payments.filter((x) => x.kind === 'deposit' || x.kind === 'balance').sort((x, y) => y.at.localeCompare(x.at))
+  const paid = transactionsOf(real)
   return (
     <div className="grid grid-cols-2 items-start gap-6 pt-5">
       <div>
@@ -128,13 +126,10 @@ function CompletedPayments({ studyId }: { studyId: string }) {
       </div>
       <div className="flex flex-col gap-3">
         <h2 className="text-title-s leading-[25px] text-text-title">Payment Overview</h2>
-        <div className="flex gap-3"><Money short label="Deposit Paid" value={money(b.deposit)} /><Money short label="Total Cost" value={money(b.totalCost)} /></div>
+        <div className="flex gap-3"><Money short label="Total Paid" value={money(b.paid)} /></div>
         <h2 className="pt-6 text-title-s leading-[25px] text-text-title">Transactions</h2>
         <div className="flex flex-col gap-2">
-          {paid.map((x) => (
-            <Transaction key={x.id} action="Invoice" of={real.title} title={x.kind === 'deposit' ? depositLabel(x.stage ?? 'upfront') : 'Net Payable Bill'}
-              amount={money(x.amount)} at={monthDayYearTime(x.at)} detail={x.kind === 'deposit' ? DEPOSIT_RULE : 'Billed on delivery'} />
-          ))}
+          {paid.map((x) => <Transaction key={x.id} action="Invoice" of={real.title} title={x.title} amount={x.amount} at={x.at} />)}
           {paid.length === 0 && <p className="text-text-regular text-text-subtitle">Nothing has been paid on this study yet.</p>}
         </div>
       </div>

@@ -86,7 +86,7 @@ export default function ReviewStudy() {
             {tab === 'audience' && <AudienceTab />}
             {tab === 'screener' && <QuestionList labels={view.screenerLabels} questions={view.screener} />}
             {tab === 'study' && <StudyTab type={type} />}
-            {tab === 'payment' && <PaymentTab onReceipt={() => undefined} />}
+            {tab === 'payment' && <PaymentTab study={study.raw} />}
             {tab === 'revisions' && <RevisionsTab />}
           </div>
         </section>

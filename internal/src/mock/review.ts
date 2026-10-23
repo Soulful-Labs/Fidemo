@@ -2,8 +2,7 @@ import { createContext, useContext, useMemo } from 'react'
 import { billing, clientById, durationLabel, paymentStats, sessionSeats, studiesOf, studyById, teamById } from '@shared/derive'
 import { monthDayYear, monthDayYearTime, money } from '@shared/format'
 import { WEEKDAYS as FORM_DAYS, dayOf } from '@shared/studyForm'
-import { DEPOSIT_RULE, diaryWords } from '@shared/platform'
-import { depositLabel } from '@shared/derive'
+import { diaryWords } from '@shared/platform'
 import type { PlatformState, PreScreenQuestion, Question as SharedQuestion, Study } from '@shared/types'
 import { consoleType, studyPictures, usePlatform } from '../platform'
 import { clientPhoto } from './clients'
@@ -38,8 +37,6 @@ const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satur
 export function review(state: PlatformState, s: Study) {
   const client = clientById(state, s.clientId)
   const bill = billing(s)
-  const deposit = s.payments.filter((p) => p.kind === 'deposit')
-  const depositPaid = deposit.reduce((a, p) => a + p.amount, 0)
   const pics = studyPictures(s.id, s.image)
   const stats = paymentStats(studiesOf(state, s.clientId))
   const audience = s.setup?.audience ?? [{ value: String(s.required), icon: 'people' }, { label: 'Roles', value: s.targetProfession }]
@@ -108,22 +105,6 @@ export function review(state: PlatformState, s: Study) {
     GROUP: {
       seats: `${s.sessions?.[0]?.seats ?? 0} seats`,
       sessions: seats.map((x, i) => [`Session ${i + 1}`, cardDay(x.date), slotRange(x.slot, s.durationMins), addressOf(s, x.locationId) ?? ''] as [string, string, string, string]),
-    },
-    PAYMENT: {
-      totalCost: money(bill.totalCost), depositPaid: money(depositPaid), incentive: money(s.rates.incentivePer), suggested: `Suggested: ${money(s.rates.incentivePer)}`,
-      card: client?.cards.find((c) => c.isDefault)?.last4 ?? client?.cards[0]?.last4 ?? '—',
-      billing: [
-        { label: 'Platform Fee', amount: money(s.rates.platformFee) },
-        { label: 'Recruiting Fee', detail: `${money(s.rates.recruitingPer)} x ${s.required} participants`, amount: money(s.rates.recruitingPer * s.required), info: true },
-        { label: 'Incentives', detail: `${money(s.rates.incentivePer)} x ${s.required} participants`, amount: money(s.rates.incentivePer * s.required), info: true },
-        { label: 'Moderation Fee', detail: `${money(s.rates.moderationPer)} x ${s.required} participants`, amount: money(s.rates.moderationPer * s.required), info: true },
-      ],
-      totals: [
-        { label: 'Total cost', amount: money(bill.totalCost) },
-        { label: 'Less: Deposits', detail: DEPOSIT_RULE, amount: `-${money(depositPaid)}`, info: true },
-      ],
-      net: { label: 'Net payable cost', amount: money(Math.max(0, bill.totalCost - depositPaid)) },
-      transactions: deposit.map((p) => ({ title: depositLabel(p.stage ?? 'upfront'), amount: money(p.amount), when: monthDayYearTime(p.at), detail: DEPOSIT_RULE })),
     },
     REVISIONS: {
       requested: [...s.revisions].reverse().map((r) => ({ title: 'Requested changes.', by: teamById(state, r.by)?.name, greeting: `Hey ${client?.name.split(' ')[0] ?? ''},`, text: r.text, when: monthDayYearTime(r.at) })),

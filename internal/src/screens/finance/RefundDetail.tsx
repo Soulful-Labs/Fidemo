@@ -63,7 +63,8 @@ export default function RefundDetail() {
       </div>
       <div className="grid grid-cols-2 items-start gap-6">
         <div><h2 className="pb-3 text-title-s leading-[25px] text-text-title">Billing</h2>
-          <Billing>
+          {/* The study's own final bill (shared/derive.ts billing), never a sample (23 Oct 2026). */}
+          <Billing lines={r.v.lines}>
             <BillLine line={{ label: 'Total Billed', amount: r.billed }} />
             <BillLine line={r.v.depositLine} />
             <span className="self-start rounded-full bg-orange-100 px-3 py-1 text-text-regular text-text-title">{r.shortfall} participants underfilled</span>
