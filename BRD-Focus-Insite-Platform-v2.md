@@ -108,7 +108,7 @@ The paid-participation market is the mechanism: people give their time and opini
 | Pricing plans | Decision D11 |
 | When the 30% incentive deposit is taken | Built as when the team takes the study live, accepted for now; Jim to confirm. PRD D40 |
 | What changes a study's rate, and the rate sheet | Waits on the rate sheet. PRD D42 |
-| Who sets the participant's incentive now that the client does not | Open. PRD D41 |
+| Which segment a new study is offered before the team quotes it | Built as the first that fits the size; to decide. PRD D43 |
 | Whether the team may re-price a live study | Jim. PRD D33 |
 | What the Audience forecast shows | Not yet assigned. PRD D34 |
 | The live domain, the support address, and whether the certificate prefix changes from FI- | Not yet assigned. PRD D35. A prefix change needs a new version of the policy |
@@ -135,14 +135,14 @@ The paid-participation market is the mechanism: people give their time and opini
 
 | Revenue line | Rate | Basis |
 |---|---|---|
-| Cost per interview (CPI) | Per study, $250 to start | Per completed participant, incentive included. The team sets it per study (Change CPI Rate) |
+| Cost per interview (CPI) | Per study, from the rate card | Per completed participant, incentive included. Worked out from the team's rate card (setup, cost per recruit, incentive guide by segment and size band) and set by the team per study |
 | Withdrawal fee | $1.99 |
 | Study payout | Within 14 days after the study ends, paid into the wallet by the team |
 | Withdrawal to the bank | 2 to 3 working days | Per participant withdrawal |
 
 Pricing changed on 23 October 2026: a client pays Total Recruiting Cost, the CPI times the participants, with the incentive included. The team sets the CPI per study. Revenue on a study is the CPI less the incentive, per completed participant. The team's fee cards (platform, moderation and recruitment fees with add-ons) stay in the console as its own cost model; the client does not see them. The withdrawal fee ($1.99) and the points value are set by a master admin under Participants Fees.
 
-The incentive is paid out of the CPI. The client no longer sets it; who does is open (PRD D41), and a new study keeps its form's starting incentive of $700 until it is decided.
+The incentive is paid out of the CPI. It is proposed from the rate card's guide rate and set by the team per study (PRD D41, settled 24 October 2026). The rate card itself is confidential and never reaches a client screen.
 
 **A worked example, the shape the designs draw (23 October 2026).** Twenty participants at $250: Total Recruiting Cost $5,000; $1,000 upfront at publish, $1,500 when it goes live, $2,500 on completion if all twenty complete. If ten complete at $250 and ten after a change at $350, the final bill is $6,000, less the $2,500 of deposits, $3,500 to pay. The frames' own figures ($1,800 for the 30%, $3,200 net) are placeholders and do not add up; the build derives every figure.
 

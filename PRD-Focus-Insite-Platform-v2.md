@@ -628,7 +628,7 @@ Redemption and payouts (6.4), scheduling (6.5), client ratings, the certificate 
 
 ### 6.10 What a client pays, and the team's fee cards (23 October 2026)
 
-**What the client sees: one cost per interview (CPI) per participant**, with the participant's incentive inside it. The team sets it for each study in the console (Change CPI Rate, on the review queue's Payment tab); a study starts at $250 (`RATE_PER_PARTICIPANT`, `rateFor` in `shared/platform.ts`). It is a stored value the team edits (`setStudyRate`, `Study.ratePeriods`), never typed into a client screen.
+**What the client sees: one cost per interview (CPI) per participant**, with the participant's incentive inside it. Since 24 October 2026 it is worked out from the team's rate card (6.10a) and set by the team for each study in the console (the Quote panel and Change CPI Rate, on the review queue's Payment tab). It is a stored value the team edits (`applyRateCardQuote`, `setStudyRate`, `Study.ratePeriods`), never typed into a client screen. Before the team quotes it, a new study is offered the rate card's figure at the first segment whose size band fits (`rateFor`, `proposedSegment` in `shared/ratecard.ts`); see D43.
 
 | Item | Value | Charged |
 |---|---|---|
@@ -640,6 +640,27 @@ Redemption and payouts (6.4), scheduling (6.5), client ratings, the certificate 
 | Client refunds | Paid within 5 to 7 working days | |
 
 **Changing the CPI.** On a study in review the new rate replaces the old; the upfront deposit already taken stays, and the bill shows the new total less what was paid. On a live study the new rate starts a new period, for the participants who complete from then on, which is why a Final bill can have two lines ("$250 x 10 participants • Oct 1, 2026", "$350 x 10 participants • Oct 10, 2026"). A completed study cannot be repriced.
+
+### 6.10a The rate card (24 October 2026)
+
+The team's pricing sheet, kept as data (`shared/ratecard.ts`; the July 2026 files `rate-card.csv` and `rate-card-fees.csv` at the repository root are its first version, embedded at build time by `scripts/embed-rate-card.mjs`). Confidential: no client screen reads it.
+
+| Table | Columns |
+|---|---|
+| Segments | section, segment, level, criteria, size band; setup (from, to, note), cost per recruit (from, to, note), incentive guide (from, to, unit, note) |
+| Fees | group (Standard fee, Additional fee, Adjustment, Rule), item, amount (from, to), unit, note |
+
+**A quote.** Setup, plus cost per recruit times participants, plus the incentive guide times hours times participants, plus the flat add-ons the team ticks, over the participants. The lower end of each range is quoted; the top is shown beside it. A segment with a blank figure the sum needs cannot be quoted. Size bands: "1-25" includes 25; "25 plus" starts at 26; "any" fits everyone.
+
+| The three asked for (25 participants, one hour, remote) | Sum | Cost per interview | Top of range |
+|---|---|---|---|
+| Level 1 Basic Consumer, 1-25 | $500 + $125 x 25 + $100 x 25 = $6,125 | **$245** | $245 |
+| Level 2 Niche Consumer, 1-25 | $750 + $135 x 25 + $125 x 25 = $7,250 | **$290** | $345 |
+| B2B upper level, 1-25 | $1,000 + $200 x 25 + $300 x 25 = $13,500 | **$540** | $640 |
+
+**The incentive** is proposed from the segment's guide rate times the study's hours, and set by the team per study (Change Incentive, beside Change CPI Rate). It is kept period by period (`Study.incentivePeriods`): a change applies to those who complete after it, and a payout keeps what it paid (`Participation.paidAmount`). A study cannot go live without one. Above the cost per interview is allowed, with a warning.
+
+**Editing and uploading.** On Edit Clients Fees the team edits any cell and adds rows by hand, or uses Upload file and fill: CSV, Excel (.xlsx) or PDF, read without a library (`shared/tableFiles.ts`). The file is matched to the card by row labels (section, segment, level and size band; or group and item). A preview shows what was read, rows matched, rows not matched (added), rows the file did not mention (kept), cells it could not read (left blank and marked red in the form) and every value about to change. Nothing saves until Save Changes. Every save is a version in Version History with who, when and, for an upload, the file's name. Export rate card CSV and Export fees CSV write the team's own columns; `rate-card.csv` round-trips byte for byte.
 
 **The team's fee cards stay.** Platform fee $100 once per study, moderation fee $10 and recruitment fee $25 base per completed participant, with two add-ons (+$25 for Video Call, In-Person or Diary, or Roles; +$20 for Skills). They are the team's own cost model, set on Pricing & Rewards and versioned (Version History). The client does not see them.
 
@@ -2241,7 +2262,15 @@ BRD Section 9a has the full requirement.
 | What the frames draw | "As on Oct 10, 2026" beside the 30% line; no trigger |
 | Who confirms | Jim |
 
-### D41: An incentive above the rate (the field is gone; who sets the incentive is open)
+### D41: The incentive (settled 24 October 2026)
+
+**Settled.** The incentive is proposed from the rate card's guide rate for the study's segment and hours, and the team sets it per study in the console beside the CPI. A new study no longer starts at $700. It cannot go live without an incentive. Above the CPI is allowed with a warning. A change applies to those who complete after it; anyone already paid keeps what they were paid. The client sees no incentive figures (the dashboard tile is gone; the Audience forecast's "Recommended Incentive" stays, marked Coming soon).
+
+### D43: The segment a new study is offered before the team quotes it (open)
+
+**Built: the first segment on the card whose size band fits the participant count and which can be quoted**, which for the July 2026 card is Level 1 Basic Consumer. The client's Payment & Publish shows that figure; the team re-quotes in the console before the study goes live, and the deposit already taken stays as it was. Whether the audience the client set should choose the segment (for example B2B roles) is to decide.
+
+### D41 (earlier record): An incentive above the rate (the field is gone; who sets the incentive is open)
 
 **23 October 2026, second round:** the Study step's Incentive Payments, Costing Summary and Payment are removed, so the client no longer sets the incentive. **Open: who sets the participant's incentive now.** Each study keeps the incentive its form carries, which starts at $700 (`shared/studyForm.ts`), above the $250 starting CPI; the console shows it read only. Until someone sets it, a new study pays participants more than the client is charged for them. The record of the first decision follows.
 
@@ -3010,3 +3039,5 @@ Each screen behaves correctly against the shared data layer, which stands in for
 | A late withdrawal | Still Processing after its expected date says it is running late and that the team is releasing it | Release withdrawals within the stated time, or tell the participant why not |
 
 *End of PRD.*
+
+**The rate card (24 October 2026).** The team's rate card is confidential. A server must send it only to the console, never to the client app or the respondent app; the client receives a study's cost per interview and the participant their incentive, nothing else. In this front-end-only build all three apps share one browser state, so this is not enforced here.

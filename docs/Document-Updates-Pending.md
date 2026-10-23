@@ -77,6 +77,43 @@ Still carrying the old model, on purpose or open:
 - The console's Edit Study, Study step, still shows the incentive block, read
   only.
 
+## Rate card round, 24 October 2026
+
+Built: the rate card as data, quotes, the incentive per study, the uploader
+with its preview, Export CSV, Version History, the console Quote panel and
+Change Incentive. Flags, not decided:
+
+- **The sheet is confidential and must never reach a client screen.** No
+  client screen reads it; the client sees only the cost per interview. But in
+  this front-end-only demo the platform's state, rate card included, sits in
+  the browser for all three apps. A server must never send the rate card to a
+  client or participant (PRD 23.8).
+- **Moderation and transcription** say "Discuss with team": no automatic
+  rule; they stay manual. Shown as rules on the card, never added to a quote.
+- **Which segment a new study is offered before the team quotes it** (PRD
+  D43): the first that fits the size, Basic Consumer on this card.
+- **Size band boundaries**: 25 is in "1-25"; "25 plus" starts at 26.
+- **Written scaling not applied**: "plus 500 for each additional 25 people"
+  (Basic Consumer setup) and the in-person cost per recruit ("200 in
+  person") are notes on the card; the quote does not apply them. The team
+  adjusts the CPI by hand where they apply.
+- **Adjustments are not applied automatically**: the Spanish speaking floor
+  and the pairs uplifts (percent) are shown; only flat fees can be ticked as
+  add-ons in a quote.
+- **The fees file has an unquoted comma** in the rule "Client requests lower
+  incentive than recommended". The reader keeps it as one note; the export
+  quotes it.
+- **The incentive in review**: a resubmitted study is re-proposed from the
+  card; anything the team set before is replaced.
+- **PDF reading** works when the PDF draws each cell as its own text (most
+  generated tables); a scanned PDF or one that draws a line as one run is
+  refused with a reason, never guessed. The older .xls format is refused;
+  .xlsx is read.
+- **Rows can be added, not deleted**, on the editor; an upload never removes a
+  row the file does not mention.
+- **A saved blank**: if the team saves with an unreadable cell still blank,
+  it saves blank, and a segment with a blank figure cannot be quoted.
+
 ## Difference list, client round of 23 October 2026
 
 Built as the PNGs draw it, and different from what was decided before:
