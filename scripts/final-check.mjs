@@ -191,7 +191,7 @@ if ((await titles()).filter((t) => t.startsWith(LEFT)).length !== 1) g3.push('ed
 say(3, 'Create Study opens blank even with a draft in progress', g3, `the unfinished study went to Drafts once, as "${LEFT}", and reopened from there`)
 
 // ---- build the study the other checks follow: a survey, a narrow audience, a real picture
-const S = { title: `Final ${tag}`, description: 'A survey with a narrow audience and its own picture.', participants: '6', incentive: 80 }
+const S = { title: `Final ${tag}`, description: 'A survey with a narrow audience and its own picture.', participants: '6', incentive: 700 }
 const picture = resolve('client/public/img/landing/create.png')
 await C.click('Survey')
 const { root } = await send('DOM.getDocument', {}, C.sid)
@@ -216,26 +216,27 @@ await C.ev(`(async () => { __ph('Enter question text...', 'How often do you shop
 await C.click('Save & Continue', 500)
 // The incentive and costs sit under the study settings on the Study step (22 Oct 2026, every Create frame).
 await C.ev(FORMS);
-await C.ev(`(() => { __type(__al('Incentive Amount'), '$${S.incentive}'); return true })()`); await sleep(150)
 await C.click('Proceed to Publish', 600)
 
 // ---- 2. the fee shown on Publish is the fee taken
 const g2 = []
 const publishText = await C.ev('document.body.innerText')
-const upfront = (/To pay upfront\s*\$([\d,]+(?:\.\d+)?)/.exec(publishText) || [])[1]
-const total = (/Total Study Cost\s*\$([\d,]+)/.exec(publishText) || [])[1]
-if (/3%|processing fee/i.test(publishText)) g2.push('Publish still mentions a processing fee')
+const upfront = (/To pay upfront[^$]*\$([\d,]+(?:\.\d+)?)/.exec(publishText) || [])[1]
+const total = (/Total Recruiting Cost\s*\$([\d,]+)/.exec(publishText) || [])[1]
+// 23 Oct 2026: the frames draw the 3% card fee line again; it is shown, and nothing charges it.
+if (!/3% merchant processing fee/.test(publishText)) g2.push('Publish does not show the drawn card fee line')
 const audienceChip = (/Estimated Audience:\s*([\d,]+)/.exec(publishText) || [])[1]
 await C.ev(FORMS) // the demo client's saved card is already selected
 await C.click('Publish Study', 900)
 S.id = await C.ev(`(__st().studies.find((x) => x.title === ${JSON.stringify(S.title)}) || {}).id`)
 const stored = await C.ev(`(() => { const s = __st().studies.find((x) => x.id === ${JSON.stringify(S.id)}); return { payments: s.payments.map((p) => p.kind + ' ' + p.amount), image: (s.image || '').slice(0, 30), bytes: (s.image || '').length, rates: s.rates, required: s.required } })()`)
 if (stored.payments.join() !== `deposit ${Number((upfront || '').replace(/,/g, ''))}`) g2.push(`Publish said $${upfront} upfront; the store took ${stored.payments.join() || 'nothing'}`)
-const fromRates = stored.rates.platformFee + (stored.rates.recruitingPer + stored.rates.incentivePer + stored.rates.moderationPer) * stored.required
-if (fromRates !== Number((total || '').replace(/,/g, ''))) g2.push(`Publish said a total of $${total}; the study's rates come to $${fromRates}`)
+// The CPI model (23 Oct 2026): Total Recruiting Cost is the study's rate times its participants.
+const fromRate = await C.ev(`(() => { const s = __st().studies.find((x) => x.id === ${JSON.stringify(S.id)}); return s.ratePeriods.at(-1).rate * s.required })()`)
+if (fromRate !== Number((total || '').replace(/,/g, ''))) g2.push(`Publish said a total of $${total}; the study's rate comes to $${fromRate}`)
 await C.go('/client/studies/st-sleep/payment'); await sleep(500)
-if (/3%|processing fee/i.test(await C.ev('document.body.innerText'))) g2.push('Bill Payment still mentions a processing fee')
-say(2, 'The fee shown on Publish is the fee taken', g2, `Publish: total $${total}, upfront $${upfront}, no processing fee mentioned; the store took ${stored.payments.join()} and holds rates that come to $${fromRates}`)
+if (!/3% merchant processing fee/.test(await C.ev('document.body.innerText'))) g2.push('Bill Payment does not show the drawn card fee line')
+say(2, 'The fee shown on Publish is the fee taken', g2, `Publish: Total Recruiting Cost $${total}, upfront $${upfront}, the drawn card fee line shown (nothing charges it); the store took ${stored.payments.join()} and the study's rate comes to $${fromRate}`)
 
 // The team takes it live, which is when the platform matches people to it.
 await I.go(`/internal/studies/review/${S.id}`); await I.click('Approve to Publish', 400); await I.click('Approve and Publish', 900)

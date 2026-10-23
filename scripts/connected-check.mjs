@@ -160,7 +160,7 @@ await C.open('/client/studies', `localStorage.setItem('fi-client-session', JSON.
 for (const t of [R, C, I]) await t.mark()
 console.log(`site: ${base}\ntabs: respondent ${await R.path()}, console ${await I.path()}, client ${await C.path()}\n`)
 
-const S = { title: `Connected ${tag}`, incentive: 60 }
+const S = { title: `Connected ${tag}`, incentive: 700 }
 const study = () => R.ev(`(__st().studies.find((s) => s.title === ${JSON.stringify(S.title)}) || null)`)
 const part = async () => (await study())?.participations.find((p) => p.personId === 'jonathan')
 const alive = async () => (await R.alive()) && (await C.alive()) && (await I.alive())
@@ -184,7 +184,6 @@ const alive = async () => (await R.alive()) && (await C.alive()) && (await I.ali
     await C.click('Save & Continue', 500)
     // The incentive and costs sit under the study settings on the Study step (22 Oct 2026, every Create frame).
     await C.ev(FORMS);
-    await C.ev(`(() => { __type(__al('Incentive Amount'), '$${S.incentive}'); return true })()`); await sleep(150)
     await C.click('Proceed to Publish', 700); await C.ev(FORMS)
     // The demo client's saved card is already selected at Publish.
     await C.click('Publish Study', 1200)

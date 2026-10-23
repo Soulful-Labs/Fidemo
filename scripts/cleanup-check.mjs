@@ -344,23 +344,20 @@ async function restrictInConsole(id, statement) {
   say(9, 'Referral points land when the referred person joins', g, `a new account signed up through ?ref=${code} (Sign Up, then the code), finishing nothing else: the referrer's points ${p0} -> ${p1}, the friend listed as joined`)
 }
 
-// ---- 10. Roles and skills targeting is charged the add-ons
+// ---- 10. The client sees one cost per participant; the team's add-ons stay on Pricing & Rewards (23 Oct 2026)
 {
   const g = []
   await C.ev(clientSession('jennifer@soulfullabs.com')); await C.open('/client/studies')
   await C.click('Create Study', 700); await C.click('Fill from scratch instead', 700)
   await C.click('Survey', 300)
-  const recruit = async () => { await C.go('/client/studies/create/study'); await sleep(500); return flat(await C.ev(`(() => { const el = [...document.querySelectorAll('*')].find((e) => e.children.length < 6 && /^Recruitment Cost/.test(e.innerText ?? '')); return el ? el.innerText : '' })()`)) }
-  const setAud = async (roles, skills) => { await C.go('/client/studies/create/audience'); await sleep(500); await C.ev(FORMS); await C.ev(`(() => { __ph('e.g. Product Manager', ${JSON.stringify(roles)}); __ph('e.g. SQL, Figma', ${JSON.stringify(skills)}); return true })()`); await sleep(200) }
-  await setAud('', ''); const none = await recruit()
-  await setAud('Nurse', ''); const roles = await recruit()
-  await setAud('', 'Python'); const skills = await recruit()
-  await setAud('Nurse', 'Python'); const both = await recruit()
-  const rate = (t) => Number((t.match(/x \$([0-9.]+)/) ?? [])[1])
-  const got = [none, roles, skills, both].map(rate)
-  if (got.join() !== '25,50,45,70') g.push('recruitment per participant: ' + got.join(', '))
+  await C.go('/client/studies/create/study'); await sleep(500)
+  const step = flat(await C.ev('document.body.innerText'))
+  for (const old of ['Incentive Amount', 'Costing Summary', 'Recruitment Cost', 'Moderation Cost', 'Platform Fee']) if (step.includes(flat(old))) g.push('the Study step still shows ' + old)
+  await I.go('/internal/pricing'); await sleep(500)
+  const fees = flat(await I.ev('document.body.innerText'))
+  for (const want of ['Platform Fees', 'Moderation Fees', 'Recruitment Fees', '+$25', '+$20', 'Version History', 'Participants Fees', '$1.99']) if (!fees.includes(flat(want))) g.push('Pricing & Rewards lacks ' + want)
   await C.ev(`localStorage.removeItem('fi-client-create'); true`)
-  say(10, 'Roles and skills targeting is charged the add-ons', g, `a survey's recruitment per participant on Costing Summary: none $${got[0]}, roles $${got[1]}, skills $${got[2]}, both $${got[3]}`)
+  say(10, 'The client sees one cost per participant; the team keeps its fee cards and add-ons', g, 'the Study step has no incentive field and no fee lines; Pricing & Rewards shows the three fee cards, both add-ons, Version History and Participants Fees ($1.99)')
 }
 
 // ---- 11. A Pricing & Rewards change saves, after a warning, or says plainly it cannot (22 Oct 2026: policy v2 section 10)

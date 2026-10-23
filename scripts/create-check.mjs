@@ -147,7 +147,7 @@ const off = after(9)
 /** Six studies, one of each type, each with its own step 4. `setup` runs with the composer open; `expect` is what the study must then show. */
 const STUDIES = [
   {
-    key: 'survey', card: 'Survey', duration: 20, participants: '12', incentive: 60, screener: EIGHT, opener: 'Create Survey Questionnaire', submit: 'Save & Continue',
+    key: 'survey', card: 'Survey', duration: 20, participants: '12', incentive: 700, screener: EIGHT, opener: 'Create Survey Questionnaire', submit: 'Save & Continue',
     setup: `__ph('Enter question text...', 'How often do you shop online?'); __ph('Enter option', 'Weekly', 0); __ph('Enter option', 'Monthly', 1);
       __btn('Add Question').click(); await __wait(); await __choose(__all('button').filter((b) => b.textContent.trim() === 'Single-select').pop(), 'Multi-line input'); __ph('Enter question text...', 'What stops you buying?', 5);`,
     typeLabel: 'Survey', summary: '2 inputs',
@@ -156,7 +156,7 @@ const STUDIES = [
     tasks: ['How often do you shop online?', 'What stops you buying?'],
   },
   {
-    key: 'video 1:1', card: 'Video Call', duration: 45, participants: '8', incentive: 150, screener: THREE, opener: 'Set Timing Availability', submit: 'Continue',
+    key: 'video 1:1', card: 'Video Call', duration: 45, participants: '8', incentive: 700, screener: THREE, opener: 'Set Timing Availability', submit: 'Continue',
     setup: `await __choose(__btn('15 minutes'), '10 minutes'); __type(__al('Minimum notice'), '1'); await __wait(); await __choose(__btn('Minutes'), 'Hours'); ${hours('09:00 AM', '05:00 PM')}
       __al('Add hours to Tuesday').click(); await __wait(); await __time('Tuesday from', '06:00 PM', 1); await __time('Tuesday to', '08:00 PM', 1);
       __click('Add Override'); await __wait(300); __type(__al('Override from'), ${JSON.stringify(ymd(off))}); __type(__al('Override to'), ${JSON.stringify(ymd(off))}); __al('Mark Unavailable For Full Day').click(); await __wait(); __click('Save override'); await __wait(300);`,
@@ -166,7 +166,7 @@ const STUDIES = [
     slots: ['09:00 AM', '09:55 AM', '10:50 AM'], closed: off,
   },
   {
-    key: 'group video', card: 'Video Call', group: 0, duration: 60, participants: '10', incentive: 90, screener: THREE, opener: 'Set Timing Availability', submit: 'Continue',
+    key: 'group video', card: 'Video Call', group: 0, duration: 60, participants: '10', incentive: 700, screener: THREE, opener: 'Set Timing Availability', submit: 'Continue',
     setup: `__type(__al('Seats per session'), '6 seats'); ${session(after(5), '10:00 AM')} ${session(after(7), '02:00 PM')}`,
     typeLabel: 'Group Video Call', summary: '2 sessions, 6 seats per session',
     client: ['6 seats', `${after(5).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', weekday: 'long' })}, 10:00 AM`, `${after(7).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', weekday: 'long' })}, 02:00 PM`],
@@ -174,7 +174,7 @@ const STUDIES = [
     sessions: [[after(5), '10:00 AM'], [after(7), '02:00 PM']],
   },
   {
-    key: 'in-person 1:1', card: 'In-Person', duration: 30, participants: '6', incentive: 200, screener: THREE, opener: 'Set Address & Availability', submit: 'Continue',
+    key: 'in-person 1:1', card: 'In-Person', duration: 30, participants: '6', incentive: 700, screener: THREE, opener: 'Set Address & Availability', submit: 'Continue',
     setup: `${address('12 Main St', 'Austin, Texas', '73301')} ${address('4 Dock Road', 'Houston, Texas', '77002')} __type(__al('Minimum notice'), '1'); await __wait(); await __choose(__btn('Minutes'), 'Days'); ${hours('10:00 AM', '04:00 PM')}`,
     typeLabel: 'In-Person', summary: '2 addresses, available 5 days/week, custom timings',
     client: ['12 Main St, Austin, Texas, 73301', '4 Dock Road, Houston, Texas, 77002', '15 minutes', '1 Day', '10:00 AM to 04:00 PM'],
@@ -182,7 +182,7 @@ const STUDIES = [
     slots: ['10:00 AM', '10:45 AM'], noticeHours: 24, places: ['12 Main St, Austin, Texas, 73301', '4 Dock Road, Houston, Texas, 77002'],
   },
   {
-    key: 'in-person group', card: 'In-Person', group: 1, duration: 90, participants: '8', incentive: 120, screener: THREE, opener: 'Set Address & Availability', submit: 'Continue',
+    key: 'in-person group', card: 'In-Person', group: 1, duration: 90, participants: '8', incentive: 700, screener: THREE, opener: 'Set Address & Availability', submit: 'Continue',
     setup: `__type(__al('Seats per session'), '4 seats'); ${address('9 Canal St', 'Leeds, UK', 'LS1 4AP')} ${session(after(6), '11:00 AM')} ${session(after(8), '03:30 PM')}`,
     typeLabel: 'In-Person Group', summary: '2 sessions, 4 seats per session, 1 address',
     client: ['4 seats', '9 Canal St, Leeds, UK, LS1 4AP', `${after(6).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', weekday: 'long' })}, 11:00 AM`, `${after(8).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', weekday: 'long' })}, 03:30 PM`],
@@ -190,7 +190,7 @@ const STUDIES = [
     sessions: [[after(6), '11:00 AM'], [after(8), '03:30 PM']], places: ['9 Canal St, Leeds, UK, LS1 4AP'],
   },
   {
-    key: 'diary', card: 'Diary Study', duration: 15, participants: '9', incentive: 75, screener: THREE, opener: 'Create Survey Questionnaire', submit: 'Save & Continue',
+    key: 'diary', card: 'Diary Study', duration: 15, participants: '9', incentive: 700, screener: THREE, opener: 'Create Survey Questionnaire', submit: 'Save & Continue',
     // Since 21 Oct 2026 (1518:94904) the schedule is set inside the diary form, and each day has its own questions.
     // Policy section 5, four fifths of the entries: a 7-day diary's minimum moves to 6 by itself and nothing lower is offered.
     setup: `await __choose(__btn('Every 2 days'), 'Every 3 days'); await __choose(__btn('5 days'), '7 days');
@@ -250,7 +250,6 @@ async function studyStep(s) {
   if (stuck) throw new Error(`${s.key}: the composer did not accept ${s.submit}: ` + await C.ev(`document.querySelector('[role=status], [role=alert]')?.innerText ?? '(no reason shown)'`))
   // The incentive and costs sit under the study settings on the Study step (22 Oct 2026, every Create frame).
   await C.ev(FORMS);
-  await C.ev(`(() => { __type(__al('Incentive Amount'), '$${s.incentive}'); return true })()`); await sleep(150)
 }
 
 console.log('\n1. Create a study of each type, filling in every step')
@@ -277,7 +276,7 @@ for (const s of STUDIES.filter((x) => x.id)) {
   let text = ''
   for (const t of ['about', 'audience', 'screener', 'study', 'payment']) { await C.open(`/client/studies/${s.id}/manage?tab=${t}`); text += ' ' + await C.ev('document.body.innerText') }
   const formRow = s.tasks ? [`${s.tasks.length} Question`] : [s.summary]
-  const want = [s.title, s.description, ...durationShown(s.duration), dmy(s.end), s.participants, ...AUDIENCE_SHOWN, ...promptsOf(s.screener), `$${s.incentive}`, s.typeLabel, ...formRow, ...s.client]
+  const want = [s.title, s.description, ...durationShown(s.duration), dmy(s.end), s.participants, ...AUDIENCE_SHOWN, ...promptsOf(s.screener), s.typeLabel, ...formRow, ...s.client]
     .flatMap((x) => (x.includes(' · ') ? x.split(' · ') : [x]))
   note(2, s.key, want.filter((x) => !text.includes(x)))
 }
@@ -287,7 +286,7 @@ for (const s of STUDIES.filter((x) => x.id)) {
   let text = ''
   for (const t of ['about', 'audience', 'screener', 'study', 'payment']) { await I.go(`/internal/studies/review/${s.id}?tab=${t}`); text += '\n' + await I.ev('document.body.innerText') }
   // The console writes the end date as "Nov 12, 2026" and splits the notice into a number and a unit, so both sides are compared without spaces.
-  const want = [s.title, s.description, ...durationShown(s.duration), s.participants, ...AUDIENCE_SHOWN, ...promptsOf(s.screener), `$${s.incentive}`, ...s.console, s.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })]
+  const want = [s.title, s.description, ...durationShown(s.duration), s.participants, ...AUDIENCE_SHOWN, ...promptsOf(s.screener), ...s.console, s.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })]
   const squashed = text.replace(/\s+/g, '')
   note(3, s.key, want.filter((x) => !squashed.includes(x.replace(/\s+/g, ''))))
   await I.click('Approve to Publish', 400); await I.click('Approve and Publish', 800)
@@ -385,7 +384,6 @@ console.log('\n5. Save a draft, leave, come back: nothing was lost')
     await C.ev(`(async () => { ${s.setup} return true })()`); await sleep(200)
     await C.click(s.submit, 700)
     await C.ev(FORMS);
-    await C.ev(`(() => { __type(__al('Incentive Amount'), '$${s.incentive}'); return true })()`); await sleep(150)
     await C.click('Save Draft & Exit', 800)
     if (!(await C.path()).endsWith('/studies/drafts')) gaps.push('did not land on Drafts: ' + await C.path())
     // Leave: a full reload, then somewhere else in the app.
@@ -405,7 +403,6 @@ console.log('\n5. Save a draft, leave, come back: nothing was lost')
     await need('Screener', promptsOf(s.screener))
     await C.click('Continue')
     await need('Study', [s.summary])
-    await need('Study, incentive', [`$${s.incentive}`])
     await C.click('Update Address & Availability', 500)
     await need('Availability', ['12 Main St, Austin, Texas, 73301', '4 Dock Road, Houston, Texas, 77002'])
     const times = await C.ev(`({ from: __al('Monday from').innerText.trim(), to: __al('Friday to').innerText.trim(), sat: __al('Saturday').getAttribute('aria-checked'), notice: __al('Minimum notice').value === '1' && Boolean(__all('button').find((b) => b.textContent.trim() === 'Days')) })`)

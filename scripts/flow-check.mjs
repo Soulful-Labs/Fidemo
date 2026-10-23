@@ -144,19 +144,10 @@ const hours = (from, to) => `await __time('Monday from', ${JSON.stringify(from)}
 const address = (street, city, zip) => `__ph('Office number, Building/Street name, Area', ${JSON.stringify(street)}); __ph('City, State', ${JSON.stringify(city)}); __ph('Zip Code', ${JSON.stringify(zip)}); await __wait(); __all('button').filter((b) => b.textContent.trim() === 'Add Address').pop().click(); await __wait();`
 const session = (d, t) => `__type(__al('Session date'), ${JSON.stringify(ymd(d))}); await __time('Session start time', ${JSON.stringify(t)}); __exact('Add').click(); await __wait();`
 
-
 // ------------------------------------------------------------ the six checks
 
-/** The fee table (shared/platform.ts FEES), written out so the figures on screen are checked against it and not against the code that draws them. */
-const FEE = { platform: 100, moderation: 10, recruitment: 25, typeAddon: 25 }
+/** A dollar figure as the screens write it. */
 const usd = (n) => '$' + n.toLocaleString('en-US')
-const costOf = (surveyType, n, incentive) => {
-  const rec = FEE.recruitment + (surveyType ? 0 : FEE.typeAddon)
-  const c = { incentives: n * incentive, recruitment: n * rec, moderation: n * FEE.moderation, platform: FEE.platform, rec }
-  // The deposit (15 Oct 2026): 25% of the incentive cost and 25% of the recruitment cost, for the full sample.
-  const depInc = Math.round(c.incentives * 25) / 100, depRec = Math.round(c.recruitment * 25) / 100
-  return { ...c, total: c.incentives + c.recruitment + c.moderation + c.platform, depInc, depRec, deposit: depInc + depRec }
-}
 const flat = (s) => s.replace(/\s+/g, '')
 const lacks = async (t, strings) => { const text = flat(await t.ev('document.body.innerText')); return strings.filter((x) => !text.includes(flat(x))) }
 const shortDate = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -176,9 +167,9 @@ await I.click('Login', 1200)
 await C.open('/client/studies', `localStorage.setItem('fi-client-session', JSON.stringify({ accounts: [], current: 'jennifer@soulfullabs.com' }))`)
 
 const end = after(30)
-const SURVEY = { card: 'Survey', title: `FC survey ${tag}`, description: 'A survey followed from the answers back to the client and the team.', duration: 20, participants: '12', incentive: 60 }
-const DIARY = { card: 'Diary Study', title: `FC diary ${tag}`, description: 'A diary followed from each day back to the client and the team.', duration: 15, participants: '9', incentive: 75 }
-const PLACE = { card: 'In-Person', title: `FC in-person ${tag}`, description: 'An in-person study with every setting filled in.', duration: 45, participants: '8', incentive: 150 }
+const SURVEY = { card: 'Survey', title: `FC survey ${tag}`, description: 'A survey followed from the answers back to the client and the team.', duration: 20, participants: '12', incentive: 700 }
+const DIARY = { card: 'Diary Study', title: `FC diary ${tag}`, description: 'A diary followed from each day back to the client and the team.', duration: 15, participants: '9', incentive: 700 }
+const PLACE = { card: 'In-Person', title: `FC in-person ${tag}`, description: 'An in-person study with every setting filled in.', duration: 45, participants: '8', incentive: 700 }
 const idOf = (s) => C.ev(`(__st().studies.find((x) => x.title === ${JSON.stringify(s.title)}) || {}).id`)
 // The demo client's saved card is already selected at Publish; the form is only there when it is not.
 const card = `(() => { if (!__all('input').some((e) => e.placeholder === '0000 0000 0000 0000')) return true; __ph('0000 0000 0000 0000', '4242 4242 4242 4242'); __ph('MM / YYYY', '12 / 2028'); __ph('000', '123'); __ph('Enter name', 'Jennifer Lee'); return true })()`
@@ -193,17 +184,20 @@ async function about(s) {
   await C.click('Continue')
   await C.ev(buildScreener(THREE)); await sleep(200)
 }
-/** The figures a money screen should show for this study, and the ones it does not. */
+/**
+ * The figures a money screen should show (23 Oct 2026, the CPI model): the Study step shows no money at all;
+ * Payment Summary shows Total Recruiting Cost, "$250 x N participants" and 20% upfront; the Breakdown panel the
+ * 20/30/50 structure. The old fee lines appear nowhere.
+ */
 async function money(s, surveyType, where) {
-  const c = costOf(surveyType, Number(s.participants), s.incentive)
-  const n = s.participants
-  const want = where === 'summary'
-    ? [`Total Study Cost${usd(c.total)}`, `To pay upfront${usd(c.deposit)}`]
-    : [`${n}x participants`, `Incentive Cost•${n} x ${usd(s.incentive)}${usd(c.incentives)}`, `Recruitment Cost•${n} x ${usd(c.rec)}${usd(c.recruitment)}`, `Moderation Cost•${n} x ${usd(FEE.moderation)}${usd(c.moderation)}`,
-        `Platform Fee•one-time${usd(c.platform)}`, `Total Study Cost${usd(c.total)}`, `Incentive deposit•25% of cost${usd(c.depInc)}`, `Recruitment deposit•25% of cost${usd(c.depRec)}`, `To pay upfront${usd(c.deposit)}`]
+  const n = Number(s.participants), rate = 250, total = rate * n
+  const c = { total, deposit: total * 0.2 }
+  const want = where === 'Study step' ? []
+    : where === 'summary' ? [`Total Recruiting Cost${usd(total)}`, `$${rate} x ${n} participants`, `To pay upfront•20%${usd(total * 0.2)}`]
+      : [`Total Recruiting Cost${usd(total)}`, `Upfront deposit•20%${usd(total * 0.2)}`, `Incentive deposit•30%${usd(total * 0.3)}`, `Completion Due•50%${usd(total * 0.5)}`, `Total Est. Cost${usd(total)}`]
   const text = flat(await C.ev('document.body.innerText'))
   const gaps = want.filter((x) => !text.includes(flat(x))).map((x) => `${where}: ${x}`)
-  if (text.includes('$1,900') || text.includes('$475')) gaps.push(`${where}: still shows $1,900 or $475`)
+  for (const old of ['Incentive Amount', 'Costing Summary', 'Moderation Cost', 'Platform Fee', 'Recruitment deposit']) if (text.includes(flat(old))) gaps.push(`${where}: still shows ${old}`)
   return { gaps, c }
 }
 
@@ -233,7 +227,6 @@ await C.ev(`(async () => { __ph('Enter question text...', 'How often do you shop
 await sleep(200); await C.click('Save & Continue', 500)
 // The incentive and costs sit under the study settings on the Study step (22 Oct 2026, every Create frame).
 await C.ev(FORMS);
-await C.ev(`(() => { __type(__al('Incentive Amount'), '$${SURVEY.incentive}'); return true })()`); await sleep(200)
 const m1 = await money(SURVEY, true, 'Study step'); g3.push(...m1.gaps)
 await C.click('Proceed to Publish', 600)
 g3.push(...(await money(SURVEY, true, 'summary')).gaps)
@@ -279,7 +272,6 @@ await C.ev(`(async () => { __btn('Add Question', 1).click(); await __wait(); __b
 await C.click('Save & Continue', 500)
 // The incentive and costs sit under the study settings on the Study step (22 Oct 2026, every Create frame).
 await C.ev(FORMS);
-await C.ev(`(() => { __type(__al('Incentive Amount'), '$${DIARY.incentive}'); return true })()`); await sleep(150)
 await C.click('Proceed to Publish', 600); await C.ev(FORMS); await C.ev(card); await C.click('Publish Study', 900)
 DIARY.id = await idOf(DIARY)
 
@@ -291,7 +283,6 @@ await C.ev(`(async () => { ${address('12 Main St', 'Austin, Texas', '73301')} ${
   __al('Add hours to Tuesday').click(); await __wait(); await __time('Tuesday from', '06:00 PM', 1); await __time('Tuesday to', '08:00 PM', 1); return true })()`)
 // The composer has no Submit: Continue submits the availability and returns to the Study step, where the incentive is.
 await sleep(200); await C.click('Continue', 900); await C.ev(FORMS);
-await C.ev(`(() => { __type(__al('Incentive Amount'), '$${PLACE.incentive}'); return true })()`); await sleep(150)
 await C.click('Save Draft & Exit', 800)
 await C.open('/client/studies/drafts'); await C.ev(FORMS)
 await C.click(PLACE.title, 700)
@@ -308,8 +299,8 @@ await C.ev(FORMS); await C.ev(card); await C.click('Publish Study', 900)
 PLACE.id = await idOf(PLACE)
 const taken2 = await C.ev(`(() => { const all = __st().studies.filter((x) => x.title === ${JSON.stringify(PLACE.title)}); return all.length + ' study, ' + all[0].payments.map((p) => p.kind + ' ' + p.amount).join() })()`)
 if (taken2 !== `1 study, deposit ${m2.c.deposit}`) g3.push(`in-person: the store holds "${taken2}", the screens said ${m2.c.deposit}`)
-say(3, 'Every figure on Costing, Payment and Payment Summary matches the fee table', g3,
-  `survey 12 x $60: total ${usd(m1.c.total)}, upfront ${usd(m1.c.deposit)}, and the store took ${usd(m1.c.deposit)}; in-person 8 x $150: total ${usd(m2.c.total)}, upfront ${usd(m2.c.deposit)}, and the store took ${usd(m2.c.deposit)}`)
+say(3, 'Payment Summary and Payment Breakdown show the CPI model, the Study step shows no money, and the store takes the 20% shown', g3,
+  `survey 12 x $250: total ${usd(m1.c.total)}, upfront ${usd(m1.c.deposit)}, and the store took ${usd(m1.c.deposit)}; in-person 8 x $250: total ${usd(m2.c.total)}, upfront ${usd(m2.c.deposit)}, and the store took ${usd(m2.c.deposit)}; no incentive field or old fee line anywhere`)
 
 // ---- 6. the console shows the whole study
 const g6 = []

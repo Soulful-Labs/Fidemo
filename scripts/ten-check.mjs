@@ -279,7 +279,6 @@ const surveyAfter = await countQ()
 await C.click('Save & Continue', 600)
 // The incentive and costs sit under the study settings on the Study step (22 Oct 2026, every Create frame).
 await C.ev(FORMS);
-await C.ev(`(() => { __type(__al('Incentive Amount'), '$40'); return true })()`); await sleep(200)
 const studyText2 = await body(C)
 await C.click('Proceed to Publish', 800); await C.ev(FORMS)
 
