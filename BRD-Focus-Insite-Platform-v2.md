@@ -106,9 +106,9 @@ The paid-participation market is the mechanism: people give their time and opini
 | Deferred | Blocked on |
 |---|---|
 | Pricing plans | Decision D11 |
-| When the 30% incentive deposit is taken | Built as when the team takes the study live; to be confirmed. PRD D32 |
-| What changes a study's rate, and the rate sheet | The rate sheet is to come. PRD 6.10 |
-| Whether the incentive may exceed the rate | Not yet assigned |
+| When the 30% incentive deposit is taken | Built as when the team takes the study live, accepted for now; Jim to confirm. PRD D40 |
+| What changes a study's rate, and the rate sheet | Waits on the rate sheet. PRD D42 |
+| Removing the old fee model from the Study step and Pricing & Rewards | Next round. The incentive field goes with it, which settles an incentive above the rate (PRD D41) |
 | Whether the team may re-price a live study | Jim. PRD D33 |
 | What the Audience forecast shows | Not yet assigned. PRD D34 |
 | The live domain, the support address, and whether the certificate prefix changes from FI- | Not yet assigned. PRD D35. A prefix change needs a new version of the policy |
@@ -142,7 +142,7 @@ The paid-participation market is the mechanism: people give their time and opini
 
 Pricing changed on 23 October 2026: a client pays Total Recruiting Cost, the rate per participant times the participants, with the incentive included. Revenue on a study is the rate less the incentive, per completed participant. A study keeps the rate it was published at. The earlier fee schedule (platform, moderation and recruitment fees) is no longer charged; it is still drawn on the Create flow's Study step and set on the console's Pricing & Rewards. The withdrawal fee is set by the policy.
 
-The incentive is paid out of the rate. Nothing yet stops a client setting an incentive above the rate; that is a decision to take.
+The incentive is paid out of the rate. Nothing yet stops a client setting an incentive above the rate; this is a known inconsistency, left on purpose because the field comes out next round (PRD D41).
 
 **A worked example, the shape the designs draw (23 October 2026).** Twenty participants at $250: Total Recruiting Cost $5,000; $1,000 upfront at publish, $1,500 when it goes live, $2,500 on completion if all twenty complete. If ten complete at $250 and ten after a change at $350, the final bill is $6,000, less the $2,500 of deposits, $3,500 to pay. The frames' own figures ($1,800 for the 30%, $3,200 net) are placeholders and do not add up; the build derives every figure.
 

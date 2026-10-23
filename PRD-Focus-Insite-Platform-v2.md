@@ -2231,6 +2231,24 @@ BRD Section 9a has the full requirement.
 | What the signed policy says | Section 8: "The incentives for the full sample, taken at submission. Everything else is billed on delivery" |
 | Who decides | Jim. Whichever way it goes, the policy may need re-signing |
 
+### D40: When the 30% incentive deposit is taken (built, Jim to confirm)
+
+**Built: when the team takes the study live** (`takeDeposit(study, 'incentive')` in `moveStudy`, `shared/store.ts`). Accepted for now on 23 October 2026. The frames show the deduction only as "Less: 30% Recruitment Cost • As on [date]" and do not say what triggers it, so Jim is to confirm the moment.
+
+| | |
+|---|---|
+| What the build does | 20% upfront when the study is published; 30% when the team approves it and recruiting starts; the rest on the bill once recruiting stops |
+| What the frames draw | "As on Oct 10, 2026" beside the 30% line; no trigger |
+| Who confirms | Jim |
+
+### D41: An incentive above the rate (known inconsistency, not built)
+
+**Left alone on purpose (23 October 2026).** The incentive is inside the rate per participant, so a client should not set it separately at all. The Study step still has the Incentive Amount field from the old model, and nothing stops a client setting an incentive above the rate. No cap is built, because the field comes out with the Study step's Costing Summary and Payment in the next round. Until then, a study whose incentive exceeds the rate would pay participants more than the client is charged for them. The full list of where the old model still appears is in `docs/Document-Updates-Pending.md`, "Next job: clear the old fee model".
+
+### D42: What changes a study's rate (waits on the rate sheet)
+
+**Left as it is (23 October 2026).** A study keeps the rate it was published at, and a later rate applies only to the participants who complete after it (`Study.ratePeriods`). What agrees a new rate waits on the team's rate sheet; until then nothing in the app changes one. The seed shows a second period on one study so the Final bill's two lines can be seen.
+
 ### D33: The team re-pricing a live study (open)
 
 **Not decided.**

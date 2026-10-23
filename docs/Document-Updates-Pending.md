@@ -47,6 +47,99 @@ Work that is not built, so there is nothing to describe yet.
 - **The respondent's own reviews.** The respondent app has no screen for the
   reviews clients wrote about them.
 
+## Next job: clear the old fee model (recorded 23 October 2026)
+
+**The old and new pricing are both on screen at once.** Payment & Publish,
+the Pay tab, Payment, Invoice Details and the console's bills use the new rate
+(rate x participants, 20/30/50). The places below still show or compute the
+old model: a $100 platform fee, a $10 moderation fee, a $25 recruitment fee
+with +$25 and +$20 add-ons, the incentive as its own line, and a deposit of
+25% of recruitment plus 25% of incentives. Every one is listed so the next
+round can clear them in one pass.
+
+**On screen, client app**
+
+1. Create flow, Study step, **Incentive Payments**: the Incentive Amount box
+   and slider (`client/src/screens/create/StudyBits.tsx` `IncentivePayments`,
+   used by `StudySetup.tsx`). The incentive is inside the rate now, so this
+   field should not be there at all.
+2. Create flow, Study step, **Costing Summary**: Incentive Cost, Recruitment
+   Cost, Moderation Cost, Platform Fee and Total Study Cost (`StudyBits.tsx`
+   `CostingSummary`, `useQuote`).
+3. Create flow, Study step, **Payment**: "Incentive deposit 25% of cost",
+   "Recruitment deposit 25% of cost", the To Pay total, the "remaining project
+   costs" sentence (`laterLine`) and the info toast naming platform fee,
+   recruiting, incentives and moderation (`StudyBits.tsx` `Payment`).
+4. The **"Incentive: $X" chip** on Payment & Publish's Study card, on Manage
+   Study's Study block, and on the in-review study's Study tab. It shows the
+   participant's share, which the client no longer sets separately.
+5. **Help, FAQ** "What exactly am I being charged for on my invoice?": "Four things: a flat platform fee,
+   a recruiting fee and an incentive per participant, and a moderation fee"
+   (`client/src/mock/help.ts`).
+
+**On screen, console**
+
+6. **Pricing & Rewards**, Fees segment: Platform Fees, Moderation Fees,
+   Recruitment Fees and the two add-on rules (`internal/src/screens/pricing/Pricing.tsx`,
+   `internal/src/mock/pricing.ts`). The rate per participant is not on it.
+7. **Edit Client Fees**: the same four fees and Create Add-on
+   (`internal/src/screens/pricing/EditScreens.tsx`). Saving still writes
+   `settingsLog` and the shared `FEES` and `FEE_ADDONS`, which now price
+   nothing that is charged.
+8. **Studies > To Review, a study's Payment tab**: the Billing list is still
+   Platform Fee, Recruiting Fee, Incentives and Moderation Fee from the study's
+   old rates, above a Total cost taken from the new bill, so **the lines do not
+   add up to the total shown** (`internal/src/mock/review.ts` `PAYMENT.billing`,
+   drawn by `review/PaymentRevisions.tsx`). The most visible of the list.
+9. **Finance > Refunds, a refund's Billing card**: `Billing` is called with no
+   lines, so it falls back to a hard-coded sample of the old fees ("Platform
+   Fee $100", "Recruiting Fee $20 x 25", "Incentives $100 x 25", "Moderation
+   Fee $10 x 25") above the real figures (`internal/src/screens/finance/RefundDetail.tsx`;
+   the sample is `FEES` in `internal/src/screens/studies/manage/PayTab.tsx`).
+10. **Edit Study, Study step** (a live study): Incentive Payments with the
+    locked slider, and the Costing Summary heading "N participants • $X
+    incentive" (`internal/src/screens/studies/edit/StudyStep.tsx`). Its lines
+    and note were moved to the new rate this round; the incentive block is
+    old-model.
+11. **Finance tiles, Gross Revenue**: computed as the bill less the incentive
+    per delivered participant. Correct under the new model, but its label and
+    tooltip, if any, should say it is the rate less the incentive.
+
+**In the shared layer (computes, not shown on its own)**
+
+12. `shared/platform.ts`: `FEES.PLATFORM`, `MODERATION`, `RECRUITMENT_BASE`,
+    `RECRUITMENT_TYPE_ADDON`, `ADDON_TYPES`, `RECRUITMENT_SKILLS_ADDON`,
+    `FEE_ADDONS`, `addOnApplies`, `priceStudy`, `DEPOSIT_SHARE`,
+    `depositParts`, `depositFor`, `Quote`, `quoteStudy`. `FEES.SETUP_SHARE`
+    feeds `billing().setupFee`, which nothing reads. `FEES.WITHDRAWAL` stays:
+    it is the participant's withdrawal fee.
+13. `shared/types.ts` `StudyRates` (`platformFee`, `recruitingPer`,
+    `moderationPer` beside `incentivePer`) and `FeeSettings`. Every study
+    still stores the old rates; only `incentivePer` is still used, for what a
+    participant is paid.
+14. `shared/settings.ts`: the `fees` group in `DEFAULTS`, `settingsAt`,
+    `applyCurrentSettings` and `settingsFault`.
+15. `shared/store.ts` `saveStudyDraft`, `shared/studyForm.ts` `buildStudy`
+    and `shared/seed.ts` `base` still price every study with `priceStudy`.
+16. `client/src/platform.tsx` `EMPTY_STUDY` carries zero old rates.
+
+**In the checks**
+
+17. `scripts/verify-shared.ts`: the quote, deposit-rule and designer-card
+    checks, the add-on checks and the Pricing & Rewards fee checks.
+18. `scripts/cleanup-check.mjs` and `scripts/flow-check.mjs` read the Study
+    step's Costing Summary and Payment figures.
+
+**In the v2 documents**
+
+19. PRD 12.4 (the Study step's Incentive Payments, Costing Summary and
+    Payment), 14.4 Edit Study ("Study, money"), 14.10 Pricing and Rewards and
+    Edit Client Fees, 15 step 20 ("Fees charged at step 20"), D13, D19 to
+    D20, D22's note on the Study step, D33, and the change tables in 20.4
+    and 22.8 that describe the old money cards. BRD 5.2's note on the old
+    schedule and Decision D13. Policy v2 section 8's closing paragraph says
+    the old schedule is still drawn; it goes when the screens do.
+
 ## Difference list, client round of 23 October 2026
 
 Built as the PNGs draw it, and different from what was decided before:
@@ -63,11 +156,17 @@ Built as the PNGs draw it, and different from what was decided before:
   Payment from the old fee schedule; Payment & Publish, one step later, draws
   the new rate x participants. The console's Pricing & Rewards still sets the
   old fees. To be decided what comes out.
-- **When the 30% is taken** is the build's choice: when the team takes the
-  study live. The frames say only "As on [date]".
+- **When the 30% is taken**: when the team takes the study live. Accepted
+  for now (23 October 2026) and recorded as PRD D40 for Jim to confirm; the
+  frames say only "As on [date]".
+- **Known inconsistency: an incentive above the rate.** Nothing stops a client
+  setting an incentive higher than the rate per participant. Left alone on
+  purpose (PRD D41): the incentive is inside the rate, so the field itself is
+  coming out with the Study step's Costing Summary and Payment next round. No
+  cap is built.
 - **A second rate period** ($250, then $350) appears only in the seed (on
   Travel preferences and experiences). Nothing in the app changes a rate until
-  the rate sheet exists.
+  the rate sheet exists; left as it is on purpose (23 October 2026).
 - **Save this card** makes the added card the default. A card used to publish
   is always kept for invoices, as the fourth note says.
 - **A client with a saved card** still sees it selected on Payment & Publish
