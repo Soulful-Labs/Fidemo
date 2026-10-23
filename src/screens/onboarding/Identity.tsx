@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import FileField from '../../components/app/FileField'
 import Picker from '../../components/ui/Picker'
 import SelectField from '../../components/ui/SelectField'
-import { Camera } from '../../components/ui/icons'
 import { useAppNav } from '../../app/useAppNav'
 import { useStore } from '../../mock/store'
 import ConsentModal from './ConsentModal'
@@ -11,17 +10,15 @@ import OnboardingLayout from './OnboardingLayout'
 import { ID_TYPES } from './options'
 
 /**
- * PRD 4.8, step 3 of 3. Figma 915:50280.
- *
- * Document upload only. The selfie capture is drawn but deliberately not
- * built: biometric capture is blocked pending legal review (workflow step 16,
- * conflict 23, hard rule 9). The field stays visible as a disabled control
- * that explains itself on tap (global interaction rule 7).
+ * PRD 4.8, step 3 of 3. Figma 915:50280. One government ID, both sides.
+ * Selfie and liveness verification are out of the product (23 Oct 2026):
+ * the frame's selfie field is not built. The ID goes to the team, who verify
+ * it in the console; until then it is in review.
  */
 export default function Identity() {
   const navigate = useNavigate()
   const { back } = useAppNav()
-  const { onboarding, setOnboarding, updateUser, user, toast } = useStore()
+  const { onboarding, setOnboarding, updateUser, submitIdentity, user, toast } = useStore()
   const [picker, setPicker] = useState(false)
   const [consent, setConsent] = useState(false)
 
@@ -30,10 +27,11 @@ export default function Identity() {
 
   const finish = () => {
     // Account created: carry the draft onto the user and sign in.
+    if (!idFront || !idBack) return
+    // A licence number given on step 2 goes to the team to check as well (shared/store.ts updatePerson).
     updateUser({
       name: fullName || user.name,
       onboarded: true,
-      verified: { govId: true, livePhoto: false, license: Boolean(onboarding.licenseId) },
       profile: {
         ...user.profile,
         gender: onboarding.gender || user.profile.gender,
@@ -47,6 +45,7 @@ export default function Identity() {
         introVideo: onboarding.introVideo,
       },
     })
+    submitIdentity(idType, { front: idFront, back: idBack })
     setConsent(false)
     navigate('/onboarding/welcome')
   }
@@ -69,28 +68,12 @@ export default function Identity() {
 
         <FileField
           label="Upload Front Side" hint=".jpg or .png" accept="image/jpeg,image/png"
-          fileName={idFront} onPick={(name) => setOnboarding({ idFront: name })}
+          fileName={idFront?.name} onFile={(f) => setOnboarding({ idFront: { name: f.name, bytes: f.size } })}
         />
         <FileField
           label="Upload Back Side" hint=".jpg or .png" accept="image/jpeg,image/png"
-          fileName={idBack} onPick={(name) => setOnboarding({ idBack: name })}
+          fileName={idBack?.name} onFile={(f) => setOnboarding({ idBack: { name: f.name, bytes: f.size } })}
         />
-
-        <div className="flex flex-col gap-1">
-          <span className="text-text-regular text-text-subtitle">Selfie Verification</span>
-          <button
-            type="button"
-            aria-disabled="true"
-            onClick={() => toast('Selfie verification is on hold pending legal review')}
-            className="flex w-full flex-col items-center gap-1 rounded-md border-1 border-cta-tertiaryStrokeDisabled px-4 py-4 text-center text-text-disabled"
-          >
-            <span className="flex items-center gap-2 text-text-medium">
-              <Camera className="h-5 w-5" />
-              Capture Selfie
-            </span>
-            <span className="text-text-regular">Tap here to click selfie</span>
-          </button>
-        </div>
       </OnboardingLayout>
 
       <Picker

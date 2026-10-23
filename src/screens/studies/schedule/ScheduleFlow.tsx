@@ -10,6 +10,7 @@ import TopBar from '../../../components/ui/TopBar'
 import { Clock } from '../../../components/ui/icons'
 import { bookingLong, duration, money } from '../../../lib/format'
 import { canReschedule } from '@shared/platform'
+import { sessionStartOf } from '@shared/derive'
 import { useStore } from '../../../mock/store'
 import SchedulePicker, { SectionHeading } from './SchedulePicker'
 import type { Selection } from './SchedulePicker'
@@ -48,7 +49,7 @@ export default function ScheduleFlow() {
   // A reschedule that the rules block never opens: bounce with the reason.
   useEffect(() => {
     if (!study || !isReschedule || !study.booking) return
-    const check = canReschedule(study.booking.rescheduleCount, study.booking.date)
+    const check = canReschedule(study.booking.rescheduleCount, sessionStartOf(study.booking).toISOString())
     if (!check.ok) {
       toast(check.reason ?? 'Cannot reschedule')
       navigate(`/studies/${id}`, { replace: true })

@@ -13,8 +13,10 @@ import { VerifiedIcon } from './profileIcons'
  * the certificate: it carries no name, email or phone, and its id is the
  * policy's FI-XXXX-XXXX (CERTIFICATE.ID_PREFIX), the same id the console and
  * the client app read. Figma's avatar, name, "HL-R" id and "Profile Score"
- * are replaced by a seal, the FI- id and "Trust Score". "Live Photo
- * Verified" only shows once a selfie has actually passed (hard rule 9).
+ * are replaced by a seal, the FI- id and "Trust Score". It claims what the
+ * team verified, the government ID and, where one was checked, the
+ * professional credential, and nothing about a selfie: selfie and liveness
+ * checks are out of the product (23 Oct 2026).
  */
 /**
  * Issued only once identity verification completes, with the ID generated
@@ -38,7 +40,6 @@ export default function Certificate() {
 
   const checks = [
     { label: 'Government ID Verified', ok: user.verified.govId },
-    { label: 'Live Photo Verified', ok: user.verified.livePhoto },
     { label: 'Professional License/Certificate Verified', ok: user.verified.license },
   ].filter((c) => c.ok)
 
@@ -50,8 +51,14 @@ export default function Certificate() {
         <div className="flex flex-1 flex-col items-center gap-3 px-6 pt-16 text-center">
           <span className="flex h-14 w-14 items-center justify-center rounded-full bg-bg-2 text-text-body" aria-hidden="true"><VerifiedIcon className="h-7 w-7" /></span>
           <h1 className="text-title-s text-text-title">Not issued yet</h1>
-          <p className="text-text-regular text-text-body">Your Human Certificate is issued when your identity verification completes. It will appear here with its own ID.</p>
-          <button type="button" onClick={() => navigate('/onboarding/identity')} className="text-text-medium text-brand-primary">Verify your identity</button>
+          {user.checks.identity === 'in_review' || user.checks.identity === 'flagged' ? (
+            <p className="text-text-regular text-text-body">Your ID is in review. Your Human Certificate is issued, with its own ID, as soon as our team has verified it.</p>
+          ) : (
+            <>
+              <p className="text-text-regular text-text-body">Your Human Certificate is issued when your identity verification completes. It will appear here with its own ID.</p>
+              <button type="button" onClick={() => navigate(user.onboarded ? '/profile/settings' : '/onboarding/identity')} className="text-text-medium text-brand-primary">Verify your identity</button>
+            </>
+          )}
         </div>
       </div>
     )
@@ -74,7 +81,7 @@ export default function Certificate() {
               <VerifiedIcon className="h-7 w-7" />
             </span>
             <div className="flex flex-col gap-0.5">
-              <span className="text-title-s text-text-title">Verified Human</span>
+              <span className="text-title-s text-text-title">Identity Verified</span>
               <span className="text-text-regular text-text-body">Cert. ID: <span className="text-text-title">{certId}</span></span>
             </div>
           </div>

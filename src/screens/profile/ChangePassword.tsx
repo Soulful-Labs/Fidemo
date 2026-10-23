@@ -16,20 +16,27 @@ import { TIMINGS } from '../../mock/timings'
 export default function ChangePassword() {
   const navigate = useNavigate()
   const { back } = useAppNav()
-  const { toast } = useStore()
+  const { toast, changePassword } = useStore()
   const [current, setCurrent] = useState('')
   const [next, setNext] = useState('')
   const [confirm, setConfirm] = useState('')
   const [touched, setTouched] = useState(false)
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState(false)
+  // The platform's refusal (the current password is wrong), shown under that field until it changes.
+  const [refused, setRefused] = useState('')
 
   const mismatch = touched && confirm.length > 0 && confirm !== next
   const valid = current.length > 0 && isValidPassword(next) && confirm === next
 
   const submit = () => {
     setSaving(true)
-    setTimeout(() => { setSaving(false); setDone(true) }, TIMINGS.fakeServer)
+    setTimeout(() => {
+      setSaving(false)
+      const r = changePassword(current, next)
+      if (!r.ok) { setRefused(r.why); return }
+      setDone(true)
+    }, TIMINGS.fakeServer)
   }
 
   return (
@@ -37,8 +44,8 @@ export default function ChangePassword() {
       <TopBar title="Change Password" onBack={back} />
 
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
-        <Input label="Current Password" type="password" placeholder="Enter current password" value={current} onChange={(e) => setCurrent(e.target.value)}
-          onBlur={() => setTouched(true)} error={touched && !current ? 'Enter your current password' : undefined} />
+        <Input label="Current Password" type="password" placeholder="Enter current password" value={current} onChange={(e) => { setCurrent(e.target.value); setRefused('') }}
+          onBlur={() => setTouched(true)} error={touched && !current ? 'Enter your current password' : refused || undefined} />
         <div className="flex flex-col gap-2">
           <Input label="New Password" type="password" placeholder="Enter new password" value={next} onChange={(e) => setNext(e.target.value)}
             onBlur={() => setTouched(true)} error={touched && !next ? 'Enter a new password' : touched && !isValidPassword(next) ? 'The new password does not meet every rule below' : undefined} />

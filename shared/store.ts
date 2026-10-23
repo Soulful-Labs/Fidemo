@@ -10,7 +10,7 @@
  * by the others through the storage event, without a reload.
  */
 import { applyRepeatRule, targetMet, barredFrom, billing, diaryReady, freshCertificateId, hasTakenPartWith, sessionNotStarted, openAvailability, personById, personFigures, profileCompletion, referralCode } from './derive'
-import { canEditStudy, canMoveParticipation, canMovePayout, canMoveStudy, canRepublish, isLive, isStopped, participationOf } from './lifecycle'
+import { CLOSED_BY_PARTICIPANT, canEditStudy, canMoveParticipation, canMovePayout, canMoveStudy, canRepublish, closedByOwner, isLive, isStopped, participationOf } from './lifecycle'
 import { DECISION_UNDO_MS, DEMO_SESSION_CODE, REPORT_MAX_CHARS, RESTRICTION_DAYS, TIMINGS, canCancel, canReschedule, canWithdraw, depositFor, isSessionType, priceStudy, targets, withdrawalExpectedBy } from './platform'
 import { POINTS, canRedeem, starsForRating, starsFromDimensions } from './rules'
 import { monthDayYear } from './format'
@@ -23,9 +23,9 @@ import { MAX_RUN_DAYS, audienceFault, buildStudy, fitsStudy, formFromStudy, live
 import { buildScreener, buildTasks } from './questions'
 import type { StudyForm } from './studyForm'
 import { editOf } from './revisions'
-import { DEMO_TEAM_PASSWORD, MASTER_ADMIN_ID, SEED_VERSION, buildSeed } from './seed'
+import { DEMO_PERSON_ID, DEMO_TEAM_PASSWORD, MASTER_ADMIN_ID, SEED_VERSION, buildSeed } from './seed'
 import type {
-  Answers, AppNotification, Booking, Check, Client, ClientReview, Module, ParticipantRating, Participation, ParticipationState,
+  Answers, AppNotification, Booking, Check, Client, UploadedFile, ClientReview, Module, ParticipantRating, Participation, ParticipationState,
   PayoutMethod, Person, PlatformState, RatingState, RepeatRule, Report, Result, SavedCard, Study, StudyState,
   TeamMember, Ticket,
 } from './types'
@@ -40,6 +40,7 @@ type Listener = () => void
 interface Options { storage?: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> | null; now?: () => Date }
 
 const no = (why: string): Result<never> => ({ ok: false, why })
+export const EMAIL_TAKEN = 'An account with this email already exists. Log in instead'
 const yes = <T extends object>(extra?: T): Result<T> => ({ ok: true, ...(extra as T) })
 const uid = (prefix: string) => `${prefix}-${Date.now().toString(36)}${Math.floor(Math.random() * 1296).toString(36)}`
 
@@ -261,7 +262,7 @@ export function createPlatform(options: Options = {}) {
   const selected = (s: PlatformState, study: Study, p: Participation) => {
     const session = isSessionType(study.type)
     notify(s, p.personId, {
-      kind: 'study', title: session ? "You've been selected to complete!" : "Congrats! You're invited to complete study!",
+      kind: 'study', title: session ? "You're invited to schedule your session!" : "Congrats! You're invited to complete study!",
       body: `${study.title} is ready for the next step.`, actionLabel: session ? 'Schedule Now' : 'Start Study',
       to: session ? `/studies/${study.id}/schedule` : `/studies/${study.id}`,
     })
@@ -552,6 +553,7 @@ export function createPlatform(options: Options = {}) {
       if (!study || !person) return no('No such study')
       if (!isLive(study.state)) return no('This study is not open for applications')
       const bar = barred(person); if (bar) return no(bar)
+      if (person.identity.state === 'in_review' || person.identity.state === 'flagged') return no('Your ID is in review. You can apply once it is verified')
       if (!person.onboarded || person.identity.state !== 'verified') return no('Finish verification to apply')
       if (study.premium && person.profession.state !== 'verified') return no('Premium studies need a verified professional credential')
       let p = participationOf(study, personId)
@@ -694,6 +696,8 @@ export function createPlatform(options: Options = {}) {
       const hit = find(s, studyId, personId)
       if (!hit || hit.p.state !== 'scheduled' || !hit.p.code) return no('There is no booked session for this code')
       { const bar = barred(personById(s, personId)!); if (bar) return no(bar) }
+      // The interviewer gives the code during the session, so it cannot be entered before the session starts.
+      if (sessionNotStarted(hit.p.booking, clock())) return no('Your session has not started yet. Your interviewer gives you the code during the session.')
       if (hit.p.code.value !== code) return no('Incorrect PIN, check with your interviewer')
       hit.p.code.byParticipant = true
       stamp(hit.p, 'Session code confirmed')
@@ -736,7 +740,7 @@ export function createPlatform(options: Options = {}) {
       if (!moved.ok) return moved
       if (taskAnswers && study.type === 'survey') p.taskAnswers = tidyAnswers(study, taskAnswers)
       p.completedAt = iso()
-      p.events.push({ label: actor.kind === 'participant' ? 'Completed' : 'Marked as completed', at: p.completedAt }, { label: 'Earnings credited', at: p.completedAt })
+      p.events.push({ label: actor.kind === 'participant' ? 'Completed' : 'Marked as completed', at: p.completedAt }, { label: 'Awaiting payout', at: p.completedAt })
       if (actor.kind !== 'participant') log(s, actor, `Marked ${nameOf(s, personId)} as completed on ${study.title}`, 'Studies / Sessions / Complete')
       // The last completion a study needs stops its recruiting (22 Oct 2026), unless the client chose to recruit more.
       if (isLive(study.state) && !study.beyondTarget && targetMet(study)) stopRecruiting(s, study, 'filled', SYSTEM)
@@ -867,15 +871,21 @@ export function createPlatform(options: Options = {}) {
     // ---------------------------------------------------------------- people
 
     /** Workflow 15: a new account can browse straight away; profile and ID come at the point of applying. */
-    signUpPerson: (email: string, sourceCode?: string) => move<{ id: string }>((s) => {
+    /**
+     * Workflow 15. An email already on the platform is refused: signing up
+     * never opens an existing account. The password is the front-end
+     * stand-in (Person.password); real authentication replaces it.
+     */
+    signUpPerson: (email: string, password: string, sourceCode?: string) => move<{ id: string }>((s) => {
       const clean = email.trim().toLowerCase()
-      const existing = s.people.find((p) => p.email.toLowerCase() === clean)
-      if (existing) return yes({ id: existing.id })
+      if (s.people.some((p) => p.email.toLowerCase() === clean)) return no(EMAIL_TAKEN)
+      if (!password) return no('Choose a password')
       const id = uid('p')
       s.people.push({
+        password,
         id, name: '', email: clean, phone: '', joinedAt: iso(), lastActiveAt: iso(), status: 'active', location: '', profile: { ...EMPTY_PROFILE },
         onboarded: false, taxFormDone: false, sourceCode,
-        identity: { state: 'not_started' }, profession: { state: 'not_started' }, livePhoto: false,
+        identity: { state: 'not_started' }, profession: { state: 'not_started' },
         consent: { shareProfession: false, shareProfile: true, essentialCookies: true, performanceCookie: true },
         emailPrefs: { dailyDigest: true, personalizedInvitations: true, newsletter: false },
         prior: { completedThisYear: 0, stars: [] }, trustEvents: [], payoutMethods: [], payouts: [], redemptions: [], referrals: [], savedStudyIds: [],
@@ -894,20 +904,85 @@ export function createPlatform(options: Options = {}) {
       return yes({ id })
     }),
 
-    /** Saves profile edits. The first time the profile is complete is remembered, which is what the points award is read from. */
-    updatePerson: (personId: string, patch: Partial<Pick<Person, 'name' | 'email' | 'phone' | 'location' | 'onboarded' | 'taxFormDone' | 'photo'>> & { profile?: Partial<Person['profile']>; identityVerified?: boolean; licenseVerified?: boolean }) => move((s) => {
+    /** Whether a new participant account could be made with this email (Sign Up checks it before sending the code). */
+    personEmailFree: (email: string): boolean => {
+      const key = email.trim().toLowerCase()
+      return !(read() ?? state).people.some((p) => p.email.toLowerCase() === key)
+    },
+
+    /**
+     * Respondent sign-in, checked against the stored password (FRONT-END
+     * STAND-IN for real authentication, see Person.password). Changes nothing,
+     * except that signing in as the demo participant puts the demo state back
+     * for all three apps, so a demo can be handed on. A wrong password fails;
+     * it never falls back to another account. An account its owner closed
+     * cannot sign in; one the team deactivated can, to read the reason and appeal.
+     */
+    signInPerson: (email: string, password: string): Result<{ id: string; reset: boolean }> => {
+      const key = email.trim().toLowerCase()
+      const latest = read() ?? state
+      const here = latest.people.find((p) => p.email.toLowerCase() === key)
+      const seeded = buildSeed(clock()).people.find((p) => p.id === DEMO_PERSON_ID && p.email.toLowerCase() === key)
+      const who = here ?? seeded
+      if (!who) return no('No account uses that email address')
+      if (!who.password || who.password !== password) return no('That password is not right')
+      if (closedByOwner(who)) return no('You closed this account. Contact us to reopen it')
+      const reset = who.id === DEMO_PERSON_ID
+      if (reset) { state = buildSeed(clock()); write(state); emit() }
+      return yes({ id: who.id, reset })
+    },
+
+    /** Forgot Password, Set New Password. The emailed link is the server's job; here the email the person gave stands in for it. */
+    resetPersonPassword: (email: string, next: string) => move((s) => {
+      const person = s.people.find((p) => p.email.toLowerCase() === email.trim().toLowerCase())
+      if (!person) return no('No account uses that email address')
+      if (!next) return no('Choose a password')
+      person.password = next
+      return yes()
+    }),
+
+    /** Account Settings, Change Password: the current one has to be right. */
+    changePersonPassword: (personId: string, current: string, next: string) => move((s) => {
       const person = personById(s, personId)
       if (!person) return no('No such account')
-      const { profile, identityVerified, licenseVerified, ...rest } = patch
+      if (!person.password || person.password !== current) return no('The current password is not right')
+      if (!next) return no('Choose a new password')
+      if (next === current) return no('Choose a password different from the current one')
+      person.password = next
+      return yes()
+    }),
+
+    /**
+     * Account Settings, Deactivate Account: the participant closes their own
+     * account, confirmed with their password. The console sees it deactivated,
+     * by the participant, and the team can reactivate it. Paying out any
+     * balance to the default payout method is the server's job.
+     */
+    closeAccount: (personId: string, password: string) => move((s) => {
+      const person = personById(s, personId)
+      if (!person) return no('No such account')
+      if (!password) return no('Enter your password to confirm')
+      if (!person.password || person.password !== password) return no('That password is not right')
+      if (person.status === 'deactivated') return no('This account is already deactivated')
+      person.status = 'deactivated'
+      person.statusNote = { reason: 'Closed by the participant from Account Settings.', category: CLOSED_BY_PARTICIPANT, at: iso(), by: person.id }
+      return yes()
+    }),
+
+    /** Saves profile edits. The first time the profile is complete is remembered, which is what the points award is read from. */
+    updatePerson: (personId: string, patch: Partial<Pick<Person, 'name' | 'email' | 'phone' | 'location' | 'onboarded' | 'taxFormDone' | 'photo'>> & { profile?: Partial<Person['profile']> }) => move((s) => {
+      const person = personById(s, personId)
+      if (!person) return no('No such account')
+      const { profile, ...rest } = patch
+      // A new or changed credential number goes to the team to check; it is not verified until they approve it (23 Oct 2026).
+      const credential = profile?.licenseId?.trim()
+      if (profile?.licenseId !== undefined && credential !== person.profile.licenseId.trim()) {
+        person.profession = credential ? { state: 'in_review', submittedAt: iso() } : { state: 'not_started' }
+      }
       /** A field left out of the patch is left alone: an absent value never overwrites a stored one. */
       Object.assign(person, Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined)))
       if (profile) person.profile = { ...person.profile, ...profile }
       if (profile?.address) person.location = profile.address
-      /** The automatic ID check passes in the demo (workflow 15). A credential added to the profile is taken as checked against the register (workflow 17). */
-      if (identityVerified && person.identity.state === 'not_started') person.identity = { state: 'verified' }
-      // Policy section 7: the certificate is issued when identity verification completes, its ID generated once and kept.
-      if (person.identity.state === 'verified') person.certificateId ??= freshCertificateId(s, 'participant')
-      if (licenseVerified && person.profession.state === 'not_started') person.profession = { state: 'verified' }
       if (!person.fullProfileAt && profileCompletion(person) >= 100) person.fullProfileAt = iso()
       person.lastActiveAt = iso()
       return yes()
@@ -968,7 +1043,11 @@ export function createPlatform(options: Options = {}) {
     removePayoutMethod: (personId: string, id: string) => move((s) => {
       const person = personById(s, personId)
       if (!person) return no('No such account')
+      const gone = person.payoutMethods.find((m) => m.id === id)
+      if (!gone) return no('No such payout account')
       person.payoutMethods = person.payoutMethods.filter((m) => m.id !== id)
+      // Removing the default hands the default to the next account, so a withdrawal always has one.
+      if (gone.isDefault && person.payoutMethods[0]) person.payoutMethods[0] = { ...person.payoutMethods[0], isDefault: true }
       return yes()
     }),
     setDefaultPayoutMethod: (personId: string, id: string) => move((s) => {
@@ -1066,15 +1145,37 @@ export function createPlatform(options: Options = {}) {
       return yes({ id: ticketId })
     }),
 
-    /** Workflow 3, 17: a person settles a check the automatic one could not. */
+    /**
+     * Workflow 15: the participant submits one government ID, both sides. It
+     * waits for the team (in review) and is not verified until a person
+     * approves it in the console. Submitting again, for a new document,
+     * starts a new review.
+     */
+    submitIdentity: (personId: string, idType: string, documents: { front: UploadedFile; back: UploadedFile }) => move((s) => {
+      const person = personById(s, personId)
+      if (!person) return no('No such account')
+      if (!idType.trim()) return no('Select an ID type')
+      if (!documents.front?.name || !documents.back?.name) return no('Upload both sides of your ID')
+      person.identity = { state: 'in_review', submittedAt: iso(), documents }
+      person.profile = { ...person.profile, idType: idType.trim() }
+      person.lastActiveAt = iso()
+      return yes()
+    }),
+
+    /** Workflow 3, 15, 17: a person on the team settles a check waiting for them (submitted for review, or failed automatically). */
     decideCheck: (personId: string, kind: 'identity' | 'profession', verdict: 'verified' | 'rejected', statement: string, actor: Actor) => move((s) => {
       const person = personById(s, personId)
       if (!person) return no('No such account')
       const check: Check = person[kind]
-      if (check.state !== 'flagged') return no('This check is not waiting for a decision')
+      if (check.state !== 'flagged' && check.state !== 'in_review') return no('This check is not waiting for a decision')
       if (!statement.trim()) return no('A statement is required')
       person[kind] = { ...check, state: verdict, note: statement.trim(), decidedAt: iso(), decidedBy: actor.kind === 'team' ? actor.id : undefined }
       if (kind === 'identity' && verdict === 'verified') { person.onboarded = true; person.certificateId ??= freshCertificateId(s, 'participant') }
+      // The participant is told the outcome either way, with the team's statement when it was a rejection.
+      const what = kind === 'identity' ? 'ID' : 'professional credential'
+      notify(s, personId, verdict === 'verified'
+        ? { kind: 'profile', title: `Your ${what} is verified!`, body: kind === 'identity' ? 'You can now apply to studies, and your Human Certificate is issued.' : 'Premium studies for your profession are now open to you.', actionLabel: kind === 'identity' ? 'View Certificate' : 'View Profile', to: kind === 'identity' ? '/profile/certificate' : '/profile/edit' }
+        : { kind: 'profile', title: `We could not verify your ${what}`, body: statement.trim(), actionLabel: kind === 'identity' ? 'Upload Again' : 'Update Credential', to: kind === 'identity' ? '/profile/settings' : '/profile/edit' })
       log(s, actor, `${verdict === 'verified' ? 'Verified' : 'Rejected'} ${kind} ${verdict === 'verified' ? 'of' : 'verification of'} ${person.name}`, `Participants / Verifications / ${verdict === 'verified' ? 'Verify' : 'Reject'}`)
       return yes()
     }),

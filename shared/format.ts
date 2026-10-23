@@ -75,3 +75,9 @@ export function ago(iso?: string, now: Date = new Date()): string {
   const d = new Date(iso)
   return `${d.getDate()} ${d.toLocaleDateString('en-US', { month: 'short' })}, ${clockTime(iso)}`
 }
+
+/** A file's size as people read it: "820 KB", "1.8 MB". */
+export function fileSize(bytes: number): string {
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1).replace(/\.0$/, '')} MB`
+}

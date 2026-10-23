@@ -6,6 +6,7 @@
  *
  * Everything is a pure function of the PlatformState (and the clock).
  */
+import { audienceChecks } from './studyForm'
 import {
   DIARY, FEES, PAGE_SIZE, STREAK_TARGET, TAX_FORM_THRESHOLD, isSessionType, depositFor } from './platform'
 import {
@@ -320,7 +321,7 @@ export function certificateValidity(joinedAt: string, now: Date = new Date()): {
 
 export interface PersonFigures {
   walletBalance: number
-  /** Earnings credited but waiting on the client approving the payout (workflow 46). */
+  /** Earned on a completed study, awaiting payout: the team processes it when the study finishes. */
   pendingEarnings: number
   allTimeEarned: number
   yearEarned: number
@@ -407,7 +408,6 @@ export function profileCard(state: PlatformState, personId: string, now: Date = 
     verified: [
       ...(p.profession.state === 'verified' ? ['Verified Professional'] : []),
       ...(p.identity.state === 'verified' ? ['Government ID Verified'] : []),
-      ...(p.livePhoto ? ['Live Photo Verified'] : []),
       ...(p.profession.state === 'verified' ? ['Register cross checked'] : []),
     ],
     completedStudies: f.completedStudies + p.prior.completedThisYear, earned: f.allTimeEarned,
@@ -445,11 +445,14 @@ export function clientRating(state: PlatformState, clientId: string): { rating: 
  * workflow applies it. Null when the person can go straight to the screener.
  * shared/store.ts startApplication enforces the same three.
  */
-export function applyBlocker(state: PlatformState, studyId: string, personId: string): 'verify' | 'premium' | 'repeat' | null {
+export function applyBlocker(state: PlatformState, studyId: string, personId: string): 'verify' | 'id_review' | 'premium' | 'credential_review' | 'repeat' | null {
   const study = studyById(state, studyId)
   const person = personById(state, personId)
   if (!study || !person) return null
+  // Submitted and waiting for the team: nothing to do but wait (23 Oct 2026).
+  if (person.onboarded && (person.identity.state === 'in_review' || person.identity.state === 'flagged')) return 'id_review'
   if (!person.onboarded || person.identity.state !== 'verified') return 'verify'
+  if (study.premium && (person.profession.state === 'in_review' || person.profession.state === 'flagged')) return 'credential_review'
   if (study.premium && person.profession.state !== 'verified') return 'premium'
   const p = participationOf(study, personId)
   // A client who has already invited this person has waived their own repeat rule.
@@ -480,14 +483,24 @@ export const hasTakenPartWith = (state: PlatformState, personId: string, clientI
 // ------------------------------------------------- the respondent's view of a study
 
 /**
- * How well a study fits a person, 0 to 100. A stand-in for the search in
- * workflow 24: the same industry and a role named in the study's target
- * count most, and the rest is a stable spread so cards do not all read alike.
+ * How well a study fits a person, 0 to 100: the share of the study's own
+ * criteria the person's profile meets. A study built in the Create flow is
+ * read against every criterion its audience sets (the same test Matched uses,
+ * studyForm.ts audienceChecks). A catalogue study names an industry and a
+ * target profession, and is read against those two. Undefined when there is
+ * nothing real to compare: no criteria, or a profile that has not said
+ * anything they ask about. The screens then show no score at all.
  */
-export function matchScore(study: Study, person: Person): number {
-  const industry = study.industry.toLowerCase() === person.profile.industry.toLowerCase() ? 12 : 0
-  const role = person.profile.occupation && study.targetProfession.toLowerCase().includes(person.profile.occupation.toLowerCase().split(/[ ,]/)[0]!) ? 6 : 0
-  return Math.min(98, 62 + (hash(study.id + person.id) % 20) + industry + role)
+export function matchScore(study: Study, person: Person, state?: PlatformState, now: Date = new Date()): number | undefined {
+  if (study.form && state) {
+    const checks = audienceChecks(state, study.form, person, now)
+    return checks.length ? Math.round((100 * checks.filter(Boolean).length) / checks.length) : undefined
+  }
+  const checks: boolean[] = []
+  if (study.industry && person.profile.industry) checks.push(study.industry.toLowerCase() === person.profile.industry.toLowerCase())
+  const words = (person.profile.occupation ?? '').toLowerCase().split(/[^a-z]+/).filter((w) => w.length >= 4)
+  if (study.targetProfession && words.length) checks.push(words.some((w) => study.targetProfession.toLowerCase().includes(w)))
+  return checks.length ? Math.round((100 * checks.filter(Boolean).length) / checks.length) : undefined
 }
 
 /**
@@ -517,7 +530,10 @@ export interface RespondentStudy {
   image: string
   type: StudyType
   industry: string
-  matchScore: number
+  /** Share of the study's criteria the profile meets; undefined when nothing real can be compared (shown as no score). */
+  matchScore?: number
+  /** Places still open: the target less everyone already qualified, booked or done. */
+  placesLeft: number
   reward: number
   durationMins: number
   endsAt: string
@@ -538,6 +554,8 @@ export interface RespondentStudy {
   diary?: { totalDays: number; minDays: number; completedDays: number[]; unit?: string; frequency?: string }
   booking?: Booking
   pinConfirmed?: boolean
+  /** The client (interviewer) has entered the session code too: attendance is on record on both sides (workflow 42). */
+  codeByClient?: boolean
   timeline: { label: string; at: string }[]
   clientReview?: { stars: number; comment: string; expertise: number; reliability: number; communication: number; trustDelta: number }
   userReview?: { reliability: number; communication: number; comment?: string }
@@ -551,14 +569,14 @@ export function respondentStudy(state: PlatformState, study: Study, person: Pers
   const status = respondentStatus(study.type, p)
   return {
     id: study.id, title: study.title, description: study.description, image: study.image ?? '', type: study.type, industry: study.industry,
-    matchScore: matchScore(study, person), reward: study.rates.incentivePer, durationMins: study.durationMins,
+    matchScore: matchScore(study, person, state), placesLeft: placesLeft(study), reward: study.rates.incentivePer, durationMins: study.durationMins,
     endsAt: study.endsAt, daysLeft: daysRemaining(study, now), targetProfession: study.targetProfession,
     client: { id: study.clientId, name: client?.company ?? '', ...clientRating(state, study.clientId) },
     locations: study.locations, availability: isSessionType(study.type) ? openAvailability(study, person.id, now) : undefined,
     status, saved: person.savedStudyIds.includes(study.id), premium: study.premium, repeatRule: study.repeatRule, city: study.city,
     linkCode: study.linkCode, preScreener: study.preScreener, screener: study.screener, tasks: study.tasks,
     diary: study.diary ? { ...study.diary, completedDays: p?.diaryDays ?? [] } : undefined,
-    booking: status === 'available' ? undefined : p?.booking, pinConfirmed: Boolean(p?.code?.byParticipant),
+    booking: status === 'available' ? undefined : p?.booking, pinConfirmed: Boolean(p?.code?.byParticipant), codeByClient: Boolean(p?.code?.byClient),
     timeline: status === 'available' ? [] : p?.events ?? [],
     clientReview: p?.rating ? {
       stars: p.rating.stars, comment: p.rating.comment ?? '', expertise: p.rating.expertise ?? p.rating.stars,
@@ -598,6 +616,12 @@ export interface Counts {
   delivered: number
   /** Completed and the payout approved. */
   paid: number
+}
+
+/** Places still open on a study: its target less everyone qualified, recruited, booked or completed. */
+export const placesLeft = (study: Study): number => {
+  const c = counts(study)
+  return Math.max(0, study.required - (c.qualified + c.recruited + c.scheduled + c.completed))
 }
 
 export function counts(study: Study): Counts {
@@ -926,14 +950,14 @@ export interface VerificationCase { id: string; person: Person; kind: Verificati
 const verificationCases = (state: PlatformState, pending: boolean): VerificationCase[] =>
   state.people.flatMap((person) => (['identity', 'profession'] as const).flatMap((kind) => {
     const check = person[kind]
-    const open = check.state === 'flagged'
+    const open = check.state === 'flagged' || check.state === 'in_review'
     const decided = Boolean(check.decidedAt)
     return (pending ? open : decided) ? [{ id: `${kind === 'identity' ? 'iv' : 'pc'}-${person.id}`, person, kind, check }] : []
   }))
 
 /** Workflow 3 and 17: identity and profession checks that failed automatically and wait for a person. */
 export const verificationsPending = (state: PlatformState): VerificationCase[] =>
-  verificationCases(state, true).sort((a, b) => (b.check.flaggedAt ?? '').localeCompare(a.check.flaggedAt ?? ''))
+  verificationCases(state, true).sort((a, b) => (b.check.flaggedAt ?? b.check.submittedAt ?? '').localeCompare(a.check.flaggedAt ?? a.check.submittedAt ?? ''))
 export const verificationsDecided = (state: PlatformState): VerificationCase[] =>
   verificationCases(state, false).sort((a, b) => (b.check.decidedAt ?? '').localeCompare(a.check.decidedAt ?? ''))
 
@@ -1241,3 +1265,35 @@ export function clientDeactivationRefusal(state: PlatformState, clientId: string
   ].filter(Boolean)
   return parts.length ? `This account has ${parts.join('; and ')}. It can be deactivated only once every study is completed and every invoice is paid.` : ''
 }
+
+/**
+ * The most recent study payout on the platform, for the sign-up ticker: who
+ * (first name only), how much, for what kind of study, and when. Undefined
+ * until someone has been paid.
+ */
+export function latestPayout(state: PlatformState): { firstName: string; amount: number; type: StudyType; at: string } | undefined {
+  let best: { firstName: string; amount: number; type: StudyType; at: string } | undefined
+  for (const study of state.studies) {
+    for (const p of study.participations) {
+      if (!p.paidAt || (best && p.paidAt <= best.at)) continue
+      const person = personById(state, p.personId)
+      const firstName = person?.name.split(' ')[0]
+      if (firstName) best = { firstName, amount: study.rates.incentivePer, type: study.type, at: p.paidAt }
+    }
+  }
+  return best
+}
+
+/**
+ * The share of the platform's participants (active, ID verified) at the given
+ * tiers, as a whole percent. The client app's Profile Tiers lines read it, and
+ * so does "In Top N%".
+ */
+export function tierShare(state: PlatformState, tiers: Tier[], now: Date = new Date()): number {
+  const pool = state.people.filter((p) => p.status === 'active' && p.identity.state === 'verified')
+  return pool.length ? Math.round((pool.filter((p) => tiers.includes(tierOf(state, p.id, now))).length / pool.length) * 100) : 0
+}
+
+/** "In Top N%" under a tier: the share of participants at that tier or above (the real ranking, by tier). */
+export const topShareOf = (state: PlatformState, tier: Tier, now: Date = new Date()): number =>
+  tierShare(state, tier === 'platinum' ? ['platinum'] : tier === 'gold' ? ['gold', 'platinum'] : ['silver', 'gold', 'platinum'], now)

@@ -6,6 +6,7 @@ import Input from '../../components/ui/Input'
 import TabBar from '../../components/ui/TabBar'
 import { useAppNav } from '../../app/useAppNav'
 import { useStore } from '../../mock/store'
+import { useIntroVideo } from '../profile/MediaFields'
 import { isAdult, isValidDob } from '../../lib/validation'
 import AddressField from './AddressField'
 import DetailsInfoModal from './DetailsInfoModal'
@@ -15,7 +16,9 @@ import OnboardingLayout from './OnboardingLayout'
 export default function AboutYou() {
   const navigate = useNavigate()
   const { back } = useAppNav()
-  const { onboarding, setOnboarding, toast } = useStore()
+  const { onboarding, setOnboarding, user, toast } = useStore()
+  // The video is kept the moment it is chosen, as on My Profile (it earns its points there and then).
+  const { pick, busy } = useIntroVideo()
   const [info, setInfo] = useState(false)
   const [touched, setTouched] = useState(false)
 
@@ -67,8 +70,8 @@ export default function AboutYou() {
           description="Share about you, what you do, your interests, etc."
           hint=".mp4 file | 50 MB max."
           accept="video/mp4"
-          fileName={introVideo}
-          onPick={(name) => { setOnboarding({ introVideo: name }); toast('Video selected') }}
+          fileName={busy ? 'Saving video...' : user.video?.name ?? introVideo}
+          onFile={(file) => { void pick(file).then((ok) => { if (ok) setOnboarding({ introVideo: file.name }) }) }}
         />
       </OnboardingLayout>
 

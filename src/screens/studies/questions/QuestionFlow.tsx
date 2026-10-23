@@ -24,6 +24,8 @@ export interface QuestionFlowProps {
   header?: ReactNode
   /** Surveys draw one segment per question instead of the bar and counter. */
   progress?: 'bar' | 'segments'
+  /** Open at the first question still unanswered (a resumed draft); earlier answers stay one Back away. */
+  resume?: boolean
 }
 
 /**
@@ -32,12 +34,16 @@ export interface QuestionFlowProps {
  * the CTA bar (Figma 919:74274). Shared by the screener, survey and diary.
  */
 export default function QuestionFlow({
-  title, questions, answers, onAnswer, onSubmit, onExit, onInfo, submitLabel = 'Submit', header, progress = 'bar',
+  title, questions, answers, onAnswer, onSubmit, onExit, onInfo, submitLabel = 'Submit', header, progress = 'bar', resume = false,
 }: QuestionFlowProps) {
   const { toast } = useStore()
-  const [index, setIndex] = useState(0)
+  const [index, setIndex] = useState(() => {
+    if (!resume) return 0
+    const open = questions.findIndex((q) => !q.optional && !isAnswered(q, answers[q.id]))
+    return open === -1 ? Math.max(0, questions.length - 1) : open
+  })
   // The furthest question reached: only a step forward into new ground sweeps its segment in.
-  const reached = useRef(1)
+  const reached = useRef(index + 1)
   useEffect(() => { reached.current = Math.max(reached.current, index + 1) }, [index])
   const question = questions[index]
   const last = index === questions.length - 1

@@ -200,7 +200,7 @@ export default function ResultsTab() {
               <div className="flex flex-col gap-1">
                 <p className="text-label uppercase tracking-[0.04em] text-text-subtitle">{CERTIFICATE.label}</p>
                 <p className="text-title-s text-text-title">
-                  {cert.verified} of {cert.total} completions verified human
+                  {cert.verified} of {cert.total} completions by ID-verified participants
                 </p>
                 <p className="max-w-[816px] text-text-regular text-text-subtitle">{CERTIFICATE.body}</p>
                 <p className="text-text-regular text-text-subtitle">CERT ID · {cert.id} · Issued {monthDayYear(cert.issuedAt)}</p>
@@ -209,7 +209,7 @@ export default function ResultsTab() {
             {/* Download and share, two icon buttons (1627:104407, and every type's Results). */}
             <span className="flex shrink-0 items-center gap-2">
               <button type="button" aria-label="Download the certificate" title="Download"
-                onClick={() => toast(`Saved ${save(fileName(`certificate ${cert.id}`, 'pdf'), pdf('Human Certificate', [`Cert ID ${cert.id}`, `Issued ${monthDayYear(cert.issuedAt)}`, `Study: ${s.title}`, '', `${cert.verified} of ${cert.total} completions verified human`, CERTIFICATE.body, '', `Check it at ${certLink}`]))}`)}
+                onClick={() => toast(`Saved ${save(fileName(`certificate ${cert.id}`, 'pdf'), pdf('Human Certificate', [`Cert ID ${cert.id}`, `Issued ${monthDayYear(cert.issuedAt)}`, `Study: ${s.title}`, '', `${cert.verified} of ${cert.total} completions by ID-verified participants`, CERTIFICATE.body, '', `Check it at ${certLink}`]))}`)}
                 className="flex h-9 w-9 items-center justify-center rounded-md border-1 border-cta-tertiaryStroke bg-bg-0 text-text-title hover:border-stroke-3">
                 <Download className="h-4 w-4" />
               </button>

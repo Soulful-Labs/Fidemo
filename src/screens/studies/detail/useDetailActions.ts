@@ -47,11 +47,11 @@ export function useDetailActions(study?: Study, onLocations?: () => void) {
         else if (study.type === 'survey') go('/survey')
         else go('/schedule')
         break
-      case 'scheduled': go('/pin'); break
+      case 'scheduled': { const blocker = completeBlocker(study); if (blocker) toast(blocker); else go('/pin'); break }
       case 'pin_confirmed': {
         const blocker = completeBlocker(study)
         if (blocker) toast(blocker)
-        else { completeStudy(study.id); toast('Study completed, payment on its way') }
+        else { completeStudy(study.id); toast('Study completed. Awaiting payout. The team processes it when the study finishes.') }
         break
       }
       case 'paid': case 'late_show': go('/rate'); break

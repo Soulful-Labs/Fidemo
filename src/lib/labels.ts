@@ -88,7 +88,7 @@ export function isExplorable(status: StudyStatus): boolean {
 
 /** Why a person cannot apply to a study right now, and what to do about it. */
 export interface ApplyBlocker {
-  kind: 'verify' | 'premium' | 'repeat'
+  kind: 'verify' | 'id_review' | 'premium' | 'credential_review' | 'repeat'
   title: string
   body: string
   action?: { label: string; to: string }
@@ -102,6 +102,14 @@ export function applyBlockerCopy(kind: ApplyBlocker['kind'] | null, clientName: 
       kind, title: 'Finish verification to apply',
       body: 'Applying needs a completed profile and a verified government ID. It takes about 2 minutes and is done once, then reused for every study.',
       action: { label: 'Verify now', to: '/onboarding/about' },
+    }
+    case 'id_review': return {
+      kind, title: 'Your ID is in review',
+      body: 'Our team is checking your ID. You can apply as soon as it is verified, and we will tell you when it is.',
+    }
+    case 'credential_review': return {
+      kind, title: 'Your credential is in review',
+      body: 'Premium studies open once our team has checked your professional credential against the register. We will tell you when it is verified.',
     }
     case 'premium': return {
       kind, title: 'Premium study, locked',

@@ -11,11 +11,14 @@ import AuthLayout from './AuthLayout'
 export default function ForgotPassword() {
   const navigate = useNavigate()
   const { back } = useAppNav()
-  const { setOnboarding } = useStore()
+  const { setOnboarding, emailFree } = useStore()
   const [email, setEmail] = useState('')
   const [touched, setTouched] = useState(false)
+  const [unknown, setUnknown] = useState('')
 
-  const error = touched && !isValidEmail(email) ? 'Enter a valid email address' : undefined
+  // A real server sends the link only when the account exists and says the same either way; this stand-in says so plainly.
+  const error = touched && !isValidEmail(email) ? 'Enter a valid email address'
+    : unknown && unknown === email.trim().toLowerCase() ? 'No account uses that email address' : undefined
 
   return (
     <AuthLayout
@@ -24,7 +27,11 @@ export default function ForgotPassword() {
       title="Enter Email"
       subtitle="Please enter your email address"
       actions={
-        <Button fullWidth disabled={!isValidEmail(email)} onClick={() => { setOnboarding({ email: email.trim() }); navigate('/check-email') }}
+        <Button fullWidth disabled={!isValidEmail(email)} onClick={() => {
+          if (emailFree(email)) { setUnknown(email.trim().toLowerCase()); setTouched(true); return }
+          setOnboarding({ email: email.trim() })
+          navigate('/check-email')
+        }}
           onBlocked={() => setTouched(true)}>
           Submit
         </Button>

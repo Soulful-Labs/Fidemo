@@ -1,4 +1,5 @@
 import { cn } from '../lib/cn'
+import { useStore } from '../mock/store'
 import type { User } from '../mock/types'
 
 export type Tier = User['tier']
@@ -72,7 +73,8 @@ export function FlipCoin({ from, to }: { from: Tier; to: Tier }) {
 }
 
 /** The tier name pill that sits on the benefits card (same strings as the tier screen). */
-export function TierPill({ tier, label }: { tier: Tier; label: { name: string; top: string } }) {
+export function TierPill({ tier, label }: { tier: Tier; label: { name: string } }) {
+  const top = useStore().tierTop(tier)
   const gold = tier === 'gold'
   return (
     <span data-t="pill" style={{ opacity: 0 }}
@@ -83,7 +85,7 @@ export function TierPill({ tier, label }: { tier: Tier; label: { name: string; t
       </span>
       <span className="flex flex-col items-start whitespace-nowrap">
         <span className={cn('text-title-s leading-tight', ACCENT[tier])}>{label.name}</span>
-        <span className="text-text-regular text-text-subtitle">You are in {label.top.replace('In ', '')}</span>
+        <span className="text-text-regular text-text-subtitle">You are in {top.replace('In ', '')}</span>
       </span>
     </span>
   )

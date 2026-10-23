@@ -48,7 +48,7 @@ export default function DiaryOverview() {
 
   const finish = () => {
     completeStudy(study.id)
-    toast('Diary submitted, payment on its way')
+    toast('Diary submitted. Awaiting payout. The team processes it when the study finishes.')
     setTimeout(() => navigate(`/studies/${id}`, { replace: true }), TIMINGS.fakeServer)
   }
 
@@ -76,7 +76,7 @@ export default function DiaryOverview() {
                 <button
                   type="button"
                   aria-disabled={!done && !isNext}
-                  onClick={() => (done ? toast(`${w.Unit} ${day} is already submitted`)
+                  onClick={() => (done ? navigate(`/studies/${id}/diary/${day}`)
                     : isNext ? navigate(`/studies/${id}/diary/${day}`)
                       : toast(finished ? 'This diary is complete' : `${w.Unit} ${day} unlocks after ${w.unit} ${next}`))}
                   className={cn(

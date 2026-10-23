@@ -119,9 +119,12 @@ export default function StudyDetail() {
         <div className="flex items-center gap-2">
           <StudyTypeTag type={study.type} />
           <Tag tone="outline" size="md" className="ml-auto">{study.industry}</Tag>
-          <button type="button" onClick={actions.matchScore} aria-label={`Match score ${study.matchScore}`}>
-            <ScoreDial score={study.matchScore} compact />
-          </button>
+          {/* No score when nothing real can be compared (shared/derive.ts matchScore). */}
+          {study.matchScore !== undefined && (
+            <button type="button" onClick={actions.matchScore} aria-label={`Match score ${study.matchScore}`}>
+              <ScoreDial score={study.matchScore} compact />
+            </button>
+          )}
         </div>
 
         <DescriptionBlock study={study} thumbnail={afterApply} />

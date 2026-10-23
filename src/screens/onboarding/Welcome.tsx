@@ -24,14 +24,16 @@ export default function Welcome() {
   return (
     <div className="flex min-h-full flex-col bg-bgAlt-0 bg-green-fade">
       <div className="flex flex-1 flex-col gap-6 px-4 pb-6 pt-6">
-        {/* Moment I: the verified seal is pressed in, then the welcome and the score follow. */}
+        {/* Moment I: the seal is pressed in, then the welcome and the score follow. */}
         <motion.div initial="hidden" animate="shown" transition={{ staggerChildren: 0.09, delayChildren: DUR.base }}
           className="flex flex-col items-center gap-2 text-center">
           <motion.span variants={{ hidden: { opacity: 0, scale: 2.2, rotate: -14 }, shown: { opacity: 1, scale: 1, rotate: 0, transition: { duration: DUR.base, ease: EASE.in } } }} className="flex">
             <ShieldCheck className="h-12 w-12 text-state-success" />
           </motion.span>
-          <motion.p variants={fadeUp} className="text-body-regular text-brand-secondary">You are verified!</motion.p>
+          {/* The ID is with the team now (23 Oct 2026): nothing is verified until they approve it in the console. */}
+          <motion.p variants={fadeUp} className="text-body-regular text-brand-secondary">Your ID is in review</motion.p>
           <motion.h1 variants={fadeUp} className="text-title-l text-text-title">Welcome to HumanLayer!</motion.h1>
+          <motion.p variants={fadeUp} className="text-text-regular text-text-subtitle">Our team checks it and tells you when it is verified. You can browse studies now and apply once it is.</motion.p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SPRING.soft, delay: DUR.slow }}

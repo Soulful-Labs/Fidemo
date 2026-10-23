@@ -1,4 +1,4 @@
-import { avatarFor } from '@shared/avatar'
+import { fileSize } from '@shared/format'
 import IntroVideo from '../../../components/app/IntroVideo'
 import type { ReactNode } from 'react'
 import TierTag from '../../../components/app/TierTag'
@@ -31,10 +31,10 @@ export const Check = ({ children }: { children: string }) => (
  * About (2017:148911): four bg-1 cards in two columns. Professional Details
  * and Trust Score (score, tier, Reviews, four ratings, three metrics, four
  * verifications); Personal Details and Account Details (email, phone, date of
- * birth, the ID documents and the selfie check). Everything is read only.
+ * birth, the ID documents as uploaded and the check). Everything is read only.
  */
 export default function AboutTab({ onReviews, view }: { onReviews: () => void; view: ProfileView }) {
-  const { ACCOUNT, METRICS, PERSON, PERSONAL, PROFESSIONAL, RATINGS, TOPICS, VERIFIED } = view
+  const { ACCOUNT, ID, METRICS, PERSON, PERSONAL, PROFESSIONAL, RATINGS, TOPICS, VERIFIED } = view
   return (
     <div className="grid grid-cols-2 gap-3">
       <Card title="Professional Details">
@@ -67,12 +67,13 @@ export default function AboutTab({ onReviews, view }: { onReviews: () => void; v
       <Card title="Account Details">
         {ACCOUNT.map(([l, v]) => <Field key={l} label={l!} value={v!} />)}
         <div className="flex flex-col gap-1.5 border-t-1 border-stroke-input pt-3">
-          <Field label="ID Verification" value="Passport" />
-          <File thumb="/img/participants/passport.png" name="Passport front.pdf" meta="5 MB" /><File thumb="/img/participants/passport.png" name="Passport back.pdf" meta="5 MB" />
-          <Check>Govt. ID Verified</Check>
-          <p className="pt-1 text-text-regular leading-5 text-text-subtitle">Selfie Verification</p>
-          <div className="flex h-10 items-center gap-2 rounded-md border-1 border-stroke-1 bg-bg-0 px-2 text-body-regular text-text-title"><img src={avatarFor(PERSON.id)} alt="" className="h-6 w-6 rounded-full object-cover" />Selfie photo verified</div>
-          <Check>Human Verified</Check>
+          <Field label="ID Verification" value={ID.type} />
+          {ID.documents
+            ? <><File thumb="/img/participants/passport.png" name={ID.documents.front.name} meta={fileSize(ID.documents.front.bytes)} /><File thumb="/img/participants/passport.png" name={ID.documents.back.name} meta={fileSize(ID.documents.back.bytes)} /></>
+            : <p className="text-body-regular leading-[22px] text-text-body">No ID uploaded yet</p>}
+          {ID.state === 'verified' && <Check>Govt. ID Verified</Check>}
+          {(ID.state === 'in_review' || ID.state === 'flagged') && <p className="text-text-regular leading-5 text-text-subtitle">In review: waiting for a decision under Verifications</p>}
+          {ID.state === 'rejected' && <p className="text-text-regular leading-5 text-state-danger">ID could not be verified</p>}
         </div>
       </Card>
     </div>

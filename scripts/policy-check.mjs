@@ -229,7 +229,7 @@ void by
   await I.go('/internal/participants/jonathan'); await sleep(700)
   const consoleId = ((await text(I)).match(/Cert\. ID: (\S+)/) ?? [])[1]
   if (consoleId !== id) g.push(`the console shows ${consoleId}`)
-  say(3, 'The certificate has no name and an FI- id', g, `respondent certificate: "Verified Human", Cert. ID ${id}, "Trust Score", no name or initials; the console shows the same ${consoleId}`)
+  say(3, 'The certificate has no name and an FI- id', g, `respondent certificate: "Identity Verified", Cert. ID ${id}, "Trust Score", no name or initials; the console shows the same ${consoleId}`)
 }
 
 // ---- 4. each figure reads one way

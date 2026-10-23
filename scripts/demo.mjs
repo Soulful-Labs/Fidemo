@@ -117,6 +117,38 @@ const expect = (cond, msg) => { if (!cond) throw new Error(msg) }
 // Arriving through a coded sign-up link (workflow 12): the code is stored on the new account.
 await goto('/signup?reset=1&ref=DEMO7')
 
+/**
+ * Workflow 15, as decided 23 Oct 2026: the team verifies the ID (and a
+ * credential, when one was given) in the console before the participant can
+ * apply. The team works in a console tab of its own with a stored session.
+ */
+async function teamApproves(email) {
+  const { targetId: tid } = await send('Target.createTarget', { url: 'about:blank' })
+  const { sessionId: sid } = await send('Target.attachToTarget', { targetId: tid, flatten: true })
+  const t = (m, p) => send(m, p, sid)
+  await t('Page.enable'); await t('Runtime.enable')
+  await t('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false })
+  const ev = async (e) => { const r = await t('Runtime.evaluate', { expression: e, awaitPromise: true, returnByValue: true }); if (r.exceptionDetails) throw new Error('[console] ' + (r.exceptionDetails.exception?.description ?? r.exceptionDetails.text).split(String.fromCharCode(10))[0]); return r.result.value }
+  const open = async (path) => { await t('Page.navigate', { url: base + path }); await sleep(2000) }
+  await open('/internal/signin')
+  await ev(`localStorage.setItem('fi-internal-session', JSON.stringify({ current: 'peter@focusinsite.com' })); true`)
+  const pid = await ev(`JSON.parse(localStorage.getItem('fi-platform')).people.find((p) => p.email === ${JSON.stringify(email)}).id`)
+  for (const kind of ['iv', 'pc']) {
+    const state = await ev(`JSON.parse(localStorage.getItem('fi-platform')).people.find((p) => p.id === ${JSON.stringify(pid)})[${JSON.stringify(kind === 'iv' ? 'identity' : 'profession')}].state`)
+    if (state !== 'in_review') continue
+    await open(`/internal/participants/verifications/${kind}-${pid}`)
+    await ev(`(() => { const b = [...document.querySelectorAll('button')].find((x) => x.textContent.trim() === 'Mark Verified' && x.offsetParent !== null); if (!b) throw new Error('no Mark Verified for ${kind}'); b.click(); return true })()`); await sleep(500)
+    await ev(`(() => { const d = document.querySelector('[role=dialog]'); const set = (el, v) => { Object.getOwnPropertyDescriptor(el.constructor.prototype, 'value').set.call(el, v); el.dispatchEvent(new Event('input', { bubbles: true })) }; set(d.querySelector('textarea'), 'Checked against the record.'); const pw = d.querySelector('input[type=password]'); if (pw) set(pw, 'demo1234'); return true })()`); await sleep(300)
+    for (let i = 0; i < 4; i++) {
+      const more = await ev(`(() => { const d = document.querySelector('[role=dialog]'); if (!d) return false; const b = [...d.querySelectorAll('button')].reverse().find((x) => /Mark|Yes|Verify|Done|Confirm/.test(x.textContent) && !x.disabled); if (!b) return false; b.click(); return true })()`)
+      await sleep(800)
+      if (!more) break
+    }
+  }
+  await send('Target.closeTarget', { targetId: tid })
+  await sleep(1200)
+}
+
 await step(1, 'Sign up, verify OTP, fill all three profile steps, accept consent, land on Welcome', async () => {
   await type('input[type=email]', 'demo@example.com')
   await type('input[type=password]', 'Passw0rd!')
@@ -148,11 +180,15 @@ await step(1, 'Sign up, verify OTP, fill all three profile steps, accept consent
   await click('Continue')
   expect(await path() === '/onboarding/identity', 'expected /onboarding/identity')
   await click('Passport'); await clickIn('[role=dialog]', 'Passport'); await clickIn('[role=dialog]', 'Save')
-  await evaluate(`__hl.setOnboarding({ idFront: 'front.jpg', idBack: 'back.jpg' })`); await sleep(300)
+  await evaluate(`__hl.setOnboarding({ idFront: { name: 'front.jpg', bytes: 820000 }, idBack: { name: 'back.jpg', bytes: 790000 } })`); await sleep(300)
   await click('Continue')
   await click('Save & Continue')
   expect(await path() === '/onboarding/welcome', 'expected /onboarding/welcome')
-  // Policy section 2: the certificate is issued the moment the ID passes, and the app celebrates it. Close it, as a person would.
+  // 23 Oct 2026: the ID is in review until the team approves it in the console; nothing is verified yet.
+  expect(await evaluate(`document.body.textContent.includes('Your ID is in review')`), 'Welcome should say the ID is in review')
+  expect(await store('st.user.checks.identity') === 'in_review', 'the ID should be in review')
+  await teamApproves(await store('st.user.email'))
+  // Policy section 7: the certificate is issued the moment the ID is verified, and the app celebrates it. Close it, as a person would.
   let cert = false
   for (let i = 0; i < 10 && !cert; i++) { await sleep(200); cert = await evaluate(`document.body.textContent.includes('Human Certificate')`) }
   expect(cert, 'the certificate was not issued when the ID passed')
@@ -228,6 +264,11 @@ await step(5, 'Schedule it: pick a date, a slot, agree to recording, review, con
 
 await step(6, 'Open it, enter session code 407060, see it confirmed', async () => {
   expect(await path() === '/studies/st-01', 'expected the study')
+  // The interviewer gives the code during the session, so Submit PIN waits for the session to start.
+  expect(await evaluate(`[...document.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Submit PIN' && b.getAttribute('aria-disabled') === 'true')`), 'Submit PIN should wait for the session')
+  // The clock moves on: the booking is set an hour into the past (the one place the script touches state directly).
+  await evaluate(`(() => { const st = __hl; const s = st.studies.find((x) => x.id === 'st-01'); const d = new Date(Date.now() - 3600e3); const slot = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }); st.dispatch({ type: 'SET_BOOKING', id: 'st-01', booking: { ...s.booking, date: d.toISOString(), slot } }) })()`)
+  await sleep(300)
   await click('Submit PIN')
   for (const [i, d] of [...'407060'].entries()) await type(`input[aria-label="Digit ${i + 1}"]`, d)
   await click('Submit', 1200)
@@ -270,11 +311,7 @@ async function teamProcesses(studyId) {
 }
 
 await step(7, 'Complete it, watch it move to History and become Paid once the team processes the payout', async () => {
-  // Complete Study waits for the session to have started, so the clock moves on: the
-  // booking is set an hour into the past (the one place the script touches state directly).
-  expect(await evaluate(`[...document.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Complete Study' && b.getAttribute('aria-disabled') === 'true')`), 'Complete Study should wait for the session')
-  await evaluate(`(() => { const st = __hl; const s = st.studies.find((x) => x.id === 'st-01'); const d = new Date(Date.now() - 3600e3); const slot = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }); st.dispatch({ type: 'SET_BOOKING', id: 'st-01', booking: { ...s.booking, date: d.toISOString(), slot } }) })()`)
-  await sleep(300)
+  // The session started an hour ago (step 6), so Complete Study is open.
   await click('Complete Study', 800)
   expect(await store(`st.studies.find((x) => x.id === 'st-01').status`) === 'in_process', 'should be in_process')
   await nav('/studies/mine/history')

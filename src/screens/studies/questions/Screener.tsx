@@ -92,6 +92,7 @@ export default function Screener() {
       <QuestionFlow
         title="Screener Questions"
         questions={study.screener}
+        resume={resumed}
         answers={current}
         onAnswer={(qid, value) => dispatch({ type: 'SAVE_ANSWERS', id: study.id, answers: { ...current, [qid]: value } })}
         onSubmit={submitting ? () => undefined : () => { if (study.status === 'available' || study.status === 'invited_to_apply') applyToStudy(study.id); submit() }}

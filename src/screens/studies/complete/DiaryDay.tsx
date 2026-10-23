@@ -37,6 +37,8 @@ export default function DiaryDay() {
   const key = `${study.id}:day${day}`
   const current = answers[key] ?? {}
   const complete = questions.every((q) => q.optional || isAnswered(q, current[q.id]))
+  // A submitted entry opens to be read, not changed.
+  const submitted = completedDays.includes(day)
   const overview = `/studies/${id}/diary`
 
   const submit = () => {
@@ -69,9 +71,10 @@ export default function DiaryDay() {
 
       <div className="flex flex-1 flex-col gap-6 px-4 pb-6 pt-4">
         <p className="rounded-full bg-bg-2 py-2 text-center text-text-medium uppercase text-text-title">{w.Unit} {day} of {totalDays}</p>
+        {submitted && <p className="text-text-regular text-text-body">Submitted. Your answers are shown as you sent them and can no longer be changed.</p>}
 
         {questions.map((question, i) => (
-          <section key={question.id} className="flex flex-col gap-3">
+          <section key={question.id} className="flex flex-col gap-3" inert={submitted || undefined}>
             <h2 className="flex gap-2 text-body-medium text-text-title">
               <span>{i + 1}.</span>
               <span>{question.prompt}{question.optional && <span className="text-text-body"> (optional)</span>}</span>
@@ -86,10 +89,14 @@ export default function DiaryDay() {
       </div>
 
       <CtaBar>
-        <Button fullWidth loading={saving} disabled={!complete} onClick={submit}
-          onBlocked={() => toast(`Answer every question to submit this ${w.unit}`)}>
-          Submit Progress
-        </Button>
+        {submitted ? (
+          <Button fullWidth variant="secondary" onClick={() => navigate(overview)}>Back to Diary</Button>
+        ) : (
+          <Button fullWidth loading={saving} disabled={!complete} onClick={submit}
+            onBlocked={() => toast(`Answer every question to submit this ${w.unit}`)}>
+            Submit Progress
+          </Button>
+        )}
       </CtaBar>
 
       <Modal open={info} onClose={() => setInfo(false)} title="Diary Study" showClose={false}

@@ -23,8 +23,8 @@ export function useVerificationLists() {
   const state = usePlatform()
   return useMemo(() => {
     const ONBOARDING: Pending[] = verificationsPending(state).map((c) => ({
-      id: c.id, photo: photoFor(c.person), name: c.person.name, role: c.person.profile.occupation, date: monthDayYear(c.check.flaggedAt),
-      flag: c.kind === 'identity' ? 'Identity Verification' : 'Profession Credential', reason: c.check.reason ?? '',
+      id: c.id, photo: photoFor(c.person), name: c.person.name, role: c.person.profile.occupation, date: monthDayYear(c.check.flaggedAt ?? c.check.submittedAt),
+      flag: c.kind === 'identity' ? 'Identity Verification' : 'Profession Credential', reason: c.check.reason ?? (c.check.state === 'in_review' ? 'Submitted for review' : ''),
     }))
     const ONBOARDING_HISTORY: Pending[] = verificationsDecided(state).map((c) => ({
       id: c.id, photo: photoFor(c.person), name: c.person.name, role: c.person.profile.occupation, date: monthDayYear(c.check.decidedAt),

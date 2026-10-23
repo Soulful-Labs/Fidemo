@@ -53,7 +53,7 @@ export default function SchedulePicker({
   return (
     <>
       <section className="flex flex-col gap-4">
-        <SectionHeading icon={<Calendar className="h-5 w-5" />} title="Pick a date" sub="Only available dates are shown" />
+        <SectionHeading icon={<Calendar className="h-5 w-5" />} title="Pick a date" sub="Dates with no open sessions are greyed out" />
         <div className="flex items-center justify-between">
           <button type="button" aria-label="Previous week" onClick={() => setWeekStart((w) => w - 7 * DAY)}
             className="flex h-10 w-10 items-center justify-center rounded-md border-1 border-stroke-3 text-text-title">

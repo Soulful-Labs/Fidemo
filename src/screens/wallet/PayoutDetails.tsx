@@ -30,6 +30,11 @@ export default function PayoutDetails() {
   }
 
   const expected = payout.expectedBy ?? withdrawalExpectedBy(payout.at)
+  // Still processing after the date it was expected by: say so plainly rather than show a date already past.
+  const late = payout.status === 'processing' && new Date(expected).getTime() < Date.now()
+  const expectedLine = late
+    ? `Running late: it was expected by ${dateLong(expected)}. The team is releasing it, and your bank shows it once they have`
+    : `Expected in bank by ${dateLong(expected)}`
 
   return (
     <div className="flex min-h-full flex-col bg-bgAlt-0">
@@ -49,7 +54,7 @@ export default function PayoutDetails() {
           <span className="self-start"><StatusChip status={payout.status} /></span>
           {payout.status === 'processing' && (
             <p className="rounded-md bg-yellow-1000/50 px-3 py-2 text-text-regular text-text-title">
-              Expected in bank by <span className="text-text-medium">{dateLong(expected)}</span>
+              {late ? expectedLine : <>Expected in bank by <span className="text-text-medium">{dateLong(expected)}</span></>}
             </p>
           )}
         </div>
@@ -59,7 +64,7 @@ export default function PayoutDetails() {
         <Button variant="tertiary" fullWidth leftIcon={<Download />} onClick={() => toast(`Saved ${save(fileName(`receipt ${payout.txId}`, 'pdf'), pdf('Payout Receipt', [
             `Bank Transfer ${payout.destination}`, `Transaction ID ${payout.txId}`, `Date ${dateTime(payout.at)}`, `Status ${payout.status === 'processing' ? 'Processing' : 'Completed'}`, '',
             { heading: 'Payout Breakdown' }, `Withdrawal Amount  ${money(payout.amount)}`, `Processing Fees  ${money(payout.fee)}`, `Receivable Amount  ${money(payout.net)}`, '',
-            payout.status === 'processing' ? `Expected in bank by ${dateLong(expected)}` : 'Paid to your bank',
+            payout.status === 'processing' ? expectedLine : 'Paid to your bank',
           ]))}`)}>
           Download Receipt PDF
         </Button>

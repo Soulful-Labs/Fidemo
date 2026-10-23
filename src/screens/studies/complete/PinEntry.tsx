@@ -10,6 +10,7 @@ import TopBar from '../../../components/ui/TopBar'
 import { useStore } from '../../../mock/store'
 import { TIMINGS } from '../../../mock/timings'
 import { ATTENDANCE_PIN } from '../detail/StateBanner'
+import { completeBlocker } from '../../../lib/session'
 
 /**
  * PRD 6.11, Figma 919:75752. Six digits; 407060 succeeds, anything else
@@ -34,21 +35,26 @@ export default function PinEntry() {
     return (
       <SuccessScreen
         title="Confirmed successfully!"
-        body="Your joining attendance is confirmed and verified! You can complete your study if running now."
+        body="Your code is in. Once your interviewer enters it too, your attendance is on record and you can complete the study."
         onAction={() => navigate(`/studies/${id}`, { replace: true })}
       />
     )
   }
 
+  // Reached by address before the session starts: say when the code opens, and keep Submit off.
+  const notYet = study.status === 'scheduled' ? completeBlocker(study) : null
+
   const submit = () => {
+    if (notYet) { setError(notYet); return }
     if (code !== ATTENDANCE_PIN) {
       setError('Incorrect PIN, check with your interviewer')
       return
     }
     setChecking(true)
     setTimeout(() => {
-      confirmPin(study.id)
-      navigate(`/studies/${id}/pin/done`, { replace: true })
+      setChecking(false)
+      // The platform's verdict decides: a refusal stays on this screen with its reason.
+      if (confirmPin(study.id, code)) navigate(`/studies/${id}/pin/done`, { replace: true })
     }, TIMINGS.fakeServer)
   }
 
@@ -70,13 +76,14 @@ export default function PinEntry() {
           <OtpInput value={code} onChange={(next) => { setCode(next); setError(undefined) }} error={Boolean(error)} />
           {error
             ? <span className="text-label text-state-danger">{error}</span>
+            : notYet ? <span className="text-label text-text-body">{notYet}</span>
             : <span className="text-label text-text-body">Demo mode. No interviewer shares a code. Enter {ATTENDANCE_PIN}.</span>}
         </div>
       </div>
 
       <CtaBar>
-        <Button fullWidth loading={checking} disabled={code.length !== 6} onClick={submit}
-          onBlocked={() => setError('Enter all 6 digits')}>
+        <Button fullWidth loading={checking} disabled={code.length !== 6 || Boolean(notYet)} onClick={submit}
+          onBlocked={() => setError(notYet ?? 'Enter all 6 digits')}>
           Submit
         </Button>
       </CtaBar>

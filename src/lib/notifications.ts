@@ -72,7 +72,7 @@ export function buildNotifications(src: Sources): AppNotification[] {
           at: shift(s.endsAt, -24 * 60), actionLabel: 'Complete Study - Earn Faster!', to: `/studies/${s.id}` })
         break
       case 'invited_to_schedule':
-        add({ id: `nt-${s.id}-schedule`, kind: 'study', title: "You've been selected to complete!",
+        add({ id: `nt-${s.id}-schedule`, kind: 'study', title: "You're invited to schedule your session!",
           body: `Congratulations! You've been selected for the ${s.title} study. Schedule your session now.`,
           at: last(s, 'Invited to schedule') ?? applied ?? s.endsAt, actionLabel: 'Schedule Now', to: `/studies/${s.id}/schedule` })
         break
@@ -131,11 +131,12 @@ export function buildNotifications(src: Sources): AppNotification[] {
       default:
         break
     }
-    if (s.status === 'available' && s.saved) add({ id: `nt-${s.id}-saved`, kind: 'study', title: 'Update on a saved study',
-      body: `The ${s.title} study you saved now has ${3 + (Number(s.id.replace(/\D/g, '')) % 5)} spots remaining. Apply soon!`, at: shift(listedAt(s), 3 * 24 * 60), actionLabel: 'Apply Now', to: `/studies/${s.id}` })
+    // The real count of open places (shared/derive.ts placesLeft); a full study sends no such update.
+    if (s.status === 'available' && s.saved && s.placesLeft > 0) add({ id: `nt-${s.id}-saved`, kind: 'study', title: 'Update on a saved study',
+      body: `The ${s.title} study you saved now has ${s.placesLeft} ${s.placesLeft === 1 ? 'spot' : 'spots'} remaining. Apply soon!`, at: shift(listedAt(s), 3 * 24 * 60), actionLabel: 'Apply Now', to: `/studies/${s.id}` })
   }
 
-  const best = [...src.studies].filter((s) => s.status === 'available' && !s.premium).sort((a, b) => b.matchScore - a.matchScore)[0]
+  const best = [...src.studies].filter((s) => s.status === 'available' && !s.premium).sort((a, b) => (b.matchScore ?? -1) - (a.matchScore ?? -1))[0]
   if (best) add({ id: `nt-${best.id}-match`, kind: 'study', title: 'New study match!',
     body: `A ${best.title} study (${money(best.reward)}) matches your profile. Apply before spots fill up!`,
     at: listedAt(best), to: `/studies/${best.id}` })

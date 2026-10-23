@@ -61,8 +61,7 @@
 <table>
 <tr><th>Rule</th><th>Value</th></tr>
 <tr><td>Range</td><td class="num">50 to 100</td></tr>
-<tr><td>Starting score</td><td class="num">50</td></tr>
-<tr><td>Onboarding complete</td><td class="num">+50</td></tr>
+<tr class="new"><td>Starting score</td><td class="num">50, earned by completing onboarding</td></tr>
 <tr><td>Study completion</td><td class="num">+1 per study, capped at 10 a year</td></tr>
 <tr><td>5-star rating</td><td class="num">+4</td></tr>
 <tr><td>4-star rating</td><td class="num">+3</td></tr>
@@ -76,6 +75,10 @@
 <tr><td>Cancelled session</td><td class="num">&minus;2</td></tr>
 <tr><td>Upheld fraud</td><td class="num">&minus;20</td></tr>
 </table>
+
+<p>A participant starts at 50. Completing onboarding is what earns that 50: it is the starting score, not something added on top of it. Everything else in this table is added to or taken from that 50.</p>
+
+<p>The score is the starting 50 plus everything earned and deducted since, kept within 50 and 100. A deduction that would take the score below 50 still counts: the score shows 50, and the deduction comes off later gains before the score rises again. For example, a participant at 50 who cancels a session (&minus;2) stays at 50, and their next completed study (+1) leaves them at 50, not 51.</p>
 
 <p>A no show costs more than a cancellation on purpose. Cancelling properly costs 2. If not turning up also cost 2, there would be no reason to cancel rather than simply not appear, and the client would lose the slot without warning. One design screen shows No show at &minus;2; this policy is the one to follow.</p>
 
@@ -91,6 +94,8 @@
 </table>
 
 <p>Tier is derived from the Trust Score. It is never set independently and never stored as a fact of its own.</p>
+
+<p>Under each tier the app shows "In Top N%": the share of active, ID-verified participants at that tier or above, worked out from the platform at the time it is shown. Everyone is Silver or above, so Silver always reads "In Top 100%".</p>
 
 <h2>3. Reward points</h2>
 
@@ -152,9 +157,9 @@
 
 <table>
 <tr><th>Rule</th><th>Value</th></tr>
-<tr><td>When it is issued</td><td>When identity verification completes. Never before</td></tr>
+<tr class="new"><td>When it is issued</td><td>When the team verifies the participant's government ID in the console. Never before. A submitted ID is in review until then</td></tr>
 <tr><td>How many</td><td>One per participant, with a unique ID generated once and never reused</td></tr>
-<tr><td>What it claims</td><td>Identity verified, and profession verified where a profession was checked. Nothing else</td></tr>
+<tr class="new"><td>What it claims</td><td>Identity verified, and profession verified where the team checked a professional credential. Nothing else, and nothing about a selfie: selfie and liveness checks are not part of the product</td></tr>
 <tr class="open"><td>ID prefix <span class="tag">open</span></td><td>Certificate IDs begin FI- while the product is branded HumanLayer. Whether the prefix should change is not decided</td></tr>
 </table>
 

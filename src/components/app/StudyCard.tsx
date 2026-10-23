@@ -114,9 +114,12 @@ export default function StudyCard({
                 <Clock className="h-5 w-5" />
                 {duration(study.durationMins)}
               </span>
-              <button type="button" onClick={onMatchScore} aria-label={`Match score ${study.matchScore}`}>
-                <ScoreDial score={study.matchScore} compact />
-              </button>
+              {/* No score when nothing real can be compared (shared/derive.ts matchScore). */}
+              {study.matchScore !== undefined && (
+                <button type="button" onClick={onMatchScore} aria-label={`Match score ${study.matchScore}`}>
+                  <ScoreDial score={study.matchScore} compact />
+                </button>
+              )}
             </>
           )}
         </div>

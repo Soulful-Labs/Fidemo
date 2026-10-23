@@ -93,7 +93,7 @@ for all three apps.
 
 | App | Email | Password | Notes |
 |---|---|---|---|
-| Respondent | any, e.g. `jonathan.reeve@example.com` | any, e.g. `Passw0rd!` | Signs in as the demo participant, Jonathan Reeve. Sign-up's one-time code is `123456`. A session's attendance PIN is `407060` |
+| Respondent | `jonathan.reeve@example.com` | `Passw0rd!` | Signs in as the demo participant, Jonathan Reeve, and restores the demo data. Any other account signs in with its own password and restores nothing; a wrong password is refused. Sign-up's one-time code is `123456`. A session's attendance PIN is `407060`, accepted once the session has started. A new participant's ID is in review until the team marks it verified in the console (Participants > Verifications) |
 | Client | `jennifer@soulfullabs.com` | `demo1234` | Jennifer Lee, Soulful Labs |
 | Console | `peter@focusinsite.com` | `demo1234` | Master admin |
 | Console | `maya.thompson@humanlayer.com` | `demo1234` | Sub-admin with restricted access |

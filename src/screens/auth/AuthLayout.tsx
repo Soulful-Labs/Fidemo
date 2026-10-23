@@ -2,6 +2,9 @@ import type { ReactNode } from 'react'
 import Logo from '../../components/app/Logo'
 import TopBar from '../../components/ui/TopBar'
 import { cn } from '../../lib/cn'
+import { money, timeAgo } from '../../lib/format'
+import { STUDY_TYPE_LABEL } from '../../components/app/StudyTypeTag'
+import { useStore } from '../../mock/store'
 
 export interface AuthLayoutProps {
   title: string
@@ -49,14 +52,26 @@ export default function AuthLayout({
 
         {actions && <div className="flex w-full flex-col gap-4 pt-6">{actions}</div>}
 
-        {promo && (
-          <div className="mt-auto flex h-promo items-center justify-center gap-1 rounded-lg bg-green-fade text-label text-text-subtitle">
-            <span className="text-brand-secondary">$100</span>
-            <span>paid to Jonathan for a product study</span>
-            <span className="pl-1 text-text-body">25m</span>
-          </div>
-        )}
+        {promo && <PromoTicker />}
       </div>
+    </div>
+  )
+}
+
+/**
+ * The "$100 paid to Jonathan" card (PRD 4.2), read from the platform: the most
+ * recent study payout, first name only. Nothing shows until someone is paid.
+ */
+function PromoTicker() {
+  const { latestPayout } = useStore()
+  const last = latestPayout()
+  if (!last) return null
+  const kind = STUDY_TYPE_LABEL[last.type].toLowerCase().replace(/ study$/, '')
+  return (
+    <div className="mt-auto flex h-promo items-center justify-center gap-1 rounded-lg bg-green-fade text-label text-text-subtitle">
+      <span className="text-brand-secondary">{money(last.amount)}</span>
+      <span>paid to {last.firstName} for {/^[aeiou]/.test(kind) ? 'an' : 'a'} {kind} study</span>
+      <span className="pl-1 text-text-body">{timeAgo(last.at)}</span>
     </div>
   )
 }

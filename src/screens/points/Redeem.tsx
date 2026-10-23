@@ -38,7 +38,7 @@ export default function Redeem() {
         alt
         mood="money"
         title="Redeemed successfully!"
-        body={`You have redeemed ${fmt(done)} points for ${money(pointsToUsd(done))} to be credited to your wallet within 2 working days.`}
+        body={`You have redeemed ${fmt(done)} points for ${money(pointsToUsd(done))}. It is in your wallet now.`}
         onAction={() => navigate('/points', { replace: true })}
       />
     )
@@ -95,7 +95,7 @@ export default function Redeem() {
             <span className="flex items-center gap-2 text-text-regular text-text-title"><Clock className="h-5 w-5" />Amount Receivable</span>
             <span className="text-body-medium text-brand-secondary">{money(receive)}</span>
           </div>
-          <p className="text-text-regular text-text-subtitle">Your redemption amount will be credited to your wallet within 2 working days.</p>
+          <p className="text-text-regular text-text-subtitle">Your redemption amount goes into your wallet straight away.</p>
         </div>
       </BottomSheet>
     </div>

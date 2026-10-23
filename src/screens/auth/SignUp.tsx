@@ -6,6 +6,7 @@ import Input from '../../components/ui/Input'
 import { useUI } from '../../app/ui'
 import { useStore } from '../../mock/store'
 import { isValidEmail, isValidPassword } from '../../lib/validation'
+import { EMAIL_TAKEN } from '@shared/store'
 import AuthLayout from './AuthLayout'
 
 const PASSWORD_HINT = 'Use 1 capital letter, 1 number, 1 special character and at least 8 characters'
@@ -14,13 +15,16 @@ const PASSWORD_HINT = 'Use 1 capital letter, 1 number, 1 special character and a
 export default function SignUp() {
   const navigate = useNavigate()
   const { openComingSoon } = useUI()
-  const { setOnboarding } = useStore()
+  const { setOnboarding, emailFree } = useStore()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [agreed, setAgreed] = useState(false)
   const [touched, setTouched] = useState({ email: false, password: false })
+  // The address a code was refused for; editing the field clears it.
+  const [taken, setTaken] = useState('')
 
-  const emailError = touched.email && !isValidEmail(email) ? 'Enter a valid email address' : undefined
+  const emailError = touched.email && !isValidEmail(email) ? 'Enter a valid email address'
+    : taken && taken === email.trim().toLowerCase() ? EMAIL_TAKEN : undefined
   const passwordError = touched.password && !isValidPassword(password) ? PASSWORD_HINT : undefined
   const valid = isValidEmail(email) && isValidPassword(password) && agreed
 
@@ -32,7 +36,11 @@ export default function SignUp() {
       subtitle="Join and earn money by sharing your opinions to shape future products."
       actions={
         <>
-          <Button fullWidth disabled={!valid} onClick={() => { setOnboarding({ email: email.trim() }); navigate('/verify-otp') }}
+          <Button fullWidth disabled={!valid} onClick={() => {
+              if (!emailFree(email)) { setTaken(email.trim().toLowerCase()); setTouched((t) => ({ ...t, email: true })); return }
+              setOnboarding({ email: email.trim(), password })
+              navigate('/verify-otp')
+            }}
             onBlocked={() => setTouched({ email: true, password: true })}>
             Sign Up
           </Button>

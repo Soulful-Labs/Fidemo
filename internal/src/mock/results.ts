@@ -53,7 +53,7 @@ export function results(state: PlatformState, study: Study) {
   const summary: [string, string] = isInPerson(study) ? ['Notes Summaries', 'Get all the Notes results archive'] : ['Results Summaries', 'Get AI Summaries of all the results']
   const cert = studyCertificate(state, study)
   const certificate = {
-    eyebrow: 'STUDY VERIFICATION CERTIFICATE', title: `${cert.verified} of ${cert.total} completions verified human`,
+    eyebrow: 'STUDY VERIFICATION CERTIFICATE', title: `${cert.verified} of ${cert.total} completions by ID-verified participants`,
     body: 'A sealed, signed proof that every respondent in this study passed identity and duplicate checks. Share the check link so your own stakeholders can confirm it independently — no need to trust HumanLayer’s word for it.',
     foot: [`CERT ID · ${cert.id}`, `Issued ${monthDayYear(cert.issuedAt)}`],
   }

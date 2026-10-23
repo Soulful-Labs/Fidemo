@@ -227,11 +227,23 @@ export interface StudyEdit { at: string; by: 'client' | 'team'; byId?: string; c
 
 // ------------------------------------------------------------------- people
 
-export type CheckState = 'not_started' | 'flagged' | 'verified' | 'rejected'
+/**
+ * A verification check. `in_review`: submitted and waiting for the team to
+ * decide in the console (decided 23 Oct 2026: nothing is verified until a
+ * person approves it). `flagged`: an automatic check failed and needs a person.
+ */
+export type CheckState = 'not_started' | 'in_review' | 'flagged' | 'verified' | 'rejected'
+
+/** One uploaded file, as the participant chose it: its name and size. The file itself is the server's to keep. */
+export interface UploadedFile { name: string; bytes: number }
 
 /** A manual check the automatic one could not settle (workflow 3, 17, 18). */
 export interface Check {
   state: CheckState
+  /** When it was submitted for review. */
+  submittedAt?: string
+  /** Identity: the two sides of the ID document as uploaded. */
+  documents?: { front: UploadedFile; back: UploadedFile }
   /** Why the automatic check failed. */
   reason?: string
   flaggedAt?: string
@@ -355,8 +367,6 @@ export interface Person {
   sourceCode?: string
   identity: Check
   profession: Check
-  /** Selfie capture is blocked pending legal review; stays false. */
-  livePhoto: boolean
   consent: { shareProfession: boolean; shareProfile: boolean; essentialCookies: true; performanceCookie: boolean }
   emailPrefs: { dailyDigest: boolean; personalizedInvitations: boolean; newsletter: boolean }
   /**
@@ -374,6 +384,13 @@ export interface Person {
   referrals: Referral[]
   savedStudyIds: string[]
   notifications: AppNotification[]
+  /**
+   * FRONT-END STAND-IN, NOT SECURITY. The password as typed, kept so the
+   * screens behave (sign in, change, reset, close account). Real
+   * authentication replaces this: the server holds a hash and the app never
+   * sees it. Absent on an account that has none (it cannot sign in).
+   */
+  password?: string
 }
 
 export interface Restriction { at: string; until: string; category: string; reason: string; by: string }

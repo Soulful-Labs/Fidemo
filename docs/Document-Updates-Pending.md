@@ -1,15 +1,17 @@
 # Document updates pending
 
-Applied on 23 October 2026. `PRD-Focus-Insite-Platform-v2.md` and
+Applied on 23 October 2026, twice: after the overnight client round, and after the respondent audit fixes. `PRD-Focus-Insite-Platform-v2.md` and
 `BRD-Focus-Insite-Platform-v2.md` (repo root) describe the build after the
 rounds of 21 and 22 October 2026, including the client round finished
 overnight, and PRD Section 6 reproduces
 `docs/Trust-and-Rewards-Policy-v2.html`. The originals are unchanged.
 
-Five decisions are open and recorded as open in PRD Section 16: the deposit
+Seven decisions are open and recorded as open in PRD Section 16: the deposit
 (D32), the team re-pricing a live study (D33), the Audience forecast (D34), the
-domain, support address and certificate prefix (D35), and the diary's units
-and frequency (D36). The BRD lists them in Section 4.3.
+domain, support address and certificate prefix (D35), the diary's units
+and frequency (D36), a diary entry per calendar day (D37) and audience fit
+before applying (D38). One built rule waits for confirmation: a deduction at
+the Trust Score floor is carried (D39). The BRD lists them in Section 4.3.
 
 The full list that was applied is in this file's history in git.
 
@@ -80,3 +82,37 @@ Work that is not built, so there is nothing to describe yet.
   cleared").
 - Needed: a Cancel Session control for a one-to-one booking in the console,
   and a per-seat Cancel on a group session in the client app.
+- Respondent audit fixes (23 Oct 2026), drawn one way and built another:
+  - No selfie anywhere: the Identity step's selfie field (915:50280),
+    Account Settings' Selfie Verification row and "Human Verified" tag
+    (979:74209), and the console's "Selfie photo verified" lines and
+    "Human Verified" tags are gone. The certificate is headed "Identity
+    Verified" where Figma draws "Verified Human". Every frame drawing them
+    needs redrawing.
+  - Welcome reads "Your ID is in review" with a line on what happens next,
+    where Figma draws "You are verified!".
+  - Session code: a new banner state, "Your code is in! #407060 / Waiting
+    for the interviewer to confirm it", and the PIN success text says the
+    same. Submit PIN is disabled until the session starts. Not drawn.
+  - Sign In prints the demo login under the form. Not drawn.
+  - Account Settings shows the ID's real files and sizes, an Upload New ID
+    button and a review line; My Profile shows the licence's review line.
+    Not drawn.
+  - The date picker's "Only available dates are shown" now reads "Dates with
+    no open sessions are greyed out", because unavailable dates are shown.
+  - Deactivate Account: "cannot be undone" removed, since the same text
+    offers 30 days to reactivate.
+  - A late withdrawal says it is running late instead of showing a past
+    "Expected in bank by" date. Not drawn.
+  - In Process reads "$N reward" over "Awaiting payout. The team processes
+    it when the study finishes."
+  - "In Top N%" is derived; Silver always reads "In Top 100%", which looks
+    odd under the chip. Please decide how Silver's line should read.
+  - The schedule invitation is titled "You're invited to schedule your
+    session!" where it read "You've been selected to complete!".
+  - A completed diary day opens read only. Not drawn.
+  - The match score explainer's "Tip: Higher the score, faster you get
+    qualified and earn!" is a promise the build does not keep. Kept as
+    drawn; please review.
+  - Console: "Submitted for review" and "Waiting for your decision" on a
+    verification waiting for the team. Not drawn.

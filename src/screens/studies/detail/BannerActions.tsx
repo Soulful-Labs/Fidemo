@@ -34,7 +34,7 @@ export default function BannerActions({
 
   if (study.status === 'scheduled') {
     const reschedule = study.booking
-      ? canReschedule(study.booking.rescheduleCount, study.booking.date)
+      ? canReschedule(study.booking.rescheduleCount, sessionStartOf(study.booking).toISOString())
       : { ok: false, reason: 'This study has no session booked' }
     // Policy section 5: no cancelling inside 24 hours; not attending then is a no-show at -4.
     const cancel = study.booking

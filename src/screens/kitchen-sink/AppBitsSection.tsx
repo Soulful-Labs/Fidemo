@@ -46,7 +46,7 @@ export default function AppBitsSection({ toast }: { toast: (msg: string) => void
       <Row label="NotificationRow — with and without an action">
         <div className="w-full overflow-hidden rounded-lg border-1 border-stroke-2">
           <NotificationRow
-            title="You've been selected to complete!"
+            title="You're invited to schedule your session!"
             body="You are qualified for GLP-1 Care Plans. Book your session to earn your reward."
             at={new Date(Date.now() - 2 * 3600 * 1000).toISOString()}
             read={read}

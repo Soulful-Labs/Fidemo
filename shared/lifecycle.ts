@@ -237,3 +237,12 @@ export const tierFromMenu = (label: string): Tier | null => TIER_MENU.find((m) =
 
 /** The Recruited Status menu (1932:110854): All and the three statuses the Applications table draws. */
 export const APPLICATION_STATUS_MENU = ['All', 'Applied', 'Qualified', 'Disqualified'] as const
+
+/**
+ * An account its owner closed from Account Settings (Deactivate Account), as
+ * opposed to one the team deactivated. It cannot sign in; the team can
+ * reactivate it from the console. Read off the status note's category.
+ */
+export const CLOSED_BY_PARTICIPANT = 'Closed by the participant'
+export const closedByOwner = (p: { status: string; statusNote?: { category?: string } }): boolean =>
+  p.status === 'deactivated' && p.statusNote?.category === CLOSED_BY_PARTICIPANT

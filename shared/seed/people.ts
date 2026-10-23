@@ -173,7 +173,7 @@ function fromRow([id, name, role, industry, location, gender, studies, score, ve
       licenseId: verified ? String(98765012340000 + n) : '', ...workOf(industry, n),
     },
     onboarded: true, taxFormDone: true,
-    identity: VERIFIED, profession: verified ? VERIFIED : NONE, livePhoto: false,
+    identity: VERIFIED, profession: verified ? VERIFIED : NONE,
     consent: { shareProfession: true, shareProfile: true, essentialCookies: true, performanceCookie: true },
     emailPrefs: { dailyDigest: true, personalizedInvitations: true, newsletter: false },
     prior: { completedThisYear: studies, stars: starsFor(score, studies) },

@@ -17,12 +17,12 @@ const KINDS = [
 const RANGES = ['All Time', 'This Month', 'Last 3 Months', 'This Year']
 const DAY = 86_400_000
 
-/** "+4%" / "-2%" pill, the Trust Score Rules style. */
+/** "+4" / "-2" pill: Trust Score points, not percentages (Figma 1114:95266). */
 export function DeltaPill({ delta }: { delta: number }) {
   return (
     <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-text-medium',
       delta > 0 ? 'bg-green-900/60 text-brand-secondary' : delta < 0 ? 'bg-state-dangerBg text-state-danger' : 'bg-bg-2 text-text-body')}>
-      {delta > 0 ? '+' : ''}{delta}%
+      {delta > 0 ? '+' : ''}{delta}
     </span>
   )
 }

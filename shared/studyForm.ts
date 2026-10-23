@@ -320,7 +320,12 @@ const overlaps = (mine: Band, wanted: Band[]): boolean => !!mine && wanted.some(
  * active, and matching every criterion the audience sets, work functions and
  * skills included.
  */
-export function audiencePeople(state: PlatformState, f: StudyForm, now: Date = new Date()): Person[] {
+/**
+ * One verdict per criterion the audience sets, for one person: pass or fail.
+ * A criterion the audience leaves open is not in the list. Every
+ * audience test (who fits, and how well) reads this one list.
+ */
+export function audienceChecks(state: PlatformState, f: StudyForm, p: Person, now: Date = new Date()): boolean[] {
   const roles = list(f.roles).map((r) => r.toLowerCase())
   const industries = list(f.industries).map((r) => r.toLowerCase())
   const functions = list(f.functions).map((r) => r.toLowerCase())
@@ -329,23 +334,31 @@ export function audiencePeople(state: PlatformState, f: StudyForm, now: Date = n
   const codes = f.countries.map((c) => COUNTRY_CODE[c] ?? c)
   const edu = educationOf(f).map((e) => EDUCATION_WORDS.find((w) => e.toLowerCase().includes(w))).filter((w): w is string => Boolean(w))
   const tiers = tiersOf(f.tiers)
-  return state.people.filter((p) => {
-    if (p.status !== 'active' || p.identity.state !== 'verified') return false
-    if (codes.length && !codes.some((c) => p.location.endsWith(`, ${c}`) || p.location.includes(c))) return false
-    { const wanted = gendersOf(f); if (wanted.length && !wanted.includes(p.profile.gender)) return false }
-    if (edu.length && !edu.some((w) => p.profile.education.toLowerCase().includes(w))) return false
-    if (f.ageRanges.length) { const age = ageFrom(p.profile.dob, now); if (age === undefined || !f.ageRanges.some((r) => inRange(age, r))) return false }
-    if (f.ethnicity?.length && !f.ethnicity.includes(p.profile.ethnicity)) return false
-    if (f.areaTypes?.length && !f.areaTypes.includes(p.profile.areaType)) return false
-    if (roles.length && !roles.some((r) => p.profile.occupation.toLowerCase().includes(r))) return false
-    if (industries.length && !industries.some((r) => p.profile.industry.toLowerCase().includes(r))) return false
-    if (functions.length && !has(p.profile.workFunctions ?? [], functions)) return false
-    if (skills.length && !has(p.profile.skills ?? [], skills)) return false
-    if (f.experience?.length && !overlaps(band(p.profile.experience, EXPERIENCE_BANDS), f.experience.map((r) => EXPERIENCE_RANGES[r]))) return false
-    if (f.income?.length && !overlaps(band(p.profile.income, INCOME_BANDS), f.income.map((r) => INCOME_RANGES[r]))) return false
-    if (tiers && !tiers.includes(tierOf(state, p.id, now))) return false
-    return true
-  })
+  const genders = gendersOf(f)
+  const checks: boolean[] = []
+  if (codes.length) checks.push(codes.some((c) => p.location.endsWith(`, ${c}`) || p.location.includes(c)))
+  if (genders.length) checks.push(genders.includes(p.profile.gender))
+  if (edu.length) checks.push(edu.some((w) => p.profile.education.toLowerCase().includes(w)))
+  if (f.ageRanges.length) { const age = ageFrom(p.profile.dob, now); checks.push(age !== undefined && f.ageRanges.some((r) => inRange(age, r))) }
+  if (f.ethnicity?.length) checks.push(f.ethnicity.includes(p.profile.ethnicity))
+  if (f.areaTypes?.length) checks.push(f.areaTypes.includes(p.profile.areaType))
+  if (roles.length) checks.push(roles.some((r) => p.profile.occupation.toLowerCase().includes(r)))
+  if (industries.length) checks.push(industries.some((r) => p.profile.industry.toLowerCase().includes(r)))
+  if (functions.length) checks.push(has(p.profile.workFunctions ?? [], functions))
+  if (skills.length) checks.push(has(p.profile.skills ?? [], skills))
+  if (f.experience?.length) checks.push(overlaps(band(p.profile.experience, EXPERIENCE_BANDS), f.experience.map((r) => EXPERIENCE_RANGES[r])))
+  if (f.income?.length) checks.push(overlaps(band(p.profile.income, INCOME_BANDS), f.income.map((r) => INCOME_RANGES[r])))
+  if (tiers) checks.push(tiers.includes(tierOf(state, p.id, now)))
+  return checks
+}
+
+/**
+ * How many people on the platform fit the audience as entered: verified,
+ * active, and matching every criterion the audience sets, work functions and
+ * skills included.
+ */
+export function audiencePeople(state: PlatformState, f: StudyForm, now: Date = new Date()): Person[] {
+  return state.people.filter((p) => p.status === 'active' && p.identity.state === 'verified' && audienceChecks(state, f, p, now).every(Boolean))
 }
 /** The same test for a study: the people its audience describes. A study that was not built in the Create flow has no audience to test. */
 export const fitsStudy = (state: PlatformState, study: Study, now: Date = new Date()): Person[] => (study.form ? audiencePeople(state, study.form, now) : [])

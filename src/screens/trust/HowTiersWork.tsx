@@ -12,9 +12,9 @@ import { useStore } from '../../mock/store'
  * Thresholds are the policy's.
  */
 const TIER_ROWS = [
-  { key: 'platinum', top: TIER_LABEL.platinum.top, line: "You're in top expert participants.", text: 'text-tier-platinum', bg: 'bg-purple-fade', ring: 'border-tier-platinum' },
-  { key: 'gold', top: TIER_LABEL.gold.top, line: "You're in most trusted participants!", text: 'text-tier-gold', bg: 'bg-yellow-fade', ring: 'border-tier-gold' },
-  { key: 'silver', top: TIER_LABEL.silver.top, line: "You're rising on your way up!", text: 'text-tier-silver', bg: '', ring: 'border-tier-silver' },
+  { key: 'platinum', line: "You're in top expert participants.", text: 'text-tier-platinum', bg: 'bg-purple-fade', ring: 'border-tier-platinum' },
+  { key: 'gold', line: "You're in most trusted participants!", text: 'text-tier-gold', bg: 'bg-yellow-fade', ring: 'border-tier-gold' },
+  { key: 'silver', line: "You're rising on your way up!", text: 'text-tier-silver', bg: '', ring: 'border-tier-silver' },
 ] as const
 
 const NOTES = [
@@ -26,7 +26,7 @@ const NOTES = [
 /** PRD 7.4, Figma 1114:95843. */
 export default function HowTiersWork() {
   const { back } = useAppNav()
-  const { user } = useStore()
+  const { user, tierTop } = useStore()
   const current = tierFor(user.trustScore)
 
   return (
@@ -54,7 +54,7 @@ export default function HowTiersWork() {
                 <span className="flex flex-col gap-0.5">
                   <span className="flex items-center gap-2">
                     <span className={cn('text-title-s', t.text)}>{name}</span>
-                    <Tag tone={t.key === 'platinum' ? 'purple' : t.key === 'gold' ? 'yellow' : 'neutral'}>{t.top}</Tag>
+                    <Tag tone={t.key === 'platinum' ? 'purple' : t.key === 'gold' ? 'yellow' : 'neutral'}>{tierTop(t.key as 'platinum' | 'gold' | 'silver')}</Tag>
                   </span>
                   <span className="text-text-regular text-text-title">Trust Score {TIERS[t.key]}+</span>
                   <span className="text-label text-text-body">{t.line}</span>

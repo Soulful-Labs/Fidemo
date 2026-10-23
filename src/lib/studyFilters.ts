@@ -42,7 +42,7 @@ export function sortStudies(studies: Study[], sort: SortKey): Study[] {
     case 'price_low': return out.sort((a, b) => a.reward - b.reward)
     case 'new_first': return out.sort((a, b) => +new Date(b.endsAt) - +new Date(a.endsAt))
     case 'old_first': return out.sort((a, b) => +new Date(a.endsAt) - +new Date(b.endsAt))
-    default: return out.sort((a, b) => b.matchScore - a.matchScore)
+    default: return out.sort((a, b) => (b.matchScore ?? -1) - (a.matchScore ?? -1))
   }
 }
 

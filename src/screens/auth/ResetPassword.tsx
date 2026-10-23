@@ -5,12 +5,14 @@ import Input from '../../components/ui/Input'
 import PasswordRules from '../../components/app/PasswordRules'
 import { useAppNav } from '../../app/useAppNav'
 import { isValidPassword } from '../../lib/validation'
+import { useStore } from '../../mock/store'
 import AuthLayout from './AuthLayout'
 
 /** PRD 4.11, Set New Password. Figma 915:50217. */
 export default function ResetPassword() {
   const navigate = useNavigate()
   const { back } = useAppNav()
+  const { onboarding, resetPassword, toast } = useStore()
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [touched, setTouched] = useState(false)
@@ -25,7 +27,13 @@ export default function ResetPassword() {
       barTitle="Set Password" onBack={back}
       title="Set New Password" subtitle="Enter new password"
       actions={
-        <Button fullWidth disabled={!valid} onClick={() => navigate('/password-updated')}
+        <Button fullWidth disabled={!valid} onClick={() => {
+          // The emailed link would carry the account; the email given on Forgot Password stands in for it.
+          if (!onboarding.email) { toast('Start from Forgot Password and enter your email'); navigate('/forgot-password', { replace: true }); return }
+          const r = resetPassword(onboarding.email, password)
+          if (!r.ok) { toast(r.why); return }
+          navigate('/password-updated', { replace: true })
+        }}
           onBlocked={() => setTouched(true)}>
           Submit
         </Button>

@@ -26,9 +26,11 @@ import type {
   Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudyReport, StudySetup, StudyType, TeamMember, Ticket,
 } from './types'
 
-export const SEED_VERSION = 15
+export const SEED_VERSION = 16
 export const DEMO_PERSON_ID = 'jonathan'
 export const DEMO_PERSON_EMAIL = 'jonathan.reeve@example.com'
+/** The respondent app's demo login (README). A front-end stand-in for real authentication, see Person.password. Every seeded participant has it. */
+export const DEMO_PERSON_PASSWORD = 'Passw0rd!'
 export const DEMO_CLIENT_ID = 'cl-soulful'
 export const DEMO_CLIENT_EMAIL = 'jennifer@soulfullabs.com'
 export const MASTER_ADMIN_ID = 'tm-peter'
@@ -190,7 +192,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
       dob: '06 / 05 / 1988', idType: 'Passport',
     },
     onboarded: true, taxFormDone: false, sourceCode: 'HL-013-B',
-    identity: { state: 'verified' }, profession: { state: 'verified' }, livePhoto: false,
+    identity: { state: 'verified' }, profession: { state: 'verified' },
     consent: { shareProfession: false, shareProfile: true, essentialCookies: true, performanceCookie: true },
     emailPrefs: { dailyDigest: true, personalizedInvitations: true, newsletter: false },
     /** His whole record is in the seed, so there is nothing from before it. */
@@ -201,7 +203,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
       { id: 'pm-2', bankName: 'Chase Bank', accountNumber: '9921 4410 7788 4521', routingCode: '80123344', type: 'Savings', isDefault: false },
     ],
     payouts: [
-      { id: 'po-1', at: at(-5, 23, 0), amount: 100, destination: '****7790', txId: '#152356789107', status: 'pending', expectedBy: withdrawalExpectedBy(at(-5, 23, 0)) },
+      { id: 'po-1', at: at(-1, 23, 0), amount: 100, destination: '****7790', txId: '#152356789107', status: 'pending', expectedBy: withdrawalExpectedBy(at(-1, 23, 0)) },
       { id: 'po-2', at: at(-120, 14, 20), amount: 250, destination: '****7790', txId: '#152356712004', status: 'paid' },
       { id: 'po-3', at: at(-330, 10, 5), amount: 500, destination: '****4521', txId: '#152356698771', status: 'paid' },
     ],
@@ -248,6 +250,15 @@ export function buildSeed(now: Date = new Date()): PlatformState {
   byId.get('gen-22')!.restrictions = [{ at: at(-3, 16, 0), until: at(12, 16, 0), category: 'Spam Apply', reason: 'Spam applications across unrelated studies.', by: 'tm-james' }]
 
   const people = [jonathan, ...pool]
+  for (const p of people) {
+    p.password = DEMO_PERSON_PASSWORD
+    // Seeded demo files for every ID already submitted: the name the ID type gives and a plausible size.
+    if (p.identity.state !== 'not_started' && !p.identity.documents) {
+      const kind = p.profile.idType || 'Passport'
+      const size = 900_000 + (p.id.length * 131_071) % 1_400_000
+      p.identity = { ...p.identity, documents: { front: { name: `${kind} front.jpg`, bytes: size }, back: { name: `${kind} back.jpg`, bytes: size - 61_440 } } }
+    }
+  }
   /** Everyone the generator may put on a study: verified, active, and not Jonathan (his part is written by hand). */
   const fillable = pool.filter((p) => p.status === 'active' && p.identity.state === 'verified')
 
@@ -329,7 +340,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
         code: session ? code : undefined, booking: session ? { date: completedAt, slot: ALL_SLOTS[k % ALL_SLOTS.length]!, sessionId: group ? (study.state === 'completed' && k % 2 ? 's2' : 's1') : undefined, rescheduleCount: 0 } : undefined,
         diaryDays: study.diary ? [1, 2, 3, 4, 5].slice(0, 4 + (k % 2)) : undefined,
         events: [{ label: 'Applied', at: applied(k) }, { label: 'Qualified', at: plus(applied(k), 2) }, { label: 'Completed', at: completedAt },
-          ...(paidAt ? [{ label: 'Client approved payout', at: paidAt }, { label: 'Paid', at: paidAt }] : [])],
+          ...(paidAt ? [{ label: 'Payout processed by the team', at: paidAt }, { label: 'Paid', at: paidAt }] : [])],
         ...extra, paidAt,
       }
     }
@@ -518,7 +529,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
     invited_to_schedule: 'qualified', invited_to_complete: 'qualified', scheduled: 'scheduled', pin_confirmed: 'scheduled',
     in_process: 'completed', paid: 'completed', rejected: 'disqualified', no_show: 'no_show', late_show: 'completed', not_needed: 'completed',
   }
-  const PAYOUT_STEPS = ['Earnings credited', 'Client approved payout', 'Paid']
+  const PAYOUT_STEPS = ['Awaiting payout', 'Payout processed by the team', 'Paid']
 
   const others = catalogue({ at, CLIENTS: CLIENT_KEYS }).map((e): Study => {
     const n = Number(e.id.replace(/\D/g, ''))

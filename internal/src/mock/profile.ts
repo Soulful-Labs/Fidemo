@@ -62,7 +62,7 @@ export function useProfile(personId?: string) {
     }
     const line = (s: RespondentStudy, status?: StudyStatus): StudyLine => ({
       id: s.id, name: s.title, thumb: studyPictures(s.id, s.image).small, type: consoleType(s.type), date: when(s),
-      price: money(s.reward), match: `${s.matchScore}%`, status, opens: opensFor(s.id),
+      price: money(s.reward), match: s.matchScore === undefined ? 'N/A' : `${s.matchScore}%`, status, opens: opensFor(s.id),
     })
     const by = (...st: RespondentStudy['status'][]) => studies.filter((s) => st.includes(s.status))
     const INVITES = by('invited_to_apply', 'invited_to_schedule', 'invited_to_complete').map((s) => line(s))
@@ -93,10 +93,11 @@ export function useProfile(personId?: string) {
         ['Date of Birth', dob ? new Date(Number(dob[3]), Number(dob[2]) - 1, Number(dob[1])).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + (age ? '' : '') : 'N/A']],
       RATINGS: [['Expertise', `${f.ratings.expertise}%`, 'green'], ['Reliability', `${f.ratings.reliability}%`, 'blue'], ['Communication', `${f.ratings.communication}%`, 'purple'], ['Success Rate', `${f.ratings.successRate}%`, 'yellow']] as [string, string, 'green' | 'blue' | 'purple' | 'yellow'][],
       METRICS: [['Completed Studies', String(f.completedStudies + p.prior.completedThisYear)], ['Earned', money(f.allTimeEarned)], ['Highest Streak', `${pointsRows(state, p.id).filter((r) => r.kind === 'streak').length} months`]],
+      /** The ID as the participant uploaded it, and where the team's check stands. */
+      ID: { type: p.profile.idType || 'Government ID', documents: p.identity.documents, state: p.identity.state },
       VERIFIED: [
         ...(p.profession.state === 'verified' ? ['Verified Professional'] : []),
         ...(p.identity.state === 'verified' ? ['Government ID Verified'] : []),
-        ...(p.livePhoto ? ['Live Photo Verified'] : []),
         ...(p.profession.state === 'verified' ? ['Register cross checked'] : []),
       ],
       INVITES, SCHEDULED, APPLIED, HISTORY,

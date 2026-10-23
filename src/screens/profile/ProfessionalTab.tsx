@@ -18,7 +18,11 @@ export default function ProfessionalTab({ draft, patch, touched = false }: { dra
   const { user } = useStore()
   const [open, setOpen] = useState({ background: true, topics: true })
   const done = BACKGROUND.filter((k) => filled(draft, k)).length
-  const verified = user.verified.license && draft.licenseId === user.profile.licenseId && draft.licenseId.length > 0
+  // The saved number's check, as the team left it; an edited number is checked again once saved.
+  const saved = draft.licenseId.length > 0 && draft.licenseId === user.profile.licenseId
+  const verified = saved && user.checks.profession === 'verified'
+  const inReview = saved && (user.checks.profession === 'in_review' || user.checks.profession === 'flagged')
+  const rejected = saved && user.checks.profession === 'rejected'
 
   return (
     <div className="flex flex-col gap-4">
@@ -33,6 +37,9 @@ export default function ProfessionalTab({ draft, patch, touched = false }: { dra
               onChange={(e) => patch({ licenseId: e.target.value })}
               rightSlot={verified ? <VerifiedIcon className="text-brand-secondary" /> : undefined} />
             {verified && <span className="text-label text-brand-secondary">Verified Profession</span>}
+            {inReview && <span className="text-label text-text-body">In review: our team is checking this against the register</span>}
+            {rejected && <span className="text-label text-state-danger">Could not be verified. Check the number and save it again</span>}
+            {!saved && draft.licenseId.length > 0 && <span className="text-label text-text-body">Saved numbers are checked by our team before they show as verified</span>}
           </div>
           <PickField label="Industry" value={draft.industry} placeholder="Industry name" options={INDUSTRIES} onChange={(industry) => patch({ industry })} title="Select Industry" searchable error={requiredError(draft, 'industry', touched)} />
           <PickField label="Education Level" value={draft.education} placeholder="Select education" options={EDUCATION_LEVELS} onChange={(education) => patch({ education })} title="Select Education Level" />

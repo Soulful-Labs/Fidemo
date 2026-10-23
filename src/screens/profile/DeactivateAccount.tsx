@@ -17,15 +17,22 @@ import { TIMINGS } from '../../mock/timings'
 export default function DeactivateAccount() {
   const navigate = useNavigate()
   const { back } = useAppNav()
-  const { signOut } = useStore()
+  const { signOut, closeAccount } = useStore()
   const [password, setPassword] = useState('')
   const [touched, setTouched] = useState(false)
   const [working, setWorking] = useState(false)
   const [done, setDone] = useState(false)
+  // The platform's refusal (a wrong password), shown under the field until it changes.
+  const [refused, setRefused] = useState('')
 
   const deactivate = () => {
     setWorking(true)
-    setTimeout(() => { setWorking(false); setDone(true) }, TIMINGS.fakeServer)
+    setTimeout(() => {
+      setWorking(false)
+      const r = closeAccount(password)
+      if (!r.ok) { setRefused(r.why); return }
+      setDone(true)
+    }, TIMINGS.fakeServer)
   }
 
   return (
@@ -35,13 +42,12 @@ export default function DeactivateAccount() {
       <div className="flex flex-1 flex-col gap-4 px-4 pb-6 pt-4">
         <h1 className="text-title-s text-text-title">Deactivate Your Account</h1>
         <p className="text-text-regular text-state-danger">
-          Be careful: this action cannot be undone.<br />
-          You have 30 days to reactivate your account before it gets deleted permanently after transferring the any
-          balance earnings to the default payout method.
+          Be careful: you have 30 days to reactivate your account by contacting us.<br />
+          After that it is deleted permanently, once any balance earnings have been transferred to the default payout method.
         </p>
         <p className="pt-2 text-text-regular text-text-title">Enter password below to confirm this action</p>
-        <Input label="Password" type="password" placeholder="Enter password" value={password} onChange={(e) => setPassword(e.target.value)}
-          onBlur={() => setTouched(true)} error={touched && password.length === 0 ? 'Enter your password to confirm' : undefined} />
+        <Input label="Password" type="password" placeholder="Enter password" value={password} onChange={(e) => { setPassword(e.target.value); setRefused('') }}
+          onBlur={() => setTouched(true)} error={touched && password.length === 0 ? 'Enter your password to confirm' : refused || undefined} />
       </div>
 
       <CtaBar>

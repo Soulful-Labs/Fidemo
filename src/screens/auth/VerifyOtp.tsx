@@ -40,7 +40,10 @@ export default function VerifyOtp() {
 
   const submit = () => {
     if (code !== DEMO_OTP) { setWrong(true); return }
-    signUp(email)
+    // Reloaded part way: the password typed on Sign Up is gone, so start again there.
+    if (!onboarding.password) { toast('Enter your email and password again'); navigate('/signup', { replace: true }); return }
+    const made = signUp(email, onboarding.password)
+    if (!made.ok) { toast(made.why); navigate('/signup', { replace: true }); return }
     navigate('/dashboard', { replace: true })
   }
 

@@ -6,7 +6,7 @@
  * file only names them the way the respondent screens always have.
  */
 import type { PayoutRow, PersonFigures, PointsRow, RedeemRow, RespondentStudy, WalletRow } from '@shared/derive'
-import type { Person } from '@shared/types'
+import type { CheckState, Person, UploadedFile } from '@shared/types'
 
 export type {
   StudyType, Question, PreScreenQuestion, RepeatRule, ProfileDetails, AppNotification, NotificationKind, PayoutMethod, Referral,
@@ -26,7 +26,13 @@ export type Outcome = 'green' | 'yellow' | 'red'
 
 /** The signed-in person, with every figure the platform derives for them. */
 export type User = Pick<Person, 'name' | 'email' | 'phone' | 'profile' | 'onboarded' | 'taxFormDone' | 'sourceCode' | 'joinedAt' | 'consent' | 'emailPrefs' | 'photo' | 'photoConsent' | 'video' | 'videoConsent' | 'status' | 'statusNote' | 'certificateId'>
-  & { verified: { govId: boolean; livePhoto: boolean; license: boolean } }
+  & {
+    verified: { govId: boolean; license: boolean }
+    /** Where each check stands: in review until the team decides in the console. */
+    checks: { identity: CheckState; profession: CheckState }
+    /** The ID document as uploaded, both sides. */
+    idDocuments?: { front: UploadedFile; back: UploadedFile }
+  }
   & PersonFigures
 
 export interface TicketMessage { id: string; from: 'you' | 'support'; text: string; at: string }

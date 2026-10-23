@@ -59,9 +59,11 @@ export default function PayoutMethods() {
         footer={
           <div className="flex gap-3">
             <Button variant="danger" className="flex-1" onClick={() => {
-              if (removing) removePayoutMethod(removing.id)
+              const r = removing
               setRemoving(null)
-              toast('Account removed')
+              if (!r || !removePayoutMethod(r.id)) return
+              const next = r.isDefault ? payoutMethods.find((m) => m.id !== r.id) : undefined
+              toast(next ? `Account removed. ${next.bankName} is now your default` : 'Account removed')
             }}>Yes, Remove</Button>
             <Button className="flex-1" onClick={() => setRemoving(null)}>No, Keep</Button>
           </div>

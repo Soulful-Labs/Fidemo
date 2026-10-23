@@ -33,13 +33,16 @@ export function useCardHandlers() {
         // Same branches as the detail screen: diary, survey, otherwise a session to book.
         navigate(`/studies/${study.id}/${study.type === 'diary' ? 'diary' : study.type === 'survey' ? 'survey' : 'schedule'}`)
         break
-      case 'scheduled':
-        navigate(`/studies/${study.id}/pin`)
+      case 'scheduled': {
+        const blocker = completeBlocker(study)
+        if (blocker) toast(blocker)
+        else navigate(`/studies/${study.id}/pin`)
         break
+      }
       case 'pin_confirmed': {
         const blocker = completeBlocker(study)
         if (blocker) toast(blocker)
-        else { completeStudy(study.id); toast('Study completed, payment on its way') }
+        else { completeStudy(study.id); toast('Study completed. Awaiting payout. The team processes it when the study finishes.') }
         break
       }
       case 'paid': case 'late_show':

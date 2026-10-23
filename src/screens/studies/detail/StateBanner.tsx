@@ -76,11 +76,15 @@ function bannerContent(study: Study): BannerContent | null {
         body: 'Can be rescheduled twice only before at least 24 hours. Cancellation may impact your profile score.',
       }
     case 'pin_confirmed':
-      return { tone: 'green', title: `Session code confirmed! #${ATTENDANCE_PIN}`, body: 'Both sides entered the code, so your attendance is on record. Complete the study to have your earnings credited.' }
+      // Workflow 42: attendance is on record only once the interviewer has entered the code too.
+      return study.codeByClient
+        ? { tone: 'green', title: `Session code confirmed! #${ATTENDANCE_PIN}`, body: 'Both sides entered the code, so your attendance is on record. Complete the study to have your earnings credited.' }
+        : { tone: 'yellow', title: `Your code is in! #${ATTENDANCE_PIN}`, body: 'Waiting for the interviewer to confirm it. Your attendance is on record once both sides have entered the code.' }
     case 'in_process':
       return {
-        tone: 'blue', title: 'In Process', headline: `${money(study.reward)} credited, awaiting payout`,
-        body: 'Your study response is under process. When the study finishes, the Focus Insite team processes the payouts and the reward lands in your wallet.',
+        // One sentence for money not yet paid, everywhere (23 Oct 2026).
+        tone: 'blue', title: 'In Process', headline: `${money(study.reward)} reward`,
+        body: 'Awaiting payout. The team processes it when the study finishes.',
       }
     case 'not_needed':
       return {

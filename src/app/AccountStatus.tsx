@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { barredFrom } from '@shared/derive'
+import { closedByOwner } from '@shared/lifecycle'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import TopBar from '../components/ui/TopBar'
@@ -65,7 +66,8 @@ export function DeactivatedScreen() {
 /** Whether the signed-in participant is deactivated by the team (not the same as signing out). */
 export function useDeactivated(): boolean {
   const { user, signedIn } = useStore()
-  return signedIn && barredFrom(user)?.kind === 'deactivated'
+  // An account its owner just closed is signed out by Deactivate Account's own modal, not taken over by this screen.
+  return signedIn && barredFrom(user)?.kind === 'deactivated' && !closedByOwner(user)
 }
 
 /**

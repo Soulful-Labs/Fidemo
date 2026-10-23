@@ -35,7 +35,7 @@ export function catalogue({ at, CLIENTS }: CatalogueHelpers): CatalogueEntry[] {
     { label: 'Invited to complete', at: at(applied + 2, 9, 5) },
     { label: doneLabel, at: at(done, 13, 0) },
     ...(paid != null
-      ? [{ label: 'Earnings credited', at: at(done, 13, 5) }, { label: 'Client approved payout', at: at(paid, 9, 30) }, { label: 'Paid', at: at(paid, 10, 0) }]
+      ? [{ label: 'Awaiting payout', at: at(done, 13, 5) }, { label: 'Payout processed by the team', at: at(paid, 9, 30) }, { label: 'Paid', at: at(paid, 10, 0) }]
       : []),
   ]
   return [
@@ -110,7 +110,7 @@ export function catalogue({ at, CLIENTS }: CatalogueHelpers): CatalogueEntry[] {
     description: 'Five days of short entries about your wind-down routine, interruptions and how you feel waking.',
     targetProfession: 'Adults, 18+', image: IMG('moon'), screenerSet: 'sleep', tasksSet: 'sleepDiary', client: CLIENTS.lumen, daysLeft: 1,
     diary: { totalDays: 5, minDays: 4, completedDays: [1, 2, 3, 4] },
-    timeline: [{ label: 'Applied', at: at(-14, 10, 0) }, { label: 'Invited to complete', at: at(-12, 9, 0) }, { label: 'Diary completed', at: at(-1, 21, 40) }, { label: 'Earnings credited', at: at(-1, 21, 41) }] }),
+    timeline: [{ label: 'Applied', at: at(-14, 10, 0) }, { label: 'Invited to complete', at: at(-12, 9, 0) }, { label: 'Diary completed', at: at(-1, 21, 40) }, { label: 'Awaiting payout', at: at(-1, 21, 41) }] }),
 
   // ----- Closed -----
   mk({ id: 'st-13', title: 'Patient intake forms, paper to digital', type: 'survey', status: 'paid', reward: 120, durationMins: 30, industry: 'Healthcare',
@@ -164,7 +164,7 @@ export function catalogue({ at, CLIENTS }: CatalogueHelpers): CatalogueEntry[] {
     booking: { date: at(-322, 11, 0), slot: '11:00 AM', rescheduleCount: 0 },
     clientReview: review(4, 'Good input once we got going, though the session started fifteen minutes late.', 4, 3, 4),
     timeline: [{ label: 'Applied', at: at(-334, 10, 36) }, { label: 'Invited to schedule', at: at(-331, 12, 0) }, { label: 'Scheduled', at: at(-330, 14, 0) },
-      { label: 'Late show up', at: at(-322, 11, 15) }, { label: 'Earnings credited', at: at(-322, 12, 0) }, { label: 'Client approved payout', at: at(-320, 9, 30) }, { label: 'Paid', at: at(-320, 10, 0) }] }),
+      { label: 'Late show up', at: at(-322, 11, 15) }, { label: 'Awaiting payout', at: at(-322, 12, 0) }, { label: 'Payout processed by the team', at: at(-320, 9, 30) }, { label: 'Paid', at: at(-320, 10, 0) }] }),
   mk({ id: 'st-14', title: 'Fintech onboarding walkthrough', type: 'video_call', status: 'rejected', reward: 140, durationMins: 40, industry: 'Finance',
     description: 'A session on opening a business account, verifying identity and linking a card.',
     targetProfession: 'Small business owners who opened an account this year', image: IMG('fintech'), screenerSet: 'fintech', client: CLIENTS.brightline, daysLeft: 0,

@@ -43,7 +43,7 @@ export default function Wallet() {
         </Button>
         {user.pendingEarnings > 0 && (
           <p className="text-center text-text-regular text-text-body">
-            {money(user.pendingEarnings)} awaiting client approval, then it moves to your balance
+            {money(user.pendingEarnings)} pending. Awaiting payout. The team processes it when the study finishes.
           </p>
         )}
         <p className="flex items-center gap-3 text-text-regular text-text-body">

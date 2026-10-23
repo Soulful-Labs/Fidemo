@@ -16,7 +16,7 @@ import { withdrawals,
 import { PAYOUT_MOVES, respondentStatus, participationOf } from '../shared/lifecycle'
 import { FEES, TIMINGS, depositFor, diaryWords, quoteStudy } from '../shared/platform'
 import { POINTS, REDEEM, TIERS, TRUST, starsForRating, starsFromDimensions, trustScore } from '../shared/rules'
-import { DEMO_CLIENT_ID, DEMO_PERSON_ID, MASTER_ADMIN_ID, buildSeed } from '../shared/seed'
+import { DEMO_CLIENT_ID, DEMO_PERSON_EMAIL, DEMO_PERSON_ID, DEMO_PERSON_PASSWORD, MASTER_ADMIN_ID, buildSeed } from '../shared/seed'
 import { buildScreener, buildTasks, screenerOutline, taskResults } from '../shared/questions'
 import type { AuthoredQuestion } from '../shared/questions'
 import { AUDIENCE_LISTS, audiencePeople, blankForm, blankQuestion, buildStudy, estimateAudience, formFromStudy, formId, studyDetails, summarise } from '../shared/studyForm'
@@ -213,7 +213,9 @@ const slotDay = st().studies.find((s) => s.id === id)!.availability![0]!
 check('8. the respondent schedules', p.schedule(id, DEMO_PERSON_ID, { date: slotDay.date, slot: slotDay.slots[0]! }).ok && status(id) === 'scheduled')
 check('   a wrong PIN is refused', !p.confirmPin(id, DEMO_PERSON_ID, '000000').ok)
 check('   the client cannot mark completed without both codes', !p.complete(id, DEMO_PERSON_ID, client).ok)
-check('   and enters the PIN', p.confirmPin(id, DEMO_PERSON_ID, '407060').ok && status(id) === 'pin_confirmed')
+check('   the PIN is refused before the session starts (the interviewer gives it during the session)', !p.confirmPin(id, DEMO_PERSON_ID, '407060').ok && status(id) === 'scheduled')
+clock = sessionStart({ date: slotDay.date, slot: slotDay.slots[0]! }).getTime() + 5 * 60_000
+check('   and enters the PIN once it has started', p.confirmPin(id, DEMO_PERSON_ID, '407060').ok && status(id) === 'pin_confirmed')
 const before = fig()
 check('9. the client enters the code and marks them completed', p.enterClientCode(id, DEMO_PERSON_ID, '407060').ok && p.complete(id, DEMO_PERSON_ID, client).ok && status(id) === 'in_process')
 clock += 60 * 60_000
@@ -487,7 +489,7 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   const certId = meP().certificateId
   p.updatePerson(DEMO_PERSON_ID, { email: 'jonathan.new@example.com' })
   check('certificate: the ID is stored, and changing the email does not change it', Boolean(certId) && /^FI-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(certId!) && meP().certificateId === certId, certId)
-  const fresh = p.signUpPerson('nobody.yet@example.com')
+  const fresh = p.signUpPerson('nobody.yet@example.com', 'Fresh123!')
   const newbie = st().people.find((x) => x.id === (fresh as { id: string }).id)!
   check('certificate: an unverified participant has none', !newbie.certificateId && !hasCertificate(newbie))
   const allIds = [...st().people.map((x) => x.certificateId), ...st().clients.map((x) => x.certificateId)].filter(Boolean)
@@ -495,8 +497,26 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
 
   p.reset(); clock = now.getTime()
   const ptsBefore = fig().points
-  p.signUpPerson('a.friend@example.com', referralCode(meP().name, meP().email))
+  p.signUpPerson('a.friend@example.com', 'Friend123!', referralCode(meP().name, meP().email))
   check('referral: the referrer earns 200 the moment the friend joins', fig().points === ptsBefore + POINTS.REFERRAL && meP().referrals[0]?.status === 'joined', `${ptsBefore} -> ${fig().points}`)
+
+  // Participant passwords: a front-end stand-in, but every screen that asks for one is checked against it.
+  p.reset(); clock = now.getTime()
+  const dup = p.signUpPerson(DEMO_PERSON_EMAIL.toUpperCase(), 'Other123!')
+  check('auth: signing up with an email already on the platform is refused and opens nothing', !dup.ok && st().people.filter((x) => x.email.toLowerCase() === DEMO_PERSON_EMAIL).length === 1, JSON.stringify(dup))
+  const made = p.signUpPerson('auth.person@example.com', 'First123!') as { ok: true; id: string }
+  const people0 = st().people.length
+  const wrong = p.signInPerson('auth.person@example.com', 'Nope123!')
+  check('auth: a wrong password fails and resets nothing', !wrong.ok && st().people.length === people0 && Boolean(st().people.find((x) => x.id === made.id)))
+  const right = p.signInPerson('auth.person@example.com', 'First123!')
+  check('auth: the right password signs in that account, with no reset', right.ok && (right as { id: string }).id === made.id && !(right as { reset: boolean }).reset && st().people.length === people0)
+  check('auth: change password needs the current one', !p.changePersonPassword(made.id, 'Nope123!', 'Second123!').ok && p.changePersonPassword(made.id, 'First123!', 'Second123!').ok && p.signInPerson('auth.person@example.com', 'Second123!').ok && !p.signInPerson('auth.person@example.com', 'First123!').ok)
+  check('auth: a reset password is saved', p.resetPersonPassword('auth.person@example.com', 'Third123!').ok && p.signInPerson('auth.person@example.com', 'Third123!').ok)
+  const closeWrong = p.closeAccount(made.id, 'Nope123!')
+  check('auth: closing the account with a wrong password is refused and leaves it active', !closeWrong.ok && st().people.find((x) => x.id === made.id)!.status === 'active')
+  check('auth: closing it with the right password deactivates it, and it can no longer sign in', p.closeAccount(made.id, 'Third123!').ok && st().people.find((x) => x.id === made.id)!.status === 'deactivated' && !p.signInPerson('auth.person@example.com', 'Third123!').ok)
+  const demo = p.signInPerson(DEMO_PERSON_EMAIL, DEMO_PERSON_PASSWORD)
+  check('auth: the demo login resets the platform', demo.ok && (demo as { reset: boolean }).reset && !st().people.some((x) => x.id === made.id))
 
   const per = (type: Parameters<typeof quoteStudy>[0], t: { roles?: boolean; skills?: boolean }) => quoteStudy(type, 10, 50, t).rates.recruitingPer
   check('add-ons: roles targeting adds $25, skills $20, and one type-or-roles add-on at most', per('survey', {}) === 25 && per('survey', { roles: true }) === 50 && per('survey', { skills: true }) === 45 && per('survey', { roles: true, skills: true }) === 70 && per('video_call', { roles: true }) === 50 && per('video_call', { skills: true }) === 70, `${per('survey', {})} ${per('survey', { roles: true })} ${per('survey', { skills: true })} ${per('survey', { roles: true, skills: true })}`)

@@ -1,19 +1,19 @@
 import { cn } from '../../lib/cn'
 import { ChevronRight } from '../ui/icons'
 import type { User } from '../../mock/types'
+import { useStore } from '../../mock/store'
 
 type Tier = User['tier']
 
 /**
- * Tier names and the "In Top" line under each, exactly as drawn on the chip
- * (Figma: dashboard, Welcome, Trust Score Details, certificate). The policy
- * does not define these percentiles; the words come from Figma per the copy
- * rule and are flagged in the turn report.
+ * Tier names (Figma: dashboard, Welcome, Trust Score Details, certificate).
+ * The "In Top N%" line under each is derived, not drawn: the share of
+ * participants at that tier or above (shared/derive.ts topShareOf, 23 Oct 2026).
  */
-export const TIER_LABEL: Record<Tier, { name: string; top: string }> = {
-  silver: { name: 'Silver', top: 'In Top 50%' },
-  gold: { name: 'Gold', top: 'In Top 20%' },
-  platinum: { name: 'Platinum', top: 'In Top 5%' },
+export const TIER_LABEL: Record<Tier, { name: string }> = {
+  silver: { name: 'Silver' },
+  gold: { name: 'Gold' },
+  platinum: { name: 'Platinum' },
 }
 
 const TIER_TEXT: Record<Tier, string> = {
@@ -51,7 +51,8 @@ function TierIcon({ tier }: { tier: Tier }) {
 export default function TierChip({
   tier, card = false, onClick, className,
 }: { tier: Tier; card?: boolean; onClick?: () => void; className?: string }) {
-  const { name, top } = TIER_LABEL[tier]
+  const { name } = TIER_LABEL[tier]
+  const top = useStore().tierTop(tier)
   const Tag = onClick ? 'button' : 'span'
 
   return (

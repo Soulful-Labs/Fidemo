@@ -241,13 +241,16 @@ await step(8, 'The respondent schedules, attends and enters the PIN', async () =
   await R.click('Agree & Join'); await R.click('Confirm & Schedule', 900)
   expect((await part()).state === 'scheduled', 'not scheduled: ' + (await part()).state)
   await R.click('Done', 700)
+  // The interviewer gives the code during the session, so Submit PIN waits for it to start (23 Oct 2026).
+  expect(await R.ev(`[...document.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Submit PIN' && b.getAttribute('aria-disabled') === 'true')`), 'Submit PIN should wait for the session')
+  // The session is booked days ahead; as in the acceptance demo, it is moved an hour into the past so it has started.
+  await R.ev(`(() => { const d = new Date(Date.now() - 3600e3); const slot = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }); __hl.dispatch({ type: 'SET_BOOKING', id: ${JSON.stringify(studyId)}, booking: { date: d.toISOString(), slot } }); return true })()`)
+  await sleep(400)
   await R.click('Submit PIN', 700)
   const code = (await part()).code.value
   await R.ev(`(() => { [...${JSON.stringify(code)}].forEach((d, i) => __type(document.querySelector('input[aria-label="Digit ' + (i + 1) + '"]'), d)); return true })()`)
   await R.click('Submit', 1200)
   expect((await part()).code.byParticipant, 'the code was not recorded')
-  // The session is booked days ahead; as in the acceptance demo, it is moved an hour into the past so it has "run".
-  await R.ev(`(() => { const d = new Date(Date.now() - 3600e3); const slot = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }); __hl.dispatch({ type: 'SET_BOOKING', id: ${JSON.stringify(studyId)}, booking: { date: d.toISOString(), slot } }); return true })()`)
   return `code ${code} entered`
 })
 

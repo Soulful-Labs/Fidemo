@@ -29,7 +29,7 @@ export function PayoutSection() {
         <Play onClick={() => play({ mood: 'money', alt: true, title: `${money(sent)} withdrawal request sent successfully!`, body: `Your withdrawal request for ${money(sent)} has been sent and the funds will be credited within 2-3 working days.` })}>
           Withdrawal sent
         </Play>
-        <Play onClick={() => play({ mood: 'money', alt: true, title: 'Redeemed successfully!', body: `You have redeemed 1,000 points for ${money(10)} to be credited to your wallet within 2 working days.` })}>
+        <Play onClick={() => play({ mood: 'money', alt: true, title: 'Redeemed successfully!', body: `You have redeemed 1,000 points for ${money(10)}. It is in your wallet now.` })}>
           Redeemed
         </Play>
       </Plays>

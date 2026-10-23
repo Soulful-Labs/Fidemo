@@ -9,7 +9,7 @@ type Shown = Omit<ComponentProps<typeof SuccessScreen>, 'onAction'>
 /** The success screens as the app shows them, so F and G can be replayed here. */
 export const SCREENS: Record<string, Shown> = {
   survey: { title: 'Completed successfully!', body: 'Your survey study has been completed successfully and submitted.' },
-  pin: { title: 'Confirmed successfully!', body: 'Your joining attendance is confirmed and verified! You can complete your study if running now.' },
+  pin: { title: 'Confirmed successfully!', body: 'Your code is in. Once your interviewer enters it too, your attendance is on record and you can complete the study.' },
   applied: {
     title: 'Applied successfully!', body: 'Your application for this study has been submitted.',
     steps: [

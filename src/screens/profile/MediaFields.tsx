@@ -50,20 +50,33 @@ export function PictureField() {
  * | 50 MB max."), then the video once there is one, with Remove. Its consent
  * switch is kept under it, as with the picture.
  */
-export function VideoField() {
-  const { user, setVideo, setMediaConsent, toast } = useStore()
+/**
+ * Keeps an intro video: the file in this browser's media store, its reference
+ * on the person (which is what earns its points). One path for My Profile and
+ * the About You onboarding step, so a video chosen at either is the same video.
+ */
+export function useIntroVideo() {
+  const { user, setVideo, toast } = useStore()
   const [busy, setBusy] = useState(false)
-  const url = useVideoUrl(user.video?.id)
-  const pick = async (file: File) => {
-    if (!file.type.startsWith('video/')) { toast('Choose a video file'); return }
+  const pick = async (file: File): Promise<boolean> => {
+    if (!file.type.startsWith('video/')) { toast('Choose a video file'); return false }
     setBusy(true)
     const id = `vid-${Date.now().toString(36)}`
     const kept = await saveVideo(id, file)
     setBusy(false)
-    if (!kept.ok) { toast(kept.why); return }
+    if (!kept.ok) { toast(kept.why); return false }
     const old = user.video?.id
-    if (setVideo({ id, name: file.name, type: file.type, bytes: file.size })) { if (old) void deleteVideo(old); toast('Video added') } else void deleteVideo(id)
+    if (setVideo({ id, name: file.name, type: file.type, bytes: file.size })) { if (old) void deleteVideo(old); toast('Video added'); return true }
+    void deleteVideo(id)
+    return false
   }
+  return { pick, busy }
+}
+
+export function VideoField() {
+  const { user, setVideo, setMediaConsent, toast } = useStore()
+  const { pick, busy } = useIntroVideo()
+  const url = useVideoUrl(user.video?.id)
   const remove = () => { const old = user.video?.id; if (setVideo(null)) { if (old) void deleteVideo(old); toast('Video removed') } }
   return (
     <div className="flex flex-col gap-3">

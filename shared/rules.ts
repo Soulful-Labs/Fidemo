@@ -130,7 +130,7 @@ export function trustScore(i: TrustInputs): number {
 // --- 2. The certificate -----------------------------------------------------
 
 /**
- * "Issued automatically the moment the ID and selfie pass. No studies needed
+ * "Issued the moment the team verifies the government ID (no selfie: out of the product, 23 Oct 2026). No studies needed
  * first." "Valid twelve months and renews on its own." Carries tier, studies
  * completed, the checks that were run, validity and an ID of the form
  * FI-7K42-9QX1. "Never a name, email or phone."

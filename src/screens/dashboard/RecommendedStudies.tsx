@@ -18,7 +18,7 @@ export default function RecommendedStudies({
 
   const recommended = studies
     .filter((s) => isExplorable(s.status))
-    .sort((a, b) => b.matchScore - a.matchScore)
+    .sort((a, b) => (b.matchScore ?? -1) - (a.matchScore ?? -1))
     .slice(0, limit)
 
   if (recommended.length === 0) return null

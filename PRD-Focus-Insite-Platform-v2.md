@@ -5,7 +5,7 @@
 
 **The front end for all three apps is built, deployed and working. The job is to put a real back end behind it.** Section 23 is written for that.
 
-**This document and the BRD are self-contained.** The workflow is in Section 15, every policy value is in Section 6, and every decision is in Section 16. Five decisions are open, and are recorded as open in Section 16 (D32 to D36). Nothing else is left open.
+**This document and the BRD are self-contained.** The workflow is in Section 15, every policy value is in Section 6, and every decision is in Section 16. Seven decisions are open, and are recorded as open in Section 16 (D32 to D38), and one built rule waits for confirmation (D39). Nothing else is left open.
 
 ---
 
@@ -62,7 +62,7 @@ Where they disagreed, **Section 16** records the decision taken and why. The fiv
 
 **The code.** Repository `Soulful-Labs/Fidemo`, branch `claude/dreamy-carson-x5ctvp`. The respondent app is at the root, the client app in `client/`, the console in `internal/`, and the shared data layer in `shared/`.
 
-**Demo sign-ins.** Shown on each app's own sign-in screen. The console uses `peter@focusinsite.com` for a master admin and `maya.thompson@humanlayer.com` for a restricted sub-admin, both with the password `demo1234`. Signing in as the master admin or the demo participant resets the demo data.
+**Demo sign-ins.** Shown on each app's own sign-in screen. The console uses `peter@focusinsite.com` for a master admin and `maya.thompson@humanlayer.com` for a restricted sub-admin, both with the password `demo1234`. The respondent app's demo participant is `jonathan.reeve@example.com` with the password `Passw0rd!`, the same password every seeded participant has. Signing in as the master admin or the demo participant resets the demo data; any other account signs in with its own password and resets nothing. Participant passwords are a front-end stand-in for real authentication (Section 23.8).
 
 **All data currently lives in the browser's own storage.** Nothing is shared between devices or people. Replacing that is the job. See Section 23.
 
@@ -379,10 +379,13 @@ registered → verifying → active → restricted → active
 | State | How | Effect |
 |---|---|---|
 | `registered` | Signed up, profile not complete | Can browse, cannot apply |
-| `verifying` | ID submitted, awaiting automatic or manual check | Limited |
-| `active` | Identity verified | Full use. Certificate issued |
+| `verifying` | ID submitted and in review, waiting for the team to verify it in the console | Can browse; cannot apply. Applying says "Your ID is in review" |
+| `active` | Identity verified by the team | Full use. Certificate issued. The participant is told |
 | `restricted` | Team restricted after an upheld report | Cannot participate, withdraw earnings or redeem rewards, for a fixed period |
 | `deactivated` | Team deactivated, with a written reason and the team member's password | No access. An email is sent with the reason. The person can appeal |
+| `deactivated`, closed by the participant | The participant's own Deactivate Account, confirmed with their password | Cannot sign in ("You closed this account. Contact us to reopen it"). The console shows it deactivated, category "Closed by the participant", and the team can reactivate it. Paying out the balance and deleting after 30 days are the server's (23.8) |
+
+**Passwords.** Every participant has one. Sign In checks it and a wrong one is refused under the field; it never signs anyone in as someone else. Sign Up refuses an email already on the platform. Change Password needs the current password. Set New Password saves the new one for the email given on Forgot Password. Deactivate Account needs the password. In this build the password is held by the shared data layer as a front-end stand-in for real authentication (Section 23.8).
 
 **The restriction ladder**, drawn only on one console frame: first offence 15 days, second 15 days, third 30 days, fourth deactivation. **This rule exists nowhere else.** It is not in the Trust and Rewards policy and was not in the earlier workflow. It needs to be written down officially before it is built. See D9.
 
@@ -415,7 +418,7 @@ Three kinds of verification, all handled in the console, all following the same 
 | Profession | Occupation and licence or certificate number, typed | Official records |
 | Business (clients) | VAT number and company website, typed | Business records |
 
-**Only failures reach a person.** The queue is explicitly for checks the automatic system could not complete: "Uploaded passport file could not be verified with the govt. records. Verify it manually."
+**Every participant check reaches a person** (decided 23 October 2026). A submitted ID, and a licence or certificate number when one is given, is `in_review` until a team member marks it verified or rejects it in Participants > Verifications; nothing is verified automatically in this build. The queue lists it with the date it was submitted and "Submitted for review"; the detail shows the files as the participant named them, with their sizes, and "Waiting for your decision". Checks that an automatic check flagged ("Uploaded passport file could not be verified with the govt. records. Verify it manually.") sit in the same queue. Changing the ID in Account Settings (a new type needs both sides uploaded again) or changing the credential number on My Profile starts a new review.
 
 **Decisions available:** Mark Verified, Reject, Chat.
 
@@ -425,7 +428,7 @@ Three kinds of verification, all handled in the console, all following the same 
 
 No undo is drawn for any verification decision. No decision records which team member made it; notes carry a date only.
 
-**The selfie.** The console shows one line, "Selfie photo verified", with a small thumbnail, drawn as already passed on every frame, including people whose ID check failed. There is no image to compare, no liveness detail and no control. The respondent app **does not capture a selfie** because legal review is open. So the console reports a result the apps do not produce. See D5.
+**No selfie.** Selfie and liveness verification are out of the product (23 October 2026). No app asks for, shows or claims one: the Identity step has no selfie field, Account Settings has no selfie row or "Human Verified" tag, and the console's "Selfie photo verified" lines and "Human Verified" tags are gone. The participant is told the outcome of each decision in a notification. See D5.
 
 ### 5.7 Report and moderation lifecycle
 
@@ -518,12 +521,14 @@ A ticket carries: a number (FI-S562357), a subject, a status (Open / Closed), th
 | 2-star rating | −2 |
 | 1-star rating | −3 |
 | Ratings contribution, maximum | +40 |
-| Onboarding complete | +50 |
+| Starting score | 50, earned by completing onboarding. It is the starting score, not added on top of it |
 | No show | −4 |
 | Late show up | −2 |
 | Cancelled session | −2 |
 | Upheld fraud | −20 |
 | Ratings counted | The last 10 studies |
+
+**How the score is worked out.** The starting 50 plus everything earned and deducted since, kept within 50 and 100. A deduction that would take the score below 50 still counts: the score shows 50, and the deduction comes off later gains before the score rises again. A participant at 50 who cancels a session stays at 50, and their next completed study leaves them at 50. The cancel toast says which happened: "2 Trust Score deducted" when the score fell by the full amount, and otherwise that the 2 is recorded, the score stays at the floor and the 2 comes off what is earned next. The amount is read from the value the console set at the time, not written into the toast. Score history shows each change in points ("+1", "−2"), never as a percentage.
 
 ### 6.2 Tiers
 
@@ -534,6 +539,8 @@ A ticket carries: a number (FI-S562357), a subject, a status (Open / Closed), th
 | Platinum | 90 and above |
 
 Tier is **derived** from the Trust Score. It is never set independently and never stored as its own fact.
+
+**"In Top N%"** under each tier is derived too: the share of active, ID-verified participants at that tier or above (`topShareOf`, the same count the client app's Profile Tiers lines use). Silver always reads "In Top 100%".
 
 ### 6.3 Reward points
 
@@ -577,7 +584,7 @@ The policy says the certificate "Unlocks at 40". **That is not implemented.** Th
 
 In the built designs a certificate ID appears in the header of participants who are still unverified, two different people are drawn carrying the same certificate ID (HL-R-9F2A-3K7P), and the *client's* business certificate carries that same string. All three are design errors.
 
-**As built:** the certificate is issued only when identity verification completes. It carries one unique ID per person in the form `FI-XXXX-XXXX`, shows "Verified Human" and the Trust Score, and **carries no name**. The client's business certificate is a separate object with its own ID in the form `FI-C-XXXX-XXXX`. See D12.
+**As built:** the certificate is issued only when the team verifies the participant's ID in the console. It carries one unique ID per person in the form `FI-XXXX-XXXX`, is headed "Identity Verified", lists "Government ID Verified" and, where the team checked a credential, "Professional License/Certificate Verified", shows the Trust Score, and **carries no name**. It claims nothing about a selfie. While the ID is in review the screen says so. The client app's study verification certificate reads "N of M completions by ID-verified participants". The client's business certificate is a separate object with its own ID in the form `FI-C-XXXX-XXXX`. See D12.
 
 Certificate IDs begin `FI-` while the product is branded HumanLayer. Whether the prefix should change is open; see D35.
 
@@ -813,29 +820,30 @@ This is the functional specification for the app. Build to it exactly.
 
 | Screen | Control | Behaviour |
 |---|---|---|
-| Sign Up | Sign Up | Validates, then `/verify-otp` |
+| Sign Up | Sign Up | Validates; an email already on the platform is refused under the field ("An account with this email already exists. Log in instead"); otherwise `/verify-otp` |
 | Sign Up | Log In | `/signin` |
 | Sign Up | Sign up as a researcher client | Opens the client app |
 | Sign Up | Terms, Privacy links | Open the documents |
-| Sign In | Login | `/dashboard` |
+| Sign In | Login | Checks the email and password; a wrong one is refused under its field and nothing else happens. Then `/dashboard`. The demo login is printed under the form |
 | Sign In | Forgot Password | `/forgot-password` |
-| Enter OTP | Submit | Verifies the code, then `/onboarding/about` |
+| Forgot Password, Set New Password | Submit | Forgot Password refuses an email no account uses; Set New Password saves the new password for that email, then Password Updated |
+| Enter OTP | Submit | Verifies the code, makes the account with the password typed on Sign Up, then `/dashboard`: workflow 15 lets a new account browse first, and Get Started opens `/onboarding/about` |
 | Enter OTP | Resend | Restarts the 60-second timer, toast "Code sent" |
 | Enter OTP | Cancel | Back to `/signup` |
 | About You | info icon | Opens the Details info pop-up |
 | About You | Address field | Opens an address autocomplete; selecting one fills the field |
-| About You | Upload Short Video | File picker, shows the file name |
+| About You | Upload Short Video | File picker. The video is kept on the account the moment it is chosen, the same as on My Profile, and earns its 75 points |
 | About You | Continue | Validates required fields, `/onboarding/professional` |
 | Professional | Industry, Education | Open pickers; selecting fills the field |
 | Professional | Continue | `/onboarding/identity` |
 | Identity | Select ID | Opens the ID type picker |
-| Identity | Upload Front, Upload Back | File picker, shows the file name |
+| Identity | Upload Front, Upload Back | File picker, shows the file name; the name and size are kept with the ID |
 | Identity | Continue | Opens the Consent modal |
-| Consent | Save and Continue | Saves the toggles, `/onboarding/welcome` |
+| Consent | Save and Continue | Saves the toggles, sends the ID (and any credential number) to the team for review, `/onboarding/welcome`, which says "Your ID is in review" |
 | Welcome | Complete Profile | `/profile/edit` |
 | Welcome | Explore Studies | `/studies` |
 
-**Do not build selfie capture.** Legal review is open. ID document upload only. This is a standing instruction and it has not changed.
+**No selfie.** Selfie and liveness verification are out of the product (23 October 2026). The Identity step is one government ID, both sides, and nothing else.
 
 ### 9.2 Dashboard
 
@@ -872,7 +880,7 @@ This is the functional specification for the app. Build to it exactly.
 | Study card, bookmark | Toggles saved. The Saved tab updates immediately |
 | Accept and Apply | Status → `applying`, then `/studies/:id/screener` |
 | Reject on a card | Opens Reject Invitation; on confirm, removes it from Invites |
-| Match score badge | Opens the match score explainer |
+| Match score badge | Opens the match score explainer. The score is the share of the study's own criteria the profile meets: every criterion a client's audience sets, or a catalogue study's industry and target profession. When nothing can be compared the card and the study show no score at all |
 | Client name and rating | `/clients/:clientId/ratings` |
 | Get Support | `/support/contact` with the study prefilled in the subject |
 | View Directions | Opens a map |
@@ -899,6 +907,12 @@ This is the functional specification for the app. Build to it exactly.
 
 **The tab a study appears under is derived from this status and nothing else.** The detail screen's layout, the card's actions and the list it sits in are all derived. Nothing is set separately.
 
+**Money not yet paid has one sentence everywhere** (23 October 2026): "Awaiting payout. The team processes it when the study finishes." The In Process banner (under the reward amount), the Wallet's pending line, the toasts after completing a study or a diary, and the participation's history ("Awaiting payout", then "Payout processed by the team", then "Paid") all use it. Nothing says the money is credited before it is.
+
+**Notifications follow the study.** An invitation to book reads "You're invited to schedule your session!". A notification's action button (Schedule Now, Start Study, Apply Now, Rate Now) is dropped once the study has moved past that step, and the row then opens the study. The saved-study update gives the real number of places left (the target less everyone qualified, booked or done) and is not sent for a study that is full.
+
+**The sign-up and sign-in ticker** ("$100 paid to Jonathan for a product study, 25m") reads the platform's most recent study payout: the first name, the amount, the kind of study and how long ago. It shows nothing until someone has been paid.
+
 ### 9.5 Scheduling
 
 | Control | Behaviour |
@@ -911,7 +925,7 @@ This is the functional specification for the app. Build to it exactly.
 | Agreement checkbox | Enables the button. Unchecked keeps it disabled |
 | Agree and Join | `/studies/:id/schedule/review` |
 | Confirm and Schedule | Status → `scheduled`, saves the booking, `/studies/:id/schedule/done` |
-| Reschedule | `/studies/:id/reschedule`. **Blocked with an explanation after two reschedules, or within 24 hours of the session** |
+| Reschedule | `/studies/:id/reschedule`. **Blocked with an explanation after two reschedules, or within 24 hours of the session's start time** |
 | Cancel Study | Opens Cancel Study. On confirm, status → `available` and the Trust Score drops by 2 |
 
 ### 9.6 Attendance
@@ -919,8 +933,8 @@ This is the functional specification for the app. Build to it exactly.
 | Control | Behaviour |
 |---|---|
 | Join Call | Opens the meeting link |
-| Submit PIN | `/studies/:id/pin` |
-| PIN entry | Six digits. A correct PIN proceeds; an incorrect one shows "Incorrect PIN, check with your interviewer" |
+| Submit PIN | `/studies/:id/pin`, once the session has started. Before then it is shown disabled and says when the session starts: the interviewer gives the code during the session. The platform refuses an early code too |
+| PIN entry | Six digits. A correct PIN proceeds; an incorrect one shows "Incorrect PIN, check with your interviewer". The success screen and the study banner say the code is in and attendance is on record once the interviewer enters it too; only then does the banner read "Both sides entered the code" |
 | Submit | `/studies/:id/pin/done` |
 | Done | `/studies/:id`, status now `pin_confirmed` |
 
@@ -935,6 +949,7 @@ This is the functional specification for the app. Build to it exactly.
 | No, Continue | Closes the sheet |
 | Submit on the last question | `/studies/:id/applied` or `/studies/:id/survey/done` |
 | Diary, Submit Progress | Marks the day complete, returns to the diary overview |
+| Diary, a completed day | Opens that day read only, with the answers as sent, and Back to Diary |
 | Diary, Resume Study Day N | `/studies/:id/diary/:day` |
 | Diary, Complete | **Only enabled once at least 4 of 5 days are filled** |
 
@@ -959,12 +974,12 @@ Each diary day asks its own questions, as the client set them for that entry. A 
 | Add New Account | `/wallet/payout-methods/add` |
 | Add | Validates, adds the account, returns to the list |
 | Set As Default | Moves the Default chip |
-| Remove | Opens Remove Bank Account; on confirm, removes it |
+| Remove | Opens Remove Bank Account; on confirm, removes it. Removing the default makes the next account the default, and the toast names it |
 | Reward Points card | `/points` |
 | Redeem | `/points/redeem` |
 | Points input | **Converts live at 100 points to $1. Below 1,000 points, Confirm is disabled and the reason is shown** |
 | Confirm | `/points/redeem/confirm` |
-| Redeem (on confirm) | Deducts points, credits the wallet, `/points/redeem/done` |
+| Redeem (on confirm) | Deducts points, credits the wallet at once, `/points/redeem/done` ("It is in your wallet now") |
 
 ### 9.9 Profile
 
@@ -984,9 +999,11 @@ Each diary day asks its own questions, as the client set them for that entry. A 
 | Refer and Earn | `/profile/referrals` |
 | Account Settings | `/profile/settings` |
 | Save on any form | Saves, toast "Saved", stays on the screen |
-| Change Password, Submit | Validates four rules live, then the Password Updated modal |
+| Account Settings, the ID | Shows the ID type and the two files as uploaded (name and size) and where the check stands: "Govt. ID Verified", "In review", or could not be verified. Upload New ID, or picking another type, asks for both sides again; Save sends the new ID to the team and it is in review |
+| My Profile, licence number | Shows "Verified Profession" once the team has checked it, "In review" while it waits, and a note that a changed number is checked again once saved |
+| Change Password, Submit | Validates four rules live; a wrong current password is refused under that field; otherwise saves the new password and shows the Password Updated modal |
 | Email Notification toggles | Save immediately. No save button |
-| Deactivate Account | Requires the password, then the Account Deactivated modal, then signs out |
+| Deactivate Account | Requires the password; a wrong one is refused under the field and nothing changes. The right one deactivates the account (closed by the participant), shows the Account Deactivated modal, then signs out. The copy reads: you have 30 days to reactivate by contacting us, after which it is deleted once any balance has gone to the default payout method |
 | Sign Out | Opens Logout; on confirm, clears the session and goes to `/signin` |
 | An FAQ row | Expands and collapses |
 | Contact Us | `/support/contact` |
@@ -1546,7 +1563,7 @@ Every dropdown narrows the list.
 
 | Segment | Sub-states |
 |---|---|
-| About | Professional Details, Trust Score, Personal Details, Account Details (ID documents and the selfie result) |
+| About | Professional Details, Trust Score, Personal Details, Account Details (the ID documents as uploaded, with their names and sizes, and where the check stands) |
 | Studies | Invites To Schedule, Scheduled, Applied, History, Saved |
 | Wallet | Earnings, Payouts, Reward Points, Referrals |
 
@@ -1577,7 +1594,7 @@ History carries Completed, Verification Remarks and a Result: Verified / Rejecte
 
 | Kind | What the team compares |
 |---|---|
-| Identity | Two uploaded files (front and back), each with a view button, against "could not be verified with the govt. records". Plus a line saying the selfie passed |
+| Identity | The two uploaded files (front and back) as the participant named them, with their sizes and a view button. A submitted ID reads "Submitted for review" and "Waiting for your decision"; one an automatic check flagged reads "could not be verified with the govt. records". No selfie line |
 | Profession | Occupation and licence number as text, against "could not be found". **No licence document is drawn** |
 | Report | The category, a one-line reason, View Study, and the Reported By card, which opens the reporting client's profile. The header carries the participant's own certificate ID |
 
@@ -1743,10 +1760,10 @@ This is the whole platform as a single sequence, as it now stands. It supersedes
 |---|---|---|---|---|
 | 8 | Participant | Respondent app | Signs up, receives and enters a six-digit code | Participant `registered` |
 | 9 | Participant | Respondent app | Fills three onboarding steps: personal details, professional details, and preferences | |
-| 10 | Participant | Respondent app | Uploads an identity document and accepts the consent screen. **No selfie and no liveness capture. That is blocked until the biometric legal review closes** | Participant `verifying` |
+| 10 | Participant | Respondent app | Uploads one government ID, both sides, and accepts the consent screen. **No selfie and no liveness check: both are out of the product** | Participant `verifying`, ID in review |
 | 11 | System | none | Attempts automatic identity verification | |
 | 12 | System | none | For a professional participant, checks the licence number against the relevant public register | |
-| 13 | Team | Console | **Only if a check fails.** It appears in Participants > Verifications. A team member compares the documents, writes a statement, enters their password, and verifies or rejects | Participant `active` |
+| 13 | Team | Console | **Every submitted ID, and every credential number given, is checked by a person** (23 October 2026). It appears in Participants > Verifications as "Submitted for review". A team member compares the documents, writes a statement, enters their password, and verifies or rejects. The participant is told either way | Participant `active` |
 | 14 | System | none | Trust Score set to 50. Tier derived as Silver. The certificate is issued | |
 
 The certificate is issued here and nowhere else, carries one unique ID per person, and claims only identity verified and profession verified. See D12.
@@ -1919,9 +1936,7 @@ The heading "Activities of sub-admins" is wrong and becomes "Activity log".
 
 ### D5: The selfie
 
-**Out.** Identity verification is by document upload only. The respondent app captures no selfie and no liveness check, and the console's "Selfie photo verified" line is removed from every verification frame.
-
-This stands until the biometric legal review closes. Nothing biometric is built before then.
+**Out, in all three apps** (decided 23 October 2026). Identity verification is one government ID, both sides, checked by the team. No app asks for, shows or claims a selfie or a liveness check: the respondent's Identity step has no selfie field; Account Settings has no selfie row and no "Human Verified" tag; the certificate is headed "Identity Verified" and claims identity verified, and profession verified where a credential was checked, and nothing about a selfie; the console's "Selfie photo verified" lines and "Human Verified" tags are removed from the verification detail and the participant profile; the client's study certificate reads "completions by ID-verified participants" where it read "verified human". The Figma frames that draw a selfie field, "Selfie photo verified", "Human Verified" or "Verified Human" are to be redrawn.
 
 ### D6: Cancelling a session
 
@@ -2214,6 +2229,37 @@ BRD Section 9a has the full requirement.
 | What the build does today | Duration units Hour, Day and Week. Frequency Every day, Every 2 days, Every 3 days and Weekly |
 | What the designs draw | The client's diary dropdowns also draw Minute and Step units, and a frequency list from "Everyday" to "Every 5 days" |
 | Who decides | Not yet assigned. A change in behaviour, for the designer and the business |
+
+### D37: A diary entry per calendar day (open)
+
+**Not decided.**
+
+| | |
+|---|---|
+| What the build does today | Every entry of a diary can be filled in one sitting: the next entry unlocks as soon as the one before is submitted, whatever the date. Frequency is stored and shown, not enforced (see D36) |
+| The question | Whether entry N should open only on day N (or at the client's frequency), so a five day diary takes five days |
+| Who decides | The product owner. Not built until decided |
+
+### D38: Audience fit before applying (open)
+
+**Not decided.** Found in the 23 October 2026 audit: a nurse saw, and passed the screener of, a survey looking for teachers.
+
+| | |
+|---|---|
+| What the build does today | Explore lists every live study to every participant, and applying checks verification, premium and the repeat rule only (`applyBlocker`, `startApplication`). It does not check the study's audience. A study built in the client app has an audience (`study.form`), and Matched uses it, but nothing stops someone outside it from finding the study in Explore and applying. The seeded catalogue studies have no audience at all, only a free-text target profession, so there is nothing to check against |
+| Why the screener did not catch it | The pre-screener is the client's own eligibility questions ("Do you teach a mixed-ability class?"). Answering yes passes. It is not a profile check, and profile questions (age, location, job) are deliberately not asked again (workflow 30) |
+| The question | Whether Explore should show only studies whose audience the participant fits, and whether applying should refuse someone outside it; and what to do for studies with no audience |
+| Who decides | The product owner. An audience-matching gap, not a screener one. Not fixed in this round |
+
+### D39: Deductions at the Trust Score floor (to confirm)
+
+**Built, and written into the policy v2 (section 1), for the product owner to confirm.**
+
+| | |
+|---|---|
+| What the build does | The score is the starting 50 plus everything since, kept within 50 and 100. A deduction at 50 is recorded and comes off later gains: a participant at 50 who cancels stays at 50, and their next completed study leaves them at 50. The cancel toast now says this |
+| The alternative | Deductions that fall below the floor are dropped, so the next study would take them to 51 |
+| Who decides | The product owner. It is a scoring rule, so the build has not been changed |
 
 ---
 
@@ -2579,7 +2625,7 @@ Four rows carry existing work against them and should only be changed with a sta
 
 | What it is for | Options | What we use | Why | Effort and time against the others |
 |---|---|---|---|---|
-| Participant ID and selfie | Persona, Stripe Identity, Socure, Onfido, Veriff, Incode | Persona | Strong US coverage, returns inconclusive as well as pass and fail, which the manual review step needs, and it holds the biometric data so that exposure sits with the provider | 3 to 5 days. Stripe Identity is quicker, maybe 2 days, but thinner on manual review and it ties identity to the payment provider. Socure and Onfido are enterprise sales cycles, so weeks before anything can be tested. **Blocked either way until the legal review closes** |
+| Participant ID (no selfie: D5) | Persona, Stripe Identity, Socure, Onfido, Veriff, Incode | Persona | Strong US coverage, returns inconclusive as well as pass and fail, which the manual review step needs, and it holds the biometric data so that exposure sits with the provider | 3 to 5 days. Stripe Identity is quicker, maybe 2 days, but thinner on manual review and it ties identity to the payment provider. Socure and Onfido are enterprise sales cycles, so weeks before anything can be tested. The document check only; selfie and liveness are out of the product |
 | Client business and EIN | Middesk, Persona Business, LexisNexis, Dun and Bradstreet, Alloy, manual by the team | Manual by the team at launch, Middesk later | At this client volume a person checks an EIN and a state registration faster than the integration can be built, and failures already route to a human | Zero now, 2 to 3 days for Middesk when volume justifies it. The enterprise options take weeks and are priced for enterprise buyers |
 | Professional credentials | Public registers such as NPI, a credential aggregator, manual | Public register where one exists, manual where it does not | There is no single source. Each profession has its own register | 2 days for NPI. Every further profession is its own small job, so expect this to grow one register at a time |
 
@@ -2663,7 +2709,9 @@ Every one of these appeared in two or more places saying different things. These
 | Screener decision | 3 to 5 days | `WAITS.REVIEW` in `shared/platform.ts` |
 | Withdrawal credited | 2 to 3 working days | The policy. "Expected in bank" is three working days after the request |
 | Client refund | 5 to 7 working days | The policy |
-| Gold tier | "In Top 20%" | Everywhere a tier is explained |
+| "In Top N%" under a tier | Derived: the share of verified participants at that tier or above (Section 6.2) | `topShareOf` in `shared/derive.ts`, everywhere a tier is shown |
+| Points redeemed | In the wallet at once | Redeem and its success screen |
+| Money not yet paid | "Awaiting payout. The team processes it when the study finishes." | Every screen that shows it (Section 9.4) |
 | Ticket status | Open or Closed. Never "Solved" | All three apps |
 | Points for completing a study | 25 | Section 6.3 |
 
@@ -2727,7 +2775,7 @@ A tax form banner also appears, from the workflow's step 49.
 
 | What | Why |
 |---|---|
-| Selfie capture | Deliberately not built. See D5 |
+| Selfie and liveness | Out of the product in all three apps. See D5 |
 | Monthly Goal on the Wallet | Later phase |
 | Get Started overview tiles | Not built |
 | "Welcome back" notification | There is no reactivation path for a participant |
@@ -2860,5 +2908,25 @@ Payments and uploads need particular care: the same charge must never be taken t
 | 5. Answers, completion, rating, Trust Score | The delivery loop |
 | 6. Money: invoices, payouts, approval, refunds | Needs everything above it to be true first |
 | 7. Reports, restriction, support, activity log | Operations, once the product works |
+
+### 23.8 What the front end assumes the server does
+
+Each screen behaves correctly against the shared data layer, which stands in for the API. Where the real behaviour can only live on the server, the front end is built as if the server already does it. These are the expectations.
+
+| Area | The front end today | What the server must do |
+|---|---|---|
+| Participant passwords | `Person.password` holds the password as typed, checked in the browser (`signInPerson`, `changePersonPassword`, `resetPersonPassword`, `closeAccount`). It is a stand-in and is not secure | Real authentication: store a hash, never return it, rate-limit and lock out repeated failures, and issue sessions. Remove `Person.password` from the contract |
+| Sign in | A wrong password fails under the field. Signing in as the demo participant (`jonathan.reeve@example.com`, `Passw0rd!`) resets the demo data for all three apps; any other account just signs in | Check the credentials. The demo reset is prototype only and goes |
+| Sign up | An email already on the platform is refused before a code is sent ("An account with this email already exists. Log in instead") | Enforce unique email, and send the one-time code by email |
+| Forgot password | The email given stands in for the emailed link; an unknown email is refused on screen | Send a single-use, expiring link, and say the same thing whether or not the account exists |
+| Deactivate Account | Confirmed with the password; the account becomes deactivated, "Closed by the participant", cannot sign in, and the team can reactivate it in the console | Pay any balance to the default payout method, keep the account 30 days for reactivation, then delete it under the retention rules (23.5) |
+| ID upload | The two sides' names and sizes are kept on the account (`Check.documents`); the files themselves are not sent anywhere | Receive and store the files privately, for the team to open in Verifications |
+| ID and credential checks | Submitted checks are `in_review` until the team decides in the console; the participant is told the outcome | Same, with the automatic register check where one exists (workflow 16 and 17) feeding the team's decision |
+| Session code | Refused before the session starts | Check the time server side |
+| Match score | The share of the study's own criteria the profile meets (the audience a client set; for a catalogue study, its industry and target profession). No score when nothing can be compared | Compute it server side from the same criteria |
+| Places left | The study's target less everyone qualified, booked or done | Same |
+| Sign-up ticker | The most recent study payout: first name, amount, study type, how long ago | A public endpoint giving only those four things. Whether a first name may be shown publicly needs a decision |
+| "In Top N%" | The share of active, ID-verified participants at that tier or above | Compute it server side |
+| A late withdrawal | Still Processing after its expected date says it is running late and that the team is releasing it | Release withdrawals within the stated time, or tell the participant why not |
 
 *End of PRD.*

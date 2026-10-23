@@ -93,7 +93,7 @@ The paid-participation market is the mechanism: people give their time and opini
 
 | Excluded | Why |
 |---|---|
-| Selfie or liveness capture | Legal review is open. Identity documents only until it closes |
+| Selfie or liveness capture | Out of the product (23 October 2026). Identity is one government ID, both sides, checked by the team |
 | Any public-facing marketing site beyond the app's own landing page | Separate work |
 | A mobile app for clients | Clients are desktop only |
 | A mobile app for the team | The console is desktop only |
@@ -106,13 +106,15 @@ The paid-participation market is the mechanism: people give their time and opini
 | Deferred | Blocked on |
 |---|---|
 | Pricing plans | Decision D11 |
-| Any selfie-based verification | Legal |
 | How much the deposit is | Jim. PRD D32. The policy may need re-signing |
 | Whether the team may re-price a live study | Jim. PRD D33 |
 | What the Audience forecast shows | Not yet assigned. PRD D34 |
 | The live domain, the support address, and whether the certificate prefix changes from FI- | Not yet assigned. PRD D35. A prefix change needs a new version of the policy |
 | The diary's Minute and Step units and a longer frequency list, as drawn | Not yet assigned. PRD D36 |
 | Whether a client may change the incentive after publishing, as drawn | Jim, with PRD D33 |
+| Whether a diary entry opens only on its own day | Not yet assigned. PRD D37 |
+| Whether Explore and applying check a study's audience | Not yet assigned. PRD D38 |
+| Whether a deduction at the Trust Score floor is carried or dropped (built: carried) | To confirm. PRD D39 |
 
 ---
 
@@ -196,9 +198,9 @@ When a study meets its target the client can keep recruiting. Otherwise, when it
 
 ### P3: Verify and onboard the participant
 
-Sign up, three onboarding steps, upload an identity document. The system attempts verification against government records; failures reach the console. Professional credentials follow the same path against official registers.
+Sign up with an email and password, three onboarding steps, upload one government ID, both sides. No selfie and no liveness check: both are out of the product. The ID, and a professional credential number when one is given, is in review until a person on the team verifies or rejects it in the console, and the participant is told either way. A participant can browse while in review, and can apply once the ID is verified.
 
-A verified participant's account becomes fully active, the certificate is issued, and the Trust Score starts at 50 (Silver).
+A verified participant's account becomes fully active, the certificate is issued, and the Trust Score starts at 50 (Silver). That 50 is what completing onboarding earns; it is the starting score, not added on top.
 
 **The only way to ask someone for a better document is to open a support ticket.** There is no "request resubmission" state. See Decision D9.
 
@@ -242,11 +244,10 @@ These are authoritative. The Trust and Rewards policy, version 2, is the source 
 
 ### 7.1 Trust Score
 
-Range 50 to 100, starting and floor 50.
+Range 50 to 100. A participant starts at 50, which is what completing onboarding earns: it is the starting score, not something added on top. 50 is also the floor: a deduction that would take the score below it still counts, and comes off later gains before the score rises again (PRD D39, to confirm).
 
 | Event | Change |
 |---|---|
-| Onboarding complete | +50 |
 | Completing a study | +1, capped at 10 a year |
 | 5-star / 4-star / 3-star rating | +4 / +3 / +1 |
 | 2-star / 1-star rating | −2 / −3 |
@@ -260,7 +261,7 @@ Only the last 10 studies' ratings count.
 
 ### 7.2 Tiers
 
-Silver from 50, Gold from 70, Platinum from 90. Always derived from the Trust Score.
+Silver from 50, Gold from 70, Platinum from 90. Always derived from the Trust Score. "In Top N%" under a tier is the real share of verified participants at that tier or above.
 
 ### 7.3 Reward points
 
@@ -283,7 +284,9 @@ A master admin may change the Trust Score values, tier thresholds, reward point 
 
 | Rule | Detail |
 |---|---|
-| A participant must be identity-verified before taking part | Enforced at application |
+| A participant must be identity-verified before taking part | Enforced at application. A person on the team verifies every ID |
+| Every participant has a password | Checked at sign in, change password and deactivation. A wrong one is refused and nothing else happens. An email already registered cannot sign up again |
+| A participant can close their own account | With their password. They cannot sign in afterwards; the team can reactivate it within 30 days |
 | A no-show is not paid for that study | Stated in the dialog that marks one |
 | A restricted participant cannot participate, withdraw or redeem | For a fixed period |
 | Deactivation is reversible | Both require a written reason and the acting team member's password |
@@ -314,7 +317,7 @@ Each of these was a real disagreement between the designs, the earlier workflow 
 | D2 | **The team releases every participant withdrawal before money moves.** The console's Finance module lists withdrawals and releases them. Approve, hold and retry are to follow | Money cannot move unchecked |
 | D3 | **One screening stage.** A person presses Qualify or Disqualify. The one automatic part is an eligibility question in the first three positions with a marked correct answer | What the designs draw, and simpler to operate |
 | D4 | **Either the client or the team may qualify an applicant, and it is recorded against the person who did it** | The control exists in both apps. Accountability comes from the activity log |
-| D5 | **No selfie and no liveness check.** Document upload only, until the biometric legal review closes | Nothing biometric is built before the law is clear |
+| D5 | **No selfie and no liveness check, in any app.** One government ID, both sides, verified by a person on the team. Nothing claims a selfie: no "Human Verified", no "Selfie photo verified" | Decided 23 October 2026: not doing it |
 | D6 | **Only the team can change a live study**, and never its type or anything people may have booked. The client pauses, resumes, completes or recruits more, and raises a ticket for a change. Whether the team may change the incentive or participant number is open (PRD D33) | An approved study is what participants applied to, so what they booked must hold |
 | D7 | **No client approval queue.** Only a failed automatic business check reaches the team | Matches the designs, and avoids an unstaffed queue |
 | D8 | **The restriction ladder is ratified:** 15 days, 15 days, 30 days, then deactivation. The participant is told why and for how long | It was being built from one frame with no document behind it |
@@ -449,7 +452,7 @@ Two things that follow for the business:
 | **Identity documents** | Define who may view them, how long they are kept, how they are deleted, and where they are stored. Nothing in the designs covers retention |
 | **Personal data** | Participants give name, contact details, address, profession, licence numbers and identity documents. Lawful basis, consent records, access, correction and deletion all need defining. The app has a consent screen; the back end needs the rest |
 | **Shared pictures and videos** | A participant's profile picture and intro video are shared with clients only on that participant's explicit consent, which is off by default and can be withdrawn at any time. Withdrawal must take effect immediately |
-| **Selfies and biometrics** | Open. D5. Biometric data carries stricter obligations in most markets |
+| **Selfies and biometrics** | Not collected. D5. Identity documents still need a retention rule (PRD 23.5) |
 | **Paid participation** | Participants are paid. Whether that makes them workers or contractors differs by market, and tax reporting obligations follow |
 | **Holding balances** | Participants hold cash balances and points before withdrawal. In some markets holding customer funds is a regulated activity |
 | **Public claims** | The landing page states a $2 withdrawal fee and payment within 2 to 3 working days. The client certificate claims business registration verified, and billing on file when a card is saved. Each must be true and evidenced |
@@ -460,7 +463,7 @@ Two things that follow for the business:
 
 **Now:** one client runs one study with verified participants end to end. Participant onboarding and verification, client onboarding, study creation for Survey and Video Call 1:1, team review and approval, matching, screening, attendance, completion, rating, wallet and withdrawal, Trust Score and tiers, invoicing and payment, and the console modules that support all of it.
 
-**Later, not in this build:** client team access, where several people share one client account and each sees only the studies assigned to them (Section 9a), the remaining four study types, reward points and redemption, referrals and streaks, the participant certificate, the Finance module and refunds, reports and moderation, sub-admins and the activity log, Pricing and Rewards editing, pricing plans, and anything involving a selfie or liveness check.
+**Later, not in this build:** client team access, where several people share one client account and each sees only the studies assigned to them (Section 9a), the remaining four study types, reward points and redemption, referrals and streaks, the participant certificate, the Finance module and refunds, reports and moderation, sub-admins and the activity log, Pricing and Rewards editing, and pricing plans. Selfie and liveness checks are out of the product altogether (D5).
 
 A later phase cannot start until the decisions it depends on are settled. Section 8 lists those.
 

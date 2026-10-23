@@ -2,14 +2,15 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from 'react'
 import {
   applyBlocker, clientReviews, payoutRows, personById, personFigures, pointsRows, redeemRows, respondentStudies, ticketsOf,
-  trustHistory as trustHistoryOf, walletRows,
+  latestPayout, topShareOf, trustHistory as trustHistoryOf, trustScoreOf, walletRows,
 } from '@shared/derive'
+import { trustAt } from '@shared/settings'
 import type { ClientReviewRow, TrustHistoryEntry } from '@shared/derive'
 import { DEMO_PERSON_ID, buildSeed } from '@shared/seed'
 import { platform } from '@shared/store'
 import type { Actor } from '@shared/store'
 import { TIMINGS } from '@shared/platform'
-import type { AppNotification as PlatformNotification, Person, PlatformState, Ticket as PlatformTicket } from '@shared/types'
+import type { AppNotification as PlatformNotification, Person, PlatformState, Result, Ticket as PlatformTicket, UploadedFile } from '@shared/types'
 import { applyBlockerCopy } from '../lib/labels'
 import type { ApplyBlocker } from '../lib/labels'
 import { buildNotifications } from '../lib/notifications'
@@ -84,7 +85,9 @@ const userOf = (person: Person, figures: ReturnType<typeof personFigures>): User
   taxFormDone: person.taxFormDone, sourceCode: person.sourceCode, joinedAt: person.joinedAt, consent: person.consent, emailPrefs: person.emailPrefs,
   photo: person.photo, photoConsent: Boolean(person.photoConsent), video: person.video, videoConsent: Boolean(person.videoConsent),
   status: person.status, statusNote: person.statusNote, certificateId: person.identity.state === 'verified' ? person.certificateId : undefined,
-  verified: { govId: person.identity.state === 'verified', livePhoto: person.livePhoto, license: person.profession.state === 'verified' },
+  verified: { govId: person.identity.state === 'verified', license: person.profession.state === 'verified' },
+  checks: { identity: person.identity.state, profession: person.profession.state },
+  idDocuments: person.identity.documents,
   ...figures,
 })
 
@@ -104,13 +107,37 @@ const ticketOf = (t: PlatformTicket): Ticket => ({
 let standIn: Person | undefined
 const onPlatform = (world: PlatformState, personId: string) => Boolean(personById(world, personId) ?? personById(world, DEMO_PERSON_ID))
 
+/**
+ * A notification's action button asks for one step on a study (schedule,
+ * start a survey or diary, apply). Once the study has moved past that step the
+ * button is dropped and the row just opens the study.
+ */
+const STEP_FOR: [RegExp, Study['status'][]][] = [
+  [/\/schedule$/, ['invited_to_schedule']],
+  [/\/(survey|diary)$/, ['invited_to_complete']],
+  [/\/screener$/, ['available', 'invited_to_apply', 'draft', 'applying']],
+]
+function withLiveAction(n: AppNotification, studies: Study[]): AppNotification {
+  const m = n.to && /^\/studies\/([^/]+)(\/.*)?$/.exec(n.to)
+  if (!m || !n.actionLabel) return n
+  const study = studies.find((s) => s.id === m[1])
+  if (!study) return n
+  // "Apply Now" opens the study itself; it is done once the person has applied.
+  const applyStep: Study['status'][] | undefined = /Apply/.test(n.actionLabel) ? ['available', 'invited_to_apply', 'draft', 'applying'] : undefined
+  const step = STEP_FOR.find(([re]) => re.test(n.to!))?.[1] ?? applyStep
+  const rated = /\/rate$/.test(n.to!) && Boolean(study.userReview)
+  if (!rated && (!step || step.includes(study.status))) return n
+  return { ...n, actionLabel: undefined, secondaryActionLabel: undefined, to: `/studies/${study.id}` }
+}
+
 function view(world: PlatformState, personId: string) {
   const person = personById(world, personId) ?? personById(world, DEMO_PERSON_ID) ?? (standIn ??= personById(buildSeed(), DEMO_PERSON_ID)!)
   const figures = personFigures(world, person.id)
+  const studies = respondentStudies(world, person.id)
   return {
     person,
     user: userOf(person, figures),
-    studies: respondentStudies(world, person.id),
+    studies,
     transactions: walletRows(world, person.id),
     payouts: payoutRows(person),
     payoutMethods: person.payoutMethods,
@@ -118,7 +145,7 @@ function view(world: PlatformState, personId: string) {
     redeemHistory: redeemRows(person),
     referrals: person.referrals,
     tickets: ticketsOf(world, 'participant', person.id).map(ticketOf),
-    notifications: person.notifications as AppNotification[],
+    notifications: (person.notifications as AppNotification[]).map((n) => withLiveAction(n, studies)),
     trustHistory: trustHistoryOf(world, person.id),
   }
 }
@@ -205,38 +232,49 @@ export function useStoreValue() {
     setSource: (code: string) => setLocal((l) => (l.arrivedVia === code ? l : { ...l, arrivedVia: code })),
 
     /**
-     * Signing in on the Sign In screen hands over the demo account exactly as
-     * a fresh install has it, and resets the shared platform for all three
-     * apps, so a demo can be passed from one person to the next. The device's
-     * memory of figures last seen goes with it, so restored numbers do not
-     * roll as if they had fallen. Finishing onboarding (no email) just signs
-     * in the account that was being made.
+     * Sign In checks the email and password against the platform (shared/store.ts
+     * signInPerson, a front-end stand-in for real authentication). Signing in as
+     * the demo participant hands over the demo exactly as a fresh install has it,
+     * resetting the shared platform for all three apps; the device's memory of
+     * figures last seen goes with it, so restored numbers do not roll. Any other
+     * account just signs in. Finishing onboarding (no email) signs in the
+     * account that was being made.
      */
-    signIn: (email?: string) => {
-      if (email) {
-        p.reset()
-        forgetSeen('')
-        setSound(false)
-        setLocal((l) => ({ ...FRESH, signedIn: true, arrivedVia: l.arrivedVia }))
-        return
-      }
-      setLocal((l) => ({ ...l, signedIn: true }))
+    signIn: (email?: string, password = ''): Result => {
+      if (email === undefined) { setLocal((l) => ({ ...l, signedIn: true })); return { ok: true } }
+      const r = p.signInPerson(email, password)
+      if (!r.ok) return r
+      if (r.reset) { forgetSeen(''); setSound(false) }
+      setLocal((l) => r.reset
+        ? { ...FRESH, signedIn: true, personId: r.id, arrivedVia: l.arrivedVia }
+        : { ...l, signedIn: true, personId: r.id, answers: {}, onboarding: EMPTY_ONBOARDING })
+      return { ok: true }
     },
     signOut: () => setLocal((l) => ({ ...l, signedIn: false })),
+    /** Sign Up refuses an email already on the platform before sending a code. */
+    emailFree: (email: string) => p.personEmailFree(email),
     /** Workflow 15: a new person on the platform, signed in, free to browse. Being referred earns 100 points (shared/derive.ts). */
-    signUp: (email: string, sourceCode?: string) => {
-      const made = p.signUpPerson(email, sourceCode ?? local.arrivedVia)
-      if (!made.ok) { toast(made.why); return }
+    signUp: (email: string, password: string, sourceCode?: string): Result => {
+      const made = p.signUpPerson(email, password, sourceCode ?? local.arrivedVia)
+      if (!made.ok) return made
       setLocal((l) => ({ ...l, signedIn: true, personId: made.id, answers: {}, onboarding: { ...EMPTY_ONBOARDING, email } }))
+      return { ok: true }
     },
+    /** Set New Password, for the email given on Forgot Password. */
+    resetPassword: (email: string, next: string): Result => p.resetPersonPassword(email, next),
+    /** Account Settings, Change Password. */
+    changePassword: (current: string, next: string): Result => p.changePersonPassword(me, current, next),
+    /** Account Settings, Deactivate Account: refused with a reason unless the password is right. */
+    closeAccount: (password: string): Result => p.closeAccount(me, password),
 
     // --- the person ---
     /** Workflow 49: the tax form is on file. */
     taxFormDone: () => run(p.updatePerson(me, { taxFormDone: true })),
     updateUser: (patch: Partial<User>) => run(p.updatePerson(me, {
       name: patch.name, email: patch.email, phone: patch.phone, onboarded: patch.onboarded, profile: patch.profile,
-      identityVerified: patch.verified?.govId, licenseVerified: patch.verified?.license,
     })),
+    /** Workflow 15: one government ID, both sides, sent to the team to check. */
+    submitIdentity: (idType: string, documents: { front: UploadedFile; back: UploadedFile }) => run(p.submitIdentity(me, idType, documents)),
     setConsent: (key: keyof User['consent'], value: boolean) => run(p.setConsent(me, key, value)),
     /** Their own picture and intro video, and the consent to show each to clients (shared/store.ts). */
     setPicture: (dataUrl: string | null) => run(p.setPicture(me, dataUrl)),
@@ -255,6 +293,10 @@ export function useStoreValue() {
 
     // --- studies ---
     studyById: (id?: string) => v.studies.find((s) => s.id === id),
+    /** The sign-up ticker: the platform's most recent study payout. */
+    latestPayout: () => latestPayout(world),
+    /** "In Top N%" under a tier, from the platform's real spread of participants. */
+    tierTop: (tier: User['tier']) => `In Top ${topShareOf(world, tier)}%`,
     /** Workflow 15, 17, 57: the shared rule's verdict, in this app's words. */
     applyBlocker: (id: string): ApplyBlocker | null =>
       applyBlockerCopy(applyBlocker(world, id, me), v.studies.find((s) => s.id === id)?.client.name ?? 'This client'),
@@ -268,7 +310,26 @@ export function useStoreValue() {
     rejectInvitation: (id: string) => run(p.withdraw(id, me)),
     scheduleStudy: (id: string, booking: NonNullable<Study['booking']>) => run(p.schedule(id, me, booking)),
     /** Policy: a cancelled session is -2 Trust Score. */
-    cancelStudy: (id: string) => { const ok = run(p.cancelSession(id, me)); if (ok) toast('Study cancelled, 2 Trust Score deducted'); return ok },
+    /**
+     * Policy section 5: -2, the value the master admin set at the time. The
+     * score is the running total held within 50 to 100, so at the floor the
+     * deduction is recorded but the score shows no change until later gains
+     * make it up; the toast says which happened.
+     */
+    cancelStudy: (id: string) => {
+      const before = trustScoreOf(p.getState(), me)
+      const ok = run(p.cancelSession(id, me))
+      if (!ok) return ok
+      const after = trustScoreOf(p.getState(), me)
+      const cost = Math.abs(trustAt(p.getState()).cancelledSession)
+      const shown = before - after
+      toast(shown >= cost
+        ? `Study cancelled, ${shown} Trust Score deducted`
+        : shown > 0
+          ? `Study cancelled, ${shown} Trust Score deducted to the floor of ${after}; the other ${cost - shown} comes off what you earn next`
+        : `Study cancelled. ${cost} Trust Score is recorded against you; your score stays at ${after}, the floor, and the ${cost} comes off what you earn next`)
+      return ok
+    },
     /** Workflow 42, the participant's half: the code shown at the end of the session. */
     confirmPin: (id: string, code?: string) => run(p.confirmPin(id, me, code ?? world.studies.find((s) => s.id === id)?.participations.find((x) => x.personId === me)?.code?.value ?? '')),
     /** Completed now; the payout follows once the client approves it (workflow 46, shared/platform.ts TIMINGS). */

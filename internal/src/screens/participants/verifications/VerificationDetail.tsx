@@ -1,4 +1,5 @@
 import { avatarFor } from '@shared/avatar'
+import { fileSize } from '@shared/format'
 import IntroVideo from '../../../components/app/IntroVideo'
 import { sharedVideo } from '@shared/derive'
 import { useState } from 'react'
@@ -15,7 +16,7 @@ import { monthDayYear, useVerificationCase } from '../../../mock/verifications'
 import { ticketsOf } from '@shared/derive'
 import { platform } from '@shared/store'
 import { TEAM, usePlatform } from '../../../platform'
-import { Card, Check, Field, File } from '../profile/AboutTab'
+import { Card, Field, File } from '../profile/AboutTab'
 import { AccountFlow } from '../profile/accountDialogs'
 import type { AccountStep } from '../profile/accountDialogs'
 import DecisionFlow from './dialogs'
@@ -23,11 +24,13 @@ import type { Decision, Step } from './dialogs'
 import PersonLink from '../../../components/app/PersonLink'
 
 const Bad = ({ children }: { children: string }) => <span className="inline-flex h-7 items-center gap-1 self-start rounded-full bg-red-50 px-2.5 text-text-regular text-state-danger"><CloseIcon className="h-4 w-4" />{children}</span>
+/** Waiting for the team: neither passed nor failed. */
+const Waiting = ({ children }: { children: string }) => <span className="inline-flex h-7 items-center self-start rounded-full bg-bg-1 px-2.5 text-text-regular text-text-subtitle">{children}</span>
 const Good = ({ children }: { children: string }) => <span className="inline-flex h-7 items-center gap-1 self-start rounded-full bg-state-successBg px-2.5 text-text-regular text-state-success"><VerifiedIcon className="h-4 w-4" />{children}</span>
-const Doc = ({ name }: { name: string }) => (
+const Doc = ({ name, bytes }: { name: string; bytes: number }) => (
   <div className="flex h-[62px] w-[318px] items-center gap-2 rounded-md border-1 border-stroke-1 p-2 text-text-regular leading-5">
     <img src="/img/participants/passport.png" alt="" className="h-[46px] w-16 rounded-xs object-cover" />
-    <div className="flex-1"><p className="text-text-title">{name}</p><p className="pt-0.5 text-text-subtitle">5 MB</p></div>
+    <div className="flex-1"><p className="text-text-title">{name}</p><p className="pt-0.5 text-text-subtitle">{fileSize(bytes)}</p></div>
     <button type="button" aria-label={`View ${name}`} className="flex h-8 w-8 items-center justify-center rounded-sm border-1 border-cta-tertiaryStroke"><EyeIcon className="h-5 w-5" /></button>
   </div>
 )
@@ -63,7 +66,7 @@ function Report({ decided, children, reason, detail, at, by, onStudy, onBy }: { 
  * one screen. `iv-*` an identity check, `pc-*` a profession credential, `rp-*`
  * a report; an id ending `h` comes from History and opens already decided.
  * - Identity (2035:109172): the flagged document's card with Reject, Mark
- *   Verified and Chat; the uploaded files; the selfie check's result.
+ *   Verified and Chat; the uploaded files as the participant named them.
  * - Profession (2036:134318): the same card for the licence, over the
  *   occupation and licence number.
  * - Report (2036:144297): "Reported For", with Reject Report, Restrict
@@ -109,9 +112,12 @@ export default function VerificationDetail() {
 
   /** The participant's intro video, only while they consent to share it. */
   const shownVideo = sharedVideo(person)
+  // A check submitted for review (23 Oct 2026) has no failure reason: it waits for a person to look.
+  const submitted = c.check?.state === 'in_review'
   const subject = isId
-    ? { title: person.profile.idType || 'Government ID', text: c.check?.reason ?? '' }
-    : { title: 'Professional License', text: c.check?.reason ?? '' }
+    ? { title: person.profile.idType || 'Government ID', text: c.check?.reason ?? (submitted ? 'Submitted for review. Check the uploaded documents and decide.' : '') }
+    : { title: 'Professional License', text: c.check?.reason ?? (submitted ? 'Submitted for review. Check the number against the register and decide.' : '') }
+  const docs = person.identity.documents
 
   return (
     <AppShell className="flex flex-col pb-8" crumbs={[{ label: kind === 'report' ? 'Reported' : 'Onboarding', to: `/participants/verifications${kind === 'report' ? '?tab=reported' : ''}` }, { label: who.name }]}>
@@ -140,7 +146,7 @@ export default function VerificationDetail() {
         <div className="flex flex-col gap-3 pt-6">
           <h2 className="text-body-regular leading-[22px] text-text-subtitle">{isId ? 'Identity Verification' : 'Profession Credential'}</h2>
           <section className={cn('flex items-center justify-between gap-4 rounded-lg px-4 py-3.5 text-text-regular leading-5', pending ? 'bg-yellow-40' : 'border-1 border-stroke-1 bg-bg-1')}>
-            <div><h3 className="text-body-medium leading-[22px] text-text-title">{subject.title}</h3><p className="pt-1.5 text-text-subtitle">{subject.text}</p><p className="pt-1.5 text-text-subtitle">{monthDayYear(c.check?.flaggedAt)}</p></div>
+            <div><h3 className="text-body-medium leading-[22px] text-text-title">{subject.title}</h3><p className="pt-1.5 text-text-subtitle">{subject.text}</p><p className="pt-1.5 text-text-subtitle">{monthDayYear(c.check?.flaggedAt ?? c.check?.submittedAt)}</p></div>
             {pending ? (
               <div className="flex shrink-0 gap-3">
                 <Button variant="tertiary" className="bg-yellow-40 px-5 text-state-danger!" leftIcon={<CloseIcon className="h-5 w-5" />} onClick={() => start('reject-verification')}>Reject</Button>
@@ -154,18 +160,16 @@ export default function VerificationDetail() {
           {isId ? (
             <>
               <Label>Uploaded Documents</Label>
-              <div className="-mt-1 flex gap-3"><Doc name="Passport front.pdf" /><Doc name="Passport back.pdf" /></div>
-              {outcome === 'verified' ? <Good>Marked as Verified</Good> : <Bad>{outcome === 'rejected' ? 'ID Could not be verified with records neither manually!' : 'ID Could not be verified with records!'}</Bad>}
-              <Label>Selfie Verification</Label>
-              <div className="-mt-1 flex h-[46px] w-[318px] items-center gap-2 rounded-md border-1 border-stroke-1 px-3 text-text-regular text-state-success">
-                <img src={avatarFor(person.id)} alt="" className="h-6 w-6 rounded-full object-cover" /><span className="flex-1">Selfie photo verified</span><VerifiedIcon className="h-5 w-5" />
-              </div>
+              {docs
+                ? <div className="-mt-1 flex gap-3"><Doc name={docs.front.name} bytes={docs.front.bytes} /><Doc name={docs.back.name} bytes={docs.back.bytes} /></div>
+                : <p className="-mt-1 text-text-regular text-text-subtitle">No documents on file</p>}
+              {outcome === 'verified' ? <Good>Marked as Verified</Good> : submitted ? <Waiting>Waiting for your decision</Waiting> : <Bad>{outcome === 'rejected' ? 'ID Could not be verified with records neither manually!' : 'ID Could not be verified with records!'}</Bad>}
             </>
           ) : (
             <>
               <Field label="Occupation" value={person.profile.occupation} />
               <Field label="License/Certificate Number" value={person.profile.licenseId || 'N/A'} />
-              {outcome === 'verified' ? <Good>Marked as Verified</Good> : <Bad>{outcome === 'rejected' ? 'Medical License could not be verified with records neither manually!' : 'Medical License could not be verified with records!'}</Bad>}
+              {outcome === 'verified' ? <Good>Marked as Verified</Good> : submitted ? <Waiting>Waiting for your decision</Waiting> : <Bad>{outcome === 'rejected' ? 'Medical License could not be verified with records neither manually!' : 'Medical License could not be verified with records!'}</Bad>}
               <Field label="Work Functions" value={person.profile.industry} /><Field label="Experience" value={person.profile.experience} />
             </>
           )}
@@ -177,11 +181,10 @@ export default function VerificationDetail() {
           <div className="flex flex-col gap-3">
             <Card title="Account Details">
               <Field label="ID Verification" value={person.profile.idType || 'Government ID'} />
-              <File thumb="/img/participants/passport.png" name="Passport front.pdf" meta="5 MB" /><File thumb="/img/participants/passport.png" name="Passport back.pdf" meta="5 MB" />
-              {person.identity.state === 'verified' ? <Good>ID Verified</Good> : <Bad>ID Could not be verified with records!</Bad>}
-              <Label>Selfie Verification</Label>
-              <div className="-mt-2 flex h-10 items-center gap-2 rounded-md border-1 border-stroke-1 bg-bg-0 px-2 text-body-regular text-text-title"><img src={avatarFor(person.id)} alt="" className="h-6 w-6 rounded-full object-cover" />Selfie photo verified</div>
-              <Check>Human Verified</Check>
+              {docs
+                ? <><File thumb="/img/participants/passport.png" name={docs.front.name} meta={fileSize(docs.front.bytes)} /><File thumb="/img/participants/passport.png" name={docs.back.name} meta={fileSize(docs.back.bytes)} /></>
+                : <p className="text-text-regular text-text-subtitle">No documents on file</p>}
+              {person.identity.state === 'verified' ? <Good>ID Verified</Good> : person.identity.state === 'in_review' ? <Waiting>In review</Waiting> : <Bad>ID Could not be verified with records!</Bad>}
               <div className="flex flex-col gap-3 border-t-1 border-stroke-input pt-3">{ACCOUNT.map(([l, v]) => <Field key={l} label={l!} value={v!} />)}</div>
             </Card>
             <Card title="Personal Details">
@@ -191,7 +194,7 @@ export default function VerificationDetail() {
           </div>
           <Card title="Professional Details">
             {PROFESSIONAL.slice(0, 2).map(([l, v]) => <Field key={l} label={l!} value={v!} />)}
-            {person.profession.state === 'verified' ? <Good>Profession Verified</Good> : <Bad>Professional License could not be verified with records!</Bad>}
+            {person.profession.state === 'verified' ? <Good>Profession Verified</Good> : person.profession.state === 'in_review' ? <Waiting>In review</Waiting> : person.profession.state === 'not_started' ? <Waiting>No credential given</Waiting> : <Bad>Professional License could not be verified with records!</Bad>}
             {PROFESSIONAL.slice(2).map(([l, v]) => <Field key={l} label={l!} value={v!} />)}
             <div className="border-t-1 border-stroke-input pt-3"><Field label="Topics You Are Good In" value={TOPICS} /></div>
           </Card>

@@ -12,7 +12,8 @@ import PromptDialog from './PromptDialog'
 import ForecastCard from '../../components/client/ForecastCard'
 import { audienceFromPrompt } from '../../lib/fromPrompt'
 import { AUDIENCE_OPTIONS } from './CreateBits'
-import { tierOf } from '@shared/derive'
+import { tierShare } from '@shared/derive'
+import type { Tier } from '@shared/types'
 import { AUDIENCE_LISTS, EXPERIENCE_RANGES, INCOME_RANGES, audienceFault, educationOf, gendersOf } from '@shared/studyForm'
 import { TIERS } from '@shared/rules'
 import CheckPicker from '../../components/ui/CheckPicker'
@@ -122,9 +123,8 @@ export default function Audience() {
   /** The people on the platform who fit what is entered on this step, so the forecast moves with it. */
   const state = usePlatform()
   const client = useClient()
-  const pool = state.people.filter((p) => p.status === 'active' && p.identity.state === 'verified')
-  /** The share of the pool at these tiers, for the Profile Tiers lines. */
-  const share = (ts: string[]) => pool.length ? Math.round((pool.filter((p) => ts.includes(tierOf(state, p.id))).length / pool.length) * 100) : 0
+  /** The share of the pool at these tiers, for the Profile Tiers lines (shared/derive.ts, the same figure as the respondent app's "In Top"). */
+  const share = (ts: Tier[]) => tierShare(state, ts)
   const education = educationOf(draft)
   const genders = gendersOf(draft)
   const industries = draft.industries.split(',').map((x) => x.trim()).filter(Boolean)
