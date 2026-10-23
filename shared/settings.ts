@@ -20,7 +20,7 @@
  *   (`trustAt`, `pointsAt`), never from the current constants.
  */
 import { FEES, FEE_ADDONS } from './platform'
-import { POINTS, RATING_DELTA, TIERS, TRUST } from './rules'
+import { POINTS, RATING_DELTA, REDEEM, TIERS, TRUST } from './rules'
 import type { PlatformState, SettingsGroup, SettingsValues, Stars } from './types'
 
 /** The policy's values, taken before any change could be applied. */
@@ -36,6 +36,8 @@ export const DEFAULTS: SettingsValues = {
     referral: POINTS.REFERRAL, beingReferred: POINTS.BEING_REFERRED, studyCompletion: POINTS.STUDY_COMPLETION, fullProfile: POINTS.FULL_PROFILE,
     streak: POINTS.STREAK, profilePicture: POINTS.PROFILE_PICTURE, introVideo: POINTS.INTRO_VIDEO,
   },
+  // Participants Fees (23 Oct 2026): the withdrawal fee, and the dollar value of 100 reward coins.
+  participants: { withdrawal: FEES.WITHDRAWAL, pointsValue: 100 / REDEEM.PER_USD },
 }
 
 const copy = <T>(x: T): T => JSON.parse(JSON.stringify(x)) as T
@@ -49,7 +51,7 @@ export function settingsAt<G extends SettingsGroup>(state: PlatformState, group:
 
 /** Every group as it stands now. */
 export const currentSettings = (state: PlatformState): SettingsValues =>
-  ({ fees: settingsAt(state, 'fees'), trust: settingsAt(state, 'trust'), tiers: settingsAt(state, 'tiers'), points: settingsAt(state, 'points') })
+  ({ fees: settingsAt(state, 'fees'), trust: settingsAt(state, 'trust'), tiers: settingsAt(state, 'tiers'), points: settingsAt(state, 'points'), participants: settingsAt(state, 'participants') })
 
 /** The Trust Score values in force when something happened. */
 export const trustAt = (state: PlatformState, at?: string) => settingsAt(state, 'trust', at)
@@ -75,6 +77,8 @@ export function applyCurrentSettings(state: PlatformState): void {
   const points = POINTS as unknown as Record<string, number>
   points.REFERRAL = now.points.referral; points.BEING_REFERRED = now.points.beingReferred; points.STUDY_COMPLETION = now.points.studyCompletion
   points.FULL_PROFILE = now.points.fullProfile; points.STREAK = now.points.streak; points.PROFILE_PICTURE = now.points.profilePicture; points.INTRO_VIDEO = now.points.introVideo
+  fees.WITHDRAWAL = now.participants.withdrawal
+  ;(REDEEM as unknown as Record<string, number>).PER_USD = 100 / now.participants.pointsValue
 }
 
 /** Why a proposed group of values cannot be saved, or empty when it can. */
@@ -85,6 +89,11 @@ export function settingsFault<G extends SettingsGroup>(group: G, v: SettingsValu
     const f = v as SettingsValues['fees']
     if (nums(f).some((n) => n < 0) || f.addOns.some((a) => !Number.isFinite(a.amount) || a.amount < 0)) return 'A fee cannot be negative'
     if (f.addOns.some((a) => a.on.length === 0)) return 'Every add-on needs at least one parameter'
+  }
+  if (group === 'participants') {
+    const p = v as SettingsValues['participants']
+    if (p.withdrawal < 0) return 'The withdrawal fee cannot be negative'
+    if (!(p.pointsValue > 0)) return 'The points value must be more than $0'
   }
   if (group === 'tiers') {
     const t = v as SettingsValues['tiers']

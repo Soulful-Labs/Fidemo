@@ -344,6 +344,8 @@ export interface Payout {
   txId: string
   /** Withdrawal payouts (19 Oct 2026): every state the back end needs, though the console draws only Release (pending to paid). Older records said 'processing' / 'completed'. */
   status: PayoutStatus | 'processing' | 'completed'
+  /** The withdrawal fee in force when it was requested (23 Oct 2026: the fee is a setting the team can change). */
+  fee?: number
   expectedBy?: string
   /** When the team released it, and who. */
   releasedAt?: string
@@ -352,7 +354,8 @@ export interface Payout {
 
 export type PayoutStatus = 'pending' | 'approved' | 'held' | 'paid' | 'failed'
 
-export interface Redemption { id: string; at: string; points: number; reference: string }
+/** `usd`: what the points were worth when redeemed (23 Oct 2026: the points value is a setting the team can change). */
+export interface Redemption { id: string; at: string; points: number; reference: string; usd?: number }
 
 export interface Referral { id: string; name: string; email: string; status: 'joined' | 'completed'; at: string }
 
@@ -651,7 +654,9 @@ export interface TrustSettings {
 }
 export interface TierSettings { silver: number; gold: number; platinum: number }
 export interface PointsSettings { referral: number; beingReferred: number; studyCompletion: number; fullProfile: number; streak: number; profilePicture: number; introVideo: number }
-export interface SettingsValues { fees: FeeSettings; trust: TrustSettings; tiers: TierSettings; points: PointsSettings }
+/** Participants Fees (23 Oct 2026): the withdrawal fee, and what 100 reward coins are worth in dollars. */
+export interface ParticipantSettings { withdrawal: number; pointsValue: number }
+export interface SettingsValues { fees: FeeSettings; trust: TrustSettings; tiers: TierSettings; points: PointsSettings; participants: ParticipantSettings }
 export type SettingsGroup = keyof SettingsValues
 /** One saved change: the whole group as it was and as it became, who saved it and when. */
 export interface SettingsChange { id: string; group: SettingsGroup; at: string; by: string; before: SettingsValues[SettingsGroup]; after: SettingsValues[SettingsGroup] }

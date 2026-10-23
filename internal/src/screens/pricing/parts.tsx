@@ -5,16 +5,24 @@ import Button from '../../components/ui/Button'
 import { VerifiedIcon } from '../../components/ui/icons'
 import { cn } from '../../lib/cn'
 
+/** The clock-with-arrow glyph on Version History. */
+export const HistoryGlyph = () => (
+  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1M3.5 4v4h4M12 7.5V12l3 2" /></svg>
+)
+
 export const Pencil = () => (
   <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5H8a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-4M17.500 4.500l2 2L12 14l-2.500.500L10 12l7.500-7.500Z" /></svg>
 )
 
 /** A section of the overview: Title-S, a grey line under it, and its Edit button on the right. */
-export function Head({ title, note, action, onEdit }: { title: string; note: string; action?: string; onEdit?: () => void }) {
+export function Head({ title, note, action, onEdit, extra }: { title: string; note: string; action?: string; onEdit?: () => void; extra?: ReactNode }) {
   return (
     <div className="flex items-start justify-between pb-3">
       <div><h2 className="text-title-s leading-[25px] text-text-title">{title}</h2><p className="pt-0.5 text-text-regular leading-5 text-text-body">{note}</p></div>
-      {action && <Button size="md" className="h-[46px] px-5 text-body-medium" leftIcon={<Pencil />} onClick={onEdit}>{action}</Button>}
+      <div className="flex items-center gap-3">
+        {extra}
+        {action && <Button size="md" className="h-[46px] px-5 text-body-medium" leftIcon={<Pencil />} onClick={onEdit}>{action}</Button>}
+      </div>
     </div>
   )
 }

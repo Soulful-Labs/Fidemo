@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { FEES, STREAK_TARGET } from '@shared/platform'
+import { STREAK_TARGET } from '@shared/platform'
 import { REDEEM, TRUST } from '@shared/rules'
 import { currentSettings } from '@shared/settings'
 import type { AddOnParameter, FeeAddOn, SettingsValues } from '@shared/types'
@@ -14,10 +14,11 @@ import { usePlatform } from '../platform'
  *   - Study completion points 50 -> 25
  *   - No show -2 (edit form) -> -4; Cancelled session -4 (overview) -> -2
  *   - "Points have no expiry and can be redeemed anytime." -> the policy's redemption rule
- *   - Withdrawal $1.99 -> $2
+ * The withdrawal fee follows the frame's $1.99 since 23 Oct 2026 (policy v2 section 4), and the
+ * Participants Fees are saved from here like the rest (shared/settings.ts, group `participants`).
  */
 export const sign = (n: number) => (n > 0 ? `+${n}` : String(n))
-const usd = (n: number) => `$${n}`
+const usd = (n: number) => `$${Number.isInteger(n) ? n : n.toFixed(2)}`
 
 /** How each add-on parameter reads, on the pills and in the parameter menu (2058:193797). */
 export const PARAMETER_LABEL: Record<AddOnParameter, string> = {
@@ -48,7 +49,7 @@ export function pricingView(v: SettingsValues) {
     ],
     FEE: {
       platform: usd(v.fees.platform), moderation: usd(v.fees.moderation), recruitmentBase: usd(v.fees.recruitmentBase),
-      withdrawal: usd(FEES.WITHDRAWAL), pointValue: usd(1), pointsPerDollar: String(REDEEM.PER_USD), minimumRedeem: String(REDEEM.MINIMUM),
+      withdrawal: usd(v.participants.withdrawal), pointValue: usd(v.participants.pointsValue), pointsPerDollar: String(REDEEM.PER_USD), minimumRedeem: String(REDEEM.MINIMUM),
     },
     ADD_ONS: v.fees.addOns.map((a) => ({ id: a.id, amount: `+${usd(a.amount)}`, pills: addOnPills(a) })),
     TRUST_NOTES: [t.onboarding === TRUST.MIN ? `Onboarding is fixed at ${t.onboarding} and is the minimum Trust Score.` : `Onboarding gives ${t.onboarding}; the minimum Trust Score is ${TRUST.MIN}.`, `Study completion contributes up to ${t.studyCap * t.studyCompletion} per year (max ${t.studyCap} studies).`, `Ratings are based on your last ${TRUST.RATINGS_WINDOW} ratings and can add up to ${TRUST.RATINGS_MAX}.`,

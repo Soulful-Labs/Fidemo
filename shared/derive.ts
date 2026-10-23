@@ -176,13 +176,13 @@ export function walletRows(state: PlatformState, personId: string): WalletRow[] 
   }))
   const redeemed = (person?.redemptions ?? []).map((r): WalletRow => ({
     id: `tx-${r.id}`, title: `${r.points.toLocaleString('en-US')} points redeemed`, at: r.at,
-    amount: pointsToUsd(r.points), txNumber: r.reference, category: 'Redeem Points',
+    amount: r.usd ?? pointsToUsd(r.points), txNumber: r.reference, category: 'Redeem Points',
   }))
   return [...earned, ...redeemed].sort((a, b) => b.at.localeCompare(a.at))
 }
 
 export const payoutRows = (person: Person | undefined): PayoutRow[] =>
-  (person?.payouts ?? []).map((p) => ({ ...p, state: payoutState(p.status), status: payoutState(p.status) === 'paid' ? 'completed' as const : 'processing' as const, fee: FEES.WITHDRAWAL, net: p.amount - FEES.WITHDRAWAL }))
+  (person?.payouts ?? []).map((p) => ({ ...p, state: payoutState(p.status), status: payoutState(p.status) === 'paid' ? 'completed' as const : 'processing' as const, fee: p.fee ?? FEES.WITHDRAWAL, net: p.amount - (p.fee ?? FEES.WITHDRAWAL) }))
 
 // --------------------------------------------------------------------- points
 
@@ -234,7 +234,7 @@ export function pointsRows(state: PlatformState, personId: string): PointsRow[] 
 }
 
 export const redeemRows = (person: Person | undefined): RedeemRow[] =>
-  (person?.redemptions ?? []).map((r) => ({ ...r, amount: pointsToUsd(r.points) }))
+  (person?.redemptions ?? []).map((r) => ({ ...r, amount: r.usd ?? pointsToUsd(r.points) }))
 
 // ------------------------------------------------------------------ profile
 

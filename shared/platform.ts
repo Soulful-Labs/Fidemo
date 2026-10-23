@@ -45,11 +45,12 @@ export const FEES = {
   /** Workflow 10: twenty per cent of the confirmed price, taken as the setup fee. */
   SETUP_SHARE: 0.2,
   /**
-   * Flat fee on every withdrawal. Not in the signed policy. The respondent
-   * PRD and the console's Payout Details say $2; the console's Pricing &
-   * Rewards frame draws $1.99. $2 is used everywhere.
+   * Flat fee on every withdrawal. $1.99 since 23 October 2026, as the
+   * console's Pricing & Rewards draws it (it was $2; policy v2 section 4
+   * follows). A master admin changes it under Participants Fees
+   * (shared/settings.ts); a withdrawal keeps the fee it was requested at.
    */
-  WITHDRAWAL: 2,
+  WITHDRAWAL: 1.99,
 } as const
 
 /** Which of the audience's targeting the recruitment add-ons charge for: any roles, any skills. */

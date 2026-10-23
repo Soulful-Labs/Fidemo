@@ -23,6 +23,7 @@ import RefundDetail from './screens/finance/RefundDetail'
 import WithdrawalDetail from './screens/finance/WithdrawalDetail'
 import EditPricing from './screens/pricing/EditScreens'
 import Pricing from './screens/pricing/Pricing'
+import VersionHistory from './screens/pricing/VersionHistory'
 import Account, { EditAccount } from './screens/account/Account'
 import SubAdminProfile from './screens/subadmin/SubAdminProfile'
 import SubAdmins from './screens/subadmin/SubAdmins'
@@ -81,6 +82,7 @@ const routes: RouteObject[] = [
   { path: '/finance/refunds/:id', element: inside(RefundDetail) },
   { path: '/finance/payouts/:personId/:payoutId', element: inside(WithdrawalDetail) },
   { path: '/pricing', element: inside(Pricing) },
+  { path: '/pricing/client-fees/history', element: inside(VersionHistory) },
   { path: '/pricing/:what', element: inside(EditPricing) },
   { path: '/sub-admin', element: inside(SubAdmins) },
   { path: '/sub-admin/new', element: inside(SubAdminProfile, { mode: 'create' }) },

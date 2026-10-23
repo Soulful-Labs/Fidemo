@@ -8,7 +8,7 @@
  * is refused with a reason.
  */
 import { diffForms, studyHistory } from '../shared/revisions'
-import { clientDeactivationBlockers, clientDeactivationRefusal, groupSections, groupsOf, studiesOf } from '../shared/derive'
+import { clientDeactivationBlockers, clientDeactivationRefusal, groupSections, groupsOf, payoutRows, personById, redeemRows, studiesOf } from '../shared/derive'
 import { settingsAt } from '../shared/settings'
 import { withdrawals,
   billing, consoleDashboard, hasCertificate, payoutsToProcess, referralCode, counts, financeTotals, personFigures, pointsRows, poolPerson, recruit, refundsPending, respondentStudies, sharedPhoto, sharedVideo, trustInputs,
@@ -39,7 +39,7 @@ check('policy: deductions -4/-2/-2/-20', TRUST.NO_SHOW === -4 && TRUST.CANCELLED
 check('policy: score never below 50', trustScore({ completedThisYear: 0, stars: [1, 1, 1], noShows: 3, lateShows: 1, cancelledSessions: 2, frauds: 1 }) === 50)
 check('policy: completion capped at 10 a year, ratings at 40', trustScore({ completedThisYear: 30, stars: Array(20).fill(5), noShows: 0, lateShows: 0, cancelledSessions: 0, frauds: 0 }) === 100)
 check('rating control maps to stars 5/4/2', starsForRating('excellent') === 5 && starsForRating('good') === 4 && starsForRating('poor') === 2)
-check('platform: withdrawal fee is $2', FEES.WITHDRAWAL === 2)
+check('platform: withdrawal fee is $1.99 (23 Oct 2026, as Pricing & Rewards draws it)', FEES.WITHDRAWAL === 1.99)
 check('console rate panel: mean of three dimensions, all five values reachable', starsFromDimensions({ expertise: 5, reliability: 5, communication: 4 }) === 5 && starsFromDimensions({ expertise: 3, reliability: 3, communication: 3 }) === 3 && starsFromDimensions({ expertise: 1, reliability: 1, communication: 1 }) === 1 && starsFromDimensions({ expertise: 5 }) === undefined)
 
 // -------------------------------------------------------------------- the seed
@@ -753,7 +753,33 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
     }
   }
   p.changeSettings('trust', trust0, team); p.changeSettings('points', points0, team); p.changeSettings('fees', fees0, team)
+  // 23 Oct 2026: Participants Fees save too; a withdrawal and a redemption keep the values they were made at.
+  {
+    const part0 = settingsAt(st(), 'participants')
+    check('participants: the starting values are $1.99 a withdrawal and $1 for 100 coins', part0.withdrawal === 1.99 && part0.pointsValue === 1)
+    check('participants: a negative fee and a zero points value are refused', !p.changeSettings('participants', { ...part0, withdrawal: -1 }, team).ok && !p.changeSettings('participants', { ...part0, pointsValue: 0 }, team).ok)
+    const fee = () => payoutRows(personById(st(), DEMO_PERSON_ID)).map((r) => r.fee).join(',')
+    const red = () => redeemRows(personById(st(), DEMO_PERSON_ID)).map((r) => r.amount).join(',')
+    const was = { fee: fee(), red: red() }
+    check('participants: a master admin changes them and they apply from now on', p.changeSettings('participants', { withdrawal: 2.5, pointsValue: 2 }, team).ok && FEES.WITHDRAWAL === 2.5 && REDEEM.PER_USD === 50)
+    check('participants: earlier withdrawals and redemptions keep their values', fee() === was.fee && red() === was.red, `${was.fee}/${was.red} -> ${fee()}/${red()}`)
+    p.changeSettings('participants', part0, team)
+    check('participants: put back', FEES.WITHDRAWAL === 1.99 && REDEEM.PER_USD === 100)
+  }
 }
+
+// 23 Oct 2026: Change CPI Rate, the team's per-study rate.
+{
+  p.reset(); clock = now.getTime()
+  const rv = () => st().studies.find((x) => x.id === 'st-remote')!
+  const live = () => st().studies.find((x) => x.id === 'st-goal')!
+  check('cpi: only the team changes it, and the rate must be more than $0', !p.setStudyRate('st-remote', 300, { kind: 'client', id: DEMO_CLIENT_ID }).ok && !p.setStudyRate('st-remote', 0, team).ok)
+  check('cpi: in review it reprices the study outright; the deposit taken stays', p.setStudyRate('st-remote', 300, team).ok && rv().ratePeriods!.length === 1 && billing(rv()).totalCost === 300 * rv().required && billing(rv()).deposit === rv().payments.filter((x) => x.kind === 'deposit').reduce((n, x) => n + x.amount, 0))
+  const periods = live().ratePeriods!.length
+  check('cpi: on a live study a new period starts, for those who complete from now', p.setStudyRate('st-goal', 320, team).ok && live().ratePeriods!.length === periods + 1 && live().ratePeriods!.at(-1)!.rate === 320 && billing(live()).plan.rate === 320)
+  check('cpi: a completed study cannot be repriced', !p.setStudyRate('cp-1', 300, team).ok)
+}
+
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nall checks passed')
 if (failed) process.exit(1)

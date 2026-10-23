@@ -11,8 +11,8 @@
  */
 import { applyRepeatRule, targetMet, barredFrom, billing, currentRate, diaryLocks, diaryReady, freshCertificateId, hasTakenPartWith, sessionNotStarted, openAvailability, personById, personFigures, profileCompletion, referralCode } from './derive'
 import { CLOSED_BY_PARTICIPANT, canEditStudy, canGroup, canMoveParticipation, canMovePayout, canMoveStudy, canRepublish, closedByOwner, isLive, isStopped, participationOf } from './lifecycle'
-import { DECISION_UNDO_MS, DEMO_SESSION_CODE, REPORT_MAX_CHARS, RESTRICTION_DAYS, TIMINGS, canCancel, canReschedule, canWithdraw, diaryWords, isSessionType, paymentPlan, priceStudy, rateFor, targets, withdrawalExpectedBy } from './platform'
-import { POINTS, canRedeem, starsForRating, starsFromDimensions } from './rules'
+import { DECISION_UNDO_MS, DEMO_SESSION_CODE, FEES, REPORT_MAX_CHARS, RESTRICTION_DAYS, TIMINGS, canCancel, canReschedule, canWithdraw, diaryWords, isSessionType, paymentPlan, priceStudy, rateFor, targets, withdrawalExpectedBy } from './platform'
+import { POINTS, canRedeem, pointsToUsd, starsForRating, starsFromDimensions } from './rules'
 import { monthDayYear } from './format'
 import { sessionStartOf as sessionStart } from './derive'
 import { clientDeactivationRefusal } from './derive'
@@ -532,6 +532,27 @@ export function createPlatform(options: Options = {}) {
       const study = s.studies.find((x) => x.id === studyId)
       if (!study) return no('No such study')
       study.repeatRule = rule
+      return yes()
+    }),
+
+    /**
+     * Change CPI Rate (console, 23 Oct 2026): the team sets the cost per interview for a study, the rate per
+     * participant the client is billed at. A study still in review is repriced outright; on a live study the
+     * new rate applies to the participants who complete from now on (a new rate period). Deposits already
+     * taken stay as they were; the bill shows the new total less what was paid.
+     */
+    setStudyRate: (studyId: string, rate: number, actor: Actor) => move((s) => {
+      if (actor.kind !== 'team') return no('Only the team can change the CPI rate')
+      const study = s.studies.find((x) => x.id === studyId)
+      if (!study) return no('No such study')
+      if (!Number.isFinite(rate) || rate <= 0) return no('Enter a rate of more than $0')
+      if (Math.round(rate * 100) !== rate * 100) return no('Enter the rate in dollars and cents')
+      if (study.state === 'draft' || study.state === 'completed' || study.state === 'cancelled') return no('The CPI rate can be changed while a study is in review or running')
+      const was = currentRate(study)
+      if (rate === was) return no('That is the rate already')
+      if (study.state === 'in_review' || !study.ratePeriods?.length) study.ratePeriods = [{ rate, from: study.ratePeriods?.[0]?.from ?? study.submittedAt ?? iso() }]
+      else study.ratePeriods = [...study.ratePeriods, { rate, from: iso() }]
+      log(s, actor, `Changed the CPI rate of ${study.title} from $${was} to $${rate} per participant`, 'Studies / Payment / Change CPI Rate')
       return yes()
     }),
 
@@ -1155,7 +1176,7 @@ export function createPlatform(options: Options = {}) {
       const ok = canWithdraw(amount, f.walletBalance)
       if (!ok.ok) return no(ok.reason ?? 'That amount cannot be withdrawn')
       const id = uid('po')
-      person.payouts.unshift({ id, at: iso(), amount, destination, txId: `#${Math.floor(100000000000 + Math.random() * 899999999999)}`, status: 'pending', expectedBy: withdrawalExpectedBy(iso()) })
+      person.payouts.unshift({ id, at: iso(), amount, destination, txId: `#${Math.floor(100000000000 + Math.random() * 899999999999)}`, status: 'pending', fee: FEES.WITHDRAWAL, expectedBy: withdrawalExpectedBy(iso()) })
       return yes({ id })
     }),
 
@@ -1183,7 +1204,7 @@ export function createPlatform(options: Options = {}) {
       const bar = barred(person); if (bar) return no(bar)
       const ok = canRedeem(points, personFigures(s, personId, clock()).points)
       if (!ok.ok) return no(ok.reason ?? 'Those points cannot be redeemed')
-      person.redemptions.unshift({ id: uid('rd'), at: iso(), points, reference: `#${Math.floor(100000000 + Math.random() * 899999999)}` })
+      person.redemptions.unshift({ id: uid('rd'), at: iso(), points, usd: pointsToUsd(points), reference: `#${Math.floor(100000000 + Math.random() * 899999999)}` })
       return yes()
     }),
 
@@ -1336,8 +1357,8 @@ export function createPlatform(options: Options = {}) {
       const before = settingsAt(s, group)
       if (JSON.stringify(before) === JSON.stringify(after)) return no('Nothing has changed')
       s.settingsLog = [...(s.settingsLog ?? []), { id: uid('set'), group, at: iso(), by: actor.id, before, after: JSON.parse(JSON.stringify(after)) }]
-      const name = { fees: 'client fees', trust: 'Trust Score values', tiers: 'tier thresholds', points: 'reward points' }[group]
-      log(s, actor, `Changed the ${name}`, `Pricing & Rewards / ${group === 'fees' ? 'Fees' : 'Gamification'} / Save Changes`)
+      const name = { fees: 'client fees', trust: 'Trust Score values', tiers: 'tier thresholds', points: 'reward points', participants: 'participant fees' }[group]
+      log(s, actor, `Changed the ${name}`, `Pricing & Rewards / ${group === 'fees' || group === 'participants' ? 'Fees' : 'Gamification'} / Save Changes`)
       return yes()
     }),
 

@@ -4,7 +4,8 @@ import Pill from '../../components/app/Pill'
 import { SegmentedTabs } from '../../components/ui/Tabs'
 import { cn } from '../../lib/cn'
 import { usePricing } from '../../mock/pricing'
-import { Head, Value } from './parts'
+import Button from '../../components/ui/Button'
+import { Head, HistoryGlyph, Value } from './parts'
 
 const Rows = ({ title, rows, sub }: { title: string; rows: string[][]; sub?: string[][] }) => (
   <div className="rounded-lg border-1 border-stroke-1 bg-bg-1 px-4 pb-2 pt-4">
@@ -21,8 +22,9 @@ export const AddOn = ({ amount, pills }: { amount: string; pills: [string | unde
 /**
  * Pricing & Rewards (Fees 2051:176489, Gamification 2058:194308): two
  * segments of read-only values, each group with its own Edit button.
- * Fees: Clients (Platform, Moderation, Recruitment with two add-ons) and
- * Participants (Withdrawal, Reward Points Value).
+ * Fees: Clients Fees (Platform, Moderation, Recruitment with two add-ons:
+ * the team's own cost model) with Version History, and Participants Fees
+ * (Withdrawal, Reward Points Value), each with its own Edit Fees (23 Oct 2026).
  * Gamification: Tiers, Trust Score (Earned For, Deducted For), Reward Points.
  * Every figure is the value in force now (shared/settings.ts).
  */
@@ -47,13 +49,14 @@ export default function Pricing() {
         </div>
       ) : (
         <div className="flex flex-col gap-6 pt-6">
-          <section><Head title="Clients" note="Configure study pricing by industry or other filters, and the charges" action="Edit Fees" onEdit={() => navigate('/pricing/client-fees')} />
+          <section><Head title="Clients Fees" note="Configure study pricing by industry or other filters, and the charges" action="Edit Fees" onEdit={() => navigate('/pricing/client-fees')}
+            extra={<Button variant="tertiary" size="md" className="h-[46px] px-5 text-body-medium" leftIcon={<HistoryGlyph />} onClick={() => navigate('/pricing/client-fees/history')}>Version History</Button>} />
             <div className="grid grid-cols-2 gap-3"><Value label="Platform Fees" value={FEE.platform} note="One-time per study" /><Value label="Moderation Fees" value={FEE.moderation} note="One-time per completed participant" /></div>
             <Value className="mt-3" label="Recruitment Fees" note="One-time per completed participant">
               <p className="flex items-baseline gap-2 pt-2 text-title-m leading-7 text-text-title">{FEE.recruitmentBase}<span className="text-text-regular text-text-subtitle">Base</span></p>
               {ADD_ONS.length > 0 && <div className="flex gap-2 pt-2">{ADD_ONS.map((a) => <AddOn key={a.id} amount={a.amount} pills={a.pills} />)}</div>}
             </Value></section>
-          <section><Head title="Participants" note="Manage charges and rewards for participants" action="Edit Fees" onEdit={() => navigate('/pricing/participant-fees')} />
+          <section><Head title="Participants Fees" note="Manage charges and rewards for participants" action="Edit Fees" onEdit={() => navigate('/pricing/participant-fees')} />
             <div className="grid grid-cols-2 gap-3"><Value label="Withdrawal" value={FEE.withdrawal} note="One-time charge per withdrawal" /><Value label="Reward Points Value" value={FEE.pointValue} note="For 100 Reward Coins" /></div></section>
         </div>
       )}

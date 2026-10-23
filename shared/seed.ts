@@ -13,20 +13,20 @@
 import { billing, freshCertificateId } from './derive'
 import { avatarFor } from './avatar'
 import { withdrawalExpectedBy } from './platform'
-import { DEMO_SESSION_CODE, isSessionType, paymentPlan, priceStudy, rateFor } from './platform'
+import { DEMO_SESSION_CODE, FEES, isSessionType, paymentPlan, priceStudy, rateFor } from './platform'
 import { SCREENERS, TASKS } from './seed/screeners'
 import { catalogue } from './seed/catalogue'
 import type { CatalogueEntry } from './seed/catalogue'
 import { buildPool, starsSumming, targetScore } from './seed/people'
 import { trustInputs } from './derive'
-import { TRUST, starsForRating, trustForStars } from './rules'
+import { TRUST, pointsToUsd, starsForRating, trustForStars } from './rules'
 import type { Answers, AudienceCriteria } from './types'
 import type { StudyGroup,
   Activity, Client, EarlierReview, Location, Participation, ParticipationState, Person, PlatformState,
   Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudyReport, StudySetup, StudyType, TeamMember, Ticket,
 } from './types'
 
-export const SEED_VERSION = 20
+export const SEED_VERSION = 21
 export const DEMO_PERSON_ID = 'jonathan'
 export const DEMO_PERSON_EMAIL = 'jonathan.reeve@example.com'
 /** The respondent app's demo login (README). A front-end stand-in for real authentication, see Person.password. Every seeded participant has it. */
@@ -221,11 +221,11 @@ export function buildSeed(now: Date = new Date()): PlatformState {
       { id: 'pm-2', bankName: 'Chase Bank', accountNumber: '9921 4410 7788 4521', routingCode: '80123344', type: 'Savings', isDefault: false },
     ],
     payouts: [
-      { id: 'po-1', at: at(-1, 23, 0), amount: 100, destination: '****7790', txId: '#152356789107', status: 'pending', expectedBy: withdrawalExpectedBy(at(-1, 23, 0)) },
-      { id: 'po-2', at: at(-120, 14, 20), amount: 250, destination: '****7790', txId: '#152356712004', status: 'paid' },
-      { id: 'po-3', at: at(-330, 10, 5), amount: 500, destination: '****4521', txId: '#152356698771', status: 'paid' },
+      { id: 'po-1', at: at(-1, 23, 0), amount: 100, destination: '****7790', txId: '#152356789107', status: 'pending', expectedBy: withdrawalExpectedBy(at(-1, 23, 0)), fee: FEES.WITHDRAWAL },
+      { id: 'po-2', at: at(-120, 14, 20), amount: 250, destination: '****7790', txId: '#152356712004', status: 'paid', fee: FEES.WITHDRAWAL },
+      { id: 'po-3', at: at(-330, 10, 5), amount: 500, destination: '****4521', txId: '#152356698771', status: 'paid', fee: FEES.WITHDRAWAL },
     ],
-    redemptions: [{ id: 'rd-1', at: at(-52, 9, 0), points: 300, reference: '#058260552' }],
+    redemptions: [{ id: 'rd-1', at: at(-52, 9, 0), points: 300, usd: pointsToUsd(300), reference: '#058260552' }],
     /** The eight people who joined through his link are in the pool; five have had a first study paid. */
     referrals: [
       { id: 'rf-1', name: 'Sarah Johnson', email: 'sarah.johnson@example.com', status: 'completed', at: at(-200) },
@@ -808,7 +808,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
     const p = people.find((x) => x.id === personId)
     if (!p) return
     p.payoutMethods.push({ id: `pm-${id}`, bankName: bank, accountNumber: account, routingCode: '021000021', type, isDefault: p.payoutMethods.length === 0 })
-    p.payouts.unshift({ id, at: at(-daysAgo, 11, 0), amount, destination: `****${account.replace(/\s/g, '').slice(-4)}`, txId: `#2356${id.replace(/\D/g, '').padStart(4, '0')}`, status: paid ? 'paid' : 'pending', expectedBy: withdrawalExpectedBy(at(-daysAgo, 11, 0)), ...(paid ? { releasedAt: at(-daysAgo + 2, 15, 0), releasedBy: 'tm-maya' } : {}) })
+    p.payouts.unshift({ id, at: at(-daysAgo, 11, 0), amount, destination: `****${account.replace(/\s/g, '').slice(-4)}`, txId: `#2356${id.replace(/\D/g, '').padStart(4, '0')}`, status: paid ? 'paid' : 'pending', fee: FEES.WITHDRAWAL, expectedBy: withdrawalExpectedBy(at(-daysAgo, 11, 0)), ...(paid ? { releasedAt: at(-daysAgo + 2, 15, 0), releasedBy: 'tm-maya' } : {}) })
   }
   withdraw('gen-13', 'po-g13', 60, 4, 'American Bank', '1234 5678 9012 1234', 'Savings')
   withdraw('gen-16', 'po-g16', 80, 3, 'Chase Bank', '4410 2290 7788 3301', 'Checking')
