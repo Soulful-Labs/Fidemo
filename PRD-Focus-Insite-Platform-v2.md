@@ -564,7 +564,7 @@ The profile picture and the intro video each earn their points once. Removing ei
 |---|---|
 | Conversion | 100 points = $1 |
 | Minimum redemption | 1,000 points |
-| Withdrawal fee | $2 flat |
+| Withdrawal fee | $1.99 flat (was $2; changed 23 October 2026, as Pricing & Rewards draws it). Configurable |
 | Points expiry | Points do not expire |
 | Study payout | Within 14 days after the study ends: the team pays the reward into the wallet by hand (`WAITS.PAYOUT_AFTER_STUDY_ENDS_DAYS`) |
 | Withdrawal to the bank | 2 to 3 working days |
@@ -626,24 +626,24 @@ A changed value applies only to what happens after the change. Every Trust Score
 
 Redemption and payouts (6.4), scheduling (6.5), client ratings, the certificate (6.6) and restriction (6.8) are not changed from the console. They change only by a new version of the policy.
 
-### 6.10 What a client pays (23 October 2026)
+### 6.10 What a client pays, and the team's fee cards (23 October 2026)
 
-Charged to clients, not participants. A client pays one price per participant.
+**What the client sees: one cost per interview (CPI) per participant**, with the participant's incentive inside it. The team sets it for each study in the console (Change CPI Rate, on the review queue's Payment tab); a study starts at $250 (`RATE_PER_PARTICIPANT`, `rateFor` in `shared/platform.ts`). It is a stored value the team edits (`setStudyRate`, `Study.ratePeriods`), never typed into a client screen.
 
-| Item | Current value | Charged |
+| Item | Value | Charged |
 |---|---|---|
-| Rate per participant | $250 | Held by the platform, never typed by the client: `rateFor` in `shared/platform.ts`, the one place a study is priced. It will come from the team's rate sheet |
-| Total Recruiting Cost | Rate x participants | The incentive is included in the rate |
+| CPI | Per study; $250 to start | Per participant |
+| Total Recruiting Cost | CPI x participants | The incentive is included |
 | Upfront deposit | 20% | At publish, of the total at the required number of participants |
-| Incentive deposit | 30% | When the team takes the study live. The Pay screens call it "Recruitment Cost" |
-| Completion due | 50% | The rest, on the bill once recruiting stops: the participants who completed, each at the rate agreed when they completed, less both deposits |
+| Incentive deposit | 30% | When the team takes the study live (D40). The Pay screens call it "Recruitment Cost" |
+| Completion due | 50% | The rest, on the bill once recruiting stops: the participants who completed, each at the CPI in force when they completed, less both deposits |
 | Client refunds | Paid within 5 to 7 working days | |
 
-A study keeps the rate it was published at (`Study.ratePeriods`). A change to its requirements can agree a new rate; the people who complete after it are billed at the new one, which is why a Final bill can have two lines ("$250 x 10 participants • Oct 1, 2026", "$350 x 10 participants • Oct 10, 2026"). Nothing in the build changes a rate today: with one rate, a live edit agrees the same rate. The seed shows two periods on one study.
+**Changing the CPI.** On a study in review the new rate replaces the old; the upfront deposit already taken stays, and the bill shows the new total less what was paid. On a live study the new rate starts a new period, for the participants who complete from then on, which is why a Final bill can have two lines ("$250 x 10 participants • Oct 1, 2026", "$350 x 10 participants • Oct 10, 2026"). A completed study cannot be repriced.
 
-**The earlier fee schedule is no longer charged.** A $100 platform fee, a $10 moderation fee, a $25 recruitment fee with +$25 and +$20 add-ons, and a deposit of 25% of recruitment plus 25% of incentives. It is still drawn on the Create flow's Study step (left unchanged on instruction, 23 October 2026) and set on the console's Pricing & Rewards, so a client sees the old figures on the Study step and the new ones one step later on Payment & Publish, until it is decided what comes out of those screens.
+**The team's fee cards stay.** Platform fee $100 once per study, moderation fee $10 and recruitment fee $25 base per completed participant, with two add-ons (+$25 for Video Call, In-Person or Diary, or Roles; +$20 for Skills). They are the team's own cost model, set on Pricing & Rewards and versioned (Version History). The client does not see them.
 
-The withdrawal fee charged to participants is $2 flat (6.4). The console shows it, with the points value and the redemption minimum, and says they are set by the policy and not saved from there.
+**Participants Fees** (Pricing & Rewards, 23 October 2026): the withdrawal fee, $1.99 flat (was $2), and the Reward Points Value, $1 for 100 reward coins. A master admin edits both (`participants` in `shared/settings.ts`). A withdrawal keeps the fee in force when it was requested (`Payout.fee`), and a redemption the value in force when it was made (`Redemption.usd`). The redemption minimum stays the policy's.
 
 **Who a study is for.**
 
@@ -1883,7 +1883,7 @@ Steps 32 to 39 apply only to study types that have sessions. A Survey or Diary s
 | 49 | Client | Client app | Pays it with Pay Bill. The balance is due 7 days after the study enters Billing. If nothing was owed, the study completes at once | Invoice `paid`, Study `completed` |
 | 50 | System | none | **If the study underfilled**, raises a refund automatically from the shortfall | Refund `pending` |
 | 51 | Team | Console | Finance > Refunds. Confirms the refund. The client is told 5 to 7 working days | Refund `confirmed` |
-| 52 | Participant | Respondent app | Withdraws earnings to a bank account, less a $2 flat fee. The withdrawal waits until a team member releases it in Finance > Payouts, then is credited in 2 to 3 working days | Withdrawal `pending`, then `paid` |
+| 52 | Participant | Respondent app | Withdraws earnings to a bank account, less a $1.99 flat fee. The withdrawal waits until a team member releases it in Finance > Payouts, then is credited in 2 to 3 working days | Withdrawal `pending`, then `paid` |
 | 53 | Participant | Respondent app | **Or** redeems reward points. 100 points = $1, minimum 1,000 points | |
 
 **Payouts are manual at launch.** Steps 52 and 53 are instructions to the team, not an automated transfer.
@@ -2085,7 +2085,7 @@ The signed policy wins. **Build the policy values, not the drawn ones, and corre
 | Cancelled session | −4 on the view, −2 on the edit form | −2 |
 | Study completion cap | "upto 10 per year", applied to points | The cap is on Trust Score, not points |
 | Points expiry | "Points have no expiry" | Points do not expire. Now decided, so the line is correct |
-| Withdrawal fee | $1.99 | $2 |
+| Withdrawal fee | $1.99 | $1.99 since 23 October 2026, as drawn (was $2) |
 | Certificate threshold | no field | No field. See D12 |
 
 The same corrections apply to the participant profile's Points History: Study is 25 not 50, Streak is 50 not 100, Referral is 200 not 25.
@@ -2241,7 +2241,11 @@ BRD Section 9a has the full requirement.
 | What the frames draw | "As on Oct 10, 2026" beside the 30% line; no trigger |
 | Who confirms | Jim |
 
-### D41: An incentive above the rate (known inconsistency, not built)
+### D41: An incentive above the rate (the field is gone; who sets the incentive is open)
+
+**23 October 2026, second round:** the Study step's Incentive Payments, Costing Summary and Payment are removed, so the client no longer sets the incentive. **Open: who sets the participant's incentive now.** Each study keeps the incentive its form carries, which starts at $700 (`shared/studyForm.ts`), above the $250 starting CPI; the console shows it read only. Until someone sets it, a new study pays participants more than the client is charged for them. The record of the first decision follows.
+
+### D41 (as first recorded): An incentive above the rate
 
 **Left alone on purpose (23 October 2026).** The incentive is inside the rate per participant, so a client should not set it separately at all. The Study step still has the Incentive Amount field from the old model, and nothing stops a client setting an incentive above the rate. No cap is built, because the field comes out with the Study step's Costing Summary and Payment in the next round. Until then, a study whose incentive exceeds the rate would pay participants more than the client is charged for them. The full list of where the old model still appears is in `docs/Document-Updates-Pending.md`, "Next job: clear the old fee model".
 

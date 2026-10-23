@@ -163,7 +163,6 @@ export default function ManageStudy() {
           <Step icon={FORM} title="Study" onEdit={edit('study')}>
             <div className="flex flex-wrap gap-3">
               <Chip label={r.studyRow.label} value={r.studyRow.value} />
-              <Chip label={r.incentive.label} value={r.incentive.value} />
             </div>
             {/* What was entered on the Study step, line by line, and the study's own questions. No frame lists these; the two chips above are all Figma draws. */}
             {s.details.length > 0 && (

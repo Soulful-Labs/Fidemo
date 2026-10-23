@@ -129,9 +129,9 @@
 
 <table>
 <tr><th>Rule</th><th>Value</th></tr>
-<tr><td>Conversion</td><td class="num">100 points = $1</td></tr>
+<tr class="new"><td>Conversion <span class="tag">configurable</span></td><td class="num">100 points = $1</td></tr>
 <tr><td>Minimum redemption</td><td class="num">1,000 points</td></tr>
-<tr><td>Withdrawal fee</td><td class="num">$2 flat</td></tr>
+<tr class="new"><td>Withdrawal fee <span class="tag">configurable</span></td><td class="num">$1.99 flat (was $2, changed 23 October 2026)</td></tr>
 <tr><td>Points expiry</td><td class="num">Points do not expire</td></tr>
 <tr class="new"><td>Study payout</td><td class="num">Within 14 days after the study ends</td></tr>
 <tr class="new"><td>Withdrawal to the bank</td><td class="num">2 to 3 working days</td></tr>
@@ -171,21 +171,30 @@
 
 <h2>8. Client fees</h2>
 
-<p>Charged to clients, not participants. Since 23 October 2026 a client pays one price per participant.</p>
+<p>Charged to clients, not participants. Since 23 October 2026 a client sees one price: a cost per interview (CPI) per participant, with the participant's incentive inside it.</p>
 
 <table>
 <tr><th>Item</th><th>Current value</th><th>Charged</th></tr>
-<tr class="new"><td>Rate per participant <span class="tag">configurable</span></td><td class="num">$250</td><td>Per participant. The rate is held by the platform, never typed by the client. It will come from a rate sheet the team maintains; until then it is one rate</td></tr>
-<tr class="new"><td>Total Recruiting Cost</td><td colspan="2">The rate times the number of participants. The participant's incentive is included in the rate, not charged on top</td></tr>
+<tr class="new"><td>Cost per interview (CPI) <span class="tag">per study</span></td><td class="num">$250 to start</td><td>Per participant. The team sets it for each study in the console (Change CPI Rate); a study starts at $250. The client never types it</td></tr>
+<tr class="new"><td>Total Recruiting Cost</td><td colspan="2">The CPI times the number of participants. The participant's incentive is included, not charged on top</td></tr>
 <tr class="new"><td>Upfront deposit</td><td class="num">20%</td><td>Of Total Recruiting Cost at the required number of participants, when the study is published</td></tr>
 <tr class="new"><td>Incentive deposit</td><td class="num">30%</td><td>Of the same total, when the team takes the study live. The client's Pay screens call it "Recruitment Cost"</td></tr>
-<tr class="new"><td>Completion due</td><td class="num">50%</td><td>The rest, on the bill once recruiting stops. The final bill counts only the participants who completed, each at the rate agreed when they completed, less both deposits. Where the deposits are more than the final bill, the difference is credited or refunded</td></tr>
-<tr class="new"><td>A change to the rate</td><td colspan="2">A study keeps the rate it was published at. A change to its requirements can agree a new rate, which applies to the participants who complete after it</td></tr>
+<tr class="new"><td>Completion due</td><td class="num">50%</td><td>The rest, on the bill once recruiting stops. The final bill counts only the participants who completed, each at the CPI in force when they completed, less both deposits. Where the deposits are more than the final bill, the difference is credited or refunded</td></tr>
+<tr class="new"><td>A change to the CPI</td><td colspan="2">On a study in review, the team's new CPI replaces the old one; the deposit already taken stays. On a live study it applies to the participants who complete from then on</td></tr>
 <tr class="new"><td>Card processing fee</td><td colspan="2">The designs state "3% merchant processing fee applies when using a credit card". The line is shown as drawn; nothing charges it. It reverses the removal of 13 October 2026 and is recorded as such</td></tr>
 <tr><td>Client refunds</td><td colspan="2">Paid within 5 to 7 working days</td></tr>
 </table>
 
-<p>The earlier fee schedule (a $100 platform fee, a $10 moderation fee, a $25 recruitment fee with +$25 and +$20 add-ons, and a deposit of 25 percent of recruitment plus 25 percent of incentives) is no longer charged. It is still drawn on the Create flow's Study step and set on the console's Pricing &amp; Rewards until it is decided what comes out of them.</p>
+<p><strong>The team's fee cards</strong> are the team's own cost model, set in the console's Pricing &amp; Rewards and versioned there. The client does not see them.</p>
+
+<table>
+<tr><th>Fee card</th><th>Current value</th><th>Counted</th></tr>
+<tr class="new"><td>Platform fee <span class="tag">configurable</span></td><td class="num">$100</td><td>Once per study</td></tr>
+<tr class="new"><td>Moderation fee <span class="tag">configurable</span></td><td class="num">$10</td><td>Per completed participant</td></tr>
+<tr class="new"><td>Recruitment fee <span class="tag">configurable</span></td><td class="num">$25 base</td><td>Per completed participant</td></tr>
+<tr class="new"><td>Recruitment add-on <span class="tag">configurable</span></td><td class="num">+$25</td><td>For Video Call, In-Person or Diary study types, or Roles targeting</td></tr>
+<tr class="new"><td>Recruitment add-on <span class="tag">configurable</span></td><td class="num">+$20</td><td>For Skills targeting</td></tr>
+</table>
 
 <h3>Who a study is for</h3>
 
@@ -224,14 +233,14 @@
 
 <table>
 <tr class="new"><th>Rule</th><th>Value <span class="tag">new</span></th></tr>
-<tr class="new"><td>What can be changed</td><td>Trust Score values (section 1), reward point values (section 3), tier thresholds (section 2) and client fees (section 8)</td></tr>
+<tr class="new"><td>What can be changed</td><td>Trust Score values (section 1), reward point values (section 3), tier thresholds (section 2), the team's fee cards (section 8), and since 23 October 2026 the participant fees: the withdrawal fee and the value of 100 reward points (section 4). A study's cost per interview is set per study (section 8)</td></tr>
 <tr class="new"><td>Who can change them</td><td>A master admin, from the console. Each change is confirmed first and recorded with who made it and when</td></tr>
 <tr class="new"><td>What a change affects</td><td>Only what happens after the change</td></tr>
 </table>
 
 <p>A changed value applies only to what happens after the change. Anything already earned or already agreed keeps the value that was in force at the time. No existing score moves when a value is edited, and no agreed price moves: a study keeps the fees it was created with.</p>
 
-<p>The redemption rules (section 4), scheduling (section 5), client ratings (section 6), the certificate (section 7) and restriction (section 9) are not changed from the console. They change only by a new version of this policy.</p>
+<p>A withdrawal already requested keeps the fee in force when it was requested, and points already redeemed keep the value they were redeemed at. The minimum redemption (section 4), scheduling (section 5), client ratings (section 6), the certificate (section 7) and restriction (section 9) are not changed from the console. They change only by a new version of this policy.</p>
 
 <footer>
 Focus Insite &middot; Trust and Rewards Policy &middot; Version 2 &middot; 22 October 2026

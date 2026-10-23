@@ -33,15 +33,15 @@ export const FAQS = [
   },
   {
     q: 'What distinguishes Self-managed studies from Platform-managed studies?',
-    a: 'Every study on the platform today is run by the Focus Insite team. You describe what you need, set the incentive and approve the draft; the team writes the screener, prices it, takes it live, moderates the sessions and delivers the results. Self-managed studies, where you would run all of that yourself, are planned for a later phase and will be marked Coming Soon when they arrive.',
+    a: 'Every study on the platform today is run by the Focus Insite team. You describe what you need and approve the draft; the team sets the cost per participant, writes the screener, prices it, takes it live, moderates the sessions and delivers the results. Self-managed studies, where you would run all of that yourself, are planned for a later phase and will be marked Coming Soon when they arrive.',
   },
   {
     q: 'What exactly am I being charged for on my invoice?',
-    a: 'Four things: a flat platform fee, a recruiting fee and an incentive per participant, and a moderation fee per participant. The incentive deposit you paid when the study was agreed is then taken off, so what you settle at the end is the difference. You are charged for the participants actually delivered, not the number you asked for.',
+    a: 'One cost per participant, which the team sets for your study and which already includes the incentive paid to each participant: your Total Recruiting Cost is that rate times the participants. You pay 20% when you publish and 30% when the study goes live. The final bill counts only the participants who completed, less those two deposits, and that difference is what you settle at the end.',
   },
   {
     q: 'What occurs if my study fails to reach its target number of respondents?',
-    a: 'You are charged only for the participants who were delivered, and anything already taken beyond that is credited back against your next study. The setup fee is not refunded, because the recruiting work happened either way. Anyone who was booked is paid in full, whether or not the study reached its number.',
+    a: 'You are charged only for the participants who completed. Where the deposits you paid come to more than the final bill, the difference is credited back against your next study. Anyone who was booked is paid in full, whether or not the study reached its number.',
   },
   {
     q: "How is a respondent's completion determined, especially if they don't finish the survey?",

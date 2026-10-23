@@ -14,8 +14,8 @@ export type CreateStep = 'about' | 'audience' | 'screener' | 'study' | 'publish'
 /**
  * The step chips in the Create top bar, with the rule between them. Four
  * steps, as every Create frame draws them (22 Oct 2026): the Study step holds
- * the type's own settings and, below them, Incentive Payments, Costing
- * Summary and the Payment card.
+ * the type's own settings. Incentive Payments, Costing Summary and the
+ * Payment card came out on 23 Oct 2026.
  */
 const STEPS: { key: CreateStep; label: string; Icon: typeof Info; to: string }[] = [
   { key: 'about', label: 'About', Icon: Info, to: '/studies/create/about' },

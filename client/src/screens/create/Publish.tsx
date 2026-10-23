@@ -168,7 +168,6 @@ export default function Publish() {
 
           <Review icon={FORM} title="Study">
             <Chip label={built.studySummary.label} value={built.studySummary.value} />
-            <Chip label="Incentive" value={`$${draft.incentive}`} />
           </Review>
           {/* Edit Study Details (15 Oct 2026): back to the first step, with everything kept. */}
           <Button variant="secondary" size="none" className="mt-1 h-12 self-start px-4 text-body-medium" onClick={() => navigate('/studies/create/about')}>Edit Study Details</Button>

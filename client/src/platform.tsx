@@ -40,7 +40,6 @@ export interface StudyReview {
   audience: { label?: string; value: string; icon?: string }[]
   screener: { label: string; value: string }
   studyRow: { label: string; value: string }
-  incentive: { label: string; value: string }
 }
 
 /** A study with the strings the client frames write it in. Nothing here is stored. */
@@ -81,7 +80,6 @@ export function clientStudy(study: Study, now: Date = new Date()): ClientStudy {
       audience: study.setup?.audience ?? [{ value: String(study.required), icon: 'people' }],
       screener: { label: 'Screening', value: study.setup?.screenerSummary ?? `${outline.length} input${outline.length === 1 ? '' : 's'}` },
       studyRow: study.setup?.studySummary ?? { label: 'Study Time', value: durationLabel(study.durationMins) },
-      incentive: { label: 'Incentive', value: money(study.rates.incentivePer) },
     },
     screenerOutline: outline, tasksOutline: tasksOutline(study), details: study.form ? studyDetails(study.form) : [],
   }

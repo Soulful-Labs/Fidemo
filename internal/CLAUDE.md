@@ -1181,7 +1181,7 @@ study, Roles, Skills).
 | "Points have no expiry and can be redeemed anytime." | stated | points do not expire (section 4); redemption needs 1,000 points | `2058:197423` |
 | Points, study completion: "Per study, upto 10 per year" | a yearly cap on points | no cap on points (the cap is on Trust Score) | `2058:194308`, `2058:197423` |
 | Certificate | no setting at all | none: "Unlocks at 40" withdrawn (section 7) | agrees |
-| Withdrawal fee | $1.99 | $2 flat (section 4) | `2051:176489`, `2058:193936` |
+| Withdrawal fee | $1.99 | $1.99 since 23 Oct 2026, as drawn (was $2; section 4) | `2051:176489`, `2058:193936` |
 | Study completion, trust | "+10" | +1 a study, up to 10 a year | agrees as a cap; reads as per study |
 Agree: Onboarding 50, ratings +4 / +3 / +1 / -2 / -3 and +40 max, Late show up -2,
 Fraud -20, tiers 50 / 70 / 90, Referral 200, Being referred 100, Full profile 50,

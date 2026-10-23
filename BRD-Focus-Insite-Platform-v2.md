@@ -108,7 +108,7 @@ The paid-participation market is the mechanism: people give their time and opini
 | Pricing plans | Decision D11 |
 | When the 30% incentive deposit is taken | Built as when the team takes the study live, accepted for now; Jim to confirm. PRD D40 |
 | What changes a study's rate, and the rate sheet | Waits on the rate sheet. PRD D42 |
-| Removing the old fee model from the Study step and Pricing & Rewards | Next round. The incentive field goes with it, which settles an incentive above the rate (PRD D41) |
+| Who sets the participant's incentive now that the client does not | Open. PRD D41 |
 | Whether the team may re-price a live study | Jim. PRD D33 |
 | What the Audience forecast shows | Not yet assigned. PRD D34 |
 | The live domain, the support address, and whether the certificate prefix changes from FI- | Not yet assigned. PRD D35. A prefix change needs a new version of the policy |
@@ -127,7 +127,7 @@ The paid-participation market is the mechanism: people give their time and opini
 | Incentive deposit, 30% | Client | Platform | When the team takes the study live |
 | Balance invoice | Client | Platform | By the client. The completed participants at their agreed rate, less both deposits. It falls due when the study stops recruiting and enters Billing, and is due 7 days later |
 | Incentive | Platform | Participant | When the team processes the study's payouts, once the participation is completed. It never waits on the client's invoice |
-| Payout | Platform | Participant | When a participant withdraws and the team releases it, less a $2 fee |
+| Payout | Platform | Participant | When a participant withdraws and the team releases it, less a $1.99 fee |
 | Redemption | Platform | Participant's wallet | When points are converted, at 100 points to $1, minimum 1,000 |
 | Refund | Platform | Client | When a study underfills, confirmed by the team, paid in 5 to 7 working days |
 
@@ -135,14 +135,14 @@ The paid-participation market is the mechanism: people give their time and opini
 
 | Revenue line | Rate | Basis |
 |---|---|---|
-| Rate per participant | $250 | Per completed participant, incentive included. From the team's rate sheet when it exists; one configurable rate until then |
-| Withdrawal fee | $2 |
+| Cost per interview (CPI) | Per study, $250 to start | Per completed participant, incentive included. The team sets it per study (Change CPI Rate) |
+| Withdrawal fee | $1.99 |
 | Study payout | Within 14 days after the study ends, paid into the wallet by the team |
 | Withdrawal to the bank | 2 to 3 working days | Per participant withdrawal |
 
-Pricing changed on 23 October 2026: a client pays Total Recruiting Cost, the rate per participant times the participants, with the incentive included. Revenue on a study is the rate less the incentive, per completed participant. A study keeps the rate it was published at. The earlier fee schedule (platform, moderation and recruitment fees) is no longer charged; it is still drawn on the Create flow's Study step and set on the console's Pricing & Rewards. The withdrawal fee is set by the policy.
+Pricing changed on 23 October 2026: a client pays Total Recruiting Cost, the CPI times the participants, with the incentive included. The team sets the CPI per study. Revenue on a study is the CPI less the incentive, per completed participant. The team's fee cards (platform, moderation and recruitment fees with add-ons) stay in the console as its own cost model; the client does not see them. The withdrawal fee ($1.99) and the points value are set by a master admin under Participants Fees.
 
-The incentive is paid out of the rate. Nothing yet stops a client setting an incentive above the rate; this is a known inconsistency, left on purpose because the field comes out next round (PRD D41).
+The incentive is paid out of the CPI. The client no longer sets it; who does is open (PRD D41), and a new study keeps its form's starting incentive of $700 until it is decided.
 
 **A worked example, the shape the designs draw (23 October 2026).** Twenty participants at $250: Total Recruiting Cost $5,000; $1,000 upfront at publish, $1,500 when it goes live, $2,500 on completion if all twenty complete. If ten complete at $250 and ten after a change at $350, the final bill is $6,000, less the $2,500 of deposits, $3,500 to pay. The frames' own figures ($1,800 for the 30%, $3,200 net) are placeholders and do not add up; the build derives every figure.
 
@@ -273,7 +273,7 @@ A master admin may change the Trust Score values, tier thresholds, reward point 
 |---|---|
 | Redemption rate | 100 points = $1 |
 | Minimum redemption | 1,000 points |
-| Withdrawal fee | $2 |
+| Withdrawal fee | $1.99 |
 | Reschedule limit | Twice, and never within 24 hours of the session |
 | Session cancelled by the client or the team | Costs the participant nothing. A reason is required, and the participant is told it |
 | Diary completion | At least 4 of 5 days |
@@ -456,7 +456,7 @@ Two things that follow for the business:
 | **Selfies and biometrics** | Not collected. D5. Identity documents still need a retention rule (PRD 23.5) |
 | **Paid participation** | Participants are paid. Whether that makes them workers or contractors differs by market, and tax reporting obligations follow |
 | **Holding balances** | Participants hold cash balances and points before withdrawal. In some markets holding customer funds is a regulated activity |
-| **Public claims** | The landing page states a $2 withdrawal fee and payment within 2 to 3 working days. The client certificate claims business registration verified, and billing on file when a card is saved. Each must be true and evidenced |
+| **Public claims** | The landing page states the withdrawal fee ($1.99 since 23 October 2026) and payment within 2 to 3 working days. The client certificate claims business registration verified, and billing on file when a card is saved. Each must be true and evidenced |
 
 ---
 

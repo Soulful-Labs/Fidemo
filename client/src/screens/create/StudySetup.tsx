@@ -6,7 +6,7 @@ import { studySummary } from '@shared/studyForm'
 import { setupDone, useDraft } from '../../mock/createStore'
 import CreateShell, { SaveDraftButton } from './CreateShell'
 import { Section } from './CreateBits'
-import { CostingSummary, IncentivePayments, Payment, SettingsCard } from './StudyBits'
+import { SettingsCard } from './StudyBits'
 import SurveyComposer from './SurveyComposer'
 import AvailabilityComposer from './AvailabilityComposer'
 import OverridePanel from './OverridePanel'
@@ -127,8 +127,9 @@ function TypeSettings({ type, group, open }: { type: string; group: boolean; ope
 /**
  * 2.1.3 Study setup, the one step where the four types differ. As every type's
  * frame draws it (1518:91922, 1518:94742, 1518:92570, 1518:93998), the type's
- * settings card sits above Incentive Payments, Costing Summary and Payment, and
- * the step ends in Proceed to Publish. The survey and diary composers open as
+ * settings card, and the step ends in Proceed to Publish. Incentive Payments,
+ * Costing Summary and Payment came out on 23 Oct 2026 (the client no longer
+ * sets the incentive or sees the old fee lines). The survey and diary composers open as
  * the whole page, with Save & Continue in the top bar; a session study's
  * composer is submitted by Continue. Either returns here.
  */
@@ -188,9 +189,6 @@ export default function StudySetup() {
         ) : (
           <div className="mx-auto flex w-[600px] flex-col">
             <TypeSettings type={type} group={group} open={open} />
-            <IncentivePayments />
-            <CostingSummary />
-            <Payment />
           </div>
         )}
       </div>
