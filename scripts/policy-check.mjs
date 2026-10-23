@@ -247,7 +247,9 @@ void by
   if (/invited to schedule study/.test(t)) g.push('notification 1 still says "invited to schedule study"')
   const diary = await R.ev(`(() => { const st = __hl; const d = st.studies.find((s) => s.diary && s.status === 'in_process'); if (!d) return null; let n = 1; while (d.diary.completedDays.includes(n) && n < d.diary.totalDays) n++; return { want: 'Resume Study - Day ' + n + '/' + d.diary.totalDays, done: d.diary.completedDays.length } })()`)
   const diaryShown = (t.match(/Resume Study - [A-Za-z]+ ?\d+\/\d+/) ?? [])[0]
-  if (diary && diaryShown !== diary.want) g.push(`diary button reads "${diaryShown}", wanted "${diary.want}"`)
+  // 23 Oct 2026: a reminder's action is dropped once the study has moved past that step. The diary here is
+  // already in process (submitted), so its old reminder must not still offer "Resume Study".
+  if (diary && diaryShown) g.push(`a submitted diary's reminder still offers "${diaryShown}"`)
   const inProcess = pick('in_process')
   if (inProcess) { await R.go(`/studies/${inProcess}`); await sleep(600); for (const m of (await text(R)).matchAll(/usually within ([^,]+),/g)) note('review', m[1]) }
   await R.go('/support'); await sleep(500)
@@ -293,8 +295,10 @@ void by
   const banner = ((await text(R)).match(/\+1 Trust score \+ \d+ Reward points/) ?? [])[0]
   if (banner !== '+1 Trust score + 25 Reward points') g.push('paid banner reads ' + banner)
   for (const [k, set] of Object.entries(found)) if (set.size !== 1) g.push(`${k} reads ${[...set].join(' / ')}`)
-  if (!found.gold || [...found.gold][0] !== 'In Top 20%') g.push('Gold reads ' + [...(found.gold ?? [])].join(' / '))
-  say(4, 'Each of the seven figures reads the same everywhere it appears', g, `screener and response: "${[...(found.review ?? [])].join('/')}" (notification, In Process banner, FAQ); withdrawal: "${[...(found.withdrawal ?? [])].join('/')}" (notification, FAQ, success screen) and Expected in bank by ${shownBy}, three working days after the request, in the app and the console; Gold: "${[...(found.gold ?? [])].join('/')}" on the dashboard, Trust Score and How Tiers Works; tickets: "Closed" in all three apps; paid banner: "${banner}"; notification 1: "${inviteBody}"; diary: "${diaryShown}"`)
+  // 23 Oct 2026: "In Top N%" is derived from the platform (shared/derive.ts topShareOf); it must read one value, the derived one.
+  const goldTop = await R.ev(`__hl.tierTop('gold')`)
+  if (!found.gold || found.gold.size !== 1 || [...found.gold][0] !== goldTop) g.push('Gold reads ' + [...(found.gold ?? [])].join(' / ') + ', derived ' + goldTop)
+  say(4, 'Each of the seven figures reads the same everywhere it appears', g, `screener and response: "${[...(found.review ?? [])].join('/')}" (notification, In Process banner, FAQ); withdrawal: "${[...(found.withdrawal ?? [])].join('/')}" (notification, FAQ, success screen) and Expected in bank by ${shownBy}, three working days after the request, in the app and the console; Gold: "${[...(found.gold ?? [])].join('/')}" on the dashboard, Trust Score and How Tiers Works; tickets: "Closed" in all three apps; paid banner: "${banner}"; notification 1: "${inviteBody}"; diary reminder action: ${diaryShown ? `"${diaryShown}"` : "dropped once submitted"}`)
 }
 
 // ---- 5. every download produces a file or is gone
