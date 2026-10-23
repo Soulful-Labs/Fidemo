@@ -1,0 +1,15 @@
+section,segment,level,criteria,size_band,setup_min,setup_max,setup_note,cpr_min,cpr_max,cpr_note,incentive_min,incentive_max,incentive_unit,incentive_note
+Consumer,General Population Consumer,Level 1 Basic Consumer,IR 50% plus,1-25,500,500,,125,125,,100,100,per hour,Remote IDIs
+Consumer,General Population Consumer,Level 1 Basic Consumer,IR 50% plus,25 plus,1000,1000,plus 500 for each additional 25 people,100,100,,100,100,per hour,Remote Focus Groups and Online Asynchronous
+Consumer,General Population Consumer,Level 2 Niche Consumer,IR up to 15%,1-25,750,750,pending project specs and panel IR rate,135,165,remote; 200 in person,125,150,per hour,Remote IDIs
+Consumer,General Population Consumer,Level 2 Niche Consumer,IR up to 15%,25 plus,1250,1250,,135,165,remote; 200 in person,125,150,per hour,Remote IDIs
+Consumer,General Population Consumer,Level 2 Niche Consumer harder specs,IR up to 15%,1-25,1000,1000,in-home additional coordination fee 35,135,165,remote; 200 in person,150,200,per hour,In-Person Focus Groups
+Consumer,General Population Consumer,Level 2 Niche Consumer harder specs,IR up to 15%,25 plus,1500,1500,in-home additional coordination fee 35,135,165,remote; 200 in person,150,200,per hour,In-Person Focus Groups
+Consumer,Children and Teens,,,any,1000,1000,minimum setup fee; parent present adds 25 minimum incentive,150,150,minimum; 135 plus 15 if pushback,100,100,per hour,100 per hour for the child plus 25 for the parent
+Consumer,Children and Teens in-home,,,any,1000,1000,minimum setup fee; in-home coordination fee 35,150,150,minimum; 135 plus 15 if pushback,100,100,per hour,In-person IDI and In-person Focus Group
+B2B Tech Medical,B2B lower level or medical consumer,Level 2,IR 20% to 50%; lay people public school teachers seasonal construction small-business retail hospitality,1-25,1000,1000,,150,200,,200,250,per hour,Remote IDI or FG
+B2B Tech Medical,B2B lower level or medical consumer,Level 2,IR 20% to 50%,25 plus,1500,1500,,150,200,,200,250,per hour,Remote IDI or FG
+B2B Tech Medical,B2B upper level,,CEO COO President Owner Medical B2B Medical niche consumer,1-25,1000,1000,,200,300,300 and above,300,300,per hour,Remote IDI or FG; pending project specs and titles
+B2B Tech Medical,B2B upper level,,CEO COO President Owner Medical B2B Medical niche consumer,25 plus,1500,1500,,200,300,300 and above,300,300,per hour,Remote IDI or FG; pending project specs and titles
+Re-recruiting,Re-recruiting with no rescreening or grids,,,any,150,150,,35,35,recontact fee,,,,incentive based on type of phase
+Re-recruiting,Re-opening of projects closed 2 plus months,,,any,500,500,,75,75,,,,,incentive based on type of phase
