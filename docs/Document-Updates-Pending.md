@@ -123,3 +123,12 @@ Work that is not built, so there is nothing to describe yet.
     the "Open to everyone" audience pill on Manage and Review.
   - Console: "Submitted for review" and "Waiting for your decision" on a
     verification waiting for the team. Not drawn.
+- Changes of 23 Oct 2026 (later round):
+  - Client pop-ups open in the centre of the screen; long scrollable panels
+    (a participant's profile, Notifications, Invoice Details) are full-height
+    sheets on the right edge. Notifications was drawn as a floating card
+    (1518:71845); it is now a sheet.
+  - The client Account page has no Payment Method section; the console has
+    no entrance screen (/internal is sign in).
+  - The How It Works copy on Study Details is as given; its "14 days after
+    the study ends" is the policy's payout window.

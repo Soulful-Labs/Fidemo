@@ -1720,4 +1720,9 @@ is where each lives in the code.
 - **Undo beside read-backs** in the client (frames 1769:86063, 1627:106074);
   the console keeps Mark Completed. Flagged for the designer.
 - **Side panels** are as tall as their content with rounded left corners; the
-  notifications panel floats. Studies' sub-items fold away outside Studies.
+  notifications panel floats. (Superseded 23 Oct 2026: `SidePanel` has
+  `placement`. Pop-ups, the default, open centred, as tall as their content;
+  long scrollable panels, a participant's profile, Notifications, Invoice
+  Details, are `placement="sheet"`, full height on the right edge.)
+- **Account has no Payment Method section** (23 Oct 2026); cards live on
+  Payments, Saved Payment Methods. Studies' sub-items fold away outside Studies.

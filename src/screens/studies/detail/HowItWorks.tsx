@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { ChevronDown } from '../../../components/ui/icons'
 import { cn } from '../../../lib/cn'
+import { WAITS } from '@shared/platform'
 
-/** Accordion, copy quoted from PRD 6.6, drawn as two steps on a dotted line. */
+/** Accordion, drawn as two steps on a dotted line. Copy as given on 23 Oct 2026; the payout window is the policy's (WAITS). */
 const STEPS = [
   {
     title: 'Apply and answer screener questions to see if qualify',
-    body: 'The researcher will review your application and invite you if selected.',
+    body: 'The team will review your application and invite you if qualified and selected.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
         <rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" strokeWidth="1.5" />
@@ -15,8 +16,8 @@ const STEPS = [
     ),
   },
   {
-    title: 'Complete a project and get paid!',
-    body: 'Once approved, take part in the project and receive payment directly for your time and insights.',
+    title: 'Complete the study and get paid!',
+    body: `Once approved, complete your study, and get paid within the ${WAITS.PAYOUT_AFTER_STUDY_ENDS_DAYS} days after the study ends.`,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
         <path d="M12 2.5l2 1.6 2.5-.3.9 2.4 2.3 1-.3 2.5L21 12l-1.6 2.3.3 2.5-2.3 1-.9 2.4-2.5-.3L12 21.5l-2-1.6-2.5.3-.9-2.4-2.3-1 .3-2.5L3 12l1.6-2.3-.3-2.5 2.3-1 .9-2.4 2.5.3L12 2.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />

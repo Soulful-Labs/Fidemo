@@ -1352,13 +1352,11 @@ sign-in (`src/session.ts`, `src/app/Guard.tsx`, `shared/store.ts` signInTeam).
   makes every team account on Sub-Admin. Sign In has no sign-up link, the
   entrance has no Sign Up button, and `/signup` is not a route.
 
-### The entrance (`/`, served at `/internal`)
+### No entrance (`/`, served at `/internal`)
 
-Not drawn in Figma and not a marketing page. `src/screens/auth/Entrance.tsx` is
-one screen on the sign-in layout (`AuthLayout`): the HumanLayer lock-up,
-"HumanLayer team console", one line saying what the console is, **Log In**, and
-"Access is for HumanLayer team members only." Nothing else, by brief. A
-signed-out visitor sees it; anyone signed in goes to where they land.
+Removed 23 Oct 2026: the entrance screen is not in the design. `/` sends a
+signed-out visitor straight to sign in, and anyone signed in to where they
+land (`SignedOut`, `src/routes.ts`).
 
 ### Must change before production
 

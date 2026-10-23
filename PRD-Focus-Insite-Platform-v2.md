@@ -243,7 +243,7 @@ Measured specifics worth copying exactly (console, and the client is near-identi
 - **Toggle**: 40 × 24 track, 18px knob, 3px inset. Off: stroke-input track, subtitle knob. On: brand-primary track, bg-1 knob.
 - **Underline tabs**: 42 tall, 16px sides, brand-primary text and a 1px underline when active over a 1px baseline, 24px count pill.
 - **Segmented tabs**: 48 track, 4px padding, active pill 40 tall.
-- **Side panel**: 600 wide, as tall as its content, opens top right, rounded left corners (24px), an 18px title in a 56px title bar, footer of two 48px buttons 16 apart.
+- **Side panel**: 600 wide, an 18px title in a 56px title bar, footer of two 48px buttons 16 apart. In the client app (23 October 2026) it has two placements. A **pop-up** (the default) opens in the centre of the screen, as tall as its content, every corner rounded: Rate, Ask Support, Invite To Study, Add New Card, Edit Card, Make Payment, Pay All Due Invoices, Download Sessions Results, Payment Breakdown, Add an override. A **sheet** is a full-height overlay anchored to the right edge, top to bottom, rounded left corners, for long scrollable content: a participant's profile (with its Reviews page), Notifications, Invoice Details, and Needs Your Attention (built, opened from nowhere today). The 460px dialogs were already centred.
 - **Modal**: 460 wide. Centred variant: title, body max 310px, 40px above and below. Titled variant: 56px title bar, blocks 24 apart. Bottom bar 80px.
 - **Success modal**: a 160px disc, a 92px badge with a 4px rim, a white tick, one 48px button.
 
@@ -566,7 +566,8 @@ The profile picture and the intro video each earn their points once. Removing ei
 | Minimum redemption | 1,000 points |
 | Withdrawal fee | $2 flat |
 | Points expiry | Points do not expire |
-| Payout timing | 2 to 3 working days |
+| Study payout | Within 14 days after the study ends: the team pays the reward into the wallet by hand (`WAITS.PAYOUT_AFTER_STUDY_ENDS_DAYS`) |
+| Withdrawal to the bank | 2 to 3 working days |
 | Client refund timing | 5 to 7 working days |
 
 ### 6.5 Scheduling
@@ -894,7 +895,7 @@ This is the functional specification for the app. Build to it exactly.
 | Client name and rating | `/clients/:clientId/ratings` |
 | Get Support | `/support/contact` with the study prefilled in the subject |
 | View Directions | Opens a map |
-| How It Works | Expands and collapses. It starts collapsed, unless the participant has applied to the study |
+| How It Works | Expands and collapses. It starts collapsed, unless the participant has applied to the study. Its two steps read (23 October 2026): "Apply and answer screener questions to see if qualify" / "The team will review your application and invite you if qualified and selected.", and "Complete the study and get paid!" / "Once approved, complete your study, and get paid within the 14 days after the study ends." The 14 is the policy's payout window (6.4, `WAITS.PAYOUT_AFTER_STUDY_ENDS_DAYS`) |
 | Report | Opens Report Study: one of eight reasons, then a required description of up to 500 characters, then "Report has been submitted!". Nothing changes for the study until the team acts. See 5.7 |
 
 ### 9.4 The study state machine, as the participant sees it
@@ -1393,6 +1394,8 @@ Sort by is a menu: Newest first, Oldest first.
 
 All four pages are one screen with a 197px sub-navigation and a 600px column. **Logout is the fifth navigation item and raises a dialog** rather than changing the column.
 
+**Profile has no Payment Method section** (removed 23 October 2026: not in the design). Nothing depends on it: cards are added, edited, removed and made default under Payments, Saved Payment Methods, and Publish asks for a card when there is none.
+
 **Rating & Reviews shows both directions on the same row.** The headline is the client's own aggregate. Under it, each entry is a study with a star rating, a date and a written review, then a second line: "To participant: [name] 5.0". So the top line is the score attached to that study and the bottom line is what the client gave the participant back. The participant's name opens their profile panel.
 
 **The client certificate is a business verification badge, not a trust score.** The banner reads "You are a verified business!". The card is titled "HumanLayer Buyer Certificate" and carries its own ID, `FI-C-XXXX-XXXX`, issued once when the business check passes. It claims only what the platform verifies: "Business registration verified", and "Billing on file" when a card is saved. Before the check passes the tab says "Not issued yet". There is no expiry date, download, share link, public check URL or named issuing authority. See D12.
@@ -1405,15 +1408,9 @@ The console the Focus Insite team uses to run the platform. Light theme, 1440px,
 
 ## 13. Console: navigation, entrance and shell
 
-### 13.0 The entrance
+### 13.0 No entrance
 
-Not in any design. Built for the same reason as the client one.
-
-| Route | Who sees it |
-|---|---|
-| `/internal` | A signed-out visitor. A signed-in team member goes to their dashboard, or to the first module they have |
-
-**This is not a marketing page and must not become one.** One screen, no scrolling: the HumanLayer mark, "HumanLayer team console", one line saying what it is, Log In as the only action, and "Access is for HumanLayer team members only." Nothing about features, and nothing that describes internal tooling to an outsider.
+**Removed 23 October 2026: it is not in the design.** `/internal` goes straight to sign in for a signed-out visitor; a signed-in team member goes to their dashboard, or to the first module they have.
 
 **There is no sign-up.** A master admin makes every team account, on Sub-Admin. Sign In is drawn (1849:112091) and has no sign-up link.
 

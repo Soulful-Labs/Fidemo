@@ -112,7 +112,7 @@ export function NeedRow({ n }: { n: Need }) {
 /** Every row, for "View all": the dashboard shows the top three. */
 export function AttentionPanel({ open, onClose, needs }: { open: boolean; onClose: () => void; needs: Need[] }) {
   return (
-    <SidePanel open={open} onClose={onClose} title="Needs Your Attention" headerClassName="h-14" bodyClassName="flex flex-col px-4 py-2">
+    <SidePanel placement="sheet" open={open} onClose={onClose} title="Needs Your Attention" headerClassName="h-14" bodyClassName="flex flex-col px-4 py-2">
       {needs.map((n) => <NeedRow key={n.key} n={n} />)}
     </SidePanel>
   )

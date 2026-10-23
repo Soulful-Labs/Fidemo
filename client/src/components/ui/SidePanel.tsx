@@ -4,17 +4,20 @@ import { cn } from '../../lib/cn'
 import { Close } from './icons'
 
 /**
- * The 600px panel that slides in from the right: Notifications (1518:71845),
- * Respondent Profile Details (1704:141690), Invoice Details, Ask Support and
- * Invite To Study. The frames give it a 56px title bar with the close button
- * on the right, a scrolling body and an optional footer. It is as tall as
- * what it holds and opens top right with rounded left corners, as every
- * panel frame draws it (22 Oct 2026); a long one scrolls inside the screen.
+ * The 600px panel: a 56px title bar with the close button on the right, a
+ * scrolling body and an optional footer. Where it sits (23 Oct 2026):
+ * - `placement="center"` (the default), a pop-up: small or form-like content
+ *   (Ask Support, Rate, Add New Card, Invite To Study...) opens in the centre
+ *   of the screen, as tall as what it holds, every corner rounded.
+ * - `placement="sheet"`: long scrollable content (a participant's profile,
+ *   Notifications, Invoice Details...) is a full-height overlay anchored to
+ *   the right edge, from top to bottom.
  */
 export default function SidePanel({
-  open, onClose, title, subtitle, headerAction, footer, children, className, bodyClassName, headerClassName,
+  open, onClose, title, subtitle, headerAction, footer, children, className, bodyClassName, headerClassName, placement = 'center',
 }: {
   open: boolean; onClose: () => void; title?: ReactNode; subtitle?: string
+  placement?: 'center' | 'sheet'
   headerAction?: ReactNode; footer?: ReactNode; children?: ReactNode
   className?: string; bodyClassName?: string; headerClassName?: string
 }) {
@@ -27,9 +30,9 @@ export default function SidePanel({
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-text-title/20" role="presentation" onClick={onClose}>
-      <aside role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}
-        className={cn('flex max-h-full w-panel flex-col self-start overflow-hidden rounded-l-xl bg-bg-0 shadow-xl', className)}>
+    <div className={cn('fixed inset-0 z-50 flex bg-text-title/20', placement === 'sheet' ? 'justify-end' : 'items-center justify-center p-6')} role="presentation" onClick={onClose}>
+      <aside role="dialog" aria-modal="true" data-placement={placement} onClick={(e) => e.stopPropagation()}
+        className={cn('flex w-panel flex-col overflow-hidden bg-bg-0 shadow-xl', placement === 'sheet' ? 'h-full rounded-l-xl' : 'max-h-full rounded-xl', className)}>
         <header className={cn('flex h-14 shrink-0 items-center justify-between gap-4 border-b-1 border-stroke-1 px-4', headerClassName)}>
           <div className="flex min-w-0 flex-col">
             {typeof title === 'string' ? <h2 className="text-title-s text-text-title">{title}</h2> : title}

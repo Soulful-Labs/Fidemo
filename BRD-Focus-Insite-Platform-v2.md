@@ -137,7 +137,9 @@ The paid-participation market is the mechanism: people give their time and opini
 | Recruitment fee | $25 base | Per completed participant |
 | Recruitment add-on | +$25 | Video Call, In-Person or Diary type; or Roles targeting |
 | Recruitment add-on | +$20 | Skills targeting |
-| Withdrawal fee | $2 | Per participant withdrawal |
+| Withdrawal fee | $2 |
+| Study payout | Within 14 days after the study ends, paid into the wallet by the team |
+| Withdrawal to the bank | 2 to 3 working days | Per participant withdrawal |
 
 The client fees are the current values. A master admin sets them in the console; each change is confirmed and recorded, and a study keeps the fees it was created with. The withdrawal fee is set by the policy.
 

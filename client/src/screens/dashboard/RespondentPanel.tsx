@@ -54,7 +54,7 @@ export default function RespondentPanel({
   if (!respondent || !d) return null
 
   return (
-    <SidePanel open={open} onClose={onClose} title={title ?? respondent.name} headerClassName="h-14" bodyClassName="flex flex-col gap-3 p-4"
+    <SidePanel placement="sheet" open={open} onClose={onClose} title={title ?? respondent.name} headerClassName="h-14" bodyClassName="flex flex-col gap-3 p-4"
       footer={
         <div className="flex gap-3 [&_button]:h-12 [&_button]:flex-1 [&_button]:text-body-medium">
           <Button size="none" onClick={() => (onInvite ? onInvite() : toast('Invite them from the Pool or a study\'s Matched tab'))}>Invite To Study</Button>

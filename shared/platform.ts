@@ -251,6 +251,8 @@ export const WAITS = {
   WITHDRAWAL: '2-3 working days',
   /** "Expected in bank by" is the far end of that: this many working days after the request. */
   WITHDRAWAL_LATEST_WORKING_DAYS: 3,
+  /** The stated payout window (23 Oct 2026, policy v2 section 4): a completed study's reward is paid within this many days after the study ends. */
+  PAYOUT_AFTER_STUDY_ENDS_DAYS: 14,
 } as const
 
 /** A date `n` working days (Monday to Friday) after `iso`. */

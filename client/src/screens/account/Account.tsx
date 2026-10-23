@@ -14,8 +14,6 @@ import { count } from '@shared/format'
 import { useClient, usePlatform } from '../../platform'
 import { useToast } from '../../components/ui/Toast'
 import { useSession } from '../../mock/session'
-import { useWorkspace } from '../../mock/workspace'
-import { AddCardPanel, CardMark, EditCardPanel } from '../payments/PaymentPanels'
 import { PersonName } from '../../app/ProfileHost'
 
 const NAV = [
@@ -103,10 +101,7 @@ export default function Account() {
     location: account?.location ?? '',
   })
   const [modal, setModal] = useState(params.get('modal') ?? '')
-  /** The card on file: edited or replaced from here at any time (Payments lists every card). */
-  const { cards } = useWorkspace()
-  const card = cards.find((c) => c.isDefault) ?? cards[0]
-  const [cardPanel, setCardPanel] = useState<'' | 'edit' | 'add'>('')
+  // Cards are managed on Payments (Saved Payment Methods) and asked for at Publish; Account has no Payment Method section (23 Oct 2026).
   const go = (k: string) => {
     if (k === 'logout') { setModal('logout'); return }
     const n = new URLSearchParams(params); n.set('tab', k); setParams(n)
@@ -160,26 +155,6 @@ export default function Account() {
                   toast('Saved')
                 }}>Save Changes</Button>
 
-                <div className="flex flex-col gap-3 pt-8">
-                  <p className="text-title-s text-text-title">Payment Method</p>
-                  {card ? (
-                    <div className="flex h-[72px] items-center justify-between gap-3 rounded-lg border-1 border-stroke-input px-4">
-                      <span className="flex items-center gap-3">
-                        <CardMark brand={card.brand} />
-                        <span className="flex flex-col">
-                          <span className="text-body-regular text-text-title">{card.brand} <span className="px-1">&bull;</span> •••• {card.last4}</span>
-                          <span className="text-text-regular text-text-subtitle">{card.expires}{card.isDefault ? ' · Default, used when you publish' : ''}</span>
-                        </span>
-                      </span>
-                      <Button variant="tertiary" size="row" className="px-3" onClick={() => setCardPanel('edit')}>Edit or Replace</Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between gap-3 rounded-lg border-1 border-stroke-input px-4 py-4">
-                      <span className="text-text-regular text-text-subtitle">No card on file. You will need one to publish a study.</span>
-                      <Button variant="tertiary" size="row" className="px-3" onClick={() => setCardPanel('add')}>Add Card</Button>
-                    </div>
-                  )}
-                </div>
               </>
             )}
 
@@ -291,8 +266,6 @@ export default function Account() {
       <OutcomeModal open={modal === 'deactivated'} onClose={() => setModal('')} kind="deactivated" />
       <OutcomeModal open={modal === 'active'} onClose={() => setModal('')} kind="activeStudies" />
       <LogoutModal open={modal === 'logout'} onClose={() => setModal('')} />
-      <EditCardPanel open={cardPanel === 'edit'} last4={card?.last4} onClose={() => setCardPanel('')} />
-      <AddCardPanel open={cardPanel === 'add'} onClose={() => setCardPanel('')} />
     </AppShell>
   )
 }

@@ -42,8 +42,8 @@ export function InvoiceDetailsPanel({
   const toast = useToast()
   const { BILLING, BILLING_TOTAL, INVOICE, study, card } = useBill(studyId)
   return (
-    <SidePanel open={open} onClose={onClose} title={INVOICE.title} headerClassName="h-14"
-      className="h-fit max-h-full" bodyClassName="flex flex-col gap-3 px-4 pb-4 pt-4"
+    <SidePanel placement="sheet" open={open} onClose={onClose} title={INVOICE.title} headerClassName="h-14"
+      bodyClassName="flex flex-col gap-3 px-4 pb-4 pt-4"
       footer={paid
         ? <Button variant="tertiary" fullWidth size="none" className="h-12 text-body-medium" onClick={() => toast(`Saved ${save(fileName(INVOICE.number.replace('Invoice Number: ', 'invoice '), 'pdf'), pdf(INVOICE.title, [INVOICE.number, INVOICE.issued, '', { heading: 'Billing' }, ...BILLING.map((b) => `${b.label}  ${b.amount}`), `${BILLING_TOTAL.total.label}  ${BILLING_TOTAL.total.amount}`, `${BILLING_TOTAL.less.label}  ${BILLING_TOTAL.less.amount}`, `${BILLING_TOTAL.net.label}  ${BILLING_TOTAL.net.amount}`, '', INVOICE.paidTitle, INVOICE.paidAt]))}`)} leftIcon={<Download className="h-4 w-4" />}>Download</Button>
         : <Button fullWidth size="none" className="h-12 text-body-medium" onClick={onPay}>Make Payment</Button>}>

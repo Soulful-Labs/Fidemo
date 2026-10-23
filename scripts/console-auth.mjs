@@ -169,8 +169,8 @@ await step('The access toggles decide it: the master admin gives her Finance, an
 })
 
 // There is no sign-up (22 Oct 2026): a master admin makes every team account, on Sub-Admin.
-await step('No one can sign up: no Sign Up on the entrance or on sign in, and /signup is not a page', async () => {
-  await logout(); await T.go(B + '/'); const entrance = await T.has('Sign Up')
+await step('No one can sign up: /internal goes to sign in, no Sign Up there, and /signup is not a page', async () => {
+  await logout(); await T.go(B + '/'); const entrance = await T.has('Sign Up') || (await T.path()) !== B + '/signin'
   await T.go(B + '/signin'); const signin = (await T.has('Sign Up')) || (await T.has('New to the team'))
   await T.go(B + '/signup'); const form = (await T.has('Sign Up')) || (await T.has('Re-enter the password'))
   expect(!entrance && !signin && !form, `entrance ${entrance}, sign in ${signin}, /signup shows a form ${form} at ${await T.path()}`)

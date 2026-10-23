@@ -41,7 +41,7 @@ export function PayAllPanel({ open, onClose, invoices, onPaid }: {
   }
 
   return (
-    <SidePanel open={open} onClose={onClose} title="Pay All Due Invoices" headerClassName="h-14" className="h-fit max-h-full"
+    <SidePanel open={open} onClose={onClose} title="Pay All Due Invoices" headerClassName="h-14"
       bodyClassName="flex flex-col gap-3 p-4"
       footer={<Button size="none" className="h-12 w-full text-body-medium" disabled={chosen.length === 0} onClick={pay}>Pay {money(total)}</Button>}>
       <section className="flex flex-col rounded-lg border-1 border-stroke-1 bg-bg-1 px-4">

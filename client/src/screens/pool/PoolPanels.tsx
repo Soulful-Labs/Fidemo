@@ -57,7 +57,7 @@ export function ReviewsPanel({ open, onClose, onBack, onInvite, respondent }: {
   if (!respondent) return null
   const rows = participantReviews(state, respondent.id)
   return (
-    <SidePanel open={open} onClose={onClose} title={`Profile of ${respondent.name}.`} headerClassName="h-14"
+    <SidePanel placement="sheet" open={open} onClose={onClose} title={`Profile of ${respondent.name}.`} headerClassName="h-14"
       bodyClassName="flex flex-col p-0"
       footer={
         <div className="flex gap-3 [&_button]:h-12 [&_button]:flex-1 [&_button]:text-body-medium">

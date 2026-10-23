@@ -338,23 +338,27 @@ const cardsBAfter = await st(C, `s.clients.find((c) => c.id === ${JSON.stringify
   say(3, 'client', 'A card added at onboarding is already selected at publish, not re-entered', g, `onboarding saved ${cardsB}; Publish showed "${pubB.radio.join(' | ')}" with no card form, and published with it`)
 }
 
-// ---- 5: edit, then replace, the card from the account
+// ---- 5: edit, then replace, the card (23 Oct 2026: from Payments' Saved Payment Methods; Account has no Payment Method section)
 await C.go('/client/account'); await C.ev(FORMS)
+const accountPage = await body(C)
+await C.go('/client/payments'); await C.ev(FORMS)
 const accountCard1 = await body(C)
-await C.click('Edit or Replace', 500)
+const editTile = `(() => { const b = [...document.querySelectorAll('main button')].find((x) => x.textContent.trim() === 'Edit'); b.click(); return true })()`
+await C.ev(editTile); await sleep(500)
 await C.ev(`__ph('MM / YYYY', '01 / 2031')`); await clickExact(C, 'Save'); await sleep(500)
 const edited = await st(C, `s.clients.find((c) => c.id === ${JSON.stringify(idB)}).cards.map((c) => c.last4 + ' ' + c.expires).join()`)
 const accountCard2 = await body(C)
-await C.click('Edit or Replace', 500)
+await C.ev(editTile); await sleep(500)
 await C.ev(`(() => { __ph('Leave blank to keep this card', '5555 5555 5555 4444'); __ph('MM / YYYY', '02 / 2032'); return true })()`); await clickExact(C, 'Save'); await sleep(500)
 const replaced = await st(C, `s.clients.find((c) => c.id === ${JSON.stringify(idB)}).cards.map((c) => c.brand + ' ' + c.last4 + ' ' + c.expires + (c.isDefault ? ' default' : '')).join()`)
 const accountCard3 = await body(C)
 {
   const g = []
-  if (!/Payment Method/.test(accountCard1) || !/(?:\*{4}|•{4}) 1111/.test(accountCard1)) g.push('the account does not show the card')
+  if (/Edit or Replace|Payment Method/.test(accountPage)) g.push('Account still has a Payment Method section')
+  if (!/Saved Payment Methods/.test(accountCard1) || !/1111/.test(accountCard1)) g.push('Payments does not show the card')
   if (edited !== '1111 Expires 01/31' || !/Expires 01\/31/.test(accountCard2)) g.push(`edit: ${edited}`)
   if (replaced !== 'Mastercard 4444 Expires 02/32 default' || !/(?:\*{4}|•{4}) 4444/.test(accountCard3)) g.push(`replace: ${replaced}`)
-  say(5, 'client', 'The card can be edited from the client\'s account', g, `Account > Payment Method > Edit or Replace: expiry changed to 01/31, then replaced with ${replaced}`)
+  say(5, 'client', 'The card can be edited from Payments (Account has no Payment Method section)', g, `Payments > Saved Payment Methods > Edit: expiry changed to 01/31, then replaced with ${replaced}; Account shows no Payment Method`)
 }
 
 // ---- 6: duration reads as an estimate
