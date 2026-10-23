@@ -20,6 +20,7 @@
  *   (`trustAt`, `pointsAt`), never from the current constants.
  */
 import { FEES, FEE_ADDONS } from './platform'
+import { EMPTY_RATE_CARD, RATE_CARD } from './ratecard'
 import { POINTS, RATING_DELTA, REDEEM, TIERS, TRUST } from './rules'
 import type { PlatformState, SettingsGroup, SettingsValues, Stars } from './types'
 
@@ -38,6 +39,8 @@ export const DEFAULTS: SettingsValues = {
   },
   // Participants Fees (23 Oct 2026): the withdrawal fee, and the dollar value of 100 reward coins.
   participants: { withdrawal: FEES.WITHDRAWAL, pointsValue: 100 / REDEEM.PER_USD },
+  // The rate card (24 Oct 2026) starts empty; the platform's first version is the team's July 2026 sheet (shared/seed.ts).
+  rateCard: EMPTY_RATE_CARD,
 }
 
 const copy = <T>(x: T): T => JSON.parse(JSON.stringify(x)) as T
@@ -51,7 +54,7 @@ export function settingsAt<G extends SettingsGroup>(state: PlatformState, group:
 
 /** Every group as it stands now. */
 export const currentSettings = (state: PlatformState): SettingsValues =>
-  ({ fees: settingsAt(state, 'fees'), trust: settingsAt(state, 'trust'), tiers: settingsAt(state, 'tiers'), points: settingsAt(state, 'points'), participants: settingsAt(state, 'participants') })
+  ({ fees: settingsAt(state, 'fees'), trust: settingsAt(state, 'trust'), tiers: settingsAt(state, 'tiers'), points: settingsAt(state, 'points'), participants: settingsAt(state, 'participants'), rateCard: settingsAt(state, 'rateCard') })
 
 /** The Trust Score values in force when something happened. */
 export const trustAt = (state: PlatformState, at?: string) => settingsAt(state, 'trust', at)
@@ -78,6 +81,7 @@ export function applyCurrentSettings(state: PlatformState): void {
   points.REFERRAL = now.points.referral; points.BEING_REFERRED = now.points.beingReferred; points.STUDY_COMPLETION = now.points.studyCompletion
   points.FULL_PROFILE = now.points.fullProfile; points.STREAK = now.points.streak; points.PROFILE_PICTURE = now.points.profilePicture; points.INTRO_VIDEO = now.points.introVideo
   fees.WITHDRAWAL = now.participants.withdrawal
+  RATE_CARD.current = now.rateCard
   ;(REDEEM as unknown as Record<string, number>).PER_USD = 100 / now.participants.pointsValue
 }
 
@@ -89,6 +93,14 @@ export function settingsFault<G extends SettingsGroup>(group: G, v: SettingsValu
     const f = v as SettingsValues['fees']
     if (nums(f).some((n) => n < 0) || f.addOns.some((a) => !Number.isFinite(a.amount) || a.amount < 0)) return 'A fee cannot be negative'
     if (f.addOns.some((a) => a.on.length === 0)) return 'Every add-on needs at least one parameter'
+  }
+  if (group === 'rateCard') {
+    const c = v as SettingsValues['rateCard']
+    const ranges = [...c.segments.flatMap((s) => [s.setup, s.cpr, s.incentive]), ...c.fees.map((f) => f.amount)]
+    if (ranges.some((r) => (r.min != null && (!Number.isFinite(r.min) || r.min < 0)) || (r.max != null && (!Number.isFinite(r.max) || r.max < 0)))) return 'A rate cannot be negative'
+    if (ranges.some((r) => r.min != null && r.max != null && r.max < r.min)) return 'The top of a range cannot be below its bottom'
+    if (c.segments.some((s) => !s.segment.trim())) return 'Every segment row needs a segment name'
+    if (c.fees.some((f) => !f.item.trim())) return 'Every fee row needs an item'
   }
   if (group === 'participants') {
     const p = v as SettingsValues['participants']

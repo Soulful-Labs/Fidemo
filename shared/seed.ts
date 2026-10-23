@@ -14,19 +14,21 @@ import { billing, freshCertificateId } from './derive'
 import { avatarFor } from './avatar'
 import { withdrawalExpectedBy } from './platform'
 import { DEMO_SESSION_CODE, FEES, isSessionType, paymentPlan, priceStudy, rateFor } from './platform'
+import { EMPTY_RATE_CARD, RATE_CARD, readCsv } from './ratecard'
+import { RATE_CARD_FEES_CSV, RATE_CARD_SEGMENTS_CSV, RATE_CARD_SOURCE } from './seed/rateCardFiles'
 import { SCREENERS, TASKS } from './seed/screeners'
 import { catalogue } from './seed/catalogue'
 import type { CatalogueEntry } from './seed/catalogue'
 import { buildPool, starsSumming, targetScore } from './seed/people'
 import { trustInputs } from './derive'
 import { TRUST, pointsToUsd, starsForRating, trustForStars } from './rules'
-import type { Answers, AudienceCriteria } from './types'
+import type { Answers, AudienceCriteria, SettingsChange } from './types'
 import type { StudyGroup,
   Activity, Client, EarlierReview, Location, Participation, ParticipationState, Person, PlatformState,
   Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudyReport, StudySetup, StudyType, TeamMember, Ticket,
 } from './types'
 
-export const SEED_VERSION = 21
+export const SEED_VERSION = 22
 export const DEMO_PERSON_ID = 'jonathan'
 export const DEMO_PERSON_EMAIL = 'jonathan.reeve@example.com'
 /** The respondent app's demo login (README). A front-end stand-in for real authentication, see Person.password. Every seeded participant has it. */
@@ -165,6 +167,9 @@ interface Counts {
 }
 
 export function buildSeed(now: Date = new Date()): PlatformState {
+  // The rate card the seed's studies are priced from (24 Oct 2026): the team's own files, read as an upload reads them.
+  const rateCard = { segments: readCsv(RATE_CARD_SEGMENTS_CSV)?.segments ?? [], fees: readCsv(RATE_CARD_FEES_CSV)?.fees ?? [] }
+  RATE_CARD.current = rateCard
   const t0 = now.getTime()
   const at = (offsetDays: number, hour = 10, minute = 0): string => {
     const d = new Date(t0 + offsetDays * DAY)
@@ -860,9 +865,11 @@ Group ${i + 1}: most book travel on a phone, but pay on a laptop.
   }
   // The audience pills Manage and Review read back are the study's own criteria (D38), not a sample list.
   for (const study of studies) if (!study.form && study.setup) study.setup = { ...study.setup, audience: audiencePills(study.audience, study.required) }
+  /** The rate card's first version: the team's July 2026 sheet, read from its files the way an upload is (24 Oct 2026). */
+  const rateCardLog: SettingsChange[] = [{ id: 'set-rate-card-july', group: 'rateCard', at: at(-100, 10, 0), by: MASTER_ADMIN_ID, before: EMPTY_RATE_CARD, after: rateCard, source: RATE_CARD_SOURCE }]
   /** One group of the demo client's studies (Studies - with groups, 23 Oct 2026); the rest are under Others. */
   const studyGroups: StudyGroup[] = [{ id: 'grp-digital', clientId: DEMO_CLIENT_ID, name: 'My Digital Studies Group', studyIds: ['st-social', 'st-goal'], createdAt: at(-5, 11, 0) }]
-  const state: PlatformState = { version: SEED_VERSION, seededAt: now.toISOString(), people, clients, studies, reports, tickets, team, activity, pending: [], teamNotices: [], studyReports, studyGroups }
+  const state: PlatformState = { version: SEED_VERSION, seededAt: now.toISOString(), people, clients, studies, reports, tickets, team, activity, pending: [], teamNotices: [], studyReports, studyGroups, settingsLog: rateCardLog }
   /**
    * Certificates issued at verification (policy section 7), each ID generated
    * once and never reused. A fixed sequence stands in for Math.random so the

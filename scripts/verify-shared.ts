@@ -8,13 +8,16 @@
  * is refused with a reason.
  */
 import { diffForms, studyHistory } from '../shared/revisions'
-import { clientDeactivationBlockers, clientDeactivationRefusal, groupSections, groupsOf, payoutRows, personById, redeemRows, studiesOf } from '../shared/derive'
+import { clientDeactivationBlockers, clientDeactivationRefusal, currentRate, earnedOf, groupSections, groupsOf, payoutRows, personById, redeemRows, studiesOf } from '../shared/derive'
 import { settingsAt } from '../shared/settings'
 import { withdrawals,
   billing, consoleDashboard, hasCertificate, payoutsToProcess, referralCode, counts, financeTotals, personFigures, pointsRows, poolPerson, recruit, refundsPending, respondentStudies, sharedPhoto, sharedVideo, trustInputs,
 } from '../shared/derive'
 import { PAYOUT_MOVES, respondentStatus, participationOf } from '../shared/lifecycle'
-import { FEES, RATE_PER_PARTICIPANT, TIMINGS, depositFor, diaryWords, paymentPlan, quoteStudy } from '../shared/platform'
+import { FEES, TIMINGS, depositFor, diaryWords, paymentPlan, quoteStudy, rateFor } from '../shared/platform'
+import { EMPTY_RATE_CARD, RATE_CARD, feesCsv, parseCsv, previewUpload, quoteFrom, readCsv, segmentsCsv } from '../shared/ratecard'
+import { readFileSync } from 'node:fs'
+import { RATE_CARD_FEES_CSV, RATE_CARD_SEGMENTS_CSV } from '../shared/seed/rateCardFiles'
 import { POINTS, REDEEM, TIERS, TRUST, starsForRating, starsFromDimensions, trustScore } from '../shared/rules'
 import { DEMO_CLIENT_ID, DEMO_PERSON_EMAIL, DEMO_PERSON_ID, DEMO_PERSON_PASSWORD, MASTER_ADMIN_ID, buildSeed } from '../shared/seed'
 import { buildScreener, buildTasks, screenerOutline, taskResults } from '../shared/questions'
@@ -134,7 +137,7 @@ const made = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Journey study', type
   check('create: weekly hours become the dated slots a respondent books, weekdays only', Boolean(mine?.availability?.length) && mine!.availability!.every((a) => !['Saturday', 'Sunday'].includes(dayName(a.date))) && mine!.availability![0]!.slots[0] === '09:00 AM', mine?.availability?.[0]?.slots.join())
   check('create: sessions are the study length with the buffer between them', mine?.availability?.[0]?.slots[1] === '10:00 AM' && mine.schedule?.bufferMins === 15, mine?.availability?.[0]?.slots.slice(0, 3).join())
   check('create: nothing is offered after the study ends', mine !== undefined && mine.availability!.every((a) => a.date <= mine.endsAt))
-  check('create: the whole form is kept with the study', mine?.form?.title === 'Journey study' && mine.form.questions.length === BUILT.length && mine.required === 5 && mine.rates.incentivePer === 120)
+  check('create: the whole form is kept with the study', mine?.form?.title === 'Journey study' && mine.form.questions.length === BUILT.length && mine.required === 5 && mine.rates.incentivePer > 0 && mine.rates.incentivePer !== 120 && mine.rates.incentivePer === mine.incentivePeriods?.[0]?.amount)
   check('create: hours that end before they start are refused, by day', (() => { const r = buildStudy(formOf({ title: 't', hours: { Monday: [{ from: '12:00 AM', to: '12:00 AM' }] } })); return !r.ok && r.why.startsWith('Monday') })())
   check('create: a study with no title, or no availability submitted, is refused', !buildStudy(formOf({ title: ' ' })).ok && !buildStudy(formOf({ title: 't', availabilitySet: false })).ok)
   const tomorrow = new Date(now.getTime() + 86_400_000), ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -228,7 +231,7 @@ check('9c. the study finishes: the client is told the participants will now be p
 check('9d. and the team is told the payouts are ready to process; nothing is paid yet', st().teamNotices[0]?.studyId === id && st().teamNotices[0]?.title === 'Payouts ready to process' && status(id) === 'in_process' && payoutsToProcess(st()).some((c) => c.study.id === id && c.ready.length === 1), st().teamNotices[0]?.body)
 check('9e. the team processes them by hand, and it is logged', p.processPayouts(id, team).ok && st().activity[0]!.what.startsWith('Processed 1 payout') && !payoutsToProcess(st()).some((c) => c.study.id === id))
 const after = fig()
-check('10. wallet, points and Trust Score rise', status(id) === 'paid' && after.walletBalance === before.walletBalance + 120 && after.points === before.points + POINTS.STUDY_COMPLETION && after.trustScore === before.trustScore + TRUST.STUDY_COMPLETION, `wallet ${before.walletBalance}->${after.walletBalance} points ${before.points}->${after.points} trust ${before.trustScore}->${after.trustScore}`)
+check('10. wallet, points and Trust Score rise', status(id) === 'paid' && after.walletBalance === before.walletBalance + st().studies.find((x) => x.id === id)!.rates.incentivePer && after.points === before.points + POINTS.STUDY_COMPLETION && after.trustScore === before.trustScore + TRUST.STUDY_COMPLETION, `wallet ${before.walletBalance}->${after.walletBalance} points ${before.points}->${after.points} trust ${before.trustScore}->${after.trustScore}`)
 check('11. the same score is what the console profile derives', personFigures(p.getState(), DEMO_PERSON_ID, new Date(clock)).trustScore === after.trustScore)
 check('12. the client rates them; the rating feeds the Trust Score', p.rateParticipant(id, DEMO_PERSON_ID, 'excellent').ok && fig().trustScore >= after.trustScore, `trust ${after.trustScore}->${fig().trustScore}`)
 
@@ -351,16 +354,16 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   const paid = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Money study', participants: '8', incentive: 150 }))
   const money = paid.ok ? st().studies.find((x) => x.id === paid.id)! : undefined
   check('money: publishing prices the study at the platform rate and takes the 20% upfront deposit; the bill projects rate x participants',
-    money?.ratePeriods?.[0]?.rate === RATE_PER_PARTICIPANT && money?.payments.length === 1 && money.payments[0]!.stage === 'upfront' && money.payments[0]!.amount === paymentPlan(RATE_PER_PARTICIPANT, 8).upfront
-    && billing(money).deposit === money.payments[0]!.amount && billing(money).totalCost === RATE_PER_PARTICIPANT * 8 && billing(money).less[0]!.label === 'Less: 20% Upfront Deposit',
+    money?.ratePeriods?.[0]?.rate === rateFor(money) && rateFor(money) > 0 && money?.payments.length === 1 && money.payments[0]!.stage === 'upfront' && money.payments[0]!.amount === paymentPlan(rateFor(money), 8).upfront
+    && billing(money).deposit === money.payments[0]!.amount && billing(money).totalCost === rateFor(money) * 8 && billing(money).less[0]!.label === 'Less: 20% Upfront Deposit',
     money ? `${money.payments[0]?.amount} / ${billing(money).totalCost}` : '')
-  check('money: the incentive is inside the rate, not charged on top', money ? billing(money).plan.total === RATE_PER_PARTICIPANT * 8 : false)
+  check('money: the incentive is inside the rate, not charged on top', money ? billing(money).plan.total === rateFor(money) * 8 : false)
 
   check('edit: a study waiting on the team can be changed and sent again, in place', (() => {
     if (!paid.ok) return false
     const again = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Money study, revised', participants: '10', incentive: 150 }), paid.id)
     const now2 = st().studies.find((x) => x.id === paid.id)!
-    return again.ok && again.id === paid.id && now2.title === 'Money study, revised' && now2.required === 10 && now2.state === 'in_review' && now2.payments.length === 1 && now2.payments[0]!.amount === paymentPlan(RATE_PER_PARTICIPANT, 10).upfront && st().studies.filter((x) => x.title.startsWith('Money study')).length === 1
+    return again.ok && again.id === paid.id && now2.title === 'Money study, revised' && now2.required === 10 && now2.state === 'in_review' && now2.payments.length === 1 && now2.payments[0]!.amount === paymentPlan(now2.ratePeriods![0]!.rate, 10).upfront && st().studies.filter((x) => x.title.startsWith('Money study')).length === 1
   })())
   check('edit: a live study is refused, and saving a submitted study as a draft is refused', (() => {
     if (!paid.ok) return false
@@ -374,7 +377,7 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
     const x = st().studies.find((y) => y.id === paid.id)!
     const inc = x.payments.filter((y) => y.stage === 'incentive')
     const b = billing(x)
-    return inc.length === 1 && inc[0]!.amount === paymentPlan(RATE_PER_PARTICIPANT, 10).incentive && b.deposit === paymentPlan(RATE_PER_PARTICIPANT, 10).upfront + inc[0]!.amount
+    return inc.length === 1 && inc[0]!.amount === paymentPlan(x.ratePeriods![0]!.rate, 10).incentive && b.deposit === paymentPlan(x.ratePeriods![0]!.rate, 10).upfront + inc[0]!.amount
       && b.less.map((l) => l.label).join(' | ') === 'Less: 20% Upfront Deposit | Less: 30% Recruitment Cost' && b.estimate.net === b.plan.total - b.deposit
   })())
   {
@@ -742,7 +745,7 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   check('settings: fees change, every agreed price stays', p.changeSettings('fees', { ...fees0, platform: 150, addOns: fees0.addOns.filter((a) => a.id !== 'ao-skills') }, team).ok
     && JSON.stringify(st().studies.map((x) => x.rates)) === before.rates)
   check('settings: a new quote uses the new fees', quote() === 150, String(quote()))
-  check('settings: every change is recorded with who and when', (st().settingsLog ?? []).filter((c) => c.by === MASTER_ADMIN_ID).length === 3 && st().activity.some((a) => /Changed the client fees/.test(a.what)))
+  check('settings: every change is recorded with who and when', (st().settingsLog ?? []).filter((c) => c.by === MASTER_ADMIN_ID && c.group !== 'rateCard').length === 3 && st().activity.some((a) => /Changed the client fees/.test(a.what)))
   // A no-show after the change is valued at the new figure.
   {
     const victim = st().studies.flatMap((x) => x.participations.filter((q) => q.state === 'scheduled').map((q) => ({ study: x.id, person: q.personId })))[0]
@@ -780,6 +783,73 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   check('cpi: a completed study cannot be repriced', !p.setStudyRate('cp-1', 300, team).ok)
 }
 
+
+
+// 24 Oct 2026: the rate card, the team's July 2026 sheet, read, quoted, uploaded and exported.
+{
+  p.reset(); clock = now.getTime()
+  const file = (f: string) => readFileSync(f, 'utf8').replace(/\r\n/g, '\n')
+  check('rate card: the embedded files are the CSVs at the root', RATE_CARD_SEGMENTS_CSV === file('rate-card.csv') && RATE_CARD_FEES_CSV === file('rate-card-fees.csv'))
+  const segs = readCsv(file('rate-card.csv'))!, fees = readCsv(file('rate-card-fees.csv'))!
+  const rawRows = parseCsv(file('rate-card.csv')).length - 1, rawFees = parseCsv(file('rate-card-fees.csv')).length - 1
+  check('rate card: every segment row is read, none skipped or unreadable', segs.kind === 'segments' && segs.segments.length === rawRows && rawRows === 14 && segs.unreadable.length === 0 && segs.skipped.length === 0, `${segs.segments.length} of ${rawRows}`)
+  check('rate card: every fee row is read, the unquoted comma stays in its note', fees.kind === 'fees' && fees.fees.length === rawFees && rawFees === 19 && fees.fees.find((f) => f.item === 'Client requests lower incentive than recommended')!.note === 'Provide a two option quote: recommended incentive with its timeline, and their requested incentive as best efforts')
+  const niche = segs.segments.find((x) => x.level === 'Level 2 Niche Consumer' && x.sizeBand === '1-25')!
+  check('rate card: a range keeps both ends, a blank stays blank', niche.cpr.min === 135 && niche.cpr.max === 165 && niche.incentive.min === 125 && niche.incentive.max === 150 && niche.cprNote === 'remote; 200 in person'
+    && segs.segments.find((x) => x.segment === 'Re-recruiting with no rescreening or grids')!.incentive.min === null)
+  // Upload onto an empty card: every row lands; then onto the same card: everything matches, nothing changes.
+  const first = previewUpload(EMPTY_RATE_CARD, [segs, fees])
+  check('upload: onto an empty card every row is added', first.added.length === rawRows + rawFees && first.matched.length === 0 && first.unreadable.length === 0)
+  const again = previewUpload(first.next, [segs, fees])
+  check('upload: the same file again matches every row by its labels and changes nothing', again.added.length === 0 && again.matched.length === rawRows + rawFees && again.matched.every((m) => m.changes.length === 0))
+  // Round trip: export and read back, field for field.
+  const back = { s: readCsv(segmentsCsv(first.next))!, f: readCsv(feesCsv(first.next))! }
+  const strip = (x: unknown) => JSON.stringify(x, (k, v) => (k === 'id' ? undefined : v))
+  check('export: the rate card round-trips through CSV, field for field', strip(back.s.segments) === strip(segs.segments) && strip(back.f.fees) === strip(fees.fees))
+  check('export: only the note with a comma is quoted', feesCsv(first.next).split('\n').filter((l) => l.includes('"')).length === 1)
+  // A changed and an unreadable cell are reported, never guessed.
+  const edited = readCsv(file('rate-card.csv').replace('Level 1 Basic Consumer,IR 50% plus,1-25,500,500', 'Level 1 Basic Consumer,IR 50% plus,1-25,550,five hundred'))!
+  const pv = previewUpload(first.next, [edited])
+  const basic = pv.matched.find((m) => m.label === 'General Population Consumer, Level 1 Basic Consumer, 1-25')!
+  check('upload: a changed cell is shown before saving, an unreadable one is left blank and listed', basic.changes.some((c) => c.field === 'Setup' && c.from === '500' && c.to === '550 to blank') && pv.unreadable.length === 1 && pv.unreadable[0]!.raw === 'five hundred')
+  check('upload: a bad header is not a rate card', readCsv('name,price\nx,1') === null)
+  // The three the team asked for: 25 participants, one hour, remote, at the lower end of each range.
+  const card = first.next
+  const id = (level: string, segment?: string) => card.segments.find((x) => (segment ? x.segment === segment : x.level === level) && x.sizeBand === '1-25')!.id
+  const basicQ = quoteFrom(card, id('Level 1 Basic Consumer'), 25, 1)!, nicheQ = quoteFrom(card, id('Level 2 Niche Consumer'), 25, 1)!, b2bQ = quoteFrom(card, id('', 'B2B upper level'), 25, 1)!
+  check('quote: 25 basic consumers, one hour: $500 + $125 x 25 + $100 x 25 = $6,125, $245 per interview', basicQ.total === 6125 && basicQ.cpi === 245 && basicQ.incentive === 100, `${basicQ.total} / ${basicQ.cpi}`)
+  check('quote: 25 niche consumers, one hour: $750 + $135 x 25 + $125 x 25 = $7,250, $290 per interview (top of range $345)', nicheQ.total === 7250 && nicheQ.cpi === 290 && nicheQ.high.cpi === 345, `${nicheQ.total} / ${nicheQ.cpi} / ${nicheQ.high.cpi}`)
+  check('quote: 25 B2B upper level, one hour: $1,000 + $200 x 25 + $300 x 25 = $13,500, $540 per interview (top $640)', b2bQ.total === 13500 && b2bQ.cpi === 540 && b2bQ.high.cpi === 640, `${b2bQ.total} / ${b2bQ.cpi} / ${b2bQ.high.cpi}`)
+  const screener = card.fees.find((f) => f.item === 'Screener creation')!.id
+  check('quote: a flat add-on the team picks is added once', quoteFrom(card, id('Level 1 Basic Consumer'), 25, 1, [screener])!.total === 6625)
+  check('quote: a segment with no incentive guide cannot be quoted', quoteFrom(card, card.segments.find((x) => x.segment.startsWith('Re-recruiting'))!.id, 10, 1) === null)
+  check('rate card: the seed starts from these files, as its first version', JSON.stringify(RATE_CARD.current) === JSON.stringify({ segments: segs.segments, fees: fees.fees }) && (st().settingsLog ?? []).some((c) => c.group === 'rateCard' && c.source?.includes('July 2026')))
+}
+
+// 24 Oct 2026: the incentive is proposed from the rate card, set by the team, and kept per period (D41).
+{
+  p.reset(); clock = now.getTime()
+  const made = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Incentive study', participants: '20', incentive: 700 }))
+  const x = () => st().studies.find((y) => made.ok && y.id === made.id)!
+  check('incentive: a new study is proposed the rate card\'s guide, not the form\'s $700', made.ok && x().rates.incentivePer > 0 && x().rates.incentivePer !== 700 && x().incentivePeriods!.length === 1 && !!x().quote, made.ok ? String(x().rates.incentivePer) : made.why)
+  check('incentive: only the team sets it, and not $0', !p.setStudyIncentive(x().id, 150, { kind: 'client', id: DEMO_CLIENT_ID }).ok && !p.setStudyIncentive(x().id, 0, team).ok)
+  check('incentive: in review the team replaces the proposal', p.setStudyIncentive(x().id, 150, team).ok && x().rates.incentivePer === 150 && x().incentivePeriods!.length === 1)
+  check('incentive: above the CPI is allowed (the console warns)', p.setStudyIncentive(x().id, currentRate(x()) + 50, team).ok)
+  const live = st().studies.find((y) => y.id === 'st-pay')!
+  const paidBefore = live.participations.filter((q) => q.paidAt).map((q) => earnedOf(live, q)).join()
+  check('incentive: on a live study a new period starts; anyone already paid keeps what they were paid', p.setStudyIncentive('st-pay', live.rates.incentivePer + 25, team).ok
+    && st().studies.find((y) => y.id === 'st-pay')!.incentivePeriods!.length >= 1
+    && (() => { const now2 = st().studies.find((y) => y.id === 'st-pay')!; return now2.participations.filter((q) => q.paidAt).map((q) => earnedOf(now2, q)).join() === paidBefore })())
+  // A study the rate card cannot price is not taken; one in review with no incentive cannot go live.
+  const card = RATE_CARD.current
+  RATE_CARD.current = EMPTY_RATE_CARD
+  const unpriced = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Unpriced', participants: '10' }))
+  RATE_CARD.current = card
+  check('incentive: with no rate card to price it, a study is not taken', !unpriced.ok && /cannot be priced/.test(unpriced.why))
+  // Applying a rate card quote sets both figures.
+  const seg = RATE_CARD.current.segments.find((s2) => s2.level === 'Level 2 Niche Consumer' && s2.sizeBand === '1-25')!
+  check('quote: applying a rate card quote sets the CPI and the incentive', p.applyRateCardQuote(x().id, seg.id, 1, [], team).ok && currentRate(x()) === quoteFrom(RATE_CARD.current, seg.id, 20, 1)!.cpi && x().rates.incentivePer === 125)
+}
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nall checks passed')
 if (failed) process.exit(1)

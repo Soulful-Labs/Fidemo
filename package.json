@@ -6,12 +6,12 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:all": "npm run build && npm --prefix client run build && npm --prefix internal run build && node scripts/assemble.mjs",
+    "build:all": "node scripts/embed-rate-card.mjs && npm run build && npm --prefix client run build && npm --prefix internal run build && node scripts/assemble.mjs",
     "serve:all": "node scripts/serve-all.mjs",
     "preview": "vite preview",
     "lint": "eslint .",
     "verify": "npm run verify:shared",
-    "verify:shared": "esbuild scripts/verify-shared.ts --bundle --platform=node --format=esm --outfile=node_modules/.tmp/verify-shared.mjs --log-level=error && node node_modules/.tmp/verify-shared.mjs",
+    "verify:shared": "node scripts/embed-rate-card.mjs && esbuild scripts/verify-shared.ts --bundle --platform=node --format=esm --outfile=node_modules/.tmp/verify-shared.mjs --log-level=error && node node_modules/.tmp/verify-shared.mjs",
     "shot": "node --experimental-websocket scripts/shot.mjs",
     "audit": "node --experimental-websocket scripts/audit.mjs",
     "demo": "node --experimental-websocket scripts/demo.mjs"

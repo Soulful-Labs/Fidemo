@@ -29,6 +29,7 @@ const WARNING: Record<SettingsGroup, string> = {
   trust: 'These values go live across the whole platform as soon as you save, for everything that happens from now on. Scores already earned keep the values in force when they were earned, so nobody\'s score moves.',
   tiers: 'These thresholds go live across the whole platform as soon as you save. Every participant\'s tier is read from their score against them from now on; no score moves.',
   points: 'These values go live across the whole platform as soon as you save, for points earned from now on. Points already earned keep the value they were earned at, so no balance moves.',
+  rateCard: 'This rate card is used for every study quoted from now on. A study already quoted keeps its cost per interview and its incentive; nothing already agreed moves.',
   participants: 'These go live for every participant as soon as you save. A withdrawal already requested keeps the fee it was requested at, and points already redeemed keep the value they were redeemed at.',
 }
 

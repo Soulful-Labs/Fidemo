@@ -6,6 +6,7 @@
  * nothing else.
  */
 import type { AddOnParameter, FeeAddOn, StudyRates, StudyType } from './types'
+import { RATE_CARD, hoursOf, proposedSegment, quoteFrom } from './ratecard'
 
 // --- Profile and audience lists ---------------------------------------------
 
@@ -135,18 +136,25 @@ export function quoteStudy(type: StudyType, required: number, incentivePer: numb
  * incentive is inside the rate, not charged on top.
  *
  * The rate is a value the platform holds, never one typed into a screen. It
- * will come from a rate sheet the team maintains; until then it is this one
- * rate. `rateFor` is the one place a study is priced, so swapping in the
- * sheet changes this function and nothing else.
+ * is quoted from the team's rate card (24 Oct 2026, shared/ratecard.ts) and
+ * the team sets the final figure per study. `rateFor` is the one place a new
+ * study is offered a rate.
  *
  * The fee schedule above (FEES, quoteStudy, depositParts) is what the Create
  * flow's Study step still draws, unchanged, until it is decided what comes out
  * of that step. Nothing is charged by it.
  */
-export const RATE_PER_PARTICIPANT = 250
 
-/** The rate per participant for a study as it is set up now. The rate sheet will key on what the study asks for. */
-export const rateFor = (_study: { type: StudyType; required?: number }): number => RATE_PER_PARTICIPANT
+/**
+ * The cost per interview a study is offered at before the team reviews it (24 Oct 2026): quoted from the rate
+ * card in force (shared/ratecard.ts), at the first segment whose size band fits it, for its hours. The team
+ * re-quotes it in the console. Zero when the card cannot quote it: such a study cannot be published.
+ */
+export function rateFor(study: { type: StudyType; required?: number; durationMins?: number }): number {
+  const n = Math.max(0, study.required ?? 0), hours = hoursOf(study.durationMins ?? 60)
+  const seg = proposedSegment(RATE_CARD.current, n, hours)
+  return seg ? quoteFrom(RATE_CARD.current, seg.id, n, hours)?.cpi ?? 0 : 0
+}
 
 /**
  * The payment structure: three shares of Total Recruiting Cost that add up to

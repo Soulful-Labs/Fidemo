@@ -9,8 +9,9 @@
  * reads and writes the same platform: a change made in one app is picked up
  * by the others through the storage event, without a reload.
  */
-import { applyRepeatRule, targetMet, barredFrom, billing, currentRate, diaryLocks, diaryReady, freshCertificateId, hasTakenPartWith, sessionNotStarted, openAvailability, personById, personFigures, profileCompletion, referralCode } from './derive'
+import { applyRepeatRule, targetMet, barredFrom, billing, currentRate, earnedOf, diaryLocks, diaryReady, freshCertificateId, hasTakenPartWith, sessionNotStarted, openAvailability, personById, personFigures, profileCompletion, referralCode } from './derive'
 import { CLOSED_BY_PARTICIPANT, canEditStudy, canGroup, canMoveParticipation, canMovePayout, canMoveStudy, canRepublish, closedByOwner, isLive, isStopped, participationOf } from './lifecycle'
+import { RATE_CARD, hoursOf, proposedIncentive, proposedSegment, quoteFrom } from './ratecard'
 import { DECISION_UNDO_MS, DEMO_SESSION_CODE, FEES, REPORT_MAX_CHARS, RESTRICTION_DAYS, TIMINGS, canCancel, canReschedule, canWithdraw, diaryWords, isSessionType, paymentPlan, priceStudy, rateFor, targets, withdrawalExpectedBy } from './platform'
 import { POINTS, canRedeem, pointsToUsd, starsForRating, starsFromDimensions } from './rules'
 import { monthDayYear } from './format'
@@ -52,6 +53,35 @@ function tidyAnswers(study: Study, answers: Answers): Answers {
     const n = Number(v.trim().replace(/,/g, ''))
     return [id, v.trim() !== '' && Number.isFinite(n) ? n : v]
   }))
+}
+
+/** The incentive the rate card proposes for a study (24 Oct 2026), from its first fitting segment and its hours; none when the card gives none. */
+function proposeIncentive(study: Study) {
+  const hours = hoursOf(study.durationMins)
+  const seg = proposedSegment(RATE_CARD.current, study.required, hours)
+  const amount = seg ? proposedIncentive(seg, hours) : null
+  study.quote = seg ? { segmentId: seg.id, hours, addOnIds: [] } : undefined
+  study.rates = { ...study.rates, incentivePer: amount ?? 0 }
+  study.incentivePeriods = amount != null ? [{ amount, from: study.submittedAt ?? new Date().toISOString() }] : []
+}
+
+/** Why an incentive cannot be set on a study, or empty when it can. */
+function incentiveFault(study: Study, amount: number): string {
+  if (!Number.isFinite(amount) || amount <= 0) return 'Enter an incentive of more than $0'
+  if (Math.abs(Math.round(amount * 100) - amount * 100) > 1e-6) return 'Enter the incentive in dollars and cents'
+  if (study.state === 'draft' || study.state === 'completed' || study.state === 'cancelled') return 'The incentive can be changed while a study is in review or running'
+  if (amount === study.rates.incentivePer) return 'That is the incentive already'
+  return ''
+}
+
+/** Sets the incentive: in review it replaces the proposal; once live it applies from now on. */
+function setIncentive(study: Study, amount: number) {
+  const now = new Date().toISOString()
+  const from = study.submittedAt ?? study.createdAt
+  if (study.state === 'in_review') study.incentivePeriods = [{ amount, from: study.incentivePeriods?.[0]?.from ?? from }]
+  // A live study with no history yet keeps its old incentive up to now, so nobody who completed before is moved.
+  else study.incentivePeriods = [...(study.incentivePeriods?.length ? study.incentivePeriods : [{ amount: study.rates.incentivePer, from }]), { amount, from: now }]
+  study.rates = { ...study.rates, incentivePer: amount }
 }
 
 /** Why a group cannot be saved with this name and these studies, or empty when it can. */
@@ -214,12 +244,14 @@ export function createPlatform(options: Options = {}) {
    */
   const pay = (s: PlatformState, study: Study, p: Participation) => {
     if (p.state !== 'completed' || p.paidAt) return
+    // The incentive in force when they completed (24 Oct 2026), kept on the record so a later change never moves it.
+    p.paidAmount = earnedOf(study, p)
     p.paidAt = iso()
     p.events.push({ label: 'Payout processed by the team', at: p.paidAt }, { label: 'Paid', at: p.paidAt })
     if (clientOf(s, study)?.simulated && !p.rating) {
       p.rating = { stars: starsForRating('excellent'), state: 'excellent', comment: 'Thoughtful, well prepared and on time. Would happily include again.', expertise: 5, reliability: 5, communication: 4, at: p.paidAt }
     }
-    notify(s, p.personId, { kind: 'money', title: `You've received $${study.rates.incentivePer}!`, body: `Your reward for ${study.title} has been paid into your wallet.`, to: '/wallet' })
+    notify(s, p.personId, { kind: 'money', title: `You've received $${p.paidAmount}!`, body: `Your reward for ${study.title} has been paid into your wallet.`, to: '/wallet' })
   }
 
   /** Completed and not yet paid: who a finished study still has to pay, and which of them can be paid now ("no code, no payment"). */
@@ -239,7 +271,7 @@ export function createPlatform(options: Options = {}) {
   const announceFinish = (s: PlatformState, study: Study) => {
     const { owed } = owedOn(study)
     const client = clientOf(s, study)
-    const total = owed.length * study.rates.incentivePer
+    const total = owed.reduce((n, p) => n + earnedOf(study, p), 0)
     if (client) {
       client.notifications = [{
         id: uid('cn'), studyId: study.id, at: iso(), read: false, title: 'Your study has finished',
@@ -378,8 +410,11 @@ export function createPlatform(options: Options = {}) {
         setup: summarise(s, kept, clock()), form: kept, participations: [], payments: [], revisions: draft?.revisions ?? [],
         edits: [...(draft?.edits ?? []), ...(edit ? [edit] : [])],
       }
-      // Priced now at the rate for what it asks (rateFor); the upfront deposit is taken from the card.
-      study.ratePeriods = [{ rate: rateFor(study), from: iso() }]
+      // Priced now from the rate card (rateFor); the upfront deposit is taken from the card. A study the card cannot price is not taken.
+      const rate = rateFor(study)
+      if (rate <= 0) return no('This study cannot be priced right now. Please contact us and the team will quote it.')
+      study.ratePeriods = [{ rate, from: iso() }]
+      proposeIncentive(study)
       takeDeposit(study, 'upfront')
       if (draft) s.studies.splice(s.studies.indexOf(draft), 1)
       s.studies.unshift(study)
@@ -442,6 +477,7 @@ export function createPlatform(options: Options = {}) {
         study.submittedAt = iso()
         takeDeposit(study, 'upfront')
       }
+      if (to === 'recruiting' && !study.approvedAt && !(study.rates.incentivePer > 0)) return no('Set the incentive before taking this study live')
       if (to === 'recruiting' && !study.approvedAt) {
         study.approvedAt = iso(); log(s, actor, `Approved ${study.title} to publish`, 'Studies / Review / Approve')
         // The incentive deposit is taken when recruiting starts (shared/platform.ts PAYMENT_STAGES).
@@ -501,8 +537,7 @@ export function createPlatform(options: Options = {}) {
       study.form = after
       study.setup = summarise(s, after, clock())
       study.edits = [...(study.edits ?? []), edit]
-      // A change to what the study asks for can agree a new rate: it applies to the people who complete from now on.
-      { const rate = rateFor(study); if (rate !== currentRate(study)) study.ratePeriods = [...(study.ratePeriods ?? []), { rate, from: iso() }] }
+      // A live edit changes no price (24 Oct 2026): the team re-quotes on purpose, with Change CPI Rate or the rate card quote.
       log(s, actor, `Edited ${study.title} (${edit.changes.length} change${edit.changes.length === 1 ? '' : 's'})`, 'Studies / Manage / Edit Study')
       return yes()
     }),
@@ -546,13 +581,53 @@ export function createPlatform(options: Options = {}) {
       const study = s.studies.find((x) => x.id === studyId)
       if (!study) return no('No such study')
       if (!Number.isFinite(rate) || rate <= 0) return no('Enter a rate of more than $0')
-      if (Math.round(rate * 100) !== rate * 100) return no('Enter the rate in dollars and cents')
+      if (Math.abs(Math.round(rate * 100) - rate * 100) > 1e-6) return no('Enter the rate in dollars and cents')
       if (study.state === 'draft' || study.state === 'completed' || study.state === 'cancelled') return no('The CPI rate can be changed while a study is in review or running')
       const was = currentRate(study)
       if (rate === was) return no('That is the rate already')
       if (study.state === 'in_review' || !study.ratePeriods?.length) study.ratePeriods = [{ rate, from: study.ratePeriods?.[0]?.from ?? study.submittedAt ?? iso() }]
       else study.ratePeriods = [...study.ratePeriods, { rate, from: iso() }]
       log(s, actor, `Changed the CPI rate of ${study.title} from $${was} to $${rate} per participant`, 'Studies / Payment / Change CPI Rate')
+      return yes()
+    }),
+
+    /**
+     * Change Incentive (console, 24 Oct 2026): what each participant is paid, beside the CPI. In review it
+     * replaces the proposal; on a live study it applies to the participants who complete from now on, and
+     * anyone already paid keeps what they were paid. Above the CPI is allowed: the console warns first.
+     */
+    setStudyIncentive: (studyId: string, amount: number, actor: Actor) => move((s) => {
+      if (actor.kind !== 'team') return no('Only the team can change the incentive')
+      const study = s.studies.find((x) => x.id === studyId)
+      if (!study) return no('No such study')
+      const fault = incentiveFault(study, amount)
+      if (fault) return no(fault)
+      const was = study.rates.incentivePer
+      setIncentive(study, amount)
+      log(s, actor, `Changed the incentive of ${study.title} from $${was} to $${amount} per participant`, 'Studies / Payment / Change Incentive')
+      return yes()
+    }),
+
+    /**
+     * Quote from the rate card (console, 24 Oct 2026): the team picks the segment, the hours and any flat
+     * add-ons; the cost per interview and the incentive are set from the quote. The team can still adjust
+     * either afterwards. Refused when the card leaves a figure the sum needs blank.
+     */
+    applyRateCardQuote: (studyId: string, segmentId: string, hours: number, addOnIds: string[], actor: Actor) => move((s) => {
+      if (actor.kind !== 'team') return no('Only the team can quote a study')
+      const study = s.studies.find((x) => x.id === studyId)
+      if (!study) return no('No such study')
+      if (study.state === 'draft' || study.state === 'completed' || study.state === 'cancelled') return no('A study is quoted while it is in review or running')
+      if (!(hours > 0)) return no('Enter the hours the study takes')
+      const q = quoteFrom(RATE_CARD.current, segmentId, study.required, hours, addOnIds)
+      if (!q) return no('That segment cannot be quoted: a figure the sum needs is blank on the rate card')
+      study.quote = { segmentId, hours, addOnIds: [...addOnIds] }
+      if (q.cpi !== currentRate(study)) {
+        if (study.state === 'in_review' || !study.ratePeriods?.length) study.ratePeriods = [{ rate: q.cpi, from: study.ratePeriods?.[0]?.from ?? study.submittedAt ?? iso() }]
+        else study.ratePeriods = [...study.ratePeriods, { rate: q.cpi, from: iso() }]
+      }
+      if (q.incentive !== study.rates.incentivePer) setIncentive(study, q.incentive)
+      log(s, actor, `Quoted ${study.title} from the rate card: ${q.segment.segment}${q.segment.level ? `, ${q.segment.level}` : ''}, $${q.cpi} per interview, $${q.incentive} incentive`, 'Studies / Payment / Quote')
       return yes()
     }),
 
@@ -965,8 +1040,9 @@ export function createPlatform(options: Options = {}) {
       const { owed, ready } = owedOn(study)
       if (owed.length === 0) return no('Nobody on this study is waiting to be paid')
       if (ready.length === 0) return no(`${plural(owed.length, 'payout')} cannot be processed yet: no code, no payment`)
+      const amount = ready.reduce((n, p) => n + earnedOf(study, p), 0)
       ready.forEach((p) => pay(s, study, p))
-      log(s, actor, `Processed ${plural(ready.length, 'payout')} (${usd(ready.length * study.rates.incentivePer)}) for ${study.title}`, 'Finance / Payouts / Process')
+      log(s, actor, `Processed ${plural(ready.length, 'payout')} (${usd(amount)}) for ${study.title}`, 'Finance / Payouts / Process')
       return yes({ paid: ready.length, held: owed.length - ready.length })
     }),
 
@@ -1348,7 +1424,7 @@ export function createPlatform(options: Options = {}) {
      * Pricing & Rewards (22 Oct 2026, policy v2 section 10): a master admin saves one group of values. The
      * change is recorded with who and when, applies from now on, and moves nothing already earned or agreed.
      */
-    changeSettings: <G extends SettingsGroup>(group: G, after: SettingsValues[G], actor: Actor) => move((s) => {
+    changeSettings: <G extends SettingsGroup>(group: G, after: SettingsValues[G], actor: Actor, source?: string) => move((s) => {
       if (actor.kind !== 'team') return no('Only the team can change these values')
       const member = s.team.find((t) => t.id === actor.id)
       if (!member?.master) return no('Only a master admin can change these values')
@@ -1356,9 +1432,9 @@ export function createPlatform(options: Options = {}) {
       if (why) return no(why)
       const before = settingsAt(s, group)
       if (JSON.stringify(before) === JSON.stringify(after)) return no('Nothing has changed')
-      s.settingsLog = [...(s.settingsLog ?? []), { id: uid('set'), group, at: iso(), by: actor.id, before, after: JSON.parse(JSON.stringify(after)) }]
-      const name = { fees: 'client fees', trust: 'Trust Score values', tiers: 'tier thresholds', points: 'reward points', participants: 'participant fees' }[group]
-      log(s, actor, `Changed the ${name}`, `Pricing & Rewards / ${group === 'fees' || group === 'participants' ? 'Fees' : 'Gamification'} / Save Changes`)
+      s.settingsLog = [...(s.settingsLog ?? []), { id: uid('set'), group, at: iso(), by: actor.id, before, after: JSON.parse(JSON.stringify(after)), ...(source ? { source } : {}) }]
+      const name = ({ fees: 'client fees', trust: 'Trust Score values', tiers: 'tier thresholds', points: 'reward points', participants: 'participant fees', rateCard: 'rate card' } as Record<SettingsGroup, string>)[group]
+      log(s, actor, source ? `Updated the ${name} from ${source}` : `Changed the ${name}`, `Pricing & Rewards / ${group === 'fees' || group === 'participants' || group === 'rateCard' ? 'Fees' : 'Gamification'} / Save Changes`)
       return yes()
     }),
 

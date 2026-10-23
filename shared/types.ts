@@ -127,6 +127,8 @@ export interface Participation {
   completedAt?: string
   /** The team processed the payout by hand in the console; the incentive is in the wallet from this moment. */
   paidAt?: string
+  /** What was paid (24 Oct 2026): the incentive in force when they completed, kept so a later change never moves it. */
+  paidAmount?: number
   /** When a qualify or disqualify decision was taken, for the one hour undo. */
   decidedAt?: string
   /** What happened and when, oldest first. */
@@ -249,6 +251,10 @@ export interface Study {
   stoppedBy?: 'client' | 'team' | 'filled'
   /** The rate per participant agreed for this study, period by period (23 Oct 2026). Absent until it is submitted. */
   ratePeriods?: RatePeriod[]
+  /** The participant's incentive, period by period (24 Oct 2026): a change applies to those who complete after it. `rates.incentivePer` is the one in force now. */
+  incentivePeriods?: { amount: number; from: string }[]
+  /** How the team quoted it from the rate card (24 Oct 2026): the segment row, the hours, and the flat add-ons picked. */
+  quote?: { segmentId: string; hours: number; addOnIds: string[] }
 }
 
 /**
@@ -654,12 +660,33 @@ export interface TrustSettings {
 }
 export interface TierSettings { silver: number; gold: number; platinum: number }
 export interface PointsSettings { referral: number; beingReferred: number; studyCompletion: number; fullProfile: number; streak: number; profilePicture: number; introVideo: number }
+/** A figure on the rate card: both ends of the range the sheet gives (equal when it gives one). Null is blank on the sheet. */
+export interface RateRange { min: number | null; max: number | null }
+/** One row of the rate card's segments table (shared/ratecard.ts): a segment at a size band, with its three prices. */
+export interface RateSegment {
+  id: string; section: string; segment: string; level: string; criteria: string; sizeBand: string
+  /** Once per study. */
+  setup: RateRange; setupNote: string
+  /** Cost per recruit, per participant delivered. */
+  cpr: RateRange; cprNote: string
+  /** The incentive guide rate for the participant, in `incentiveUnit` (usually "per hour"). */
+  incentive: RateRange; incentiveUnit: string; incentiveNote: string
+}
+/** One row of the rate card's fees table: a standard fee, an additional fee, an adjustment, or a written rule. */
+export interface RateFee { id: string; group: string; item: string; amount: RateRange; unit: string; note: string }
+/** The team's rate card (24 Oct 2026). Confidential: no client screen reads it; a client sees only the cost per interview. */
+export interface RateCard { segments: RateSegment[]; fees: RateFee[] }
+
 /** Participants Fees (23 Oct 2026): the withdrawal fee, and what 100 reward coins are worth in dollars. */
 export interface ParticipantSettings { withdrawal: number; pointsValue: number }
-export interface SettingsValues { fees: FeeSettings; trust: TrustSettings; tiers: TierSettings; points: PointsSettings; participants: ParticipantSettings }
+export interface SettingsValues { fees: FeeSettings; trust: TrustSettings; tiers: TierSettings; points: PointsSettings; participants: ParticipantSettings; rateCard: RateCard }
 export type SettingsGroup = keyof SettingsValues
 /** One saved change: the whole group as it was and as it became, who saved it and when. */
-export interface SettingsChange { id: string; group: SettingsGroup; at: string; by: string; before: SettingsValues[SettingsGroup]; after: SettingsValues[SettingsGroup] }
+export interface SettingsChange {
+  id: string; group: SettingsGroup; at: string; by: string; before: SettingsValues[SettingsGroup]; after: SettingsValues[SettingsGroup]
+  /** Where the values came from when they were not typed: an uploaded file's name (24 Oct 2026). */
+  source?: string
+}
 
 export interface Refusal { ok: false; why: string }
 export type Result<T = object> = ({ ok: true } & T) | Refusal

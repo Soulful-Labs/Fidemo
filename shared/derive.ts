@@ -172,7 +172,7 @@ export function walletRows(state: PlatformState, personId: string): WalletRow[] 
   const person = personById(state, personId)
   const earned = entriesOf(state, personId).filter((e) => isPaid(e.p)).map((e): WalletRow => ({
     id: `tx-${e.study.id}`, studyId: e.study.id, approved: true, title: e.study.title, at: e.p.paidAt!,
-    amount: e.study.rates.incentivePer, txNumber: txNumber(e.study.id + personId), category: CATEGORY[e.study.type],
+    amount: earnedOf(e.study, e.p), txNumber: txNumber(e.study.id + personId), category: CATEGORY[e.study.type],
   }))
   const redeemed = (person?.redemptions ?? []).map((r): WalletRow => ({
     id: `tx-${r.id}`, title: `${r.points.toLocaleString('en-US')} points redeemed`, at: r.at,
@@ -362,7 +362,7 @@ export function personFigures(state: PlatformState, personId: string, now: Date 
   const yearEarned = sum(earned.filter((r) => sameYear(r.at, now)), (r) => r.amount)
   return {
     walletBalance: Math.round((sum(rows, (r) => r.amount) - sum(person?.payouts ?? [], (p) => p.amount)) * 100) / 100,
-    pendingEarnings: sum(entries.filter((e) => e.p.state === 'completed' && !e.p.paidAt), (e) => e.study.rates.incentivePer),
+    pendingEarnings: sum(entries.filter((e) => e.p.state === 'completed' && !e.p.paidAt), (e) => earnedOf(e.study, e.p)),
     allTimeEarned: sum(earned, (r) => r.amount),
     yearEarned,
     points: sum(pointsRows(state, personId), (r) => r.amount) - sum(person?.redemptions ?? [], (r) => r.points),
@@ -788,6 +788,18 @@ export const currentRate = (study: Study): number => ratePeriodsOf(study).at(-1)
 /** When a participant completed: the record's own time, else the last thing that happened to them. */
 const completedOn = (study: Study, p: Participation): string => p.completedAt ?? p.events.at(-1)?.at ?? study.completedAt ?? study.createdAt
 
+/** The incentive in force at a moment (24 Oct 2026): the period it falls in, else the study's current one. */
+export function incentiveAt(study: Study, at: string): number {
+  const periods = study.incentivePeriods ?? []
+  if (periods.length === 0) return study.rates.incentivePer
+  let amount = periods[0]!.amount
+  for (const p of periods) if (p.from <= at) amount = p.amount
+  return amount
+}
+
+/** What a participant earned on a study: what they were paid, else the incentive in force when they completed. */
+export const earnedOf = (study: Study, p: Participation): number => p.paidAmount ?? incentiveAt(study, completedOn(study, p))
+
 /** The deposits taken on a study, each with its stage. */
 export const depositsOf = (study: Study): DepositPaid[] =>
   study.payments.filter((p) => p.kind === 'deposit').map((p) => ({ stage: p.stage ?? 'upfront', amount: p.amount, at: p.at }))
@@ -865,7 +877,7 @@ export interface PayoutLine { person: Recruit; amount: number; codeConfirmed: bo
 
 export function payoutList(state: PlatformState, study: Study): PayoutLine[] {
   return recruits(state, study, 'results').filter((r) => isPayable(r.participation.state)).map((r) => ({
-    person: r, amount: study.rates.incentivePer,
+    person: r, amount: earnedOf(study, r.participation),
     codeConfirmed: !isSessionType(study.type) || Boolean(r.participation.code?.byClient && r.participation.code?.byParticipant),
     approved: Boolean(r.participation.paidAt),
   }))
@@ -1086,7 +1098,7 @@ export function ledger(state: PlatformState): LedgerRow[] {
     const client = clientById(state, s.clientId)
     for (const p of s.participations.filter(isPaid)) {
       const person = personById(state, p.personId)
-      rows.push({ id: `le-${s.id}-${p.personId}`, kind: 'earning', at: p.paidAt!, title: s.title, amount: s.rates.incentivePer, to: person?.name ?? '', from: PLATFORM_NAME, studyId: s.id, personId: p.personId, clientId: s.clientId, reference: txNumber(s.id + p.personId) })
+      rows.push({ id: `le-${s.id}-${p.personId}`, kind: 'earning', at: p.paidAt!, title: s.title, amount: earnedOf(s, p), to: person?.name ?? '', from: PLATFORM_NAME, studyId: s.id, personId: p.personId, clientId: s.clientId, reference: txNumber(s.id + p.personId) })
     }
     for (const pay of s.payments) {
       if (pay.kind === 'refund') rows.push({ id: `lr-${pay.id}`, kind: 'refund', at: pay.at, title: 'Study Deposit', amount: pay.amount, to: client?.name ?? '', from: PLATFORM_NAME, studyId: s.id, clientId: s.clientId, reference: invoiceNumber(s) })
@@ -1161,7 +1173,7 @@ export function payoutsToProcess(state: PlatformState, now: Date = new Date()): 
     const endedAt = studyEndedAt(study)
     const daysLeft = payoutDaysLeft(endedAt, now)
     return {
-      study, client: state.clients.find((c) => c.id === study.clientId), owed, ready, amount: ready.length * study.rates.incentivePer,
+      study, client: state.clients.find((c) => c.id === study.clientId), owed, ready, amount: sum(ready, (p) => earnedOf(study, p)),
       notice: (state.teamNotices ?? []).find((n) => n.kind === 'payouts' && n.studyId === study.id),
       endedAt, daysLeft, overdue: daysLeft < 0,
     }
@@ -1177,7 +1189,7 @@ export function financeTotals(state: PlatformState) {
   const pending = refundsPending(state)
   const fees = sum(state.studies.filter((s) => isApproved(s.state)), (s) => {
     const b = billing(s)
-    return b.total - s.rates.incentivePer * b.delivered
+    return b.total - sum(s.participations.filter((p) => p.state === 'completed'), (p) => earnedOf(s, p))
   })
   return {
     clientsSpent: of('payment'), participantsEarned: of('earning'), paidOut: of('payout'), refunded: of('refund'),
@@ -1377,7 +1389,7 @@ export function latestPayout(state: PlatformState): { firstName: string; amount:
       if (!p.paidAt || (best && p.paidAt <= best.at)) continue
       const person = personById(state, p.personId)
       const firstName = person?.name.split(' ')[0]
-      if (firstName) best = { firstName, amount: study.rates.incentivePer, type: study.type, at: p.paidAt }
+      if (firstName) best = { firstName, amount: earnedOf(study, p), type: study.type, at: p.paidAt }
     }
   }
   return best
