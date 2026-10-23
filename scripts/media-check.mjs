@@ -375,11 +375,13 @@ const consent = async (label, on) => {
     if (totalNeeds && panelRows !== totalNeeds) g.push(`View all shows ${panelRows} of ${totalNeeds}`)
     if (sessionRows > 2) g.push(`${sessionRows} sessions on the dashboard`)
     if (!/Super Insights/.test(text) || !/Recommended Respondents/.test(text)) g.push('a section went missing')
-    for (const f of ['Ongoing Studies', 'Remaining To Hire', 'Avg. Trust Score', 'Avg. Session Incentive']) if (!text.includes(f)) g.push('figure missing: ' + f)
+    // Three figures since 24 Oct 2026: the client sees no incentive figures.
+    for (const f of ['Ongoing Studies', 'Remaining To Hire', 'Avg. Trust Score']) if (!text.includes(f)) g.push('figure missing: ' + f)
+    if (text.includes('Avg. Session Incentive')) g.push('the incentive figure is still on the client dashboard')
     const reached = new Set(a.cards.map((c) => c.title))
     const bounce = await C.ev(`[...document.querySelectorAll('main *')].filter((el) => { const s = getComputedStyle(el); return s.animationName !== 'none' && s.animationIterationCount === 'infinite' }).length`)
     if (bounce) g.push(`${bounce} elements animate on a loop`)
-    say(6, 'The dashboard carousel moves, and nothing was lost from the screen', g, `Ongoing Studies: ${a.cards.length} cards in the carousel (it showed 3 before), ${visible(a)} visible, "${a.label}" -> "${b.label}" with a ${a.duration} ${a.easing} slide; Needs Your Attention: ${needRows} rows${totalNeeds ? `, View all lists all ${panelRows}` : ''}; Upcoming Sessions: ${sessionRows} and View All; the four figures, Super Insights and Recommended Respondents unchanged; nothing loops`)
+    say(6, 'The dashboard carousel moves, and nothing was lost from the screen', g, `Ongoing Studies: ${a.cards.length} cards in the carousel (it showed 3 before), ${visible(a)} visible, "${a.label}" -> "${b.label}" with a ${a.duration} ${a.easing} slide; Needs Your Attention: ${needRows} rows${totalNeeds ? `, View all lists all ${panelRows}` : ''}; Upcoming Sessions: ${sessionRows} and View All; the three figures, Super Insights and Recommended Respondents unchanged; nothing loops`)
   } catch (e) { say(6, 'The dashboard carousel moves, and nothing was lost from the screen', [...g, e.message]) }
 }
 

@@ -297,7 +297,9 @@ for (const s of STUDIES.filter((x) => x.id)) {
   const gaps = []
   try {
     await R.go(`/studies/${s.id}`)
-    gaps.push(...await missing(R, [s.title, `$${s.incentive}`]))
+    // The incentive is the one the rate card proposed for the study (24 Oct 2026), as the platform holds it.
+    const incentive = await C.ev(`(__st().studies.find((x) => x.id === ${JSON.stringify(s.id)}) || { rates: {} }).rates.incentivePer`)
+    gaps.push(...await missing(R, [s.title, `$${incentive}`]))
     if (!(await R.ev('document.body.innerText')).includes(s.description.slice(0, 40))) gaps.push('description')
     if (await R.ev(`Boolean(__q('Accept and Apply'))`)) await R.click('Accept and Apply', 900); else await R.click('Apply', 900)
     // An in-person study shows its addresses before the screener (PRD 6.8).

@@ -222,7 +222,7 @@ await C.click('Proceed to Publish', 600)
 const g2 = []
 const publishText = await C.ev('document.body.innerText')
 const upfront = (/To pay upfront[^$]*\$([\d,]+(?:\.\d+)?)/.exec(publishText) || [])[1]
-const total = (/Total Recruiting Cost\s*\$([\d,]+)/.exec(publishText) || [])[1]
+const total = (/Total Recruiting Cost\s*\$([\d,]+(?:\.\d+)?)/.exec(publishText) || [])[1]
 // 23 Oct 2026: the frames draw the 3% card fee line again; it is shown, and nothing charges it.
 if (!/3% merchant processing fee/.test(publishText)) g2.push('Publish does not show the drawn card fee line')
 const audienceChip = (/Estimated Audience:\s*([\d,]+)/.exec(publishText) || [])[1]
@@ -341,7 +341,7 @@ await R.go(`/studies/${S.id}/survey`); await sleep(500)
 await R.ev(`[...document.querySelectorAll('[role=radio]')].find((o) => o.innerText.trim() === 'Weekly').click()`); await sleep(250)
 await R.click('Submit', 1500)
 const wallet = () => R.ev(`__hl.user.walletBalance`)
-const mine = () => R.ev(`(() => { const p = __st().studies.find((x) => x.id === ${JSON.stringify(S.id)}).participations.find((x) => x.personId === 'jonathan'); return { state: p.state, paidAt: p.paidAt || null } })()`)
+const mine = () => R.ev(`(() => { const p = __st().studies.find((x) => x.id === ${JSON.stringify(S.id)}).participations.find((x) => x.personId === 'jonathan'); return { state: p.state, paidAt: p.paidAt || null, paidAmount: p.paidAmount ?? null } })()`)
 const before = await wallet()
 await sleep(8000)
 const waited = await mine()
@@ -359,7 +359,8 @@ await I.ev(`(() => { [...document.querySelectorAll('[role=dialog] button')].find
 const paidNow = await mine()
 if (!paidNow.paidAt) g7.push('processing the payout in the console did not pay them')
 await sleep(600)
-if (await wallet() !== before + S.incentive) g7.push(`the wallet went from ${before} to ${await wallet()}, not up by ${S.incentive}`)
+S.incentive = paidNow.paidAmount ?? 0 // the rate card's proposal (24 Oct 2026), kept on the payout
+if (!(S.incentive > 0) || await wallet() !== before + S.incentive) g7.push(`the wallet went from ${before} to ${await wallet()}, not up by ${S.incentive}`)
 say(7, 'Payouts are processed by the team, never automatically', g7, `8 seconds after completing, not paid; the Pay tab has no approve; the client finished the study, still not paid; paid $${S.incentive} the moment the team processed it in Finance > Payouts`)
 
 console.log(`\n${[1, 2, 3, 4, 5, 6, 7].filter((n) => results[n]).length} of 7 yes`)

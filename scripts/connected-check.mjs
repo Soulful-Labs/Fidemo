@@ -292,7 +292,9 @@ try {
     if (!(await part())?.paidAt) g.push('processing the payout in the console did not pay him')
     await sleep(2500)
     const after = await wallet()
-    if (after !== before + S.incentive) g.push(`the wallet went from ${before} to ${after}, not up by ${S.incentive}`)
+    // The incentive is the one the rate card proposed (24 Oct 2026); the payout keeps it (paidAmount).
+    S.incentive = (await part())?.paidAmount ?? 0
+    if (!(S.incentive > 0) || after !== before + S.incentive) g.push(`the wallet went from ${before} to ${after}, not up by ${S.incentive}`)
     // A background tab pauses animation frames, and the balance rolls to its new figure on them; read it as a person would, with the tab in front.
     await send('Page.bringToFront', {}, R.sid); await sleep(1200)
     // Being paid opens a celebration; the balance rolls once it is dismissed, so that the change is seen.

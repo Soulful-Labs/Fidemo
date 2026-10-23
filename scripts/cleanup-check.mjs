@@ -375,11 +375,16 @@ async function restrictInConsole(id, statement) {
   if (!(await I.has('$150'))) g.push('the overview does not show the new platform fee')
   await I.open('/internal/participants'); await I.open('/internal/sub-admin'); await sleep(500)
   if (!(await I.has('Changed the client fees'))) g.push('the change is not in the activity log')
+  // Since 23 Oct 2026 the participant fees save too, with their own warning.
   await I.open('/internal/pricing/participant-fees'); await sleep(500)
+  await typeIn(I, 'main input', '2.25')
   await I.click('Save Changes', 600)
-  const fixed = flat(await I.ev(`[...document.querySelectorAll('[role=dialog]')].map((d) => d.innerText).join(' ')`))
-  if (!/Changes not saved/.test(fixed)) g.push('participant fees claim a save: ' + fixed.slice(0, 120))
-  say(11, 'A Pricing & Rewards change saves after a warning, or says plainly it cannot', g, `client fees: the warning names the whole platform, "Changes are published live!", the overview shows $150 and the activity log records it; participant fees: "Changes not saved"`)
+  const warn2 = flat(await I.ev(`[...document.querySelectorAll('[role=dialog]')].map((d) => d.innerText).join(' ')`))
+  if (!/live for every participant/.test(warn2)) g.push('no participant warning: ' + warn2.slice(0, 120))
+  await clickExact(I, 'Yes, Publish Live'); await sleep(700)
+  await clickExact(I, 'Done'); await sleep(600)
+  if (!(await I.has('$2.25'))) g.push('the overview does not show the new withdrawal fee')
+  say(11, 'A Pricing & Rewards change saves after a warning', g, `client fees: the warning names the whole platform, "Changes are published live!", the overview shows $150 and the activity log records it; participant fees: their own warning, and the overview shows $2.25`)
 }
 
 
