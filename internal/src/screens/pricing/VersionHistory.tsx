@@ -4,7 +4,7 @@ import { monthDayYearTime } from '@shared/format'
 import { DEFAULTS } from '@shared/settings'
 import type { FeeSettings } from '@shared/types'
 import { usePlatform } from '../../platform'
-import { AddOn } from './Pricing'
+import Pill from '../../components/app/Pill'
 import { addOnPills } from '../../mock/pricing'
 
 const usd = (n: number) => `$${Number.isInteger(n) ? n : n.toFixed(2)}`
@@ -23,7 +23,10 @@ function Version({ heading, by, fees }: { heading: string; by?: string; fees: Fe
         {fees.addOns.map((a, i) => (
           <div key={a.id} className="flex flex-col gap-1">
             <span className="text-text-regular text-text-subtitle">Add-on {i + 1}</span>
-            <AddOn amount={`+${usd(a.amount)}`} pills={addOnPills(a)} />
+            <p className="flex flex-wrap items-center gap-2 text-text-regular text-text-subtitle">
+              <span className="text-body-regular text-text-title">+{usd(a.amount)}</span>&bull; For
+              {addOnPills(a).map(([l, v]) => <Pill key={v} label={l} className="h-7 px-2.5">{v}</Pill>)}
+            </p>
           </div>
         ))}
       </div>

@@ -5,7 +5,8 @@ import PanelTabs from '../../../components/app/PanelTabs'
 import { platform } from '@shared/store'
 import { useManagedStudy } from '../../../mock/manage'
 import { TEAM, say } from '../../../platform'
-import { CongratsBanner, PausedBanner } from './Banners'
+import { BillingBanner, CongratsBanner, PausedBanner } from './Banners'
+import { notice } from '../../../components/app/Notice'
 import CompletedStudy from './CompletedStudy'
 import ManageTab from './ManageTab'
 import MatchedTab from './MatchedTab'
@@ -73,6 +74,10 @@ export default function ManageStudy() {
     <AppShell className={study.tight && !paused ? 'flex flex-col gap-3 p-4 pb-6' : 'flex flex-col gap-3 pb-8'}
       crumbs={[{ label: 'Studies', to: '/studies' }, { label: 'Ongoing', to: '/studies?tab=ongoing' }, { label: study.title }]}>
       {congrats && <CongratsBanner required={study.raw.required} />}
+      {tab === 'pay' && study.raw.state === 'billing' && (
+        <BillingBanner by={study.raw.stoppedBy ?? 'client'} at={study.raw.stoppedAt}
+          onRepublish={() => { if (say(platform().moveStudy(study.id, 'recruiting', TEAM))) notice(`${study.title} is recruiting again`) }} />
+      )}
       {paused && <PausedBanner onResume={() => platform().moveStudy(study.id, 'recruiting', TEAM)} onComplete={() => setStopping(true)} />}
       <StudyHeader study={study} onPause={() => setPausing(true)} onResume={() => say(platform().moveStudy(study.id, 'recruiting', TEAM))}
         onComplete={() => setStopping(true)} />

@@ -2,7 +2,6 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { isStopped } from '@shared/lifecycle'
 import { SegmentedTabs } from '../../../components/ui/Tabs'
-import { dayMonthYear as dmy, clockTime } from '@shared/format'
 import { DownloadIcon, ReceiptIcon } from '../../../components/ui/icons'
 import type { ManagedStudy } from '../../../mock/manage'
 import { BillLine, Mastercard } from '../review/PaymentRevisions'
@@ -106,14 +105,9 @@ export function transactionsOf(study: Study) {
  * in Billing, Net Payable with the drawn line "To be auto-debited by [date] by
  * [card]" (shown as drawn; nothing debits a card on its own, recorded on the
  * difference list); then Deposit Paid and Total Cost, or Total Paid once
- * completed; and Transactions, each with its invoice. In Billing a banner says
- * who stopped the study. The console takes no money here.
+ * completed; and Transactions, each with its invoice. The banner for a study
+ * in Billing sits above the study header (BillingBanner). The console takes no money here.
  */
-const STOPPED_BY: Record<'client' | 'team' | 'filled', string> = {
-  client: 'This study is stopped by the client to mark completed!',
-  team: 'This study is stopped by the team to mark completed!',
-  filled: 'This study has filled its target and stopped recruiting!',
-}
 export default function PayTab({ study }: { study: ManagedStudy }) {
   const state = usePlatform()
   const real = state.studies.find((x) => x.id === study.id)
@@ -126,13 +120,6 @@ export default function PayTab({ study }: { study: ManagedStudy }) {
   const dueBy = balanceDueBy(real)
   return (
     <div className="flex flex-col gap-4">
-      {real.state === 'billing' && (
-        <div className="flex flex-col gap-1 rounded-lg border-1 border-yellow-200 bg-yellow-40 px-4 py-[13px]">
-          <p className="text-body-medium text-text-title">{STOPPED_BY[real.stoppedBy ?? 'client']}</p>
-          <p className="text-text-regular text-text-subtitle">Complete the study by a payment or get more participants if needed.</p>
-          {real.stoppedAt && <p className="text-text-regular text-text-body">{dmy(real.stoppedAt)}, at {clockTime(real.stoppedAt)}</p>}
-        </div>
-      )}
       <div className="grid grid-cols-2 items-start gap-6">
         <div>
           <h2 className="pb-3 text-title-s leading-[25px] text-text-title">Billing</h2>

@@ -18,7 +18,8 @@ import { usePlatform } from '../platform'
  * Participants Fees are saved from here like the rest (shared/settings.ts, group `participants`).
  */
 export const sign = (n: number) => (n > 0 ? `+${n}` : String(n))
-const usd = (n: number) => `$${Number.isInteger(n) ? n : n.toFixed(2)}`
+/** A dollar figure; the edit screens pass the typed text, so it is read as a number first. */
+const usd = (v: number | string) => { const n = Number(v); return Number.isFinite(n) ? `$${Number.isInteger(n) ? n : n.toFixed(2)}` : `$${v}` }
 
 /** How each add-on parameter reads, on the pills and in the parameter menu (2058:193797). */
 export const PARAMETER_LABEL: Record<AddOnParameter, string> = {
