@@ -287,7 +287,11 @@ await C.click('Proceed to Publish', 800); await C.ev(FORMS)
 const pub = await body(C)
 const disabledBefore = await disabled(C, 'Publish Study')
 await C.ev(`(() => { __ph('0000 0000 0000 0000', '4242 4242 4242 4242'); __ph('MM / YYYY', '12 / 2028'); __ph('000', '123'); __ph('Enter name', 'Ada Stone'); return true })()`); await sleep(300)
-const disabledAfter = await disabled(C, 'Publish Study')
+// Card Added to Publish (23 Oct 2026): a typed card is checked by Add Card to Publish before Publish Study unlocks.
+const disabledTyped = await disabled(C, 'Publish Study')
+await C.click('Add Card to Publish', 400)
+const verifiedShown = await C.has('Card is verified to pay')
+const disabledAfter = await disabled(C, 'Publish Study') || !disabledTyped || !verifiedShown
 await C.click('Publish Study', 1000)
 const publishedA = (await C.path()).endsWith('/published')
 const cardsA = await st(C, `s.clients.find((c) => c.id === ${JSON.stringify(idA)}).cards.map((c) => c.last4).join()`)
