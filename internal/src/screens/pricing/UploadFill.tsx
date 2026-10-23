@@ -59,7 +59,7 @@ export function UploadFill({ card, onFill }: { card: RateCard; onFill: (next: Ra
             )}
             {changed.length > 0 && (
               <section><h4 className="pb-1 text-text-medium">About to change</h4>
-                {changed.map((m) => <p key={m.label}><span className="text-text-medium">{m.label}</span>: {m.changes.map((c) => `${c.field} ${c.from} to ${c.to}`).join('; ')}</p>)}</section>
+                {changed.map((m) => <p key={m.label}><span className="text-text-medium">{m.label}</span>: {m.changes.map((c) => `${c.field} was ${c.from}, now ${c.to}`).join('; ')}</p>)}</section>
             )}
             {preview.added.length > 0 && (
               <section><h4 className="pb-1 text-text-medium">Not on the rate card yet: will be added</h4>{preview.added.map((a) => <p key={a}>{a}</p>)}</section>

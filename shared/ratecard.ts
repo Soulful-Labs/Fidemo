@@ -161,7 +161,7 @@ export interface UploadPreview {
   next: RateCard
 }
 
-const show = (v: unknown) => (v == null || v === '' ? 'blank' : typeof v === 'object' ? (() => { const r = v as RateRange; return r.min == null && r.max == null ? 'blank' : r.min === r.max ? `${r.min}` : `${r.min ?? 'blank'} to ${r.max ?? 'blank'}` })() : String(v))
+const show = (v: unknown) => (v == null || v === '' ? 'blank' : typeof v === 'object' ? (() => { const r = v as RateRange; return r.min == null && r.max == null ? 'blank' : r.min === r.max ? `${r.min}` : `${r.min ?? 'blank'} up to ${r.max ?? 'blank'}` })() : String(v))
 const SEG_FIELDS: [keyof RateSegment, string][] = [['criteria', 'Criteria'], ['setup', 'Setup'], ['setupNote', 'Setup note'], ['cpr', 'Cost per recruit'], ['cprNote', 'Cost per recruit note'], ['incentive', 'Incentive guide'], ['incentiveUnit', 'Incentive unit'], ['incentiveNote', 'Incentive note']]
 const FEE_FIELDS: [keyof RateFee, string][] = [['amount', 'Amount'], ['unit', 'Unit'], ['note', 'Note']]
 

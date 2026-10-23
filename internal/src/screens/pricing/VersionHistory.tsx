@@ -72,7 +72,7 @@ export default function VersionHistory() {
             </p>
             <div className="flex flex-col gap-1 px-4 py-3 text-text-regular text-text-title">
               <p>{v.after.segments.length} segment rows and {v.after.fees.length} fees, adjustments and rules.</p>
-              {v.changed.map((m) => <p key={m.label}><span className="text-text-medium">{m.label}</span>: {m.changes.map((c) => `${c.field} ${c.from} to ${c.to}`).join('; ')}</p>)}
+              {v.changed.map((m) => <p key={m.label}><span className="text-text-medium">{m.label}</span>: {m.changes.map((c) => `${c.field} was ${c.from}, now ${c.to}`).join('; ')}</p>)}
               {v.added.length > 0 && <p className="text-text-subtitle">Added: {v.added.join(' · ')}</p>}
               {v.removed.length > 0 && <p className="text-text-subtitle">Removed: {v.removed.join(' · ')}</p>}
             </div>

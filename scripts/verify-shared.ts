@@ -811,7 +811,7 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   const edited = readCsv(file('rate-card.csv').replace('Level 1 Basic Consumer,IR 50% plus,1-25,500,500', 'Level 1 Basic Consumer,IR 50% plus,1-25,550,five hundred'))!
   const pv = previewUpload(first.next, [edited])
   const basic = pv.matched.find((m) => m.label === 'General Population Consumer, Level 1 Basic Consumer, 1-25')!
-  check('upload: a changed cell is shown before saving, an unreadable one is left blank and listed', basic.changes.some((c) => c.field === 'Setup' && c.from === '500' && c.to === '550 to blank') && pv.unreadable.length === 1 && pv.unreadable[0]!.raw === 'five hundred')
+  check('upload: a changed cell is shown before saving, an unreadable one is left blank and listed', basic.changes.some((c) => c.field === 'Setup' && c.from === '500' && c.to === '550 up to blank') && pv.unreadable.length === 1 && pv.unreadable[0]!.raw === 'five hundred')
   check('upload: a bad header is not a rate card', readCsv('name,price\nx,1') === null)
   // The three the team asked for: 25 participants, one hour, remote, at the lower end of each range.
   const card = first.next
