@@ -1,13 +1,12 @@
 import { useNewStudy } from '../create/useNewStudy'
 import { useRef, useState } from 'react'
-import { money } from '@shared/format'
 import { useNavigate } from 'react-router-dom'
 import AppShell, { ViewAll } from '../../app/AppShell'
 import RespondentCard from '../../components/client/RespondentCard'
 import type { Respondent } from '../../components/client/RespondentCard'
 import StatTile from '../../components/client/StatTile'
 import Button from '../../components/ui/Button'
-import { ChevronRight, Clock, DollarCircle, ShieldIcon, UsersIcon } from '../../components/ui/icons'
+import { ChevronRight, Clock, ShieldIcon, UsersIcon } from '../../components/ui/icons'
 import { DASHBOARD_STUDY_IDS } from '../../mock/dashboard'
 import { useOpenProfile } from '../../app/ProfileHost'
 import { NeedRow, StepArrow, StudyCarousel, usePerRow } from './DashboardParts'
@@ -77,7 +76,6 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
     { label: 'Ongoing Studies', value: String(d.ongoing), tint: 'yellow' as const, Icon: Clock },
     { label: 'Remaining To Hire', value: toHire.toLocaleString('en-US'), tint: 'green' as const, Icon: UsersIcon },
     { label: 'Avg. Trust Score', value: d.avgScore ? String(d.avgScore) : '—', tint: 'purple' as const, Icon: ShieldIcon },
-    { label: 'Avg. Session Incentive', value: money(d.avgIncentive), tint: 'blue' as const, Icon: DollarCircle },
   ]
   const today = new Date().toDateString()
 
@@ -88,7 +86,8 @@ export default function Dashboard({ empty = false }: { empty?: boolean }) {
             Attention the third, so the three cards in that row are the same width and none moves. */}
         <div className="grid grid-cols-3 gap-4">
           <div className="col-span-2 flex min-w-0 flex-col gap-6">
-            <div className="grid grid-cols-4 gap-3">
+            {/* Three figures since 24 Oct 2026: the client sees no incentive figures; the incentive is inside the cost per interview. */}
+            <div className="grid grid-cols-3 gap-3">
               {stats.map((t) => <StatTile key={t.label} label={t.label} value={t.value} tint={t.tint} icon={<t.Icon className="h-6 w-6" />} />)}
             </div>
 

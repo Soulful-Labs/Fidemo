@@ -6,6 +6,7 @@ import { cn } from '../../lib/cn'
 import { usePricing } from '../../mock/pricing'
 import Button from '../../components/ui/Button'
 import { Head, HistoryGlyph, Value } from './parts'
+import { ExportButtons, RateCardView } from './RateCardTables'
 
 const Rows = ({ title, rows, sub }: { title: string; rows: string[][]; sub?: string[][] }) => (
   <div className="rounded-lg border-1 border-stroke-1 bg-bg-1 px-4 pb-2 pt-4">
@@ -33,7 +34,7 @@ export default function Pricing() {
   const [params, setParams] = useSearchParams()
   const gami = params.get('tab') === 'gamification'
   /** The values in force now: a master admin's saved changes, else the policy's. */
-  const { DEDUCTED_VIEW, EARNED, EARNED_STARS, POINTS, TIERS_VIEW, FEE, ADD_ONS } = usePricing()
+  const { DEDUCTED_VIEW, EARNED, EARNED_STARS, POINTS, TIERS_VIEW, FEE, ADD_ONS, values } = usePricing()
   return (
     <AppShell className="pb-8" crumbs={[{ label: 'Pricing & Rewards' }]}>
       <SegmentedTabs className="w-[280px]" segmentClassName="flex-1 min-w-0" value={gami ? 'gamification' : 'fees'} onChange={(k) => setParams(k === 'fees' ? {} : { tab: k }, { replace: true })}
@@ -56,6 +57,9 @@ export default function Pricing() {
               <p className="flex items-baseline gap-2 pt-2 text-title-m leading-7 text-text-title">{FEE.recruitmentBase}<span className="text-text-regular text-text-subtitle">Base</span></p>
               {ADD_ONS.length > 0 && <div className="flex gap-2 pt-2">{ADD_ONS.map((a) => <AddOn key={a.id} amount={a.amount} pills={a.pills} />)}</div>}
             </Value></section>
+          <section><Head title="Rate Card" note="Setup, cost per recruit and incentive guide by segment and size band; the team's own sheet. A client sees only the cost per interview." action="Edit Rate Card" onEdit={() => navigate('/pricing/client-fees')}
+            extra={<ExportButtons card={values.rateCard} />} />
+            <RateCardView card={values.rateCard} /></section>
           <section><Head title="Participants Fees" note="Manage charges and rewards for participants" action="Edit Fees" onEdit={() => navigate('/pricing/participant-fees')} />
             <div className="grid grid-cols-2 gap-3"><Value label="Withdrawal" value={FEE.withdrawal} note="One-time charge per withdrawal" /><Value label="Reward Points Value" value={FEE.pointValue} note="For 100 Reward Coins" /></div></section>
         </div>

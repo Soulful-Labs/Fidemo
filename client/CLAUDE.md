@@ -1732,9 +1732,10 @@ is where each lives in the code.
 
 ## Client round, 23 Oct 2026 (PNGs)
 
-- **Pricing**: Total Recruiting Cost is the rate per participant
-  (`rateFor`, `RATE_PER_PARTICIPANT` in `shared/platform.ts`, one place for the
-  rate sheet) times the participants, incentive included; 20% at publish, 30%
+- **Pricing**: Total Recruiting Cost is the cost per interview (`rateFor`,
+  quoted from the team's rate card, `shared/ratecard.ts`, since 24 Oct 2026;
+  the team sets the final figure per study) times the participants, incentive
+  included; 20% at publish, 30%
   when the team takes it live, the rest on the bill (`paymentPlan`,
   `billing`). The Study step still draws the old fee schedule, on instruction.
 - `create/PaymentSummary.tsx` holds Payment Summary, Payment Breakdown's body,
@@ -1743,3 +1744,9 @@ is where each lives in the code.
 - **Study groups**: `screens/studies/GroupDialogs.tsx`, sections in
   `StudiesList` through `groupSections`; Add to a Group and Contact Us To Edit
   are in `OngoingMenu` (pass `studyId`).
+
+## Rate card, 24 Oct 2026
+
+- The client sees only the cost per interview; no client screen reads the
+  rate card. The incentive is no longer the client's: the dashboard's "Avg.
+  Session Incentive" tile is gone.

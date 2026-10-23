@@ -12,7 +12,8 @@ import { useDraft } from '../../mock/createStore'
 export function usePlan() {
   const { draft } = useDraft()
   const n = /^\d+$/.test(draft.participants.trim()) ? Number(draft.participants) : 0
-  return paymentPlan(rateFor({ type: studyTypeOf(draft), required: n }), n)
+  // The cost per interview the rate card offers before the team quotes it (24 Oct 2026); the client sees only this figure.
+  return paymentPlan(rateFor({ type: studyTypeOf(draft), required: n, durationMins: Number(draft.duration) || 60 }), n)
 }
 
 const FORM = (

@@ -9,6 +9,7 @@ import { TEAM, say } from '../../platform'
 import { AddOns } from './AddOns'
 import { Edit, EditShell, Notes } from './parts'
 import { UploadFill } from './UploadFill'
+import { ExportButtons, RateCardEditor } from './RateCardTables'
 
 const Box = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section className="rounded-lg border-1 border-stroke-1 bg-bg-1 p-4"><h3 className="border-b-1 border-stroke-input pb-3.5 text-title-s leading-[25px] text-text-title">{title}</h3><div className="flex flex-col gap-4 pt-4">{children}</div></section>
@@ -70,9 +71,19 @@ export default function EditPricing() {
     for (const k of Object.keys(o)) if (typeof o[k] === 'string' || typeof o[k] === 'number') o[k] = num(String(o[k]))
     return o as unknown as SettingsValues[G]
   }
+  /** The rate card's cells an upload could not read, and the file it came from (24 Oct 2026). */
+  const [rateFlags, setRateFlags] = useState<Set<string>>(new Set())
+  const [rateSource, setRateSource] = useState<string | undefined>()
   const save = () => {
     setAsking(false)
-    if (say(platform().changeSettings(s.group, numeric(s.group), TEAM))) setPublished(true)
+    if (key !== 'client-fees') { if (say(platform().changeSettings(s.group, numeric(s.group), TEAM))) setPublished(true); return }
+    // Edit Clients Fees saves the team's fee cards and the rate card: each that changed becomes its own version.
+    const fees = numeric('fees'), feesChanged = JSON.stringify(fees) !== JSON.stringify(values.fees)
+    const cardChanged = JSON.stringify(draft.rateCard) !== JSON.stringify(values.rateCard)
+    if (!feesChanged && !cardChanged) { say({ ok: false, why: 'Nothing has changed' }); return }
+    if (feesChanged && !say(platform().changeSettings('fees', fees, TEAM))) return
+    if (cardChanged && !say(platform().changeSettings('rateCard', draft.rateCard, TEAM, rateSource))) return
+    setPublished(true)
   }
   const t = draft.trust
   const view = pricingView(draft)
@@ -80,13 +91,21 @@ export default function EditPricing() {
     <EditShell crumb={s.crumb} last={s.last} title={s.title} note={s.note} back={s.back} onSave={() => setAsking(true)}>
       {key === 'client-fees' && (
         <>
-          <UploadFill onFill={(f) => setDraft((d) => ({ ...d, fees: { ...d.fees, ...f } }))} />
+          <UploadFill card={draft.rateCard} onFill={(next, flags, source) => { setDraft((d) => ({ ...d, rateCard: next })); setRateFlags(flags); setRateSource(source) }} />
           <div className="grid grid-cols-2 gap-3"><Edit label="Platform Fees" value={String(draft.fees.platform)} unit="USD" onValue={put('fees', 'platform')} note="One-time per study" /><Edit label="Moderation Fees" value={String(draft.fees.moderation)} unit="USD" onValue={put('fees', 'moderation')} note="One-time per completed participant" /></div>
           <section className="mt-3 flex flex-col gap-3 rounded-lg border-1 border-stroke-1 bg-bg-1 p-4">
             <h3 className="text-body-regular text-text-title">Recruitment Fees</h3>
             <div className="rounded-md bg-bg-2 px-3 pb-3 pt-2.5 [&_label]:text-text-regular [&_label]:text-text-subtitle"><Edit plain label="Base" value={String(draft.fees.recruitmentBase)} unit="USD" onValue={put('fees', 'recruitmentBase')} /></div>
             <AddOns addOns={draft.fees.addOns} onChange={(addOns) => setDraft((d) => ({ ...d, fees: { ...d.fees, addOns } }))} />
             <p className="text-text-regular text-text-title">One-time per completed participant</p>
+          </section>
+          {/* The rate card (24 Oct 2026): the team's pricing sheet, edited by hand or filled by Upload file and fill. */}
+          <section className="mt-6 flex flex-col gap-3">
+            <div className="flex items-start justify-between gap-4">
+              <div><h2 className="text-title-s text-text-title">Rate Card</h2><p className="text-text-regular text-text-body">Team only. A client sees only the cost per interview a quote produces. A change applies to studies quoted after it.</p></div>
+              <ExportButtons card={draft.rateCard} />
+            </div>
+            <RateCardEditor card={draft.rateCard} flags={rateFlags} onChange={(c) => setDraft((d) => ({ ...d, rateCard: c }))} />
           </section>
         </>
       )}

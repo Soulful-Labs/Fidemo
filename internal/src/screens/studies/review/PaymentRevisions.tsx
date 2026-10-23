@@ -12,6 +12,7 @@ import { platform } from '@shared/store'
 import type { Study } from '@shared/types'
 import { Transaction, transactionsOf } from '../manage/PayTab'
 import { Rule } from './parts'
+import { QuotePanel } from './QuotePanel'
 
 interface Line { label: string; detail?: string; amount: string; info?: boolean }
 
@@ -82,6 +83,7 @@ export function PaymentTab({ study }: { study: Study }) {
           {tx.length === 0 && <p className="rounded-md border-1 border-stroke-1 p-3 text-text-regular text-text-subtitle">No payment has been taken for this study yet.</p>}
         </div>
       </div>
+      <QuotePanel study={study} />
       <ChangeCpiRate open={changing} onClose={() => setChanging(false)} study={study} />
     </div>
   )
