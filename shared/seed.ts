@@ -13,7 +13,7 @@
 import { billing, freshCertificateId } from './derive'
 import { avatarFor } from './avatar'
 import { withdrawalExpectedBy } from './platform'
-import { DEMO_SESSION_CODE, depositFor, isSessionType, priceStudy } from './platform'
+import { DEMO_SESSION_CODE, isSessionType, paymentPlan, priceStudy, rateFor } from './platform'
 import { SCREENERS, TASKS } from './seed/screeners'
 import { catalogue } from './seed/catalogue'
 import type { CatalogueEntry } from './seed/catalogue'
@@ -21,12 +21,12 @@ import { buildPool, starsSumming, targetScore } from './seed/people'
 import { trustInputs } from './derive'
 import { TRUST, starsForRating, trustForStars } from './rules'
 import type { Answers, AudienceCriteria } from './types'
-import type {
+import type { StudyGroup,
   Activity, Client, EarlierReview, Location, Participation, ParticipationState, Person, PlatformState,
   Question, RatingState, Report, Session, Stars, Study, StudyPayment, StudyReport, StudySetup, StudyType, TeamMember, Ticket,
 } from './types'
 
-export const SEED_VERSION = 19
+export const SEED_VERSION = 20
 export const DEMO_PERSON_ID = 'jonathan'
 export const DEMO_PERSON_EMAIL = 'jonathan.reeve@example.com'
 /** The respondent app's demo login (README). A front-end stand-in for real authentication, see Person.password. Every seeded participant has it. */
@@ -398,12 +398,21 @@ export function buildSeed(now: Date = new Date()): PlatformState {
   const payment = (study: Study, kind: StudyPayment['kind'], amount: number, when: string, confirmedBy?: string): StudyPayment =>
     ({ id: `${study.id}-${kind}`, kind, amount, at: when, confirmedBy })
 
-  /** What a finished study came to, with this file's own arithmetic kept to the one place a payment needs it. */
+  /**
+   * The payment structure (23 Oct 2026, shared/platform.ts): priced at submission at the rate for what the
+   * study asks (rateFor), the upfront deposit taken then, and the incentive deposit when the team took it live.
+   */
+  const deposits = (study: Study) => {
+    if (study.state === 'draft' || !study.submittedAt || study.required <= 0) return
+    study.ratePeriods = [{ rate: rateFor(study), from: study.submittedAt }]
+    const plan = paymentPlan(study.ratePeriods[0]!.rate, study.required)
+    study.payments.push({ id: `${study.id}-deposit-upfront`, kind: 'deposit', stage: 'upfront', amount: plan.upfront, at: study.submittedAt })
+    if (study.approvedAt) study.payments.push({ id: `${study.id}-deposit-incentive`, kind: 'deposit', stage: 'incentive', amount: plan.incentive, at: study.approvedAt })
+  }
+
+  /** What a finished study came to (shared/derive.ts billing): the final bill less the deposits, paid some days after it ended. */
   const settle = (study: Study, paidDaysAfter: number | null) => {
-    const delivered = study.participations.filter((p) => p.state === 'completed').length
-    const { platformFee, recruitingPer, incentivePer, moderationPer } = study.rates
-    // Less the deposit taken at submission, by the one rule (shared/platform.ts depositFor).
-    const net = platformFee + (recruitingPer + incentivePer + moderationPer) * delivered - depositFor(study.rates, study.required)
+    const net = billing(study).net
     if (net > 0 && paidDaysAfter != null && study.completedAt) study.payments.push(payment(study, 'balance', net, plus(study.completedAt, paidDaysAfter)))
     return net
   }
@@ -421,7 +430,7 @@ export function buildSeed(now: Date = new Date()): PlatformState {
       participations: [], payments: [], revisions: [],
       ...s,
     }
-    if (study.state !== 'draft' && study.submittedAt) study.payments.push(payment(study, 'deposit', depositFor(study.rates, study.required), study.submittedAt))
+    deposits(study)
     return study
   }
 
@@ -479,6 +488,12 @@ export function buildSeed(now: Date = new Date()): PlatformState {
   travel.sessions = sessionsFor(travel, 40, -20)
   // Three completed and not yet paid on a study that ended 18 days ago: past the 14 days, so overdue in Finance > Payouts and on the console dashboard.
   travel.participations = fill(travel, { rated: 6, completed: 31, unpaid: 3, noShow: 2, disqualified: 5 }, { doneFrom: -60, doneTo: -19 })
+  /**
+   * Demo data for the Final bill drawn in two rate periods (Pay - Completed Study, 23 Oct 2026): the study's
+   * requirements changed part way, and the rate agreed then applies to the people who completed after it.
+   * Nothing in the app changes a rate today; the rate sheet will (shared/platform.ts rateFor).
+   */
+  travel.ratePeriods = [...travel.ratePeriods!, { rate: travel.ratePeriods![0]!.rate + 100, from: at(-40, 10, 0) }]
 
   const social = live('st-social', 'Social media posts designing apps', 'survey', 'recruiting', 'Consumer', 30,
     'How do you design social media posts and what tools do you use for it',
@@ -845,7 +860,9 @@ Group ${i + 1}: most book travel on a phone, but pay on a laptop.
   }
   // The audience pills Manage and Review read back are the study's own criteria (D38), not a sample list.
   for (const study of studies) if (!study.form && study.setup) study.setup = { ...study.setup, audience: audiencePills(study.audience, study.required) }
-  const state: PlatformState = { version: SEED_VERSION, seededAt: now.toISOString(), people, clients, studies, reports, tickets, team, activity, pending: [], teamNotices: [], studyReports }
+  /** One group of the demo client's studies (Studies - with groups, 23 Oct 2026); the rest are under Others. */
+  const studyGroups: StudyGroup[] = [{ id: 'grp-digital', clientId: DEMO_CLIENT_ID, name: 'My Digital Studies Group', studyIds: ['st-social', 'st-goal'], createdAt: at(-5, 11, 0) }]
+  const state: PlatformState = { version: SEED_VERSION, seededAt: now.toISOString(), people, clients, studies, reports, tickets, team, activity, pending: [], teamNotices: [], studyReports, studyGroups }
   /**
    * Certificates issued at verification (policy section 7), each ID generated
    * once and never reused. A fixed sequence stands in for Math.random so the

@@ -9,9 +9,9 @@
  * reads and writes the same platform: a change made in one app is picked up
  * by the others through the storage event, without a reload.
  */
-import { applyRepeatRule, targetMet, barredFrom, billing, diaryLocks, diaryReady, freshCertificateId, hasTakenPartWith, sessionNotStarted, openAvailability, personById, personFigures, profileCompletion, referralCode } from './derive'
-import { CLOSED_BY_PARTICIPANT, canEditStudy, canMoveParticipation, canMovePayout, canMoveStudy, canRepublish, closedByOwner, isLive, isStopped, participationOf } from './lifecycle'
-import { DECISION_UNDO_MS, DEMO_SESSION_CODE, REPORT_MAX_CHARS, RESTRICTION_DAYS, TIMINGS, canCancel, canReschedule, canWithdraw, depositFor, diaryWords, isSessionType, priceStudy, targets, withdrawalExpectedBy } from './platform'
+import { applyRepeatRule, targetMet, barredFrom, billing, currentRate, diaryLocks, diaryReady, freshCertificateId, hasTakenPartWith, sessionNotStarted, openAvailability, personById, personFigures, profileCompletion, referralCode } from './derive'
+import { CLOSED_BY_PARTICIPANT, canEditStudy, canGroup, canMoveParticipation, canMovePayout, canMoveStudy, canRepublish, closedByOwner, isLive, isStopped, participationOf } from './lifecycle'
+import { DECISION_UNDO_MS, DEMO_SESSION_CODE, REPORT_MAX_CHARS, RESTRICTION_DAYS, TIMINGS, canCancel, canReschedule, canWithdraw, diaryWords, isSessionType, paymentPlan, priceStudy, rateFor, targets, withdrawalExpectedBy } from './platform'
 import { POINTS, canRedeem, starsForRating, starsFromDimensions } from './rules'
 import { monthDayYear } from './format'
 import { sessionStartOf as sessionStart } from './derive'
@@ -52,6 +52,24 @@ function tidyAnswers(study: Study, answers: Answers): Answers {
     const n = Number(v.trim().replace(/,/g, ''))
     return [id, v.trim() !== '' && Number.isFinite(n) ? n : v]
   }))
+}
+
+/** Why a group cannot be saved with this name and these studies, or empty when it can. */
+function groupFault(s: PlatformState, clientId: string, name: string, studyIds: string[], groupId?: string): string {
+  if (!name.trim()) return 'Enter the name of your group'
+  if ((s.studyGroups ?? []).some((g) => g.clientId === clientId && g.id !== groupId && g.name.trim().toLowerCase() === name.trim().toLowerCase())) return 'You already have a group with this name'
+  for (const id of studyIds) {
+    const study = s.studies.find((x) => x.id === id)
+    if (!study || study.clientId !== clientId) return 'One of those studies is gone'
+    if (!canGroup(study.state)) return `${study.title} cannot be put in a group yet`
+  }
+  return ''
+}
+
+/** Puts these studies in this group, and takes each out of any other group: a study is in one group at most. */
+function placeInGroup(s: PlatformState, groupId: string, studyIds: string[]) {
+  const ids = [...new Set(studyIds)]
+  for (const g of s.studyGroups ?? []) g.studyIds = g.id === groupId ? ids : g.studyIds.filter((id) => !ids.includes(id))
 }
 
 export function createPlatform(options: Options = {}) {
@@ -252,6 +270,17 @@ export function createPlatform(options: Options = {}) {
     announceFinish(s, study)
     settleIfPaid(s, study, actor)
   }
+  /**
+   * The payment structure's two deposits (23 Oct 2026, shared/platform.ts PAYMENT_STAGES): the upfront
+   * deposit when the study is published, at the rate agreed then, and the incentive deposit when the team
+   * takes it live. Each is taken once; a study sent back and published again is priced afresh.
+   */
+  const takeDeposit = (study: Study, stage: 'upfront' | 'incentive') => {
+    if (study.required <= 0 || study.payments.some((p) => p.kind === 'deposit' && (p.stage ?? 'upfront') === stage)) return
+    if (!study.ratePeriods?.length) study.ratePeriods = [{ rate: rateFor(study), from: iso() }]
+    const plan = paymentPlan(currentRate(study), study.required)
+    study.payments.push({ id: `${study.id}-deposit-${stage}`, kind: 'deposit', stage, amount: plan[stage], at: iso() })
+  }
   /** A study in Billing whose bill owes nothing is completed. */
   const settleIfPaid = (s: PlatformState, study: Study, actor: Actor) => {
     if (study.state !== 'billing' || billing(study).outstanding > 0) return
@@ -349,7 +378,9 @@ export function createPlatform(options: Options = {}) {
         setup: summarise(s, kept, clock()), form: kept, participations: [], payments: [], revisions: draft?.revisions ?? [],
         edits: [...(draft?.edits ?? []), ...(edit ? [edit] : [])],
       }
-      study.payments.push({ id: `${id}-deposit`, kind: 'deposit', amount: depositFor(study.rates, study.required), at: iso() })
+      // Priced now at the rate for what it asks (rateFor); the upfront deposit is taken from the card.
+      study.ratePeriods = [{ rate: rateFor(study), from: iso() }]
+      takeDeposit(study, 'upfront')
       if (draft) s.studies.splice(s.studies.indexOf(draft), 1)
       s.studies.unshift(study)
       return yes({ id })
@@ -388,7 +419,8 @@ export function createPlatform(options: Options = {}) {
       const id = uid('st')
       s.studies.unshift({
         ...structuredClone(from), id, title: `${from.title} (copy)`, state: 'draft', createdAt: iso(), submittedAt: undefined, approvedAt: undefined,
-        completedAt: undefined, participations: [], payments: [], revisions: [],
+        completedAt: undefined, participations: [], payments: [], revisions: [], ratePeriods: undefined,
+        stoppedAt: undefined, stoppedBy: undefined, edits: undefined, beyondTarget: undefined,
       })
       return yes({ id })
     }),
@@ -408,10 +440,12 @@ export function createPlatform(options: Options = {}) {
       if (to === 'completed' && billing(study).outstanding > 0) return no('The bill has to be paid before the study is completed')
       if (study.state === 'draft' && to === 'in_review') {
         study.submittedAt = iso()
-        if (!study.payments.some((p) => p.kind === 'deposit') && study.required > 0) study.payments.push({ id: `${study.id}-deposit`, kind: 'deposit', amount: depositFor(study.rates, study.required), at: iso() })
+        takeDeposit(study, 'upfront')
       }
       if (to === 'recruiting' && !study.approvedAt) {
         study.approvedAt = iso(); log(s, actor, `Approved ${study.title} to publish`, 'Studies / Review / Approve')
+        // The incentive deposit is taken when recruiting starts (shared/platform.ts PAYMENT_STAGES).
+        takeDeposit(study, 'incentive')
         /**
          * Workflow 24: the search runs when the study goes live. Matched is the
          * people who fit the audience the client set, less anyone its repeat
@@ -467,6 +501,8 @@ export function createPlatform(options: Options = {}) {
       study.form = after
       study.setup = summarise(s, after, clock())
       study.edits = [...(study.edits ?? []), edit]
+      // A change to what the study asks for can agree a new rate: it applies to the people who complete from now on.
+      { const rate = rateFor(study); if (rate !== currentRate(study)) study.ratePeriods = [...(study.ratePeriods ?? []), { rate, from: iso() }] }
       log(s, actor, `Edited ${study.title} (${edit.changes.length} change${edit.changes.length === 1 ? '' : 's'})`, 'Studies / Manage / Edit Study')
       return yes()
     }),
@@ -496,6 +532,50 @@ export function createPlatform(options: Options = {}) {
       const study = s.studies.find((x) => x.id === studyId)
       if (!study) return no('No such study')
       study.repeatRule = rule
+      return yes()
+    }),
+
+    // ------------------------------------------------------ study groups
+
+    /**
+     * Create Group (23 Oct 2026): a name, and optionally studies to put in it. A study is in one group at
+     * most, so one added here leaves any group it was in. Names are the client's own and do not repeat.
+     */
+    createStudyGroup: (clientId: string, name: string, studyIds: string[] = []) => move<{ id: string }>((s) => {
+      const fault = groupFault(s, clientId, name, studyIds)
+      if (fault) return no(fault)
+      const id = uid('grp')
+      s.studyGroups = [...(s.studyGroups ?? []), { id, clientId, name: name.trim(), studyIds: [], createdAt: iso() }]
+      placeInGroup(s, id, studyIds)
+      return yes({ id })
+    }),
+
+    /** Edit Group: rename it and set which studies it holds. Studies taken out go back to Others. */
+    updateStudyGroup: (groupId: string, name: string, studyIds: string[]) => move((s) => {
+      const group = s.studyGroups?.find((g) => g.id === groupId)
+      if (!group) return no('That group is gone')
+      const fault = groupFault(s, group.clientId, name, studyIds, groupId)
+      if (fault) return no(fault)
+      group.name = name.trim(); group.studyIds = []
+      placeInGroup(s, groupId, studyIds)
+      return yes()
+    }),
+
+    /** Ungroup: the group is removed and its studies go back to Others. Nothing else changes. */
+    ungroupStudyGroup: (groupId: string) => move((s) => {
+      if (!s.studyGroups?.some((g) => g.id === groupId)) return no('That group is gone')
+      s.studyGroups = s.studyGroups.filter((g) => g.id !== groupId)
+      return yes()
+    }),
+
+    /** Add to a Group, from a study's options menu. */
+    addStudyToGroup: (groupId: string, studyId: string) => move((s) => {
+      const group = s.studyGroups?.find((g) => g.id === groupId)
+      const study = s.studies.find((x) => x.id === studyId)
+      if (!group || !study || study.clientId !== group.clientId) return no('That group is gone')
+      if (!canGroup(study.state)) return no('Only a submitted study can be put in a group')
+      if (group.studyIds.includes(studyId)) return no(`Already in ${group.name}`)
+      placeInGroup(s, groupId, [...group.studyIds, studyId])
       return yes()
     }),
 

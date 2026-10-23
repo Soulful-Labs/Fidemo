@@ -100,8 +100,6 @@ export const depositParts = (rates: Pick<StudyRates, 'incentivePer' | 'recruitin
   return { recruitment, incentive, total: cents(recruitment + incentive) }
 }
 export const depositFor = (rates: Pick<StudyRates, 'incentivePer' | 'recruitingPer'>, required: number): number => depositParts(rates, required).total
-/** How a deposit is written wherever one is listed: "25% of recruitment + 25% of incentives". */
-export const DEPOSIT_RULE = `${DEPOSIT_SHARE * 100}% of recruitment + ${DEPOSIT_SHARE * 100}% of incentives`
 
 /** What a study will cost at its full sample, line by line, from the fee table above. */
 export interface Quote {
@@ -127,6 +125,59 @@ export function quoteStudy(type: StudyType, required: number, incentivePer: numb
   const parts = depositParts(rates, participants)
   return { participants, rates, incentives, recruitment, moderation, platformFee: rates.platformFee, total, deposit: parts.total, depositRecruitment: parts.recruitment, depositIncentive: parts.incentive, later: total - parts.total }
 }
+
+// --- Pricing, 23 Oct 2026 ------------------------------------------------------
+
+/**
+ * The client's price (client designs of 23 Oct 2026): Total Recruiting Cost is
+ * a rate per participant times the number of participants. The participant's
+ * incentive is inside the rate, not charged on top.
+ *
+ * The rate is a value the platform holds, never one typed into a screen. It
+ * will come from a rate sheet the team maintains; until then it is this one
+ * rate. `rateFor` is the one place a study is priced, so swapping in the
+ * sheet changes this function and nothing else.
+ *
+ * The fee schedule above (FEES, quoteStudy, depositParts) is what the Create
+ * flow's Study step still draws, unchanged, until it is decided what comes out
+ * of that step. Nothing is charged by it.
+ */
+export const RATE_PER_PARTICIPANT = 250
+
+/** The rate per participant for a study as it is set up now. The rate sheet will key on what the study asks for. */
+export const rateFor = (_study: { type: StudyType; required?: number }): number => RATE_PER_PARTICIPANT
+
+/**
+ * The payment structure: three shares of Total Recruiting Cost that add up to
+ * it. The upfront deposit is taken when the study is published (submitted for
+ * review), the incentive deposit when the team takes it live, and what is due
+ * on completion is the final bill less both deposits, paid on the bill once
+ * recruiting stops. The 30% stage is drawn "Incentive deposit" on Payment
+ * Breakdown and "Recruitment Cost" on the Pay screens; each keeps its own word.
+ */
+export const PAYMENT_STAGES = {
+  upfront: { share: 0.2, label: 'Upfront deposit', bill: 'Upfront Deposit' },
+  incentive: { share: 0.3, label: 'Incentive deposit', bill: 'Recruitment Cost' },
+  completion: { share: 0.5, label: 'Completion Due', bill: 'Completion Due' },
+} as const
+export type PaymentStage = keyof typeof PAYMENT_STAGES
+/** A share as the screens print it: "20%". */
+export const sharePct = (stage: PaymentStage): string => `${Math.round(PAYMENT_STAGES[stage].share * 100)}%`
+
+/** A study's price at a rate and a number of participants, and the three stages of it. The stages always add up to the total. */
+export interface PaymentPlan { rate: number; participants: number; total: number; upfront: number; incentive: number; completion: number }
+export function paymentPlan(rate: number, participants: number): PaymentPlan {
+  const n = Math.max(0, Math.floor(participants || 0))
+  const total = cents(rate * n)
+  const upfront = cents(total * PAYMENT_STAGES.upfront.share), incentive = cents(total * PAYMENT_STAGES.incentive.share)
+  return { rate, participants: n, total, upfront, incentive, completion: cents(total - upfront - incentive) }
+}
+
+/** How the deposits are described wherever one is listed. */
+export const DEPOSIT_RULE = `${sharePct('upfront')} upfront at publish + ${sharePct('incentive')} when recruiting starts`
+
+/** "$250 x 20 participants". */
+export const rateTimes = (rate: number, n: number): string => `$${rate.toLocaleString('en-US')} x ${n} participant${n === 1 ? '' : 's'}`
 
 /** What a profile can say about someone's work. A study's audience names these in its own words; a match is the same words, ignoring case. */
 /** Where a client writes to the team (22 Oct 2026: Contact Us opens the mail client with it, not a support ticket). */

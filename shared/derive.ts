@@ -8,7 +8,9 @@
  */
 import { audienceChecks, audienceMisses, audienceOf } from './studyForm'
 import {
-  DIARY, FEES, PAGE_SIZE, STREAK_TARGET, TAX_FORM_THRESHOLD, WAITS, isSessionType, depositFor } from './platform'
+  DIARY, FEES, PAGE_SIZE, PAYMENT_STAGES, STREAK_TARGET, TAX_FORM_THRESHOLD, WAITS, isSessionType, paymentPlan, rateFor, rateTimes, sharePct } from './platform'
+import type { PaymentPlan } from './platform'
+import { monthDayYear } from './format'
 import {
   clientTag, consoleStudyTab, hasApplied, hasQualified, isApproved, isCharged, isLive, isPayable,
   participationOf, recruitingTab, respondentStatus, STUDY_TAG,
@@ -20,7 +22,7 @@ import type { TrustInputs } from './rules'
 import { pointsAt, starValueAt, trustAt } from './settings'
 import type {
   AppNotification, Booking, Client, Participation, Payout, PayoutMethod, ParticipationState, Person, PlatformState, PreScreenQuestion,
-  PayoutStatus, Question, RatingState, RepeatRule, Report, ReportResolution, Study, StudyReport, StudyPayment, StudyType, TeamMember, TeamNotice, Ticket, Tier,
+  PayoutStatus, Question, RatePeriod, RatingState, RepeatRule, Report, ReportResolution, Study, StudyGroup, StudyReport, StudyPayment, StudyType, TeamMember, TeamNotice, Ticket, Tier,
 } from './types'
 
 // ------------------------------------------------------------------ helpers
@@ -726,15 +728,35 @@ export function sessionSeats(study: Study): { id: string; date: string; slot: st
 
 // --------------------------------------------------------------------- money
 
+/** One line of a bill: what it is, the working under it, and the amount (negative for a deduction). */
+export interface BillLine { label: string; amount: number; sub?: string; info?: boolean }
+
+/** A deposit taken on a study, with its stage of the payment structure (shared/platform.ts PAYMENT_STAGES). */
+export interface DepositPaid { stage: 'upfront' | 'incentive'; amount: number; at: string }
+
+/**
+ * A study's bill (pricing of 23 Oct 2026). Total Recruiting Cost is the rate
+ * per participant times the participants: the required number while the study
+ * runs (Estimated), the participants who completed once it has stopped
+ * (Final), each at the rate agreed when they completed. The deposits taken are
+ * deducted; what is left is due on the bill.
+ */
 export interface Billing {
-  lines: { label: string; amount: number; sub?: string; info?: boolean }[]
+  /** The rate per participant agreed now, and the payment structure at that rate and the required number. */
+  rate: number
+  plan: PaymentPlan
+  /** The Final bill: one line per rate period, the people who completed in it at its rate. */
+  lines: BillLine[]
   /** What the people actually delivered come to. */
   total: number
-  /** Workflow 33: incentives for the full sample, taken when the study is submitted. */
+  /** Every deposit taken so far, and their sum. */
+  deposits: DepositPaid[]
   deposit: number
-  /** Projected at the full sample while the study runs, actual once it is completed. */
+  /** The deposits as the bill deducts them: "Less: 20% Upfront Deposit". */
+  less: BillLine[]
+  /** Projected at the full sample while the study runs, actual once it is stopped. */
   totalCost: number
-  /** The total cost less the deposit already taken. */
+  /** The total cost less the deposits already taken. */
   due: number
   /** Workflow 54: what is still owed on what was delivered, or a credit back when the study underfilled. */
   net: number
@@ -743,49 +765,99 @@ export interface Billing {
   delivered: number
   /** What the client has actually paid against the balance. */
   balancePaid: number
+  /** Everything paid on the study: the deposits and the balance, less any refund. */
+  paid: number
   /** Still to pay now: the net less what has been paid. Never negative. */
   outstanding: number
-  /** The unused incentive to return when the study underfilled. Zero otherwise. */
+  /** The deposit to return when the study underfilled. Zero otherwise. */
   refund: number
-  /**
-   * Billing States, Estimated (19 Oct 2026): the same lines at the required
-   * number of participants, i.e. the quote the study was published at, and
-   * what that would leave payable after the deposit. Display only.
-   */
-  estimate: { lines: { label: string; amount: number; sub?: string; info?: boolean }[]; total: number; net: number }
+  /** The Estimated bill: the rate at the required number of participants, and what that leaves payable after the deposits. */
+  estimate: { lines: BillLine[]; total: number; net: number }
   refundPaid: number
 }
 
 const paidOf = (study: Study, kind: StudyPayment['kind']) => sum(study.payments.filter((p) => p.kind === kind), (p) => p.amount)
 
+/** A study's rate periods, oldest first. One not yet submitted is priced as it stands (rateFor). */
+export const ratePeriodsOf = (study: Study): RatePeriod[] =>
+  study.ratePeriods?.length ? study.ratePeriods : [{ rate: rateFor(study), from: study.submittedAt ?? study.createdAt }]
+
+/** The rate per participant agreed now. */
+export const currentRate = (study: Study): number => ratePeriodsOf(study).at(-1)!.rate
+
+/** When a participant completed: the record's own time, else the last thing that happened to them. */
+const completedOn = (study: Study, p: Participation): string => p.completedAt ?? p.events.at(-1)?.at ?? study.completedAt ?? study.createdAt
+
+/** The deposits taken on a study, each with its stage. */
+export const depositsOf = (study: Study): DepositPaid[] =>
+  study.payments.filter((p) => p.kind === 'deposit').map((p) => ({ stage: p.stage ?? 'upfront', amount: p.amount, at: p.at }))
+
+/** How a deposit is named wherever it is listed: "20% Upfront Deposit", "30% Recruitment Cost". */
+export const depositLabel = (stage: DepositPaid['stage']): string => `${sharePct(stage)} ${PAYMENT_STAGES[stage].bill}`
+
 /**
- * The bill, built from the study's rates and the people actually delivered,
- * which is what workflow 54 says the client is charged for.
+ * The bill, built from the study's rate periods and the people actually
+ * delivered, which is what workflow 54 says the client is charged for.
  */
 export function billing(study: Study): Billing {
-  const { recruitingPer, incentivePer, moderationPer, platformFee } = study.rates
-  const delivered = counts(study).delivered
-  const linesAt = (n: number) => [
-    { label: 'Platform Fee', amount: platformFee },
-    { label: 'Recruiting Fee', amount: recruitingPer * n, sub: `$${recruitingPer} x ${n} participants`, info: true },
-    { label: 'Incentives', amount: incentivePer * n, sub: `$${incentivePer} x ${n} participants`, info: true },
-    { label: 'Moderation Fee', amount: moderationPer * n, sub: `$${moderationPer} x ${n} participants`, info: true },
-  ]
-  const lines = linesAt(delivered)
+  const periods = ratePeriodsOf(study)
+  const rate = periods.at(-1)!.rate
+  const plan = paymentPlan(rate, study.required)
+  const done = study.participations.filter((p) => p.state === 'completed')
+  const delivered = done.length
+  // Each completed participant at the rate agreed when they completed.
+  const inPeriod = periods.map(() => 0)
+  for (const p of done) {
+    const at = completedOn(study, p)
+    let i = 0
+    periods.forEach((x, k) => { if (x.from <= at) i = k })
+    inPeriod[i]! += 1
+  }
+  const lines: BillLine[] = periods.flatMap((x, k) => (inPeriod[k]! > 0 || (k === periods.length - 1 && delivered === 0))
+    ? [{ label: rateTimes(x.rate, inPeriod[k]!), amount: x.rate * inPeriod[k]!, sub: monthDayYear(x.from) }] : [])
   const total = sum(lines, (l) => l.amount)
-  const deposit = depositFor(study.rates, study.required)
-  const projected = platformFee + (recruitingPer + incentivePer + moderationPer) * study.required
-  const totalCost = isStopped(study.state) ? total : projected
+  const deposits = depositsOf(study)
+  const deposit = sum(deposits, (d) => d.amount)
+  const less: BillLine[] = deposits.map((d) => ({
+    label: `Less: ${depositLabel(d.stage)}`, amount: -d.amount, sub: d.stage === 'incentive' ? `As on ${monthDayYear(d.at)}` : undefined,
+  }))
+  const closed = isStopped(study.state)
+  const totalCost = closed ? total : plan.total
   const net = total - deposit
   const balancePaid = paidOf(study, 'balance')
   const refundPaid = paidOf(study, 'refund')
-  const closed = isStopped(study.state)
   return {
-    lines, total, deposit, totalCost, due: totalCost - deposit, net, setupFee: Math.round(total * FEES.SETUP_SHARE), delivered,
-    balancePaid, outstanding: closed ? Math.max(0, net - balancePaid) : 0,
+    rate, plan, lines, total, deposits, deposit, less, totalCost, due: totalCost - deposit, net, setupFee: Math.round(total * FEES.SETUP_SHARE), delivered,
+    balancePaid, paid: deposit + balancePaid - refundPaid, outstanding: closed ? Math.max(0, net - balancePaid) : 0,
     refund: closed && net < 0 ? -net : 0, refundPaid,
-    estimate: { lines: linesAt(study.required), total: projected, net: projected - deposit },
+    estimate: { lines: [{ label: rateTimes(rate, plan.participants), amount: plan.total }], total: plan.total, net: plan.total - deposit },
   }
+}
+
+/** A client's groups of studies, oldest first, each holding only its studies that still exist (23 Oct 2026). */
+export function groupsOf(state: PlatformState, clientId: string): StudyGroup[] {
+  const ids = new Set(state.studies.filter((s) => s.clientId === clientId).map((s) => s.id))
+  return (state.studyGroups ?? []).filter((g) => g.clientId === clientId).map((g) => ({ ...g, studyIds: g.studyIds.filter((id) => ids.has(id)) }))
+}
+
+/** The group a study is in, if any. */
+export const groupOfStudy = (state: PlatformState, studyId: string): StudyGroup | undefined =>
+  (state.studyGroups ?? []).find((g) => g.studyIds.includes(studyId))
+
+/**
+ * My Studies in sections (23 Oct 2026): each group with its studies on the tab, then Others. A group with no
+ * studies at all is shown on every tab so it can be filled; one whose studies are all on other tabs is not.
+ * With no groups, one unnamed section holds everything.
+ */
+export function groupSections<T extends { id: string }>(groups: StudyGroup[], rows: T[]): { group?: StudyGroup; rows: T[] }[] {
+  if (groups.length === 0) return [{ rows }]
+  const placed = new Set<string>()
+  const sections = groups.flatMap((g) => {
+    const mine = rows.filter((r) => g.studyIds.includes(r.id))
+    mine.forEach((r) => placed.add(r.id))
+    return mine.length > 0 || g.studyIds.length === 0 ? [{ group: g, rows: mine }] : []
+  })
+  return [...sections, { rows: rows.filter((r) => !placed.has(r.id)) }]
 }
 
 /** Workflow 46: the payout list the platform builds from attendance and completion. */

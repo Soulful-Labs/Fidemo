@@ -145,6 +145,12 @@ export interface StudyRates { platformFee: number; recruitingPer: number; incent
 export interface StudyPayment {
   id: string
   kind: 'deposit' | 'balance' | 'refund'
+  /**
+   * Which deposit of the payment structure (23 Oct 2026, shared/platform.ts PAYMENT_STAGES): the upfront
+   * deposit taken at publish, or the incentive deposit taken when the team takes the study live. A deposit
+   * with none recorded is the upfront one.
+   */
+  stage?: 'upfront' | 'incentive'
   amount: number
   at: string
   /** A refund is raised by the platform and confirmed by the team (console, Finance). */
@@ -241,7 +247,22 @@ export interface Study {
   /** When recruiting stopped and the study went to Billing, and who stopped it: the client, the team, or the study filling its target. */
   stoppedAt?: string
   stoppedBy?: 'client' | 'team' | 'filled'
+  /** The rate per participant agreed for this study, period by period (23 Oct 2026). Absent until it is submitted. */
+  ratePeriods?: RatePeriod[]
 }
+
+/**
+ * One period of a study's rate per participant (23 Oct 2026): the rate agreed from `from` on. A study is
+ * priced when it is submitted; a change to its requirements can agree a new rate, which applies to the
+ * participants who complete after it. Oldest first.
+ */
+export interface RatePeriod { rate: number; from: string }
+
+/**
+ * A client's named group of studies (23 Oct 2026, Create Group). My Studies shows each group as a section
+ * with its studies, and everything else under Others. A study is in one group at most.
+ */
+export interface StudyGroup { id: string; clientId: string; name: string; studyIds: string[]; createdAt: string }
 
 /** One field a round of changes touched: where it sits in the Create steps ("About", "Title"), and what it was and became. */
 export interface FieldChange { path: string[]; from?: string; to?: string; added?: string[]; removed?: string[] }
@@ -614,6 +635,8 @@ export interface PlatformState {
    * Absent on older states: the policy's values hold.
    */
   settingsLog?: SettingsChange[]
+  /** Clients' groups of studies (23 Oct 2026). Absent on older states: no groups. */
+  studyGroups?: StudyGroup[]
 }
 
 /** What a recruitment add-on can be charged for: a study type (each covers its group form) or targeting. */

@@ -8,13 +8,13 @@
  * is refused with a reason.
  */
 import { diffForms, studyHistory } from '../shared/revisions'
-import { clientDeactivationBlockers, clientDeactivationRefusal } from '../shared/derive'
+import { clientDeactivationBlockers, clientDeactivationRefusal, groupSections, groupsOf, studiesOf } from '../shared/derive'
 import { settingsAt } from '../shared/settings'
 import { withdrawals,
   billing, consoleDashboard, hasCertificate, payoutsToProcess, referralCode, counts, financeTotals, personFigures, pointsRows, poolPerson, recruit, refundsPending, respondentStudies, sharedPhoto, sharedVideo, trustInputs,
 } from '../shared/derive'
 import { PAYOUT_MOVES, respondentStatus, participationOf } from '../shared/lifecycle'
-import { FEES, TIMINGS, depositFor, diaryWords, quoteStudy } from '../shared/platform'
+import { FEES, RATE_PER_PARTICIPANT, TIMINGS, depositFor, diaryWords, paymentPlan, quoteStudy } from '../shared/platform'
 import { POINTS, REDEEM, TIERS, TRUST, starsForRating, starsFromDimensions, trustScore } from '../shared/rules'
 import { DEMO_CLIENT_ID, DEMO_PERSON_EMAIL, DEMO_PERSON_ID, DEMO_PERSON_PASSWORD, MASTER_ADMIN_ID, buildSeed } from '../shared/seed'
 import { buildScreener, buildTasks, screenerOutline, taskResults } from '../shared/questions'
@@ -344,15 +344,23 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
   check('money: one deposit rule, 25% of recruitment + 25% of incentives', q.depositIncentive === 300 && q.depositRecruitment === 100 && q.deposit === 400 && q.later === q.total - 400 && depositFor(q.rates, 8) === q.deposit && quoteStudy('survey', 12, 60).recruitment === 12 * FEES.RECRUITMENT_BASE, JSON.stringify({ i: q.depositIncentive, r: q.depositRecruitment, d: q.deposit }))
   const drawn = quoteStudy('survey', 20, 70)
   check('money: the designer card, with the labels right: $1,400 incentives -> $350, $500 recruitment -> $125, $475 upfront', drawn.incentives === 1400 && drawn.recruitment === 500 && drawn.depositIncentive === 350 && drawn.depositRecruitment === 125 && drawn.deposit === 475)
+  // 23 Oct 2026: the price is the rate per participant times the participants, paid 20% at publish, 30% when recruiting starts, the rest on the bill.
+  const plan = paymentPlan(250, 20)
+  check('pricing: $250 x 20 participants is $5,000, paid $1,000 upfront, $1,500 incentive deposit, $2,500 on completion', plan.total === 5000 && plan.upfront === 1000 && plan.incentive === 1500 && plan.completion === 2500, JSON.stringify(plan))
+  check('pricing: the three stages always add up to the total, whatever the rate', [[333, 7], [199.99, 13], [250, 1], [250, 0]].every(([r, n]) => { const x = paymentPlan(r!, n!); return Math.abs(x.upfront + x.incentive + x.completion - x.total) < 0.001 }))
   const paid = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Money study', participants: '8', incentive: 150 }))
   const money = paid.ok ? st().studies.find((x) => x.id === paid.id)! : undefined
-  check('money: the store takes that deposit, and the bill projects that total', money?.payments[0]?.amount === q.deposit && billing(money!).deposit === q.deposit && billing(money!).totalCost === q.total, money ? `${money.payments[0]?.amount} / ${billing(money).totalCost}` : '')
+  check('money: publishing prices the study at the platform rate and takes the 20% upfront deposit; the bill projects rate x participants',
+    money?.ratePeriods?.[0]?.rate === RATE_PER_PARTICIPANT && money?.payments.length === 1 && money.payments[0]!.stage === 'upfront' && money.payments[0]!.amount === paymentPlan(RATE_PER_PARTICIPANT, 8).upfront
+    && billing(money).deposit === money.payments[0]!.amount && billing(money).totalCost === RATE_PER_PARTICIPANT * 8 && billing(money).less[0]!.label === 'Less: 20% Upfront Deposit',
+    money ? `${money.payments[0]?.amount} / ${billing(money).totalCost}` : '')
+  check('money: the incentive is inside the rate, not charged on top', money ? billing(money).plan.total === RATE_PER_PARTICIPANT * 8 : false)
 
   check('edit: a study waiting on the team can be changed and sent again, in place', (() => {
     if (!paid.ok) return false
     const again = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Money study, revised', participants: '10', incentive: 150 }), paid.id)
     const now2 = st().studies.find((x) => x.id === paid.id)!
-    return again.ok && again.id === paid.id && now2.title === 'Money study, revised' && now2.required === 10 && now2.state === 'in_review' && now2.payments.length === 1 && now2.payments[0]!.amount === depositFor(now2.rates, 10) && now2.payments[0]!.amount === 500 && st().studies.filter((x) => x.title.startsWith('Money study')).length === 1
+    return again.ok && again.id === paid.id && now2.title === 'Money study, revised' && now2.required === 10 && now2.state === 'in_review' && now2.payments.length === 1 && now2.payments[0]!.amount === paymentPlan(RATE_PER_PARTICIPANT, 10).upfront && st().studies.filter((x) => x.title.startsWith('Money study')).length === 1
   })())
   check('edit: a live study is refused, and saving a submitted study as a draft is refused', (() => {
     if (!paid.ok) return false
@@ -361,6 +369,42 @@ check('simulated client: screener then auto-qualified after the delay', (() => {
     const live = p.submitStudy(DEMO_CLIENT_ID, formOf({ title: 'Changed while live' }), paid.id)
     return !asDraft.ok && !live.ok && live.why.includes('live') && st().studies.find((x) => x.id === paid.id)!.title === 'Money study, revised'
   })())
+  check('money: the team taking the study live takes the 30% incentive deposit, once', (() => {
+    if (!paid.ok) return false
+    const x = st().studies.find((y) => y.id === paid.id)!
+    const inc = x.payments.filter((y) => y.stage === 'incentive')
+    const b = billing(x)
+    return inc.length === 1 && inc[0]!.amount === paymentPlan(RATE_PER_PARTICIPANT, 10).incentive && b.deposit === paymentPlan(RATE_PER_PARTICIPANT, 10).upfront + inc[0]!.amount
+      && b.less.map((l) => l.label).join(' | ') === 'Less: 20% Upfront Deposit | Less: 30% Recruitment Cost' && b.estimate.net === b.plan.total - b.deposit
+  })())
+  {
+    const travel = st().studies.find((x) => x.id === 'st-travel')!
+    const b = billing(travel)
+    check('money: the final bill is each completed participant at the rate agreed when they completed, one line per period',
+      travel.ratePeriods!.length === 2 && b.lines.length === 2 && b.total === b.lines.reduce((n, l) => n + l.amount, 0)
+      && b.lines.reduce((n, l) => n + Number(l.label.match(/x (\d+)/)![1]), 0) === b.delivered && b.net === b.total - b.deposit, b.lines.map((l) => `${l.label} ${l.amount}`).join(', '))
+  }
+  // 23 Oct 2026: study groups.
+  {
+    const groups = () => groupsOf(st(), DEMO_CLIENT_ID)
+    const blank = p.createStudyGroup(DEMO_CLIENT_ID, '  ')
+    const dup = p.createStudyGroup(DEMO_CLIENT_ID, 'my digital studies group')
+    const draftId = st().studies.find((x) => x.clientId === DEMO_CLIENT_ID && x.state === 'draft')!.id
+    const withDraft = p.createStudyGroup(DEMO_CLIENT_ID, 'Has a draft', [draftId])
+    check('groups: a group needs a name of its own, and drafts stay out', !blank.ok && !dup.ok && !withDraft.ok, [blank, dup, withDraft].map((r) => (r.ok ? 'ok' : r.why)).join(' / '))
+    const made = p.createStudyGroup(DEMO_CLIENT_ID, 'Health studies', ['st-sleep', 'st-goal'])
+    const digital = () => groups().find((g) => g.name === 'My Digital Studies Group')!
+    const health = () => groups().find((g) => g.name === 'Health studies')!
+    check('groups: creating one with studies moves a study out of the group it was in', made.ok && health().studyIds.join() === 'st-sleep,st-goal' && digital().studyIds.join() === 'st-social')
+    check('groups: Add to a Group from the options menu, and adding it twice is refused', p.addStudyToGroup(health().id, 'st-fitness').ok && health().studyIds.includes('st-fitness') && !p.addStudyToGroup(health().id, 'st-fitness').ok)
+    check('groups: Edit Group renames it and sets its studies; one taken out goes back to Others', p.updateStudyGroup(health().id, 'Health', ['st-sleep']).ok && groups().some((g) => g.name === 'Health' && g.studyIds.join() === 'st-sleep'))
+    const rows = studiesOf(st(), DEMO_CLIENT_ID).filter((x) => x.state !== 'draft')
+    const sections = groupSections(groups(), rows)
+    check('groups: My Studies is each group, then Others, and every study is listed once', sections.at(-1)!.group === undefined && sections.reduce((n, x) => n + x.rows.length, 0) === rows.length && sections[0]!.group?.name === 'My Digital Studies Group')
+    const health2 = groups().find((g) => g.name === 'Health')!
+    check('groups: Ungroup removes the group and its studies go back to Others', p.ungroupStudyGroup(health2.id).ok && !groups().some((g) => g.name === 'Health') && groupSections(groups(), rows).at(-1)!.rows.some((r) => r.id === 'st-sleep'))
+    check('groups: with no groups there is one unnamed section', groupSections([], rows).length === 1 && groupSections([], rows)[0]!.group === undefined)
+  }
 }
 
 // ------------------------------------------------ matching, eligibility answers, payouts by hand, the picture

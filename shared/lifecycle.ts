@@ -39,6 +39,12 @@ export const canRepublish = (study: { state: StudyState }): boolean => study.sta
 /** Recruiting has stopped: in Billing or completed. Its bill is the final one, at the people delivered. */
 export const isStopped = (s: StudyState): boolean => s === 'billing' || s === 'completed'
 
+/**
+ * Which studies a client can put in a group (23 Oct 2026, Create Group): any submitted study that is not
+ * cancelled. A draft is the client's unfinished form and stays on Drafts on its own.
+ */
+export const canGroup = (s: StudyState): boolean => s !== 'draft' && s !== 'cancelled'
+
 /** A study respondents can see and apply to. */
 export const isLive = (s: StudyState): boolean => s === 'recruiting' || s === 'ongoing'
 
