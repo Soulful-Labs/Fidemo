@@ -9,7 +9,7 @@
 // so, rather than sitting there looking like a hang.
 import { resolve } from 'node:path'
 import { spawn } from 'node:child_process'
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, statSync, readFileSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 
 const base = process.env.BASE_URL ?? 'http://localhost:5180'
@@ -310,6 +310,8 @@ void by
   const got = []
   const fetchFile = async (label, t, path, how) => {
     // A file of the same name would be overwritten in place, so each download starts from an empty folder.
+    // The previous download is given time to land first: on a slow machine it can arrive after the folder is emptied.
+    await sleep(800)
     for (const f of readdirSync(dir)) rmSync(join(dir, f), { force: true })
     const before = new Set()
     await t.go(path); await sleep(900)
@@ -319,6 +321,8 @@ void by
     for (let i = 0; i < 30 && !file; i++) { await sleep(150); file = readdirSync(dir).find((f) => !before.has(f) && !f.endsWith('.crdownload')) }
     const toast = await t.ev(`document.querySelector('[role=status]')?.innerText ?? ''`)
     if (!file) { g.push(`${label}: no file arrived (toast "${toast}")`); return }
+    // A file can appear before the browser has finished writing it: read it once its size has held still.
+    for (let i = 0, last = -1; i < 20; i++) { const size = statSync(join(dir, file)).size; if (size > 0 && size === last) break; last = size; await sleep(150) }
     const bytes = readFileSync(join(dir, file))
     const kind = file.endsWith('.pdf') ? (bytes.subarray(0, 5).toString() === '%PDF-' && bytes.toString('latin1').trimEnd().endsWith('%%EOF') ? 'PDF' : 'BROKEN PDF') : file.endsWith('.csv') ? (bytes.toString('utf8').split('\n').length > 1 ? 'CSV' : 'EMPTY CSV') : 'file'
     if (/BROKEN|EMPTY/.test(kind)) g.push(`${label}: ${kind} ${file}`)
